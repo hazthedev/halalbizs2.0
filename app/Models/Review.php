@@ -1,0 +1,53 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+
+class Review extends Model implements HasMedia
+{
+    use HasFactory, InteractsWithMedia;
+
+    protected $fillable = [
+        'order_item_id', 'product_id', 'store_id', 'user_id',
+        'rating', 'comment', 'seller_reply', 'seller_replied_at', 'is_hidden',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'rating' => 'integer',
+            'seller_replied_at' => 'datetime',
+            'is_hidden' => 'boolean',
+        ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('photos');
+    }
+
+    public function orderItem(): BelongsTo
+    {
+        return $this->belongsTo(OrderItem::class);
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}

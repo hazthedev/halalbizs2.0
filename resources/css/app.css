@@ -1,0 +1,59 @@
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/figtree';
+@import '@fontsource-variable/jetbrains-mono';
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+@source '../../app/Livewire/**/*.php';
+
+@theme {
+    /* canvas + ink */
+    --color-paper: #F7F7F4;
+    --color-surface: #FFFFFF;
+    --color-ink: #191B1A;
+    --color-ink-soft: #5B615D;
+    --color-ink-faint: #8B918D;
+    --color-line: #E5E7E2;
+    --color-line-strong: #C9CEC9;
+
+    /* emerald = money & action */
+    --color-emerald: #047857;
+    --color-emerald-deep: #065F46;
+    --color-emerald-night: #03392B;
+    --color-emerald-tint: #EAF4EF;
+
+    /* semantic (used sparingly) */
+    --color-warn: #B45309;
+    --color-danger: #BE123C;
+    --color-warn-tint: #FBF3E8;
+    --color-danger-tint: #FBEDF0;
+
+    --font-display: 'Bricolage Grotesque Variable', 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, 'Noto Sans SC', sans-serif;
+    --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+@layer base {
+    body {
+        @apply bg-paper text-ink font-sans antialiased;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-emerald);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+@utility tnum {
+    font-feature-settings: 'tnum';
+}
