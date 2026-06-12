@@ -173,6 +173,11 @@
         </template>
     </div>
 
+    {{-- One-shot toast flashed across a redirect (e.g. the checkout empty-selection guard). --}}
+    @if (session()->has('toast'))
+        <div x-data x-init="$store.toasts.push(@js(session('toast')['message'] ?? ''), @js(session('toast')))" class="hidden"></div>
+    @endif
+
     {{-- Global overlays --}}
     <livewire:storefront.layout.search-overlay />
     <livewire:storefront.layout.mini-cart />

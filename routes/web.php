@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PreferenceController;
 use App\Livewire\Seller\ApplicationStatus;
@@ -50,13 +51,21 @@ Route::middleware('auth')->group(function () {
     })->name('logout');
 });
 
+// ===== Checkout =====
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/checkout', Storefront\Checkout::class)->name('checkout');
+    Route::get('/checkout/success/{order:order_no}', Storefront\CheckoutSuccess::class)->name('checkout.success');
+});
+
 // ===== Buyer account =====
 Route::middleware(['auth'])->prefix('account')->name('account.')->group(function () {
     Route::get('/', Storefront\Account\Profile::class)->name('profile');
     Route::get('/addresses', Storefront\Account\Addresses::class)->name('addresses');
     Route::get('/wishlist', Storefront\Account\WishlistPage::class)->name('wishlist');
     Route::get('/notifications', Storefront\Account\Notifications::class)->name('notifications');
-    Route::view('/orders', 'storefront.placeholder')->name('orders'); // M4
+    Route::get('/orders', Storefront\Account\Orders::class)->name('orders');
+    Route::get('/orders/{subOrder}', Storefront\Account\OrderDetail::class)->name('orders.show');
+    Route::get('/orders/{subOrder}/invoice', [InvoiceController::class, 'buyer'])->name('orders.invoice');
 });
 
 // ===== Seller application (outside the approved-seller group) =====
