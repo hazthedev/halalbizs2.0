@@ -2,6 +2,7 @@
 
 use App\Enums\ProductStatus;
 use App\Livewire\Seller\Products\Form;
+use App\Livewire\Storefront\ProductDetail;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -299,6 +300,95 @@ test('editing another store\'s product is forbidden', function () {
     $this->actingAs($seller)
         ->get(route('seller.products.edit', $foreign))
         ->assertForbidden();
+});
+
+// ── Product video ───────────────────────────────────────────────────────
+
+test('a product video uploads to the videos collection and the PDP renders a video player', function () {
+    Storage::fake('public');
+
+    $seller = productFormSeller();
+    $category = productFormCategory();
+
+    Livewire::actingAs($seller)
+        ->test(Form::class)
+        ->set('name.en', 'Honey With Video')
+        ->set('categoryTop', $category->id)
+        ->set('price', '19.90')
+        ->set('stock', '5')
+        ->set('newImages', [UploadedFile::fake()->image('honey.jpg', 600, 600)])
+        ->set('newVideo', UploadedFile::fake()->create('demo.mp4', 5120, 'video/mp4'))
+        ->call('publish')
+        ->assertHasNoErrors();
+
+    $product = Product::query()->where('store_id', $seller->store->id)->firstOrFail();
+
+    expect($product->getMedia('videos'))->toHaveCount(1);
+
+    Livewire::test(ProductDetail::class, ['product' => $product])
+        ->assertSee('<video', false)
+        ->assertSee('preload="none"', false)
+        ->assertSee($product->getFirstMediaUrl('videos'), false);
+});
+
+test('replacing the video keeps a single file and removeExistingVideo clears it', function () {
+    Storage::fake('public');
+
+    $seller = productFormSeller();
+    $product = Product::factory()->create(['store_id' => $seller->store->id]);
+
+    Livewire::actingAs($seller)
+        ->test(Form::class, ['product' => $product])
+        ->set('newVideo', UploadedFile::fake()->create('first.mp4', 1024, 'video/mp4'))
+        ->call('saveDraft')
+        ->assertHasNoErrors();
+
+    Livewire::actingAs($seller)
+        ->test(Form::class, ['product' => $product])
+        ->set('newVideo', UploadedFile::fake()->create('second.webm', 1024, 'video/webm'))
+        ->call('saveDraft')
+        ->assertHasNoErrors();
+
+    expect($product->refresh()->getMedia('videos'))->toHaveCount(1)
+        ->and($product->getFirstMedia('videos')->file_name)->toBe('second.webm');
+
+    Livewire::actingAs($seller)
+        ->test(Form::class, ['product' => $product])
+        ->call('removeExistingVideo');
+
+    expect($product->refresh()->getMedia('videos'))->toHaveCount(0);
+});
+
+test('a product video must be MP4 or WebM', function () {
+    $seller = productFormSeller();
+    $category = productFormCategory();
+
+    Livewire::actingAs($seller)
+        ->test(Form::class)
+        ->set('name.en', 'Wrong Format Item')
+        ->set('categoryTop', $category->id)
+        ->set('price', '9.90')
+        ->set('newVideo', UploadedFile::fake()->create('clip.avi', 1024, 'video/x-msvideo'))
+        ->call('saveDraft')
+        ->assertHasErrors(['newVideo' => 'mimetypes']);
+
+    expect(Product::query()->where('store_id', $seller->store->id)->count())->toBe(0);
+});
+
+test('a product video over 30MB is rejected', function () {
+    $seller = productFormSeller();
+    $category = productFormCategory();
+
+    Livewire::actingAs($seller)
+        ->test(Form::class)
+        ->set('name.en', 'Oversized Video Item')
+        ->set('categoryTop', $category->id)
+        ->set('price', '9.90')
+        ->set('newVideo', UploadedFile::fake()->create('big.mp4', 30721, 'video/mp4'))
+        ->call('saveDraft')
+        ->assertHasErrors(['newVideo' => 'max']);
+
+    expect(Product::query()->where('store_id', $seller->store->id)->count())->toBe(0);
 });
 
 test('ms translations are written only when filled and en is always written', function () {

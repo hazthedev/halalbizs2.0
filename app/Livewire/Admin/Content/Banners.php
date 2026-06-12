@@ -38,6 +38,9 @@ class Banners extends Component
 
     public ?TemporaryUploadedFile $image = null;
 
+    /** Optional motion slide (mp4/webm, ≤30MB) — the image stays as fallback. */
+    public ?TemporaryUploadedFile $video = null;
+
     public function create(): void
     {
         $this->resetForm();
@@ -75,9 +78,14 @@ class Banners extends Component
             'startsAt' => ['nullable', 'date'],
             'endsAt' => ['nullable', 'date'],
             'image' => [$this->editingId === null ? 'required' : 'nullable', 'image', 'max:4096'],
-        ], attributes: [
+            'video' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm', 'max:30720'],
+        ], [
+            'video.mimetypes' => __('The video must be an MP4 or WebM file.'),
+            'video.max' => __('The video must be 30MB or smaller.'),
+        ], [
             'title.en' => __('title (English)'),
             'image' => __('banner image'),
+            'video' => __('banner video'),
         ]);
 
         $starts = $this->parseDate($this->startsAt);
@@ -118,8 +126,27 @@ class Banners extends Component
                 ->toMediaCollection('image');
         }
 
+        if ($this->video !== null) {
+            // singleFile collection — replaces the previous video.
+            $banner->addMedia($this->video->getRealPath())
+                ->usingFileName($this->video->getClientOriginalName())
+                ->toMediaCollection('video');
+        }
+
         $this->dispatch('toast', message: $this->editingId !== null ? __('Banner updated') : __('Banner created'));
         $this->resetForm();
+    }
+
+    /** Drops the motion slide — the banner falls back to its image. */
+    public function removeVideo(): void
+    {
+        if ($this->editingId === null) {
+            return;
+        }
+
+        Banner::findOrFail($this->editingId)->clearMediaCollection('video');
+
+        $this->dispatch('toast', message: __('Banner video removed'));
     }
 
     public function toggleActive(int $bannerId): void
@@ -171,7 +198,7 @@ class Banners extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['showForm', 'editingId', 'title', 'linkUrl', 'startsAt', 'endsAt', 'isActive', 'image']);
+        $this->reset(['showForm', 'editingId', 'title', 'linkUrl', 'startsAt', 'endsAt', 'isActive', 'image', 'video']);
         $this->resetErrorBag();
     }
 

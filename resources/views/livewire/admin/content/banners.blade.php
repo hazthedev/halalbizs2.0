@@ -69,13 +69,32 @@
                     @endif
                 </div>
 
+                <div>
+                    <label for="banner-video" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Video (optional)') }}</label>
+                    <input type="file" id="banner-video" wire:model="video" accept="video/mp4,video/webm"
+                           class="block w-full rounded-lg border border-line-strong bg-surface px-3.5 py-2.5 text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-[13px] file:font-medium file:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    @error('video')
+                        <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
+                    @else
+                        <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('MP4 or WebM, up to 30 MB. Plays muted on loop in the home carousel; the image is the fallback.') }}</p>
+                    @enderror
+                    <div wire:loading wire:target="video" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                    @if ($editingId !== null && \App\Models\Banner::find($editingId)?->getFirstMedia('video') !== null)
+                        <button type="button" wire:click="removeVideo"
+                                wire:confirm="{{ __('Remove the video from this banner? It falls back to the image.') }}"
+                                class="mt-2 inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                            {{ __('Remove current video') }}
+                        </button>
+                    @endif
+                </div>
+
                 <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
                     <input type="checkbox" wire:model="isActive" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Active') }}
                 </label>
 
                 <div class="flex items-center gap-2">
-                    <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="save, image">
+                    <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="save, image, video">
                         {{ $editingId !== null ? __('Save banner') : __('Create banner') }}
                     </x-ui.button>
                     <x-ui.button variant="ghost" wire:click="cancel">{{ __('Cancel') }}</x-ui.button>

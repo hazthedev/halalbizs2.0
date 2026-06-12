@@ -2,11 +2,17 @@
 
 namespace App\Livewire\Storefront;
 
+use App\Enums\BoostStatus;
 use App\Livewire\Concerns\InteractsWithCart;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\HomeSection;
 use App\Models\Product;
+use App\Models\ProductBoost;
+use App\Models\ThemeAsset;
+use App\Settings\BoostSettings;
+use App\Settings\ThemeSettings;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -43,10 +49,26 @@ class Home extends Component
             ->reject(fn (array $row) => $row['data']->isEmpty() && $row['section']->type !== 'recently_viewed')
             ->values();
 
+        $theme = app(ThemeSettings::class);
+
         return view('livewire.storefront.home', [
             'sections' => $sections,
             'wishlistedIds' => $this->wishlistedIds(),
+            'heroUrl' => $this->heroUrl($theme),
+            'occasion' => $theme->occasion,
         ]);
+    }
+
+    /** Occasion hero image URL — only when enabled, in window, and uploaded. */
+    protected function heroUrl(ThemeSettings $theme): ?string
+    {
+        if (! $theme->heroActive()) {
+            return null;
+        }
+
+        $url = ThemeAsset::where('key', 'hero')->first()?->getFirstMediaUrl('image', 'card');
+
+        return $url !== null && $url !== '' ? $url : null;
     }
 
     protected function sectionData(HomeSection $section): Collection
@@ -75,14 +97,50 @@ class Home extends Component
     /** @return Collection<int, Product> */
     protected function products(string $source, int $limit): Collection
     {
+        // 'top' leads with actively boosted products (flagged Sponsored),
+        // then fills the remaining slots organically by sold_count.
+        $boosted = $source === 'top' ? $this->boostedProducts($limit) : new Collection;
+
         $query = Product::live()->with(['media', 'variants', 'store']);
+
+        if ($boosted->isNotEmpty()) {
+            $query->whereNotIn('id', $boosted->modelKeys());
+        }
 
         match ($source) {
             'top' => $query->orderByDesc('sold_count'),
             default => $query->orderByDesc('published_at')->orderByDesc('id'),
         };
 
-        return $query->take($limit)->get();
+        return $boosted->concat($query->take($limit - $boosted->count())->get());
+    }
+
+    /**
+     * Actively boosted live products, newest boost first, flagged for the
+     * neutral Sponsored badge on the card.
+     *
+     * @return Collection<int, Product>
+     */
+    protected function boostedProducts(int $limit): Collection
+    {
+        if (! app(BoostSettings::class)->enabled) {
+            return new Collection;
+        }
+
+        $latestBoostStart = ProductBoost::select('starts_at')
+            ->whereColumn('product_id', 'products.id')
+            ->where('status', BoostStatus::Active)
+            ->orderByDesc('starts_at')
+            ->limit(1);
+
+        return Product::live()
+            ->with(['media', 'variants', 'store'])
+            ->whereHas('boosts', fn (Builder $boosts) => $boosts->active())
+            ->orderByDesc($latestBoostStart)
+            ->orderByDesc('id')
+            ->take($limit)
+            ->get()
+            ->each(fn (Product $product) => $product->sponsored = true);
     }
 
     /** @return Collection<int, Product> */

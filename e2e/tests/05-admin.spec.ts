@@ -11,7 +11,15 @@ async function login(page: Page, email: string) {
     await page.fill('input[type="email"]', email);
     await page.fill('input[type="password"]', 'password');
     await page.getByRole('button', { name: /log in/i }).click();
-    await page.waitForURL('**/');
+    await page.waitForURL(/\/(two-factor-challenge)?(\?.*)?$/, { timeout: 15000 });
+
+    // Admins carry 2FA — mint a code via artisan and pass the challenge.
+    if (page.url().includes('two-factor-challenge')) {
+        const code = execSync(`php artisan e2e:otp ${email}`, { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
+        await page.fill('input[wire\\:model="code"]', code);
+        await page.getByRole('button', { name: /verify|continue|confirm/i }).click();
+        await page.waitForURL('**/');
+    }
 }
 
 test.describe('M7 admin journeys', () => {
@@ -32,7 +40,8 @@ test.describe('M7 admin journeys', () => {
 
         // --- Approve the pending seller application ---
         await page.goto('/admin/sellers/applications');
-        await expect(page.getByText(shopName).first()).toBeVisible();
+        // td-scoped: the notification bell also carries the shop name (hidden).
+        await expect(page.locator('td', { hasText: shopName }).first()).toBeVisible({ timeout: 15000 });
         // Queue is oldest-first and other runs may have left applications —
         // operate strictly on OUR application's row.
         await jsClick(page.locator('tr', { hasText: shopName }).getByRole('button', { name: /review/i }));

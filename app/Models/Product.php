@@ -56,6 +56,10 @@ class Product extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('images');
+
+        // One optional product video (mp4/webm, ≤30MB — enforced by the
+        // seller form's mimetypes/max validation before the file gets here).
+        $this->addMediaCollection('videos')->singleFile();
     }
 
     public function registerMediaConversions(?Media $media = null): void
@@ -105,6 +109,11 @@ class Product extends Model implements HasMedia
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function boosts(): HasMany
+    {
+        return $this->hasMany(ProductBoost::class);
     }
 
     #[Scope]

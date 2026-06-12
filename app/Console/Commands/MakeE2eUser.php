@@ -29,6 +29,19 @@ class MakeE2eUser extends Command
         $user->forceFill(['email_verified_at' => now()])->save();
         $user->assignRole('buyer');
 
+        if ($this->option('pending-store')) {
+            // Prune stale fixture applications from earlier runs — the
+            // oldest-first admin queue paginates, pushing fresh ones off page 1.
+            Store::where('status', StoreStatus::Pending)
+                ->where('name', 'like', 'Pending Shop %')
+                ->where('user_id', '!=', $user->id)
+                ->get()
+                ->each(function (Store $stale) {
+                    $stale->documents()->delete();
+                    $stale->forceDelete();
+                });
+        }
+
         if ($this->option('pending-store') && $user->store === null) {
             $store = Store::factory()->create([
                 'user_id' => $user->id,

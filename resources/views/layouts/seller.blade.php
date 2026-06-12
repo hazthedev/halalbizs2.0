@@ -20,6 +20,7 @@
             </a>
             <div class="ml-auto flex items-center gap-2">
                 <a href="{{ route('home') }}" class="rounded-lg px-3 py-2 text-[13px] font-medium text-paper/64 hover:text-paper">{{ __('View storefront') }}</a>
+                <livewire:notification-bell context="seller" />
                 <span class="hidden text-[13px] text-paper/64 sm:block">{{ auth()->user()->store?->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -58,6 +59,21 @@
                     <span class="block cursor-not-allowed rounded-lg px-3 py-2 text-sm font-medium text-ink-faint">{{ __('Orders') }} <span class="text-[11px]">({{ __('soon') }})</span></span>
                 @endif
 
+                @php
+                    $sellerUnreadMessages = ($sellerNavStore = auth()->user()->store) === null ? 0 : \App\Models\Message::query()
+                        ->whereNull('read_at')
+                        ->where('sender_type', 'buyer')
+                        ->whereIn('conversation_id', \App\Models\Conversation::query()->where('store_id', $sellerNavStore->id)->select('id'))
+                        ->count();
+                @endphp
+                <a href="{{ route('seller.messages') }}" wire:navigate
+                   class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.messages') ? 'bg-emerald-tint text-emerald' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                    <span>{{ __('Messages') }}</span>
+                    @if ($sellerUnreadMessages > 0)
+                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 text-[11px] font-semibold text-emerald tnum">{{ $sellerUnreadMessages }}</span>
+                    @endif
+                </a>
+
                 @foreach ([['seller.vouchers.index', __('Vouchers')], ['seller.earnings', __('Earnings')], ['seller.reviews.index', __('Reviews')]] as [$routeName, $label])
                     @if (Illuminate\Support\Facades\Route::has($routeName))
                         <a href="{{ route($routeName) }}" wire:navigate
@@ -72,6 +88,11 @@
                 <a href="{{ route('seller.settings') }}" wire:navigate
                    class="block rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.settings') ? 'bg-emerald-tint text-emerald' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                     {{ __('Shop settings') }}
+                </a>
+
+                <a href="{{ route('help.index') }}" wire:navigate
+                   class="block rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-paper hover:text-ink">
+                    {{ __('Get help') }}
                 </a>
             </nav>
         </aside>

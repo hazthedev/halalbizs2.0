@@ -31,6 +31,10 @@ class Banner extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')->singleFile();
+
+        // Optional motion slide (mp4/webm, ≤30MB — enforced by the admin
+        // form's mimetypes/max validation). The image stays as the fallback.
+        $this->addMediaCollection('video')->singleFile();
     }
 
     public function registerMediaConversions(?Media $media = null): void

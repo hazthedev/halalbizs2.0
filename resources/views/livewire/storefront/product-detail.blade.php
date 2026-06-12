@@ -1,6 +1,7 @@
 @php
     $name = $product->getTranslation('name', app()->getLocale());
     $images = $product->getMedia('images');
+    $video = $product->getFirstMedia('videos');
     $variantImage = $variant?->getFirstMediaUrl('image') ?: null;
     $mainImage = $variantImage ?: $images->first()?->getUrl('card');
     $canBuy = $variant !== null && $variant->stock > 0;
@@ -16,23 +17,45 @@
         <div class="grid items-start gap-8 lg:grid-cols-[55fr_45fr] lg:gap-12">
 
             {{-- ===== Gallery ===== --}}
-            <div wire:key="gallery-{{ $variant?->id ?? 'base' }}" x-data="{ activeImage: @js($mainImage) }">
+            <div wire:key="gallery-{{ $variant?->id ?? 'base' }}" x-data="{ activeImage: @js($mainImage), showVideo: false }">
                 <div class="aspect-square overflow-hidden rounded-[10px] border border-line bg-paper">
+                    @if ($video)
+                        <video x-show="showVideo" x-cloak controls preload="none"
+                               src="{{ $video->getUrl() }}"
+                               poster="{{ $images->first()?->getUrl('card') }}"
+                               aria-label="{{ __('Video of :name', ['name' => $name]) }}"
+                               class="size-full object-cover"></video>
+                    @endif
                     @if ($mainImage)
-                        <img x-bind:src="activeImage" src="{{ $mainImage }}"
+                        <img @if ($video) x-show="! showVideo" @endif x-bind:src="activeImage" src="{{ $mainImage }}"
                              alt="{{ $name }}{{ $variant?->options_label ? ' — '.$variant->options_label : '' }}"
                              class="size-full object-cover">
-                    @else
+                    @elseif (! $video)
                         <div class="flex size-full items-center justify-center text-sm text-ink-faint">{{ __('No image yet') }}</div>
                     @endif
                 </div>
 
-                @if ($images->count() > 1)
+                @if ($images->count() > 1 || $video)
                     <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
+                        @if ($video)
+                            {{-- Play thumb: selecting swaps the main area to the video --}}
+                            <button type="button"
+                                    x-on:click="showVideo = true"
+                                    x-bind:class="showVideo ? 'border-emerald' : 'border-line hover:border-line-strong'"
+                                    class="relative size-16 shrink-0 overflow-hidden rounded-lg border bg-paper"
+                                    aria-label="{{ __('Play video of :name', ['name' => $name]) }}">
+                                @if ($images->isNotEmpty())
+                                    <img src="{{ $images->first()->getUrl('thumb') }}" alt="" aria-hidden="true" class="size-full object-cover" loading="lazy">
+                                @endif
+                                <span class="absolute inset-0 flex items-center justify-center bg-ink/40">
+                                    <svg class="size-6 text-paper" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72c0 .79.87 1.27 1.54.84l10.06-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14Z"/></svg>
+                                </span>
+                            </button>
+                        @endif
                         @foreach ($images as $media)
                             <button type="button"
-                                    x-on:click="activeImage = @js($media->getUrl('card'))"
-                                    x-bind:class="activeImage === @js($media->getUrl('card')) ? 'border-emerald' : 'border-line hover:border-line-strong'"
+                                    x-on:click="activeImage = @js($media->getUrl('card')); showVideo = false"
+                                    x-bind:class="! showVideo && activeImage === @js($media->getUrl('card')) ? 'border-emerald' : 'border-line hover:border-line-strong'"
                                     class="size-16 shrink-0 overflow-hidden rounded-lg border bg-paper"
                                     aria-label="{{ __('View image :number of :name', ['number' => $loop->iteration, 'name' => $name]) }}">
                                 <img src="{{ $media->getUrl('thumb') }}" alt="{{ $name }}" class="size-full object-cover" loading="lazy">
@@ -191,6 +214,10 @@
                                         <span class="tnum">{{ number_format((float) $store->rating_avg, 1) }} ({{ number_format($store->rating_count) }})</span>
                                         <span aria-hidden="true">·</span>
                                     @endif
+                                    @if ($store->service_rating_count > 0)
+                                        <span>{{ __('Seller service') }} <span aria-hidden="true">★</span><span class="tnum">{{ number_format((float) $store->service_rating_avg, 1) }} ({{ number_format($store->service_rating_count) }})</span></span>
+                                        <span aria-hidden="true">·</span>
+                                    @endif
                                     <span class="tnum">{{ number_format($storeProductsCount) }} {{ __('products') }}</span>
                                     @if ($store->state)
                                         <span aria-hidden="true">·</span>
@@ -198,6 +225,13 @@
                                     @endif
                                 </p>
                             </div>
+                            <a href="{{ auth()->check() ? route('account.messages', ['store' => $store->id, 'product' => $product->id]) : route('login') }}"
+                               wire:navigate
+                               data-testid="pdp-chat"
+                               class="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-ink-soft transition-colors duration-150 hover:text-ink">
+                                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
+                                {{ __('Chat') }}
+                            </a>
                             <a href="{{ $store->subdomainUrl() }}"
                                class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-ink-soft transition-colors duration-150 hover:text-ink">
                                 {{ __('Visit store') }}
@@ -400,11 +434,15 @@
     {{-- ===== Mobile sticky buy bar (ink frame) ===== --}}
     <div class="fixed inset-x-0 bottom-0 z-30 bg-ink shadow-lg lg:hidden" style="border-top: 1px solid var(--color-emerald-night);">
         <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3">
-            <button type="button" disabled title="{{ __('Coming soon') }}"
-                    class="flex size-11 shrink-0 cursor-not-allowed items-center justify-center rounded-lg border border-paper/30 text-paper/40"
-                    aria-label="{{ __('Chat with seller (coming soon)') }}">
-                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
-            </button>
+            @if ($store !== null)
+                <a href="{{ auth()->check() ? route('account.messages', ['store' => $store->id, 'product' => $product->id]) : route('login') }}"
+                   wire:navigate
+                   data-testid="pdp-chat-mobile"
+                   class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-paper/90 text-paper transition-colors duration-150 hover:bg-paper/10"
+                   aria-label="{{ __('Chat with seller') }}">
+                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
+                </a>
+            @endif
             <button type="button"
                     data-testid="pdp-add-to-cart"
                     x-on:click="$store.cart.bump()"

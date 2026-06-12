@@ -20,6 +20,7 @@
             </a>
             <div class="ml-auto flex items-center gap-2">
                 <a href="{{ route('home') }}" class="rounded-lg px-3 py-2 text-[13px] font-medium text-paper/64 hover:text-paper">{{ __('View storefront') }}</a>
+                <livewire:notification-bell context="admin" />
                 <span class="hidden text-[13px] text-paper/64 sm:block">{{ auth()->user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

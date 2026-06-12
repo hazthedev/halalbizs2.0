@@ -12,6 +12,26 @@
       x-data
       x-init="$store.cart.set({{ app(\App\Services\CartService::class)->itemCount(auth()->user()) }})">
 
+    {{-- ===== Occasion announcement bar (colors from ThemeSettings — never recolors actions) ===== --}}
+    @php($themeSettings = app(\App\Settings\ThemeSettings::class))
+    @if ($themeSettings->announcementActive())
+        <div x-data="{ shown: true }"
+             x-init="shown = sessionStorage.getItem('hb-announcement-dismissed') !== '1'"
+             x-show="shown"
+             class="relative w-full"
+             style="background-color: {{ $themeSettings->announcement_bg }}; color: {{ $themeSettings->announcement_text_color }};">
+            <div class="mx-auto flex min-h-11 max-w-7xl items-center justify-center px-12 py-1.5">
+                <p class="text-center text-[13px] font-medium">{{ $themeSettings->announcementText(app()->getLocale()) }}</p>
+            </div>
+            <button type="button"
+                    x-on:click="shown = false; sessionStorage.setItem('hb-announcement-dismissed', '1')"
+                    class="absolute inset-y-0 right-1 my-auto flex size-11 items-center justify-center rounded-lg opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+                    aria-label="{{ __('Dismiss announcement') }}">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    @endif
+
     {{-- ===== Ink header ===== --}}
     <header class="sticky top-0 z-40 bg-ink" style="border-bottom: 1px solid var(--color-emerald-night);">
         <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:gap-6">
@@ -61,6 +81,11 @@
                           x-text="$store.cart.count"></span>
                 </button>
 
+                {{-- Notifications --}}
+                @auth
+                    <livewire:notification-bell context="storefront" />
+                @endauth
+
                 {{-- Account --}}
                 @auth
                     <div class="relative" x-data="{ open: false }" x-on:keydown.escape.window="open = false">
@@ -75,6 +100,7 @@
                             </div>
                             <a href="{{ route('account.profile') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('My account') }}</a>
                             <a href="{{ route('account.orders') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('My orders') }}</a>
+                            <a href="{{ route('account.messages') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('Messages') }}</a>
                             <a href="{{ route('account.wishlist') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('Wishlist') }}</a>
                             @if (auth()->user()->store?->isApproved())
                                 <a href="{{ route('seller.dashboard') }}" class="block px-4 py-2 text-sm hover:bg-paper">{{ __('Seller centre') }}</a>
@@ -130,6 +156,7 @@
             <div>
                 <p class="text-[11px] font-semibold uppercase tracking-[0.04em] text-paper/64">{{ __('Help') }}</p>
                 <ul class="mt-3 space-y-2 text-sm">
+                    <li><a href="{{ route('help.index') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Help centre') }}</a></li>
                     <li><a href="{{ route('page.show', 'faq') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('FAQ') }}</a></li>
                     <li><a href="{{ route('page.show', 'refund-policy') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Refund policy') }}</a></li>
                     <li><a href="{{ route('seller.apply') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Become a seller') }}</a></li>

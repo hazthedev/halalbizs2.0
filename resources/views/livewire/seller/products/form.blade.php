@@ -174,6 +174,44 @@
             <div wire:loading wire:target="newImages" class="mt-2 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
             @error('newImages')<p class="mt-2 text-[13px] text-danger">{{ $message }}</p>@enderror
             @error('newImages.*')<p class="mt-2 text-[13px] text-danger">{{ $message }}</p>@enderror
+
+            {{-- ── Video (1 optional clip, shown in the PDP gallery) ──── --}}
+            <div class="mt-6 border-t border-line pt-4">
+                <h3 class="text-sm font-semibold text-ink">{{ __('Video') }}</h3>
+                <p class="mt-1 text-[13px] text-ink-soft">{{ __('1 video, optional, max 30MB. MP4 or WebM — buyers play it from the product gallery.') }}</p>
+
+                @if ($newVideo !== null)
+                    <div class="mt-3 flex flex-wrap items-center gap-3">
+                        @if ($newVideo->isPreviewable())
+                            <video src="{{ $newVideo->temporaryUrl() }}" controls preload="metadata" class="h-28 rounded-lg border border-line bg-paper"></video>
+                        @else
+                            <span class="text-[13px] font-medium text-ink">{{ $newVideo->getClientOriginalName() }}</span>
+                        @endif
+                        <button type="button" wire:click="removeNewVideo"
+                                class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
+                            {{ __('Remove video') }}
+                        </button>
+                    </div>
+                @elseif ($existingVideo !== null)
+                    <div class="mt-3 flex flex-wrap items-center gap-3">
+                        <video src="{{ $existingVideo->getUrl() }}" controls preload="metadata" class="h-28 rounded-lg border border-line bg-paper"></video>
+                        <button type="button" wire:click="removeExistingVideo"
+                                wire:confirm="{{ __('Remove this video from the product?') }}"
+                                class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
+                            {{ __('Remove video') }}
+                        </button>
+                    </div>
+                @else
+                    <label class="mt-3 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-line-strong px-4 text-[13px] font-medium text-ink-soft hover:border-ink hover:text-ink">
+                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
+                        {{ __('Add a video') }}
+                        <input type="file" wire:model="newVideo" accept="video/mp4,video/webm" class="sr-only">
+                    </label>
+                @endif
+
+                <div wire:loading wire:target="newVideo" class="mt-2 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                @error('newVideo')<p class="mt-2 text-[13px] text-danger">{{ $message }}</p>@enderror
+            </div>
         </x-ui.card>
 
         {{-- ── Variations ─────────────────────────────────────────── --}}

@@ -6,6 +6,7 @@ use App\Livewire\Admin\Content\Banners;
 use App\Livewire\Admin\Content\HomeSections;
 use App\Livewire\Admin\Content\Pages;
 use App\Livewire\Admin\Content\Vouchers;
+use App\Livewire\Storefront\Home;
 use App\Models\Banner;
 use App\Models\HomeSection;
 use App\Models\Page;
@@ -22,7 +23,7 @@ function contentAdmin(): User
 {
     test()->seed(RoleSeeder::class);
 
-    $user = User::factory()->create();
+    $user = User::factory()->create(['two_factor_method' => 'email']); // admins need 2FA (EnsureAdmin)
     $user->assignRole('admin');
 
     return $user;
@@ -54,6 +55,44 @@ test('admin creates a banner with image, schedule, and translations', function (
         ->and($banner->ends_at->format('Y-m-d H:i'))->toBe('2026-06-30 23:59')
         ->and($banner->is_active)->toBeTrue()
         ->and($banner->getFirstMedia('image'))->not->toBeNull();
+});
+
+test('a banner video saves and renders as an autoplaying slide on the home page', function () {
+    Storage::fake('public');
+
+    Livewire::actingAs(contentAdmin())
+        ->test(Banners::class)
+        ->call('create')
+        ->set('title.en', 'Moving Raya')
+        ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
+        ->set('video', UploadedFile::fake()->create('promo.mp4', 2048, 'video/mp4'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $banner = Banner::sole();
+
+    expect($banner->getFirstMedia('video'))->not->toBeNull();
+
+    HomeSection::create(['type' => 'banner', 'title' => ['en' => 'Promos'], 'position' => 0, 'is_active' => true]);
+
+    Livewire::test(Home::class)
+        ->assertSee('autoplay muted loop playsinline', false)
+        ->assertSee($banner->getFirstMediaUrl('video'), false);
+});
+
+test('a banner video must be MP4 or WebM', function () {
+    Storage::fake('public');
+
+    Livewire::actingAs(contentAdmin())
+        ->test(Banners::class)
+        ->call('create')
+        ->set('title.en', 'Bad Video Banner')
+        ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
+        ->set('video', UploadedFile::fake()->create('clip.avi', 1024, 'video/x-msvideo'))
+        ->call('save')
+        ->assertHasErrors(['video' => 'mimetypes']);
+
+    expect(Banner::count())->toBe(0);
 });
 
 test('banner image is required on create but not on edit', function () {

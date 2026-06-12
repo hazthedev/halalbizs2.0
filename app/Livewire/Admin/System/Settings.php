@@ -48,12 +48,22 @@ class Settings extends Component
     // ── Moderation ─────────────────────────────────────────────────────
     public bool $requireProductApproval = false;
 
-    // ── Security (Turnstile) ───────────────────────────────────────────
+    // ── Security (Turnstile + Google OAuth + SMS) ──────────────────────
     public string $turnstileSiteKey = '';
 
     public string $turnstileSecret = '';
 
     public bool $turnstileSecretSet = false;
+
+    public string $googleClientId = '';
+
+    public string $googleClientSecret = '';
+
+    public bool $googleClientSecretSet = false;
+
+    public string $smsProviderKey = '';
+
+    public bool $smsProviderKeySet = false;
 
     // ── Tracking pixels ────────────────────────────────────────────────
     public string $ga4Id = '';
@@ -92,6 +102,9 @@ class Settings extends Component
         $security = app(SecuritySettings::class);
         $this->turnstileSiteKey = $security->turnstile_site_key;
         $this->turnstileSecretSet = $security->turnstile_secret !== '';
+        $this->googleClientId = $security->google_client_id;
+        $this->googleClientSecretSet = $security->google_client_secret !== '';
+        $this->smsProviderKeySet = $security->sms_provider_key !== '';
 
         $tracking = app(TrackingSettings::class);
         $this->ga4Id = $tracking->ga4_id;
@@ -182,20 +195,36 @@ class Settings extends Component
         $this->validate([
             'turnstileSiteKey' => ['nullable', 'string', 'max:255'],
             'turnstileSecret' => ['nullable', 'string', 'max:255'],
+            'googleClientId' => ['nullable', 'string', 'max:255'],
+            'googleClientSecret' => ['nullable', 'string', 'max:255'],
+            'smsProviderKey' => ['nullable', 'string', 'max:255'],
         ]);
 
         $settings = app(SecuritySettings::class);
         $settings->turnstile_site_key = trim($this->turnstileSiteKey);
+        $settings->google_client_id = trim($this->googleClientId);
 
-        // Write-only secret: blank input keeps the stored value.
+        // Write-only secrets: blank input keeps the stored value.
         if (trim($this->turnstileSecret) !== '') {
             $settings->turnstile_secret = trim($this->turnstileSecret);
+        }
+
+        if (trim($this->googleClientSecret) !== '') {
+            $settings->google_client_secret = trim($this->googleClientSecret);
+        }
+
+        if (trim($this->smsProviderKey) !== '') {
+            $settings->sms_provider_key = trim($this->smsProviderKey);
         }
 
         $settings->save();
 
         $this->turnstileSecret = '';
         $this->turnstileSecretSet = $settings->turnstile_secret !== '';
+        $this->googleClientSecret = '';
+        $this->googleClientSecretSet = $settings->google_client_secret !== '';
+        $this->smsProviderKey = '';
+        $this->smsProviderKeySet = $settings->sms_provider_key !== '';
         $this->dispatch('toast', message: __('Security settings saved'));
     }
 

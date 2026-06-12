@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TwoFactorMethod;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,21 +21,29 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'phone',
+        'phone_verified_at',
         'preferred_locale',
         'preferred_currency',
         'status',
+        'google_id',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_method' => TwoFactorMethod::class,
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
         ];
     }
 
@@ -73,8 +82,49 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Wishlist::class);
     }
 
+    public function otpCodes(): HasMany
+    {
+        return $this->hasMany(OtpCode::class);
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
     public function isSuspended(): bool
     {
         return $this->status === 'suspended';
+    }
+
+    public function hasTwoFactor(): bool
+    {
+        return $this->two_factor_method !== null;
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return $this->phone !== null && $this->phone_verified_at !== null;
+    }
+
+    /**
+     * Burn a recovery code: constant-time match, removed on use (single-use).
+     */
+    public function consumeRecoveryCode(string $code): bool
+    {
+        $codes = $this->two_factor_recovery_codes ?? [];
+        $input = strtoupper(trim($code));
+
+        foreach ($codes as $index => $stored) {
+            if (hash_equals($stored, $input)) {
+                unset($codes[$index]);
+
+                $this->forceFill(['two_factor_recovery_codes' => array_values($codes)])->save();
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -141,6 +141,8 @@
                                     <button type="button" wire:click="duplicate({{ $product->id }})" wire:loading.attr="disabled"
                                             class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Duplicate') }}</button>
                                     @if ($product->status === \App\Enums\ProductStatus::Live)
+                                        <a href="{{ route('seller.boosts', ['product' => $product->id]) }}" wire:navigate
+                                           class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Boost') }}</a>
                                         <button type="button" wire:click="delist({{ $product->id }})"
                                                 class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delist') }}</button>
                                     @elseif ($product->status === \App\Enums\ProductStatus::Delisted)

@@ -1,4 +1,17 @@
 <div class="pb-12 sm:pb-16">
+    {{-- ===== Occasion hero (ThemeSettings + ThemeAsset 'hero') ===== --}}
+    @if ($heroUrl)
+        <section class="relative h-[280px] w-full overflow-hidden bg-ink" aria-label="{{ $occasion !== '' ? $occasion : __('Seasonal highlight') }}">
+            <img src="{{ $heroUrl }}" alt="{{ $occasion !== '' ? $occasion : __('Seasonal highlight') }}" class="absolute inset-0 size-full object-cover">
+            <div class="absolute inset-0 bg-ink/40"></div>
+            @if ($occasion !== '')
+                <div class="relative mx-auto flex h-full max-w-7xl items-end px-4 pb-8">
+                    <h1 class="font-display text-3xl font-bold text-paper sm:text-4xl">{{ $occasion }}</h1>
+                </div>
+            @endif
+        </section>
+    @endif
+
     @foreach ($sections as $row)
         @php
             /** @var \App\Models\HomeSection $section */
@@ -29,16 +42,26 @@
                         >
                             <div class="swiper-wrapper">
                                 @foreach ($data as $banner)
-                                    @php $bannerTitle = $banner->getTranslation('title', app()->getLocale()); @endphp
+                                    @php
+                                        $bannerTitle = $banner->getTranslation('title', app()->getLocale());
+                                        $bannerVideo = $banner->getFirstMediaUrl('video');
+                                    @endphp
                                     <div class="swiper-slide">
                                         @if ($banner->link_url)
                                             <a href="{{ $banner->link_url }}" @if (str_starts_with($banner->link_url, '/')) wire:navigate @endif>
+                                        @endif
+                                            @if ($bannerVideo)
+                                                <video autoplay muted loop playsinline
+                                                       src="{{ $bannerVideo }}"
+                                                       poster="{{ $banner->getFirstMediaUrl('image', 'card') }}"
+                                                       aria-label="{{ $bannerTitle }}"
+                                                       class="aspect-[3/1] w-full bg-paper object-cover"></video>
+                                            @else
                                                 <img src="{{ $banner->getFirstMediaUrl('image', 'card') }}" alt="{{ $bannerTitle }}"
                                                      class="aspect-[3/1] w-full bg-paper object-cover" @if (! $loop->first) loading="lazy" @endif>
+                                            @endif
+                                        @if ($banner->link_url)
                                             </a>
-                                        @else
-                                            <img src="{{ $banner->getFirstMediaUrl('image', 'card') }}" alt="{{ $bannerTitle }}"
-                                                 class="aspect-[3/1] w-full bg-paper object-cover" @if (! $loop->first) loading="lazy" @endif>
                                         @endif
                                     </div>
                                 @endforeach
@@ -103,7 +126,7 @@
                     <div class="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mt-6">
                         @foreach ($data as $product)
                             <div class="w-40 shrink-0 snap-start sm:w-48" wire:key="carousel-{{ $section->id }}-{{ $product->id }}">
-                                <x-product-card :product="$product" :wishlisted="in_array($product->id, $wishlistedIds)" />
+                                <x-product-card :product="$product" :wishlisted="in_array($product->id, $wishlistedIds)" :sponsored="(bool) ($product->sponsored ?? false)" />
                             </div>
                         @endforeach
                     </div>
@@ -126,7 +149,7 @@
                     <div class="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
                         @foreach ($data as $product)
                             <div wire:key="grid-{{ $section->id }}-{{ $product->id }}">
-                                <x-product-card :product="$product" :wishlisted="in_array($product->id, $wishlistedIds)" />
+                                <x-product-card :product="$product" :wishlisted="in_array($product->id, $wishlistedIds)" :sponsored="(bool) ($product->sponsored ?? false)" />
                             </div>
                         @endforeach
                     </div>

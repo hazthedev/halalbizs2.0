@@ -47,6 +47,10 @@
             </x-ui.button>
         </form>
 
+        <div class="mt-5">
+            <x-google-button />
+        </div>
+
         <p class="mt-6 border-t border-line pt-5 text-center text-sm text-ink-soft">
             {{ __('New here?') }}
             <a href="{{ route('register') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Create an account') }}</a>

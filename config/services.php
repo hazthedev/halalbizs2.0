@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    // Populated at runtime from SecuritySettings (admin panel), not env —
+    // see GoogleAuthController::configureGoogle().
+    'google' => [
+        'client_id' => null,
+        'client_secret' => null,
+        'redirect' => null,
+    ],
+
 ];

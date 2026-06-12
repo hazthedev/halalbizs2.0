@@ -77,15 +77,29 @@
             </form>
         </x-ui.card>
 
-        {{-- ── Security (Turnstile) ──────────────────────────────────── --}}
+        {{-- ── Security (Turnstile + Google OAuth + SMS) ─────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveSecurity" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">{{ __('Security — Cloudflare Turnstile') }}</h2>
+                <h2 class="font-display text-lg font-semibold">{{ __('Security') }}</h2>
 
+                <p class="text-[13px] font-medium text-ink-soft">{{ __('Cloudflare Turnstile') }}</p>
                 <x-ui.input :label="__('Site key')" wire:model="turnstileSiteKey" :error="$errors->first('turnstileSiteKey')" />
                 <x-ui.input :label="__('Secret key')" type="password" wire:model="turnstileSecret" autocomplete="new-password"
                             :placeholder="$turnstileSecretSet ? __('•••••••• (configured — leave blank to keep)') : __('Paste the secret key')"
                             :error="$errors->first('turnstileSecret')" />
+
+                <p class="border-t border-line pt-4 text-[13px] font-medium text-ink-soft">{{ __('Google sign-in') }}</p>
+                <x-ui.input :label="__('Client ID')" wire:model="googleClientId" :error="$errors->first('googleClientId')" />
+                <x-ui.input :label="__('Client secret')" type="password" wire:model="googleClientSecret" autocomplete="new-password"
+                            :placeholder="$googleClientSecretSet ? __('•••••••• (configured — leave blank to keep)') : __('Paste the client secret')"
+                            :error="$errors->first('googleClientSecret')" />
+                <p class="text-[13px] text-ink-faint">{{ __('The "Continue with Google" button appears on login and register once both values are set.') }}</p>
+
+                <p class="border-t border-line pt-4 text-[13px] font-medium text-ink-soft">{{ __('SMS gateway') }}</p>
+                <x-ui.input :label="__('Provider API key')" type="password" wire:model="smsProviderKey" autocomplete="new-password"
+                            :placeholder="$smsProviderKeySet ? __('•••••••• (configured — leave blank to keep)') : __('Paste the provider API key')"
+                            :error="$errors->first('smsProviderKey')" />
+                <p class="text-[13px] text-ink-faint">{{ __('Stored for the production SMS driver. Locally, codes are written to the log instead of sent.') }}</p>
 
                 <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="saveSecurity">{{ __('Save security') }}</x-ui.button>
             </form>

@@ -41,6 +41,7 @@ class Store extends Model implements HasMedia
             'approved_at' => 'datetime',
             'commission_rate' => 'decimal:2',
             'rating_avg' => 'decimal:2',
+            'service_rating_avg' => 'decimal:2',
             'shipping_flat_fee_sen' => 'integer',
             'shipping_matrix' => 'array',
             'free_shipping_over_sen' => 'integer',
@@ -135,6 +136,11 @@ class Store extends Model implements HasMedia
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function boosts(): HasMany
+    {
+        return $this->hasMany(ProductBoost::class);
     }
 
     #[Scope]

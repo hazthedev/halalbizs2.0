@@ -63,6 +63,9 @@ class Form extends Component
     /** @var array<int, TemporaryUploadedFile> */
     public array $newImages = [];
 
+    /** One optional product video (mp4/webm, ≤30MB) — singleFile collection. */
+    public ?TemporaryUploadedFile $newVideo = null;
+
     // ── Variations ─────────────────────────────────────────────────────
     public bool $hasVariations = false;
 
@@ -274,6 +277,16 @@ class Form extends Component
             ?->delete();
     }
 
+    public function removeNewVideo(): void
+    {
+        $this->newVideo = null;
+    }
+
+    public function removeExistingVideo(): void
+    {
+        $this->loadedProduct()?->clearMediaCollection('videos');
+    }
+
     public function moveMedia(int $mediaId, int $direction): void
     {
         $product = $this->loadedProduct();
@@ -328,6 +341,7 @@ class Form extends Component
             'brands' => Brand::query()->where('is_active', true)->orderBy('name')->get(),
             'conditions' => ProductCondition::cases(),
             'existingMedia' => $this->loadedProduct()?->media()->where('collection_name', 'images')->orderBy('order_column')->get() ?? collect(),
+            'existingVideo' => $this->loadedProduct()?->getFirstMedia('videos'),
             'requireApproval' => app(ModerationSettings::class)->require_product_approval,
             'maxImages' => self::MAX_IMAGES,
         ])->title($editing ? __('Edit product') : __('Add product'));
@@ -374,6 +388,13 @@ class Form extends Component
                 $product->addMedia($file->getRealPath())
                     ->usingFileName($file->getClientOriginalName())
                     ->toMediaCollection('images');
+            }
+
+            if ($this->newVideo !== null) {
+                // singleFile collection — replaces any previous video.
+                $product->addMedia($this->newVideo->getRealPath())
+                    ->usingFileName($this->newVideo->getClientOriginalName())
+                    ->toMediaCollection('videos');
             }
 
             return $product;
@@ -608,14 +629,19 @@ class Form extends Component
             'condition' => ['required', Rule::enum(ProductCondition::class)],
             'newImages' => ['array', 'max:'.self::MAX_IMAGES],
             'newImages.*' => ['image', 'max:4096'],
+            'newVideo' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm', 'max:30720'],
             'matrixImages.*' => ['nullable', 'image', 'max:4096'],
             'weightGrams' => ['nullable', 'integer', 'min:0'],
             'lengthMm' => ['nullable', 'integer', 'min:0'],
             'widthMm' => ['nullable', 'integer', 'min:0'],
             'heightMm' => ['nullable', 'integer', 'min:0'],
-        ], attributes: [
+        ], [
+            'newVideo.mimetypes' => __('The video must be an MP4 or WebM file.'),
+            'newVideo.max' => __('The video must be 30MB or smaller.'),
+        ], [
             'name.en' => __('product name (English)'),
             'newImages.*' => __('image'),
+            'newVideo' => __('video'),
         ]);
 
         $this->validateCategory();

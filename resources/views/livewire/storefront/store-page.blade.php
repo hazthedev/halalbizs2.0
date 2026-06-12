@@ -37,6 +37,10 @@
                             <span><span aria-hidden="true">★</span> <span class="tnum">{{ number_format((float) $store->rating_avg, 1) }} ({{ number_format($store->rating_count) }})</span></span>
                             <span aria-hidden="true">·</span>
                         @endif
+                        @if ($store->service_rating_count > 0)
+                            <span>{{ __('Seller service') }} <span aria-hidden="true">★</span><span class="tnum">{{ number_format((float) $store->service_rating_avg, 1) }} ({{ number_format($store->service_rating_count) }})</span></span>
+                            <span aria-hidden="true">·</span>
+                        @endif
                         <span>{{ __('Joined :date', ['date' => $store->created_at->translatedFormat('M Y')]) }}</span>
                         @if ($store->state)
                             <span aria-hidden="true">·</span>

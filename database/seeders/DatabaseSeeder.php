@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             CategorySeeder::class,
             PageSeeder::class,
+            HelpArticleSeeder::class,
             ReasonSeeder::class,
             HomeSectionSeeder::class,
         ]);

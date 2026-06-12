@@ -106,6 +106,44 @@
                     </div>
                 @endforeach
 
+                {{-- Seller SERVICE rating — once per sub-order, saved with the
+                     first item review you post (never duplicated). --}}
+                @if (! $sellerRated)
+                    <div class="rounded-[10px] border border-line bg-surface p-4">
+                        <fieldset>
+                            <legend class="text-[13px] font-medium text-ink">
+                                {{ __("Rate the seller's service") }} <span class="font-normal text-ink-faint">{{ __('(optional)') }}</span>
+                            </legend>
+                            <div class="-ml-2 mt-0.5 flex">
+                                @foreach (range(1, 5) as $star)
+                                    <label wire:key="seller-star-{{ $star }}" class="flex size-11 cursor-pointer items-center justify-center">
+                                        <input type="radio" value="{{ $star }}"
+                                               name="seller-rating-{{ $subOrder->id }}"
+                                               wire:model.live="sellerRating"
+                                               class="peer sr-only">
+                                        <span aria-hidden="true"
+                                              class="rounded text-[26px] leading-none transition-colors duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald peer-focus-visible:ring-offset-2 {{ (int) ($sellerRating ?? 0) >= $star ? 'text-warn' : 'text-line' }}">★</span>
+                                        <span class="sr-only">{{ trans_choice('{1}:count star|[2,*]:count stars', $star, ['count' => $star]) }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('sellerRating')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
+                        </fieldset>
+
+                        <div class="mt-3">
+                            <label for="seller-comment-{{ $subOrder->id }}" class="block text-[13px] font-medium text-ink">
+                                {{ __('About the service') }} <span class="font-normal text-ink-faint">{{ __('(optional)') }}</span>
+                            </label>
+                            <input id="seller-comment-{{ $subOrder->id }}" type="text" maxlength="500"
+                                   wire:model="sellerComment"
+                                   placeholder="{{ __('Fast replies? Careful packing?') }}"
+                                   class="mt-1 block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('sellerComment') ? 'border-danger' : 'border-line-strong' }}">
+                            @error('sellerComment')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
+                            <p class="mt-1 text-[13px] text-ink-faint">{{ __('Saved together with the next item review you post.') }}</p>
+                        </div>
+                    </div>
+                @endif
+
                 <x-turnstile :error="$errors->first('turnstileToken')" />
             </div>
         @endif

@@ -8,6 +8,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\PayoutStatus;
 use App\Exceptions\CheckoutException;
 use App\Models\Payout;
+use App\Models\Product;
 use App\Models\Store;
 use App\Models\StoreLedgerEntry;
 use App\Models\SubOrder;
@@ -125,6 +126,29 @@ class LedgerService
             ]);
 
             return $payout;
+        });
+    }
+
+    /**
+     * Paid product boost (Phase-4): debits the flat fee from the store's
+     * available balance under a store-row lock so concurrent boosts can't
+     * overdraw. Boost revenue is platform income — the negative entry simply
+     * reduces the seller's balance; nothing is owed back on cancel (v1).
+     *
+     * @throws CheckoutException when the available balance can't cover the fee
+     */
+    public function chargeBoost(Store $store, int $amountSen, Product $product): void
+    {
+        DB::transaction(function () use ($store, $amountSen, $product) {
+            // Serialize concurrent boost charges on the store row.
+            Store::whereKey($store->id)->lockForUpdate()->first();
+
+            if ($this->availableBalanceSen($store) < $amountSen) {
+                throw new CheckoutException(__('Top up your balance first — boosts are paid from your available earnings.'));
+            }
+
+            $this->write($store->id, LedgerEntryType::Boost, -$amountSen, null,
+                __('Boost: :name', ['name' => $product->getTranslation('name', 'en')]));
         });
     }
 

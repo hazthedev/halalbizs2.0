@@ -35,6 +35,16 @@ class ReviewOrder extends Component
     /** @var array<int, array<int, TemporaryUploadedFile>> */
     public array $photos = [];
 
+    /**
+     * Optional seller SERVICE rating — one per sub-order, not per item. The
+     * star row renders once per sub-order panel and the value is saved onto
+     * the FIRST review submitted for this sub-order (so it never counts
+     * twice in the store's service aggregates).
+     */
+    public int|string|null $sellerRating = null;
+
+    public string $sellerComment = '';
+
     public ?string $turnstileToken = null;
 
     public function mount(SubOrder $subOrder): void
@@ -88,6 +98,8 @@ class ReviewOrder extends Component
             "comments.$orderItemId" => ['nullable', 'string', 'min:10', 'max:2000'],
             "photos.$orderItemId" => ['nullable', 'array', 'max:5'],
             "photos.$orderItemId.*" => ['image', 'max:4096'],
+            'sellerRating' => ['nullable', 'integer', 'between:1,5'],
+            'sellerComment' => ['nullable', 'string', 'max:500'],
         ], [
             "ratings.$orderItemId.required" => __('Tap a star to rate this item.'),
             "ratings.$orderItemId.between" => __('Tap a star to rate this item.'),
@@ -95,6 +107,7 @@ class ReviewOrder extends Component
             "photos.$orderItemId.max" => __('Up to 5 photos per review.'),
             "photos.$orderItemId.*.image" => __('Photos must be images (JPG, PNG or WebP).'),
             "photos.$orderItemId.*.max" => __('Each photo must be 4MB or smaller.'),
+            'sellerRating.between' => __('Tap a star to rate the seller.'),
         ]);
 
         if (! app(Turnstile::class)->verify($this->turnstileToken, request()->ip())) {
@@ -105,6 +118,11 @@ class ReviewOrder extends Component
 
         $comment = trim($this->comments[$orderItemId] ?? '');
 
+        // The seller service rating attaches to the FIRST review of this
+        // sub-order only — later item reviews must not duplicate it.
+        $sellerRating = $this->sellerRatingForThisSubmit();
+        $sellerComment = trim($this->sellerComment);
+
         $review = Review::create([
             'order_item_id' => $item->id,
             'product_id' => $item->product_id,
@@ -112,7 +130,13 @@ class ReviewOrder extends Component
             'user_id' => auth()->id(),
             'rating' => (int) $this->ratings[$orderItemId],
             'comment' => $comment !== '' ? $comment : null,
+            'seller_rating' => $sellerRating,
+            'seller_comment' => $sellerRating !== null && $sellerComment !== '' ? $sellerComment : null,
         ]);
+
+        if ($sellerRating !== null) {
+            $this->reset('sellerRating', 'sellerComment');
+        }
 
         foreach ($this->photos[$orderItemId] ?? [] as $photo) {
             $review->addMedia($photo->getRealPath())
@@ -134,6 +158,26 @@ class ReviewOrder extends Component
         return view('livewire.storefront.account.review-order', [
             'items' => $items,
             'pendingCount' => $items->filter(fn (OrderItem $item) => $item->review === null)->count(),
+            'sellerRated' => $this->sellerAlreadyRated(),
         ]);
+    }
+
+    /** Value to store on THIS review — null when empty or already rated. */
+    private function sellerRatingForThisSubmit(): ?int
+    {
+        if ($this->sellerRating === null || $this->sellerRating === '' || $this->sellerAlreadyRated()) {
+            return null;
+        }
+
+        return (int) $this->sellerRating;
+    }
+
+    /** One service rating per sub-order: does any of its reviews carry one? */
+    private function sellerAlreadyRated(): bool
+    {
+        return Review::query()
+            ->whereIn('order_item_id', $this->subOrder->items()->select('id'))
+            ->whereNotNull('seller_rating')
+            ->exists();
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Storefront\Auth;
 
+use App\Enums\TwoFactorMethod;
 use App\Services\CartService;
+use App\Services\OtpService;
 use App\Services\Turnstile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -65,6 +67,26 @@ class Login extends Component
         }
 
         RateLimiter::clear($key);
+
+        // 2FA gate: password alone doesn't log you in. Park the attempt in
+        // the session and finish on the challenge screen.
+        if ($user->hasTwoFactor()) {
+            Auth::logout();
+
+            session()->put([
+                'two_factor:user_id' => $user->id,
+                'two_factor:remember' => $this->remember,
+            ]);
+
+            if ($user->two_factor_method === TwoFactorMethod::Email) {
+                app(OtpService::class)->issue($user, OtpService::PURPOSE_2FA_EMAIL);
+            }
+
+            $this->redirectRoute('two-factor.challenge', navigate: true);
+
+            return;
+        }
+
         session()->regenerate();
 
         app(CartService::class)->mergeSessionCart($user);

@@ -237,9 +237,17 @@
                 {{-- Items — snapshot fields only (hard rule 5); thumbs from live product if it still exists --}}
                 <x-ui.card class="overflow-hidden">
                     <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
-                        <a href="{{ $subOrder->store->subdomainUrl() }}"
-                           class="text-sm font-semibold text-ink hover:text-emerald">{{ $subOrder->store->name }}</a>
-                        <span class="text-xs text-ink-soft">{{ trans_choice('{1}:count item|[2,*]:count items', $subOrder->items->count(), ['count' => $subOrder->items->count()]) }}</span>
+                        <div class="flex min-w-0 flex-wrap items-center gap-x-2">
+                            <a href="{{ $subOrder->store->subdomainUrl() }}"
+                               class="truncate text-sm font-semibold text-ink hover:text-emerald">{{ $subOrder->store->name }}</a>
+                            <a href="{{ route('account.messages', ['store' => $subOrder->store_id]) }}" wire:navigate
+                               data-testid="order-chat-seller"
+                               class="inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-[13px] font-medium text-ink-soft transition-colors duration-150 hover:text-ink">
+                                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
+                                {{ __('Chat with seller') }}
+                            </a>
+                        </div>
+                        <span class="shrink-0 text-xs text-ink-soft">{{ trans_choice('{1}:count item|[2,*]:count items', $subOrder->items->count(), ['count' => $subOrder->items->count()]) }}</span>
                     </div>
                     <ul class="divide-y divide-line">
                         @foreach ($subOrder->items as $item)

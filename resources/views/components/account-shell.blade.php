@@ -5,6 +5,7 @@ $items = [
     'profile' => ['label' => __('Profile'), 'href' => route('account.profile')],
     'addresses' => ['label' => __('Addresses'), 'href' => route('account.addresses')],
     'orders' => ['label' => __('Orders'), 'href' => route('account.orders')],
+    'messages' => ['label' => __('Messages'), 'href' => route('account.messages')],
     'wishlist' => ['label' => __('Wishlist'), 'href' => route('account.wishlist')],
     'notifications' => ['label' => __('Notifications'), 'href' => route('account.notifications')],
 ];

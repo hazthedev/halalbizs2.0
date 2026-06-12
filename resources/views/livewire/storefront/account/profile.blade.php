@@ -116,6 +116,209 @@
             </form>
         </x-ui.card>
 
+        {{-- Security: 2FA + phone verification --}}
+        <x-ui.card class="p-6" id="security">
+            <h2 class="font-display text-xl font-semibold">{{ __('Security') }}</h2>
+
+            {{-- ── Two-factor authentication ─────────────────────────── --}}
+            <div class="mt-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-ink">{{ __('Two-factor authentication') }}</p>
+                        <p class="mt-0.5 max-w-md text-[13px] text-ink-soft">{{ __('A second code at login keeps your account safe even if your password leaks.') }}</p>
+                    </div>
+                    @if (auth()->user()->hasTwoFactor())
+                        <x-ui.badge variant="verified">
+                            <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                            {{ auth()->user()->two_factor_method->label() }}
+                        </x-ui.badge>
+                    @else
+                        <x-ui.badge variant="neutral">{{ __('Off') }}</x-ui.badge>
+                    @endif
+                </div>
+
+                {{-- Fresh recovery codes — shown exactly once --}}
+                @if ($freshRecoveryCodes !== null)
+                    @php($recoveryCopyText = implode("\n", $freshRecoveryCodes))
+                    <div class="mt-4 rounded-lg border border-line bg-paper p-4">
+                        <p class="text-sm font-semibold text-ink">{{ __('Your recovery codes') }}</p>
+                        <p class="mt-0.5 text-[13px] text-ink-soft">{{ __('Save these somewhere safe — each works once, and this is the only time we show them.') }}</p>
+                        <ul class="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 font-mono text-[13px] text-ink sm:grid-cols-3">
+                            @foreach ($freshRecoveryCodes as $recoveryCode)
+                                <li class="select-all">{{ $recoveryCode }}</li>
+                            @endforeach
+                        </ul>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <x-ui.button variant="secondary" type="button"
+                                         x-data="{ copied: false }"
+                                         x-on:click="navigator.clipboard.writeText(@js($recoveryCopyText)); copied = true; setTimeout(() => copied = false, 2000)">
+                                <span x-show="!copied">{{ __('Copy all') }}</span>
+                                <span x-show="copied" x-cloak>{{ __('Copied') }}</span>
+                            </x-ui.button>
+                            <x-ui.button variant="ghost" wire:click="dismissRecoveryCodes">{{ __('I\'ve saved these') }}</x-ui.button>
+                        </div>
+                    </div>
+                @endif
+
+                @if (! auth()->user()->hasTwoFactor())
+                    @if (! $emailSetupPending && $totpSecret === null)
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <x-ui.button variant="secondary" wire:click="startEmailTwoFactor" wire:loading.attr="disabled" wire:target="startEmailTwoFactor">
+                                {{ __('Use email codes') }}
+                            </x-ui.button>
+                            <x-ui.button variant="secondary" wire:click="startTotpSetup" wire:loading.attr="disabled" wire:target="startTotpSetup">
+                                {{ __('Use an authenticator app') }}
+                            </x-ui.button>
+                        </div>
+                    @endif
+
+                    {{-- Email-code setup --}}
+                    @if ($emailSetupPending)
+                        <form wire:submit="confirmEmailTwoFactor" class="mt-4 space-y-4 rounded-lg border border-line bg-paper p-4">
+                            <p class="text-[13px] text-ink-soft">{{ __('We\'ve emailed you a 6-digit code — enter it below to turn on email codes.') }}</p>
+
+                            <x-ui.input
+                                :label="__('6-digit code')"
+                                name="email_setup_code"
+                                inputmode="numeric"
+                                maxlength="6"
+                                wire:model="email_setup_code"
+                                autocomplete="one-time-code"
+                                placeholder="123456"
+                                class="max-w-[12rem] [&_input]:font-mono [&_input]:tracking-[0.3em]"
+                                :error="$errors->first('email_setup_code')"
+                            />
+
+                            <div class="flex flex-wrap gap-2">
+                                <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="confirmEmailTwoFactor">{{ __('Turn on') }}</x-ui.button>
+                                <x-ui.button variant="ghost" wire:click="startEmailTwoFactor" wire:loading.attr="disabled" wire:target="startEmailTwoFactor">{{ __('Resend code') }}</x-ui.button>
+                                <x-ui.button variant="ghost" wire:click="cancelTwoFactorSetup">{{ __('Cancel') }}</x-ui.button>
+                            </div>
+                        </form>
+                    @endif
+
+                    {{-- Authenticator (TOTP) setup --}}
+                    @if ($totpSecret !== null)
+                        <form wire:submit="confirmTotpSetup" class="mt-4 space-y-4 rounded-lg border border-line bg-paper p-4">
+                            <p class="text-[13px] text-ink-soft">{{ __('Add HalalBizs to your authenticator app (Google Authenticator, 1Password, Aegis…) by entering this secret, then confirm with the current code.') }}</p>
+
+                            <div>
+                                <span class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Secret key') }}</span>
+                                <p class="select-all break-all rounded-lg border border-line bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink">{{ $totpSecret }}</p>
+                            </div>
+
+                            <div>
+                                <span class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Setup link (otpauth)') }}</span>
+                                <p class="select-all break-all rounded-lg border border-line bg-surface px-3.5 py-2.5 font-mono text-[12px] text-ink-soft">{{ $otpauthUri }}</p>
+                                <button type="button"
+                                        x-data="{ copied: false }"
+                                        x-on:click="navigator.clipboard.writeText(@js($otpauthUri)); copied = true; setTimeout(() => copied = false, 2000)"
+                                        class="mt-1.5 min-h-11 text-[13px] font-medium text-emerald hover:text-emerald-deep">
+                                    <span x-show="!copied">{{ __('Copy setup link') }}</span>
+                                    <span x-show="copied" x-cloak>{{ __('Copied') }}</span>
+                                </button>
+                            </div>
+
+                            <x-ui.input
+                                :label="__('Code from your app')"
+                                name="totp_setup_code"
+                                inputmode="numeric"
+                                maxlength="6"
+                                wire:model="totp_setup_code"
+                                autocomplete="one-time-code"
+                                placeholder="123456"
+                                class="max-w-[12rem] [&_input]:font-mono [&_input]:tracking-[0.3em]"
+                                :error="$errors->first('totp_setup_code')"
+                            />
+
+                            <div class="flex flex-wrap gap-2">
+                                <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="confirmTotpSetup">{{ __('Turn on') }}</x-ui.button>
+                                <x-ui.button variant="ghost" wire:click="cancelTwoFactorSetup">{{ __('Cancel') }}</x-ui.button>
+                            </div>
+                        </form>
+                    @endif
+                @else
+                    <div class="mt-4 space-y-4">
+                        @if (auth()->user()->two_factor_method === \App\Enums\TwoFactorMethod::Totp)
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <p class="text-[13px] text-ink-soft">{{ __('Lost your recovery codes? Generate a fresh set — the old ones stop working.') }}</p>
+                                <x-ui.button variant="secondary" wire:click="regenerateRecoveryCodes" wire:loading.attr="disabled" wire:target="regenerateRecoveryCodes">
+                                    {{ __('Regenerate recovery codes') }}
+                                </x-ui.button>
+                            </div>
+                        @endif
+
+                        <form wire:submit="disableTwoFactor" class="flex flex-wrap items-end gap-3">
+                            <x-ui.input
+                                :label="__('Confirm your password to turn off')"
+                                name="disable_password"
+                                type="password"
+                                wire:model="disable_password"
+                                autocomplete="current-password"
+                                required
+                                class="w-full max-w-xs"
+                                :error="$errors->first('disable_password')"
+                            />
+                            <x-ui.button type="submit" variant="danger" wire:loading.attr="disabled" wire:target="disableTwoFactor">
+                                {{ __('Turn off 2FA') }}
+                            </x-ui.button>
+                        </form>
+                    </div>
+                @endif
+            </div>
+
+            {{-- ── Phone verification ─────────────────────────────────── --}}
+            <div class="mt-6 border-t border-line pt-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-ink">{{ __('Phone number') }}</p>
+                        <p class="mt-0.5 max-w-md text-[13px] text-ink-soft">{{ __('A verified number helps couriers and sellers reach you about deliveries.') }}</p>
+                    </div>
+                    @if (auth()->user()->hasVerifiedPhone())
+                        <x-ui.badge variant="verified">
+                            <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                            {{ __('Verified') }}
+                        </x-ui.badge>
+                    @else
+                        <x-ui.badge variant="neutral">{{ __('Not verified') }}</x-ui.badge>
+                    @endif
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-end gap-3">
+                    <x-ui.input
+                        :label="__('Malaysian mobile number')"
+                        name="verify_phone"
+                        type="tel"
+                        wire:model="verify_phone"
+                        autocomplete="tel"
+                        placeholder="012-345 6789"
+                        class="w-full max-w-xs"
+                        :error="$errors->first('verify_phone')"
+                    />
+                    <x-ui.button variant="secondary" wire:click="sendPhoneCode" wire:loading.attr="disabled" wire:target="sendPhoneCode">
+                        {{ auth()->user()->hasVerifiedPhone() ? __('Re-verify') : __('Send code') }}
+                    </x-ui.button>
+                </div>
+
+                @if ($phoneOtpPending)
+                    <form wire:submit="confirmPhoneCode" class="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-line bg-paper p-4">
+                        <x-ui.input
+                            :label="__('Code from the SMS')"
+                            name="phone_otp_code"
+                            inputmode="numeric"
+                            maxlength="6"
+                            wire:model="phone_otp_code"
+                            autocomplete="one-time-code"
+                            placeholder="123456"
+                            class="w-full max-w-[12rem] [&_input]:font-mono [&_input]:tracking-[0.3em]"
+                            :error="$errors->first('phone_otp_code')"
+                        />
+                        <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="confirmPhoneCode">{{ __('Verify phone') }}</x-ui.button>
+                    </form>
+                @endif
+            </div>
+        </x-ui.card>
+
         {{-- Privacy (PDPA) --}}
         <x-ui.card class="p-6">
             <h2 class="font-display text-xl font-semibold">{{ __('Privacy') }}</h2>

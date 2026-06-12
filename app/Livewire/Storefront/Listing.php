@@ -2,13 +2,17 @@
 
 namespace App\Livewire\Storefront;
 
+use App\Enums\BoostStatus;
 use App\Livewire\Concerns\InteractsWithCart;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductBoost;
 use App\Models\ProductVariant;
 use App\Models\SearchLog;
 use App\Models\Store;
+use App\Settings\BoostSettings;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -25,6 +29,9 @@ class Listing extends Component
     use InteractsWithCart;
 
     public const PER_PAGE = 24;
+
+    /** Paid placements pinned above the organic results (page 1). */
+    public const SPONSORED_SLOTS = 4;
 
     public const SORTS = ['relevance', 'latest', 'top', 'price_asc', 'price_desc'];
 
@@ -116,14 +123,21 @@ class Listing extends Component
 
     public function render()
     {
+        $sponsored = $this->sponsoredProducts();
+
         $query = $this->results();
-        $total = (clone $query)->count();
+        $total = (clone $query)->count(); // sponsored products match the scope, so they count
+
+        if ($sponsored->isNotEmpty()) {
+            // Dedupe: pinned sponsored cards never repeat in the organic grid.
+            $query->whereNotIn('products.id', $sponsored->modelKeys());
+        }
 
         return view('livewire.storefront.listing', [
             'isSearch' => $this->isSearch(),
-            'products' => $query->take($this->perPage)->get(),
+            'products' => $sponsored->concat($query->take($this->perPage)->get()),
             'total' => $total,
-            'hasMore' => $total > $this->perPage,
+            'hasMore' => ($total - $sponsored->count()) > $this->perPage,
             'effectiveSort' => $this->effectiveSort(),
             'breadcrumbs' => $this->breadcrumbs(),
             'children' => $this->rootCategory?->children()->where('is_active', true)->get() ?? collect(),
@@ -154,6 +168,41 @@ class Listing extends Component
 
     /** Filtered + sorted query for the current entry (search or category). */
     private function results(): Builder
+    {
+        return $this->applySort($this->filteredQuery());
+    }
+
+    /**
+     * Up to 4 actively boosted products matching the current scope (category
+     * tree or search result set + every applied filter), newest boost first.
+     * They render pinned at the top of page 1 with the Sponsored label and
+     * are excluded from the organic grid so no card appears twice.
+     *
+     * @return EloquentCollection<int, Product>
+     */
+    private function sponsoredProducts(): EloquentCollection
+    {
+        if (! app(BoostSettings::class)->enabled) {
+            return new EloquentCollection;
+        }
+
+        $latestBoostStart = ProductBoost::select('starts_at')
+            ->whereColumn('product_id', 'products.id')
+            ->where('status', BoostStatus::Active)
+            ->orderByDesc('starts_at')
+            ->limit(1);
+
+        return $this->filteredQuery()
+            ->whereHas('boosts', fn (Builder $boosts) => $boosts->active())
+            ->orderByDesc($latestBoostStart)
+            ->orderByDesc('products.id')
+            ->take(self::SPONSORED_SLOTS)
+            ->get()
+            ->each(fn (Product $product) => $product->sponsored = true);
+    }
+
+    /** Filtered (unsorted) query for the current entry — shared by organic + sponsored. */
+    private function filteredQuery(): Builder
     {
         $query = Product::query()->live()->with(['media', 'variants', 'store']);
 
@@ -197,7 +246,7 @@ class Listing extends Component
             $query->where('cod_enabled', true);
         }
 
-        return $this->applySort($query);
+        return $query;
     }
 
     private function applySort(Builder $query): Builder

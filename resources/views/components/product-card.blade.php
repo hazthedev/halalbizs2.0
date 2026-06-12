@@ -1,4 +1,4 @@
-@props(['product', 'wishlisted' => false])
+@props(['product', 'wishlisted' => false, 'sponsored' => false])
 
 @php
     $defaultVariant = $product->variants->firstWhere('is_default', true) ?? $product->variants->first();
@@ -16,6 +16,13 @@
         @if ($image)
             <img src="{{ $image }}" alt="{{ $product->getTranslation('name', app()->getLocale()) }}{{ $defaultVariant?->options_label ? ' — '.$defaultVariant->options_label : '' }}"
                  class="size-full object-cover transition-transform duration-150 group-hover:scale-[1.02]" loading="lazy">
+        @endif
+
+        {{-- Paid placement disclosure — deliberately neutral, never emerald --}}
+        @if ($sponsored)
+            <span class="absolute left-2 top-2 z-20 inline-flex items-center rounded-full border border-line bg-surface/90 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-soft">
+                {{ __('Sponsored') }}
+            </span>
         @endif
 
         @auth

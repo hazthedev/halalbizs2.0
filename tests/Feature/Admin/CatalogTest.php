@@ -20,7 +20,7 @@ function catalogAdmin(): User
 {
     (new RoleSeeder)->run();
 
-    $admin = User::factory()->create();
+    $admin = User::factory()->create(['two_factor_method' => 'email']); // admins need 2FA (EnsureAdmin)
     $admin->assignRole('admin');
 
     return $admin;

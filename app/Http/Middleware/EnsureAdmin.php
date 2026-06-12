@@ -18,6 +18,17 @@ class EnsureAdmin
 
         abort_unless($user->hasRole('admin'), 403);
 
+        // Admin accounts must carry 2FA — park them on the profile security
+        // section until it's set up.
+        if (! $user->hasTwoFactor()) {
+            return redirect()
+                ->to(route('account.profile').'#security')
+                ->with('toast', [
+                    'message' => __('Set up two-factor authentication to access the admin panel.'),
+                    'type' => 'error',
+                ]);
+        }
+
         return $next($request);
     }
 }

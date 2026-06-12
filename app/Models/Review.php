@@ -19,13 +19,15 @@ class Review extends Model implements HasMedia
 
     protected $fillable = [
         'order_item_id', 'product_id', 'store_id', 'user_id',
-        'rating', 'comment', 'seller_reply', 'seller_replied_at', 'is_hidden',
+        'rating', 'comment', 'seller_rating', 'seller_comment',
+        'seller_reply', 'seller_replied_at', 'is_hidden',
     ];
 
     protected function casts(): array
     {
         return [
             'rating' => 'integer',
+            'seller_rating' => 'integer',
             'seller_replied_at' => 'datetime',
             'is_hidden' => 'boolean',
         ];

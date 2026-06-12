@@ -7,3 +7,4 @@ Schedule::command('orders:expire-unpaid')->everyMinute();
 Schedule::command('orders:auto-complete')->hourly();
 Schedule::command('sitemap:generate')->dailyAt('03:00');
 Schedule::command('returns:auto-escalate')->hourly();
+Schedule::command('boosts:expire')->hourly();
