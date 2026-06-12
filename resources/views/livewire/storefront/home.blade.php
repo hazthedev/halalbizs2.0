@@ -33,11 +33,11 @@
                                     <div class="swiper-slide">
                                         @if ($banner->link_url)
                                             <a href="{{ $banner->link_url }}" @if (str_starts_with($banner->link_url, '/')) wire:navigate @endif>
-                                                <img src="{{ $banner->getFirstMediaUrl('image') }}" alt="{{ $bannerTitle }}"
+                                                <img src="{{ $banner->getFirstMediaUrl('image', 'card') }}" alt="{{ $bannerTitle }}"
                                                      class="aspect-[3/1] w-full bg-paper object-cover" @if (! $loop->first) loading="lazy" @endif>
                                             </a>
                                         @else
-                                            <img src="{{ $banner->getFirstMediaUrl('image') }}" alt="{{ $bannerTitle }}"
+                                            <img src="{{ $banner->getFirstMediaUrl('image', 'card') }}" alt="{{ $bannerTitle }}"
                                                  class="aspect-[3/1] w-full bg-paper object-cover" @if (! $loop->first) loading="lazy" @endif>
                                         @endif
                                     </div>
@@ -75,7 +75,7 @@
                                wire:key="category-{{ $category->id }}"
                                class="group flex flex-col items-center gap-2 rounded-[10px] border border-line bg-surface p-3 transition-colors duration-150 hover:border-ink">
                                 <span class="block aspect-square w-full overflow-hidden rounded-lg bg-paper">
-                                    @if ($categoryImage = $category->getFirstMediaUrl('image'))
+                                    @if ($categoryImage = $category->getFirstMediaUrl('image', 'thumb'))
                                         <img src="{{ $categoryImage }}" alt="{{ $categoryName }}"
                                              class="size-full object-cover transition-transform duration-150 group-hover:scale-[1.02]" loading="lazy">
                                     @endif

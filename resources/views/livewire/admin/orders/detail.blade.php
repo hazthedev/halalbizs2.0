@@ -51,7 +51,7 @@
                             <tr class="border-b border-line last:border-b-0" wire:key="item-{{ $item->id }}">
                                 <td class="px-4 py-2.5">
                                     <div class="flex items-center gap-3">
-                                        @if ($url = $item->product?->getFirstMediaUrl('images'))
+                                        @if ($url = $item->product?->getFirstMediaUrl('images', 'thumb'))
                                             <img src="{{ $url }}" alt="{{ trim($item->product_name.' '.($item->variant_label ?? '')) }}"
                                                  class="size-10 shrink-0 rounded-lg border border-line bg-paper object-cover">
                                         @else

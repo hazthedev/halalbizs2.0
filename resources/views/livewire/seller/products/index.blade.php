@@ -116,7 +116,7 @@
                             </td>
                             <td class="px-3 py-2">
                                 <a href="{{ route('seller.products.edit', $product) }}" wire:navigate class="flex items-center gap-3">
-                                    @if ($url = $product->getFirstMediaUrl('images'))
+                                    @if ($url = $product->getFirstMediaUrl('images', 'thumb'))
                                         <img src="{{ $url }}" alt="{{ $product->getTranslation('name', 'en') }}" class="size-10 shrink-0 rounded-lg border border-line bg-paper object-cover">
                                     @else
                                         <span class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-line bg-paper text-ink-faint">

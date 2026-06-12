@@ -24,14 +24,14 @@
         <div class="flex-1 overflow-y-auto px-4 py-3">
             @forelse ($groups as $storeId => $lines)
                 <div class="mb-4">
-                    <a href="{{ route('store.show', $lines->first()->variant->product->store->slug) }}" wire:navigate
+                    <a href="{{ $lines->first()->variant->product->store->subdomainUrl() }}"
                        class="mb-2 block text-[13px] font-semibold text-ink">
                         {{ $lines->first()->variant->product->store->name }}
                     </a>
                     <ul class="space-y-3">
                         @foreach ($lines as $line)
                             <li class="flex gap-3" wire:key="mini-line-{{ $line->variant->id }}">
-                                <img src="{{ $line->variant->getFirstMediaUrl('image') ?: $line->variant->product->getFirstMediaUrl('images') }}"
+                                <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
                                      alt="" class="size-16 shrink-0 rounded-lg border border-line object-cover bg-paper">
                                 <div class="min-w-0 flex-1">
                                     <p class="line-clamp-1 text-[13px] font-medium">{{ $line->variant->product->getTranslation('name', app()->getLocale()) }}</p>

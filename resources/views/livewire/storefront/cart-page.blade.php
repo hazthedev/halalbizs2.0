@@ -36,7 +36,7 @@
                                            aria-label="{{ __('Select all items from this seller') }}">
                                 </label>
                             @endauth
-                            <a href="{{ route('store.show', $group->store->slug) }}" wire:navigate
+                            <a href="{{ $group->store->subdomainUrl() }}"
                                class="flex min-h-11 items-center truncate text-sm font-semibold hover:underline">
                                 {{ $group->store->name }}
                             </a>
@@ -62,7 +62,7 @@
                                     @endauth
 
                                     <a href="{{ route('product.show', $line->variant->product->slug) }}" wire:navigate class="shrink-0 self-start">
-                                        <img src="{{ $line->variant->getFirstMediaUrl('image') ?: $line->variant->product->getFirstMediaUrl('images') }}"
+                                        <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
                                              alt="{{ $line->variant->product->getTranslation('name', app()->getLocale()) }} {{ $line->variant->options_label }}"
                                              class="size-20 rounded-[10px] border border-line bg-paper object-cover {{ $line->excluded ? 'opacity-40' : '' }}">
                                     </a>

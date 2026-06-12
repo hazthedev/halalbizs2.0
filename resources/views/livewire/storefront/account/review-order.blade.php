@@ -20,8 +20,8 @@
                     <div wire:key="review-item-{{ $item->id }}" class="rounded-[10px] border border-line bg-surface p-4">
                         <div class="flex items-start gap-3">
                             <span class="block size-12 shrink-0 overflow-hidden rounded-lg border border-line bg-paper">
-                                @if ($item->product?->getFirstMediaUrl('images'))
-                                    <img src="{{ $item->product->getFirstMediaUrl('images') }}"
+                                @if ($item->product?->getFirstMediaUrl('images', 'thumb'))
+                                    <img src="{{ $item->product->getFirstMediaUrl('images', 'thumb') }}"
                                          alt="{{ $item->product_name }}{{ $item->variant_label ? ' — '.$item->variant_label : '' }}"
                                          class="size-full object-cover" loading="lazy">
                                 @endif

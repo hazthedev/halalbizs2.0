@@ -18,5 +18,8 @@ Route::get('/orders/{subOrder}/packing-slip', [InvoiceController::class, 'seller
 Route::get('/vouchers', Seller\Vouchers\Index::class)->name('vouchers.index');
 Route::get('/earnings', Seller\Earnings::class)->name('earnings');
 Route::get('/reviews', Seller\Reviews\Index::class)->name('reviews.index');
+Route::get('/messages', Seller\Messages::class)->name('messages');
+Route::get('/notifications', Seller\Notifications::class)->name('notifications');
+Route::get('/boosts', Seller\Boosts::class)->name('boosts');
 
 Route::get('/settings', Seller\Settings::class)->name('settings');

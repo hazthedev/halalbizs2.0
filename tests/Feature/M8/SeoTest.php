@@ -27,7 +27,7 @@ test('sitemap:generate writes live product and store URLs and excludes drafts', 
 
     expect($xml)->toContain('<urlset')
         ->toContain('/p/'.$live->slug)
-        ->toContain('/s/'.$live->store->slug) // factory stores are approved
+        ->toContain($live->store->slug.'.'.config('app.store_subdomain_base')) // stores live on subdomains
         ->toContain('/c/'.$live->category->slug)
         ->not->toContain('/p/'.$draft->slug);
 });

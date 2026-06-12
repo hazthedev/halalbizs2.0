@@ -11,6 +11,11 @@ export default defineConfig({
         baseURL: 'http://halalbizs2.0.test',
         screenshot: 'only-on-failure',
         trace: 'retain-on-failure',
+        launchOptions: {
+            // Herd's local DNS only resolves exact site names; store
+            // subdomains resolve in-browser via Chromium host mapping.
+            args: ['--host-resolver-rules=MAP *.halalbizs2.0.test 127.0.0.1'],
+        },
     },
     projects: [
         {

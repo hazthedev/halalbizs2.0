@@ -1,7 +1,7 @@
 {{-- Thumb + name + storefront preview link. Pending products 404 publicly;
      the PDP lets admins (and the owner) preview, so the link works while signed in. --}}
 <div class="flex items-center gap-3">
-    @if ($url = $product->getFirstMediaUrl('images'))
+    @if ($url = $product->getFirstMediaUrl('images', 'thumb'))
         <img src="{{ $url }}" alt="{{ $product->getTranslation('name', 'en') }}" class="size-10 shrink-0 rounded-lg border border-line bg-paper object-cover">
     @else
         <span class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-line bg-paper text-ink-faint">

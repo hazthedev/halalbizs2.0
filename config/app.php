@@ -54,6 +54,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Base domain for per-store subdomains ({store-slug}.<base>).
+    'store_subdomain_base' => env('STORE_SUBDOMAIN_BASE', 'halalbizs2.0.test'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

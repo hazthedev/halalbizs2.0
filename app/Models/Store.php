@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\LedgerEntryStatus;
 use App\Enums\StoreStatus;
+use App\Support\ReservedSubdomains;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -56,6 +58,35 @@ class Store extends Model implements HasMedia
     {
         $this->addMediaCollection('logo')->singleFile();
         $this->addMediaCollection('banner')->singleFile();
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')->width(400)->performOnCollections('logo');
+        $this->addMediaConversion('card')->width(1200)->performOnCollections('banner');
+    }
+
+    protected static function booted(): void
+    {
+        // A store slug becomes a public subdomain — never let it shadow a
+        // reserved host (www, admin, …). Registered on creating/updating so
+        // it runs AFTER Sluggable generates the slug on the same events.
+        $guard = function (Store $store) {
+            if ($store->slug !== null && ReservedSubdomains::isReserved($store->slug)) {
+                $store->slug .= '-shop';
+            }
+        };
+
+        static::creating($guard);
+        static::updating($guard);
+    }
+
+    /** Public storefront URL on the store's own subdomain. */
+    public function subdomainUrl(): string
+    {
+        $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?: 'http';
+
+        return "{$scheme}://{$this->slug}.".config('app.store_subdomain_base');
     }
 
     public function getActivitylogOptions(): LogOptions

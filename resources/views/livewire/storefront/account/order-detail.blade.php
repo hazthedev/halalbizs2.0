@@ -237,7 +237,7 @@
                 {{-- Items — snapshot fields only (hard rule 5); thumbs from live product if it still exists --}}
                 <x-ui.card class="overflow-hidden">
                     <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
-                        <a href="{{ route('store.show', $subOrder->store) }}" wire:navigate
+                        <a href="{{ $subOrder->store->subdomainUrl() }}"
                            class="text-sm font-semibold text-ink hover:text-emerald">{{ $subOrder->store->name }}</a>
                         <span class="text-xs text-ink-soft">{{ trans_choice('{1}:count item|[2,*]:count items', $subOrder->items->count(), ['count' => $subOrder->items->count()]) }}</span>
                     </div>
@@ -245,8 +245,8 @@
                         @foreach ($subOrder->items as $item)
                             <li class="flex gap-3 px-4 py-3" wire:key="item-{{ $item->id }}">
                                 <span class="block size-14 shrink-0 overflow-hidden rounded-lg border border-line bg-paper">
-                                    @if ($item->product?->getFirstMediaUrl('images'))
-                                        <img src="{{ $item->product->getFirstMediaUrl('images') }}"
+                                    @if ($item->product?->getFirstMediaUrl('images', 'thumb'))
+                                        <img src="{{ $item->product->getFirstMediaUrl('images', 'thumb') }}"
                                              alt="{{ $item->product_name }}{{ $item->variant_label ? ' — '.$item->variant_label : '' }}"
                                              class="size-full object-cover" loading="lazy">
                                     @endif

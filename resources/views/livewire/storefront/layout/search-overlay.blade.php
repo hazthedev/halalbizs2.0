@@ -70,7 +70,7 @@
                             @foreach ($products as $product)
                                 <a href="{{ route('product.show', $product->slug) }}" wire:navigate x-on:click="close()"
                                    class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-paper">
-                                    <img src="{{ $product->getFirstMediaUrl('images') }}" alt="" class="size-10 rounded-lg border border-line object-cover bg-paper">
+                                    <img src="{{ $product->getFirstMediaUrl('images', 'thumb') }}" alt="" class="size-10 rounded-lg border border-line object-cover bg-paper">
                                     <span class="line-clamp-1 flex-1 text-sm">{{ $product->getTranslation('name', app()->getLocale()) }}</span>
                                     <span class="shrink-0 text-[13px] font-bold tnum">@price($product->variants->map->effectivePriceSen()->min() ?? 0)</span>
                                 </a>
@@ -80,7 +80,7 @@
                         @if ($stores->isNotEmpty())
                             <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Stores') }}</p>
                             @foreach ($stores as $store)
-                                <a href="{{ route('store.show', $store->slug) }}" wire:navigate x-on:click="close()"
+                                <a href="{{ $store->subdomainUrl() }}" x-on:click="close()"
                                    class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-paper">
                                     <img src="{{ $store->getFirstMediaUrl('logo') }}" alt="" class="size-8 rounded-full border border-line object-cover bg-paper">
                                     <span class="flex-1 text-sm">{{ $store->name }}</span>

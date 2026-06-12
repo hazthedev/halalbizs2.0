@@ -62,12 +62,18 @@
                         __('Finance') => [
                             ['admin.finance.commission', __('Commission'), 'admin.finance.commission'],
                             ['admin.finance.payouts', __('Payouts'), 'admin.finance.payouts'],
+                            ['admin.finance.boosts', __('Boosts'), 'admin.finance.boosts'],
                         ],
                         __('Content') => [
                             ['admin.content.banners', __('Banners'), 'admin.content.banners'],
                             ['admin.content.home-sections', __('Home sections'), 'admin.content.home-sections'],
                             ['admin.content.pages', __('Pages'), 'admin.content.pages'],
                             ['admin.content.vouchers', __('Vouchers'), 'admin.content.vouchers'],
+                            ['admin.content.theme', __('Theme'), 'admin.content.theme'],
+                        ],
+                        __('Support') => [
+                            ['admin.support.articles', __('Help articles'), 'admin.support.articles'],
+                            ['admin.support.tickets', __('Tickets'), 'admin.support.tickets'],
                         ],
                         __('System') => [
                             ['admin.localization', __('Localization'), 'admin.localization'],

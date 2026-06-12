@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PaymentStatus;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Ipay88Controller;
 use App\Http\Controllers\NewsletterController;
@@ -13,6 +14,13 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+// ===== Store subdomains ({slug}.halalbizs2.0.test) =====
+// Registered FIRST: the plain '/' route below has no host constraint and
+// would otherwise swallow subdomain requests.
+Route::domain('{store:slug}.'.config('app.store_subdomain_base'))->group(function () {
+    Route::get('/', Storefront\StorePage::class)->name('store.subdomain');
+});
 
 // ===== Storefront =====
 Route::get('/', Storefront\Home::class)->name('home');
@@ -75,9 +83,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/payments/ipay88/response', [Ipay88Controller::class, 'response'])->name('payments.ipay88.response');
 Route::post('/payments/ipay88/backend', [Ipay88Controller::class, 'backend'])->name('payments.ipay88.backend');
 
+// ===== Help center =====
+Route::get('/help', Storefront\Help\Index::class)->name('help.index');
+Route::get('/help/article/{article}', Storefront\Help\Article::class)->name('help.article');
+Route::get('/support', Storefront\Help\Tickets::class)->middleware('auth')->name('help.tickets');
+
+// ===== Two-factor + social auth (M-FE wave 1) =====
+Route::get('/two-factor-challenge', Storefront\Auth\TwoFactorChallenge::class)->name('two-factor.challenge');
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->middleware('guest')->name('auth.google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('guest')->name('auth.google.callback');
+
 // ===== Buyer account =====
 Route::middleware(['auth'])->prefix('account')->name('account.')->group(function () {
     Route::get('/', Storefront\Account\Profile::class)->name('profile');
+    Route::get('/messages', Storefront\Account\Messages::class)->name('messages');
     Route::get('/addresses', Storefront\Account\Addresses::class)->name('addresses');
     Route::get('/wishlist', Storefront\Account\WishlistPage::class)->name('wishlist');
     Route::get('/notifications', Storefront\Account\Notifications::class)->name('notifications');

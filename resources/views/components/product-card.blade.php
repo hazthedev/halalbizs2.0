@@ -4,7 +4,7 @@
     $defaultVariant = $product->variants->firstWhere('is_default', true) ?? $product->variants->first();
     $minPrice = $product->variants->map->effectivePriceSen()->min() ?? 0;
     $maxDiscount = $product->variants->map->discountPercent()->filter()->max();
-    $image = $product->getFirstMediaUrl('images');
+    $image = $product->getFirstMediaUrl('images', 'thumb');
     $singleVariant = $product->variants->count() === 1;
     $inStock = $product->variants->sum('stock') > 0;
 @endphp

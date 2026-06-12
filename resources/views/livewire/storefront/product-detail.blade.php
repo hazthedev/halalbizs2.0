@@ -2,7 +2,7 @@
     $name = $product->getTranslation('name', app()->getLocale());
     $images = $product->getMedia('images');
     $variantImage = $variant?->getFirstMediaUrl('image') ?: null;
-    $mainImage = $variantImage ?: $images->first()?->getUrl();
+    $mainImage = $variantImage ?: $images->first()?->getUrl('card');
     $canBuy = $variant !== null && $variant->stock > 0;
     $store = $product->store;
 @endphp
@@ -31,11 +31,11 @@
                     <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
                         @foreach ($images as $media)
                             <button type="button"
-                                    x-on:click="activeImage = @js($media->getUrl())"
-                                    x-bind:class="activeImage === @js($media->getUrl()) ? 'border-emerald' : 'border-line hover:border-line-strong'"
+                                    x-on:click="activeImage = @js($media->getUrl('card'))"
+                                    x-bind:class="activeImage === @js($media->getUrl('card')) ? 'border-emerald' : 'border-line hover:border-line-strong'"
                                     class="size-16 shrink-0 overflow-hidden rounded-lg border bg-paper"
                                     aria-label="{{ __('View image :number of :name', ['number' => $loop->iteration, 'name' => $name]) }}">
-                                <img src="{{ $media->getUrl() }}" alt="{{ $name }}" class="size-full object-cover" loading="lazy">
+                                <img src="{{ $media->getUrl('thumb') }}" alt="{{ $name }}" class="size-full object-cover" loading="lazy">
                             </button>
                         @endforeach
                     </div>
@@ -177,7 +177,7 @@
                             @endif
                             <div class="min-w-0 flex-1">
                                 <p class="flex flex-wrap items-center gap-2">
-                                    <a href="{{ route('store.show', $store->slug) }}" wire:navigate class="truncate text-sm font-semibold text-ink">{{ $store->name }}</a>
+                                    <a href="{{ $store->subdomainUrl() }}" class="truncate text-sm font-semibold text-ink">{{ $store->name }}</a>
                                     @if ($store->isApproved())
                                         <x-ui.badge variant="verified">
                                             <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
@@ -198,7 +198,7 @@
                                     @endif
                                 </p>
                             </div>
-                            <a href="{{ route('store.show', $store->slug) }}" wire:navigate
+                            <a href="{{ $store->subdomainUrl() }}"
                                class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-ink-soft transition-colors duration-150 hover:text-ink">
                                 {{ __('Visit store') }}
                             </a>

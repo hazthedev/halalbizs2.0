@@ -10,6 +10,7 @@ use App\Notifications\SellerApplicationReceived;
 use App\Services\Turnstile;
 use App\Support\MalaysianBanks;
 use App\Support\MalaysianStates;
+use App\Support\ReservedSubdomains;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -84,6 +85,10 @@ class Apply extends Component
             'name' => ['required', 'string', 'min:3', 'max:60', function (string $attribute, mixed $value, \Closure $fail) {
                 if (Store::withTrashed()->where('slug', Str::slug((string) $value))->exists()) {
                     $fail(__('This shop name is already taken — try another.'));
+                }
+
+                if (ReservedSubdomains::isReserved(Str::slug((string) $value))) {
+                    $fail(__('This shop name is reserved — try another.'));
                 }
             }],
             'description' => ['required', 'string', 'max:2000'],

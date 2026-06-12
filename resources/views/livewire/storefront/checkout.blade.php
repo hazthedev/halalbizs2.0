@@ -87,7 +87,7 @@
                     <ul class="divide-y divide-line">
                         @foreach ($group->lines as $line)
                             <li wire:key="checkout-line-{{ $line->variant->id }}" class="flex gap-3 px-4 py-3.5">
-                                <img src="{{ $line->variant->getFirstMediaUrl('image') ?: $line->variant->product->getFirstMediaUrl('images') }}"
+                                <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
                                      alt="{{ $line->variant->product->getTranslation('name', app()->getLocale()) }} {{ $line->variant->options_label }}"
                                      class="size-16 shrink-0 rounded-[10px] border border-line bg-paper object-cover">
                                 <div class="min-w-0 flex-1">

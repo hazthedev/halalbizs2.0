@@ -74,7 +74,7 @@
                     <x-ui.card wire:key="sub-order-{{ $subOrder->id }}" class="overflow-hidden">
                         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5">
                             <div class="flex min-w-0 items-center gap-2.5">
-                                <a href="{{ route('store.show', $subOrder->store) }}" wire:navigate
+                                <a href="{{ $subOrder->store->subdomainUrl() }}"
                                    class="truncate text-sm font-semibold text-ink hover:text-emerald">{{ $subOrder->store->name }}</a>
                                 <span class="hidden font-mono text-xs text-ink-faint sm:inline">{{ $subOrder->sub_order_no }}</span>
                             </div>
@@ -84,8 +84,8 @@
                         <a href="{{ route('account.orders.show', $subOrder) }}" wire:navigate
                            class="flex gap-3 px-4 py-3 transition-colors duration-150 hover:bg-paper">
                             <span class="block size-16 shrink-0 overflow-hidden rounded-lg border border-line bg-paper">
-                                @if ($firstItem?->product?->getFirstMediaUrl('images'))
-                                    <img src="{{ $firstItem->product->getFirstMediaUrl('images') }}"
+                                @if ($firstItem?->product?->getFirstMediaUrl('images', 'thumb'))
+                                    <img src="{{ $firstItem->product->getFirstMediaUrl('images', 'thumb') }}"
                                          alt="{{ $firstItem->product_name }}{{ $firstItem->variant_label ? ' — '.$firstItem->variant_label : '' }}"
                                          class="size-full object-cover" loading="lazy">
                                 @endif

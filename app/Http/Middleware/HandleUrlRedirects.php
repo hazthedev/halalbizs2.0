@@ -29,6 +29,24 @@ class HandleUrlRedirects
 
                 return redirect($redirect->new_path, $redirect->status_code);
             }
+
+            // Renamed store subdomain: old-slug.<base> → /s/old-slug rows
+            // already exist, so reuse them and bounce to the new subdomain.
+            $host = $request->getHost();
+            $base = config('app.store_subdomain_base');
+
+            if (str_ends_with($host, '.'.$base)) {
+                $oldSlug = substr($host, 0, -strlen('.'.$base));
+                $storeRedirect = UrlRedirect::query()->where('old_path', "/s/{$oldSlug}")->first();
+
+                if ($storeRedirect !== null && str_starts_with($storeRedirect->new_path, '/s/')) {
+                    $storeRedirect->increment('hits');
+                    $newSlug = substr($storeRedirect->new_path, 3);
+                    $scheme = $request->getScheme();
+
+                    return redirect("{$scheme}://{$newSlug}.{$base}", $storeRedirect->status_code);
+                }
+            }
         }
 
         return $response;

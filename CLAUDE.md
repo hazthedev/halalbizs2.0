@@ -24,6 +24,15 @@ npx playwright test                # browser journeys against http://halalbizs2.
 Site served by Herd at **http://halalbizs2.0.test**. Demo logins (local seed): `admin@halalbizs.test`,
 `seller@halalbizs.test`, `buyer@halalbizs.test` — all password `password`.
 
+**Store subdomains** (`{slug}.halalbizs2.0.test`): served via the wildcard nginx
+`server_name` plus a `Sites\0` junction (Valet's wildcard lookup resolves the
+LAST dot-segment of the site name — `0` for this repo; recreate with
+`cmd /c mklink /J %USERPROFILE%\.config\herd\config\valet\Sites\0 <repo>` if lost).
+Herd's DNS only resolves exact site names, so to BROWSE a store subdomain add a
+hosts-file line (`127.0.0.1 <slug>.halalbizs2.0.test`, admin shell) — Playwright
+maps `*.halalbizs2.0.test → 127.0.0.1` via launch args instead. Production needs
+wildcard DNS + a wildcard TLS cert (docs/10).
+
 ## Architecture conventions
 
 - Route files: `routes/web.php` (storefront), `routes/seller.php`, `routes/admin.php`. RESTful resource naming only.
