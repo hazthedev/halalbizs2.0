@@ -15,4 +15,8 @@ Route::get('/orders', Seller\Orders\Index::class)->name('orders.index');
 Route::get('/orders/{subOrder}', Seller\Orders\Detail::class)->name('orders.show');
 Route::get('/orders/{subOrder}/packing-slip', [InvoiceController::class, 'seller'])->name('orders.packing-slip');
 
+Route::get('/vouchers', Seller\Vouchers\Index::class)->name('vouchers.index');
+Route::get('/earnings', Seller\Earnings::class)->name('earnings');
+Route::get('/reviews', Seller\Reviews\Index::class)->name('reviews.index');
+
 Route::get('/settings', Seller\Settings::class)->name('settings');

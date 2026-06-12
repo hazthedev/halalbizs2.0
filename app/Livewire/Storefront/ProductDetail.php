@@ -5,6 +5,7 @@ namespace App\Livewire\Storefront;
 use App\Livewire\Concerns\InteractsWithCart;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Review;
 use App\Settings\CodSettings;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -23,6 +24,12 @@ class ProductDetail extends Component
     public ?int $selectedVariantId = null;
 
     public int $qty = 1;
+
+    /** Reviews tab filter: all | photos | 1–5 (docs/09 §C). */
+    public string $reviewFilter = 'all';
+
+    /** "Load more" page size for the reviews list. */
+    public int $reviewsLimit = 5;
 
     public function mount(Product $product): void
     {
@@ -78,6 +85,21 @@ class ProductDetail extends Component
         $this->redirectRoute('cart', navigate: true);
     }
 
+    public function setReviewFilter(string $filter): void
+    {
+        if (! in_array($filter, ['all', 'photos', '1', '2', '3', '4', '5'], true)) {
+            return;
+        }
+
+        $this->reviewFilter = $filter;
+        $this->reviewsLimit = 5;
+    }
+
+    public function loadMoreReviews(): void
+    {
+        $this->reviewsLimit += 5;
+    }
+
     public function render()
     {
         return view('livewire.storefront.product-detail', [
@@ -88,6 +110,9 @@ class ProductDetail extends Component
             'codAvailable' => $this->product->cod_enabled && app(CodSettings::class)->enabled,
             'storeProductsCount' => $this->product->store?->products()->live()->count() ?? 0,
             'jsonLd' => $this->jsonLd(),
+            'reviews' => $this->visibleReviews(),
+            'hasMoreReviews' => $this->filteredReviewsQuery()->count() > $this->reviewsLimit,
+            'reviewDistribution' => $this->reviewDistribution(),
         ])->title($this->product->getTranslation('name', app()->getLocale()));
     }
 
@@ -165,6 +190,45 @@ class ProductDetail extends Component
         }
 
         return $map;
+    }
+
+    /** Visible reviews under the active filter, newest first. */
+    private function visibleReviews()
+    {
+        return $this->filteredReviewsQuery()
+            ->with(['user', 'media', 'orderItem'])
+            ->latest()
+            ->latest('id')
+            ->take($this->reviewsLimit)
+            ->get();
+    }
+
+    private function filteredReviewsQuery()
+    {
+        return $this->product->reviews()
+            ->visible()
+            ->when($this->reviewFilter === 'photos', fn ($query) => $query->whereHas(
+                'media', fn ($mediaQuery) => $mediaQuery->where('collection_name', 'photos')
+            ))
+            ->when(in_array($this->reviewFilter, ['1', '2', '3', '4', '5'], true), fn ($query) => $query->where(
+                'rating', (int) $this->reviewFilter
+            ));
+    }
+
+    /** @return array<int, int> star (5→1) → visible review count */
+    private function reviewDistribution(): array
+    {
+        $counts = Review::query()
+            ->toBase()
+            ->where('product_id', $this->product->id)
+            ->where('is_hidden', false)
+            ->selectRaw('rating, count(*) as total')
+            ->groupBy('rating')
+            ->pluck('total', 'rating');
+
+        return collect([5, 4, 3, 2, 1])
+            ->mapWithKeys(fn (int $star) => [$star => (int) ($counts[$star] ?? 0)])
+            ->all();
     }
 
     private function relatedProducts()

@@ -4,21 +4,19 @@ namespace App\Livewire\Admin\Finance;
 
 use App\Enums\PayoutStatus;
 use App\Models\Payout;
+use App\Services\LedgerService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * Payouts queue shell (docs/08 §F) — fully functional UI that activates
- * with M8 data: requested → approve → export bank CSV → mark paid (+ref),
- * or reject with a reason. Payout rows are plain status updates (no state
- * machine); the money side is the ledger's job:
- *
- * TODO(M8): LedgerService hooks —
- *   - approve: keep the requested entries earmarked against this payout.
- *   - reject: release the earmark back to the store's available balance.
- *   - mark paid: settle the earmark as a payout debit (negative amount_sen).
+ * Payouts queue (docs/08 §F + docs/09 §A): requested → approve → export
+ * bank CSV → mark paid (+ref), or reject with a reason. The money side is
+ * the ledger's: the payout request already wrote a NEGATIVE `payout` entry
+ * (the earmark), so approve/mark-paid are pure status bookkeeping and only
+ * reject touches the ledger — LedgerService::rejectPayout deletes the
+ * earmark entry, restoring the store's available balance.
  */
 #[Layout('layouts.admin')]
 class Payouts extends Component
@@ -83,8 +81,8 @@ class Payouts extends Component
             'processed_by' => auth()->id(),
         ]);
 
-        // TODO(M8): LedgerService — entries earmarked for this payout stay
-        // earmarked through approval; nothing to move yet.
+        // Ledger: nothing to do — the negative payout entry written at
+        // request time stays earmarked against this payout through approval.
 
         $this->dispatch('toast', message: __(':no approved — it joins the next bank CSV run.', ['no' => $payout->payout_no]));
     }
@@ -96,7 +94,7 @@ class Payouts extends Component
         $this->resetValidation();
     }
 
-    public function reject(): void
+    public function reject(LedgerService $ledger): void
     {
         $this->validate(
             ['rejectReason' => ['required', 'string', 'min:3', 'max:255']],
@@ -110,17 +108,14 @@ class Payouts extends Component
             return;
         }
 
-        // No dedicated rejection_reason column — `reference` is unused on the
-        // rejected path, so it carries the reason (and the Payout activity log
-        // records it, since `reference` is a logged attribute).
-        $payout->update([
-            'status' => PayoutStatus::Rejected,
-            'reference' => trim($this->rejectReason),
-            'processed_by' => auth()->id(),
-        ]);
+        // The service flips the status, stores the reason in `reference`
+        // (no dedicated rejection_reason column — it's unused on this path
+        // and the Payout activity log records it), and DELETES the payout's
+        // negative ledger entry — releasing the earmark back to the store's
+        // available balance.
+        $ledger->rejectPayout($payout, trim($this->rejectReason));
 
-        // TODO(M8): LedgerService — release this payout's earmarked entries
-        // back to the store's available balance.
+        $payout->update(['processed_by' => auth()->id()]);
 
         $this->reset('rejectingId', 'rejectReason');
 
@@ -155,8 +150,11 @@ class Payouts extends Component
             'processed_by' => auth()->id(),
         ]);
 
-        // TODO(M8): LedgerService — settle the earmarked entries as a payout
-        // debit (negative amount_sen) linked to this payout.
+        // Ledger: intentionally untouched. Per the accounting model
+        // (docs/09 §A) the payout request already wrote the negative
+        // `payout` entry, which is what reduced the available balance —
+        // "paid" is purely status/paid_at/reference bookkeeping, so the
+        // entry simply stays. Settling it again would double-debit.
 
         $this->selected = array_values(array_diff($this->selected, [(string) $payout->id]));
 

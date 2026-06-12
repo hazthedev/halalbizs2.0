@@ -4,7 +4,7 @@
     <h1 class="font-display text-2xl font-bold">{{ __('Orders') }}</h1>
 
     {{-- Status tabs — wire:poll.30s keeps the count chips fresh (sound-free badge bump, docs/07 §B).
-         Returns tab arrives with M8. --}}
+         Returns tab: sub-orders with an open return request (docs/09 §D). --}}
     <nav wire:poll.30s class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Order status') }}">
         @foreach ($tabLabels as $key => $label)
             <button
@@ -31,6 +31,7 @@
                     'shipped' => [__('Nothing in transit'), __('Orders you hand to a courier appear here with their tracking numbers.')],
                     'delivered' => [__('Nothing delivered yet'), __('Shipped orders move here once they reach the buyer.')],
                     'completed' => [__('No completed orders yet'), __('Orders complete when the buyer confirms receipt.')],
+                    'returns' => [__('No return requests'), __('When a buyer requests a return you have a deadline to respond — those orders land here.')],
                     'cancelled' => [__('No cancelled orders'), __('Cancellations by you or the buyer appear here.')],
                     default => [__('No new orders right now'), __('New orders appear here the moment a buyer pays.')],
                 };
@@ -51,6 +52,9 @@
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
                         @if ($tab === 'new')
                             <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Waiting') }}</th>
+                        @endif
+                        @if ($tab === 'returns')
+                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Respond by') }}</th>
                         @endif
                         @if (in_array($tab, ['new', 'to_ship'], true))
                             <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
@@ -90,6 +94,20 @@
                                     <x-ui.badge :variant="$hoursWaiting > $actFastHours ? 'warn' : 'neutral'">
                                         {{ trans_choice('{0}Just now|{1}:count hr|[2,*]:count hrs', $hoursWaiting, ['count' => $hoursWaiting]) }}
                                     </x-ui.badge>
+                                </td>
+                            @endif
+                            @if ($tab === 'returns')
+                                <td class="px-3 py-2 whitespace-nowrap">
+                                    {{-- Deadline pill: overdue requests escalate to admin on the hourly job --}}
+                                    @if ($subOrder->returnRequest?->status === \App\Enums\ReturnStatus::Requested)
+                                        <x-ui.badge :variant="$subOrder->returnRequest->respond_by->isPast() ? 'danger' : 'warn'">
+                                            {{ $subOrder->returnRequest->respond_by->diffForHumans() }}
+                                        </x-ui.badge>
+                                    @elseif ($subOrder->returnRequest)
+                                        <x-return-status-pill :status="$subOrder->returnRequest->status" />
+                                    @else
+                                        <span class="text-ink-faint">—</span>
+                                    @endif
                                 </td>
                             @endif
                             @if ($tab === 'new')

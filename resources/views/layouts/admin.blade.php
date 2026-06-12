@@ -52,9 +52,11 @@
                             ['admin.catalog.attributes', __('Attributes'), 'admin.catalog.attributes'],
                             ['admin.catalog.brands', __('Brands'), 'admin.catalog.brands'],
                             ['admin.catalog.moderation', __('Moderation'), 'admin.catalog.moderation'],
+                            ['admin.catalog.reviews', __('Reviews'), 'admin.catalog.reviews'],
                         ],
                         __('Orders') => [
-                            ['admin.orders.index', __('All orders'), 'admin.orders.*'],
+                            ['admin.orders.index', __('All orders'), 'admin.orders.index'],
+                            ['admin.orders.returns', __('Returns'), 'admin.orders.returns'],
                             ['admin.payments.index', __('Payments'), 'admin.payments.*'],
                         ],
                         __('Finance') => [
@@ -69,6 +71,7 @@
                         ],
                         __('System') => [
                             ['admin.localization', __('Localization'), 'admin.localization'],
+                            ['admin.system.search', __('Search insights'), 'admin.system.search'],
                             ['admin.system.settings', __('Settings'), 'admin.system.settings'],
                             ['admin.system.staff', __('Staff & roles'), 'admin.system.staff'],
                             ['admin.system.audit', __('Audit log'), 'admin.system.audit'],

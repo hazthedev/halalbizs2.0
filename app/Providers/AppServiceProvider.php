@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\Store;
+use App\Observers\SlugRedirectObserver;
 use App\Support\Money;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -15,6 +19,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Slug changes leave a 301 behind (docs/09 §F).
+        Product::observe(SlugRedirectObserver::class);
+        Store::observe(SlugRedirectObserver::class);
+        Category::observe(SlugRedirectObserver::class);
+
         // Plain MYR amount: @money($sen)
         Blade::directive('money', function (string $expression) {
             return "<?php echo \App\Support\Money::format($expression); ?>";

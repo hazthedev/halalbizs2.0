@@ -125,30 +125,111 @@
                 </x-ui.card>
             @endforeach
 
-            {{-- (3) Platform voucher (voucher_lite until M8) --}}
+            {{-- (3) Vouchers (docs/09 §B): picker drawer + manual code fallback.
+                 One platform voucher + one shop voucher per order (Shopee model). --}}
             <x-ui.card class="p-4">
-                <h2 class="text-sm font-semibold">{{ __('Voucher') }}</h2>
+                <div class="flex items-center justify-between gap-3">
+                    <h2 class="text-sm font-semibold">{{ __('Vouchers') }}</h2>
+                    <button type="button" wire:click="$toggle('voucherPanelOpen')"
+                            class="-my-1 flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-emerald hover:text-emerald-deep">
+                        {{ $voucherPanelOpen ? __('Close') : __('Select voucher') }}
+                    </button>
+                </div>
 
-                @if ($voucher !== null)
-                    <div class="mt-2 flex items-center justify-between gap-3">
-                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-semibold text-emerald">
-                            <span class="font-mono">{{ $voucher->code }}</span>
-                            <button type="button" wire:click="removeVoucher"
-                                    class="flex size-11 items-center justify-center rounded-full hover:bg-emerald/10"
-                                    aria-label="{{ __('Remove voucher') }}">
-                                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-                            </button>
-                        </span>
-                        <span class="text-sm font-bold text-emerald tnum">-@money($discountSen)</span>
-                    </div>
-                @else
-                    <form wire:submit="applyVoucher" class="mt-2 flex gap-2">
-                        <input type="text" wire:model="voucherCode" placeholder="{{ __('Voucher code') }}"
-                               aria-label="{{ __('Voucher code') }}"
-                               class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 font-mono text-sm text-ink placeholder:font-sans placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $voucherError ? 'border-danger' : 'border-line-strong' }}">
-                        <x-ui.button type="submit" variant="secondary" class="shrink-0">{{ __('Apply') }}</x-ui.button>
-                    </form>
+                {{-- Applied chips --}}
+                @if ($platformDiscount !== null || $shopDiscount !== null)
+                    <ul class="mt-2 space-y-2">
+                        @if ($platformDiscount !== null)
+                            <li class="flex items-center justify-between gap-3">
+                                <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-semibold text-emerald">
+                                    <span class="truncate font-mono">{{ $platformDiscount->voucher->code }}</span>
+                                    <span class="hidden font-normal sm:inline">· {{ __('Platform') }}</span>
+                                    <button type="button" wire:click="removeVoucher('platform')"
+                                            class="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-emerald/10"
+                                            aria-label="{{ __('Remove platform voucher') }}">
+                                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </span>
+                                @if ($platformDiscount->voucher->type === \App\Enums\VoucherType::FreeShipping)
+                                    <span class="shrink-0 text-sm font-bold text-emerald">{{ __('Free shipping') }}</span>
+                                @else
+                                    <span class="shrink-0 text-sm font-bold text-emerald tnum">-@money($platformDiscountSen)</span>
+                                @endif
+                            </li>
+                        @endif
+
+                        @if ($shopDiscount !== null)
+                            <li class="flex items-center justify-between gap-3">
+                                <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-semibold text-emerald">
+                                    <span class="truncate font-mono">{{ $shopDiscount->voucher->code }}</span>
+                                    <span class="hidden truncate font-normal sm:inline">· {{ $shopDiscount->voucher->store?->name }}</span>
+                                    <button type="button" wire:click="removeVoucher('shop')"
+                                            class="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-emerald/10"
+                                            aria-label="{{ __('Remove shop voucher') }}">
+                                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </span>
+                                @if ($shopDiscount->voucher->type === \App\Enums\VoucherType::FreeShipping)
+                                    <span class="shrink-0 text-sm font-bold text-emerald">{{ __('Free shipping') }}</span>
+                                @else
+                                    <span class="shrink-0 text-sm font-bold text-emerald tnum">-@money($shopDiscountSen)</span>
+                                @endif
+                            </li>
+                        @endif
+                    </ul>
                 @endif
+
+                {{-- Picker panel: available vouchers per scope, best-savings hint --}}
+                @if ($voucherPanelOpen)
+                    <div class="mt-3 space-y-4 border-t border-line pt-3">
+                        <div>
+                            <h3 class="text-[13px] font-medium text-ink-soft">{{ __('Platform vouchers') }}</h3>
+                            @if ($platformVoucherOptions->isEmpty())
+                                <p class="mt-1 text-[13px] text-ink-faint">{{ __('No platform vouchers available right now.') }}</p>
+                            @else
+                                <ul class="mt-2 space-y-2">
+                                    @foreach ($platformVoucherOptions as $option)
+                                        <li wire:key="voucher-option-{{ $option->voucher->id }}">
+                                            @include('livewire.storefront.partials.voucher-option', [
+                                                'option' => $option,
+                                                'applied' => $appliedPlatformCode === $option->voucher->code,
+                                                'best' => $option->voucher->id === $bestPlatformVoucherId,
+                                            ])
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+
+                        <div>
+                            <h3 class="text-[13px] font-medium text-ink-soft">{{ __('Shop vouchers') }}</h3>
+                            <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('One shop voucher per order — it applies to that shop’s items only.') }}</p>
+                            @if ($shopVoucherOptions->isEmpty())
+                                <p class="mt-1 text-[13px] text-ink-faint">{{ __('No shop vouchers available for the shops in your order.') }}</p>
+                            @else
+                                <ul class="mt-2 space-y-2">
+                                    @foreach ($shopVoucherOptions as $option)
+                                        <li wire:key="voucher-option-{{ $option->voucher->id }}">
+                                            @include('livewire.storefront.partials.voucher-option', [
+                                                'option' => $option,
+                                                'applied' => $appliedShopCode === $option->voucher->code,
+                                                'best' => false,
+                                            ])
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Manual code entry stays as the fallback --}}
+                <form wire:submit="applyVoucher" class="mt-3 flex gap-2">
+                    <input type="text" wire:model="voucherCode" placeholder="{{ __('Voucher code') }}"
+                           aria-label="{{ __('Voucher code') }}"
+                           class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 font-mono text-sm text-ink placeholder:font-sans placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $voucherError ? 'border-danger' : 'border-line-strong' }}">
+                    <x-ui.button type="submit" variant="secondary" class="shrink-0">{{ __('Apply') }}</x-ui.button>
+                </form>
 
                 @if ($voucherError)
                     <p class="mt-1.5 text-[13px] text-danger">{{ $voucherError }}</p>
@@ -169,10 +250,16 @@
                     <dt class="text-ink-soft">{{ __('Shipping total') }}</dt>
                     <dd class="font-bold tnum">@if ($address === null) — @else @money($shippingTotalSen) @endif</dd>
                 </div>
-                @if ($discountSen > 0)
+                @if ($platformDiscountSen > 0)
                     <div class="flex items-center justify-between">
-                        <dt class="text-ink-soft">{{ __('Voucher discount') }}</dt>
-                        <dd class="font-bold text-emerald tnum">-@money($discountSen)</dd>
+                        <dt class="text-ink-soft">{{ __('Platform voucher') }}</dt>
+                        <dd class="font-bold text-emerald tnum">-@money($platformDiscountSen)</dd>
+                    </div>
+                @endif
+                @if ($shopDiscountSen > 0)
+                    <div class="flex items-center justify-between">
+                        <dt class="text-ink-soft">{{ __('Shop voucher') }}</dt>
+                        <dd class="font-bold text-emerald tnum">-@money($shopDiscountSen)</dd>
                     </div>
                 @endif
             </dl>

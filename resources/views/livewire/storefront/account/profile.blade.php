@@ -115,5 +115,74 @@
                 </div>
             </form>
         </x-ui.card>
+
+        {{-- Privacy (PDPA) --}}
+        <x-ui.card class="p-6">
+            <h2 class="font-display text-xl font-semibold">{{ __('Privacy') }}</h2>
+
+            <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-medium text-ink">{{ __('Download my data') }}</p>
+                    <p class="mt-0.5 text-[13px] text-ink-soft">{{ __('A JSON file with your profile, addresses and full order history.') }}</p>
+                </div>
+                <x-ui.button variant="secondary" wire:click="downloadData" wire:loading.attr="disabled" wire:target="downloadData">
+                    {{ __('Download') }}
+                </x-ui.button>
+            </div>
+
+            {{-- Danger zone --}}
+            <div class="mt-6 rounded-lg border border-danger/40 bg-danger-tint/40 p-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-semibold text-danger">{{ __('Delete account') }}</p>
+                        <p class="mt-0.5 max-w-md text-[13px] text-ink-soft">{{ __('Your name, email and phone are anonymized and you are signed out. Order records are kept — we are legally required to retain financial records.') }}</p>
+                    </div>
+                    <x-ui.button variant="danger" wire:click="$set('showDeleteModal', true)">{{ __('Delete my account') }}</x-ui.button>
+                </div>
+            </div>
+        </x-ui.card>
     </div>
+
+    {{-- Delete-account confirm modal --}}
+    @if ($showDeleteModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+             role="dialog" aria-modal="true" aria-labelledby="delete-account-title"
+             x-data x-on:keydown.escape.window="$wire.set('showDeleteModal', false)">
+            <div class="absolute inset-0 bg-ink/50" wire:click="$set('showDeleteModal', false)" aria-hidden="true"></div>
+
+            {{-- shadow allowed: overlay surface --}}
+            <x-ui.card class="relative w-full max-w-md p-6 shadow-xl">
+                <h3 id="delete-account-title" class="font-display text-xl font-semibold text-danger">{{ __('Delete this account?') }}</h3>
+                <p class="mt-2 text-[13px] text-ink-soft">{{ __('This cannot be undone. Your personal details are anonymized immediately; order records stay for legal and financial reasons.') }}</p>
+
+                <div class="mt-4 space-y-4">
+                    <x-ui.input
+                        :label="__('Type DELETE to confirm')"
+                        name="delete_confirm"
+                        wire:model="delete_confirm"
+                        autocomplete="off"
+                        placeholder="DELETE"
+                        :error="$errors->first('delete_confirm')"
+                    />
+
+                    <x-ui.input
+                        :label="__('Your password')"
+                        name="delete_password"
+                        type="password"
+                        wire:model="delete_password"
+                        autocomplete="current-password"
+                        :error="$errors->first('delete_password')"
+                    />
+                </div>
+
+                <div class="mt-5 flex justify-end gap-2">
+                    <x-ui.button variant="ghost" wire:click="$set('showDeleteModal', false)">{{ __('Cancel') }}</x-ui.button>
+                    <x-ui.button variant="danger-fill" wire:click="deleteAccount" wire:loading.attr="disabled" wire:target="deleteAccount"
+                                 wire:confirm="{{ __('Last check — delete this account for good?') }}">
+                        {{ __('Delete account') }}
+                    </x-ui.button>
+                </div>
+            </x-ui.card>
+        </div>
+    @endif
 </x-account-shell>

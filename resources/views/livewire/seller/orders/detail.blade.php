@@ -86,6 +86,110 @@
                  $sellerNotes but does not persist them yet (do NOT modify the service here).
                  Render the note card once checkout stores it. --}}
 
+            {{-- Return request (docs/09 §D) — accept / dispute while requested,
+                 confirm receipt once accepted. All status moves via the service. --}}
+            @if ($returnRequest = $subOrder->returnRequest)
+                <x-ui.card class="p-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h2 class="text-sm font-semibold">{{ __('Return request') }}</h2>
+                        <x-return-status-pill :status="$returnRequest->status" />
+                    </div>
+
+                    <dl class="mt-3 space-y-1.5 text-[13px]">
+                        <div class="flex gap-2">
+                            <dt class="shrink-0 text-ink-soft">{{ __('Reason') }}:</dt>
+                            <dd class="text-ink">{{ $returnRequest->reason?->label ?? '—' }}</dd>
+                        </div>
+                        @if ($returnRequest->description)
+                            <div class="flex gap-2">
+                                <dt class="shrink-0 text-ink-soft">{{ __('Details') }}:</dt>
+                                <dd class="text-ink">{{ $returnRequest->description }}</dd>
+                            </div>
+                        @endif
+                        @if ($returnRequest->seller_response)
+                            <div class="flex gap-2">
+                                <dt class="shrink-0 text-ink-soft">{{ __('Your dispute') }}:</dt>
+                                <dd class="text-ink">{{ $returnRequest->seller_response }}</dd>
+                            </div>
+                        @endif
+                        <div class="flex gap-2">
+                            <dt class="shrink-0 text-ink-soft">{{ __('Requested') }}:</dt>
+                            <dd class="text-ink">{{ $returnRequest->created_at->format('j M Y, g:ia') }}</dd>
+                        </div>
+                    </dl>
+
+                    @if ($returnRequest->getMedia('photos')->isNotEmpty())
+                        <ul class="mt-3 flex flex-wrap gap-2">
+                            @foreach ($returnRequest->getMedia('photos') as $photo)
+                                <li wire:key="return-photo-{{ $photo->id }}">
+                                    <a href="{{ $photo->getUrl() }}" target="_blank" rel="noopener"
+                                       class="block size-16 overflow-hidden rounded-lg border border-line bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                                        <img src="{{ $photo->getUrl() }}" alt="{{ __('Return photo :n', ['n' => $loop->iteration]) }}" class="size-full object-cover" loading="lazy">
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+
+                    @if ($subOrder->status === \App\Enums\SubOrderStatus::ReturnRequested && $returnRequest->status === \App\Enums\ReturnStatus::Requested)
+                        <div class="mt-3 rounded-lg border {{ $returnRequest->respond_by->isPast() ? 'border-danger/40 bg-danger-tint/40' : 'border-warn/40 bg-warn-tint/40' }} p-3">
+                            <p class="text-[13px] font-medium text-ink">
+                                {{ __('Respond by :date (:relative) — unanswered requests escalate to admin automatically.', [
+                                    'date' => $returnRequest->respond_by->format('j M Y, g:ia'),
+                                    'relative' => $returnRequest->respond_by->diffForHumans(),
+                                ]) }}
+                            </p>
+                        </div>
+
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <button type="button" wire:click="acceptReturn" wire:loading.attr="disabled"
+                                    wire:confirm="{{ __('Accept this return? The buyer ships the item back to you, then you confirm receipt.') }}"
+                                    class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                                {{ __('Accept return') }}
+                            </button>
+                            <button type="button" wire:click="$set('disputing', true)"
+                                    class="inline-flex min-h-11 items-center justify-center rounded-lg border border-danger px-4 text-sm font-semibold text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                                {{ __('Dispute') }}
+                            </button>
+                        </div>
+
+                        @if ($disputing)
+                            <div class="mt-3 space-y-2 rounded-lg border border-danger/40 bg-danger-tint/40 p-3">
+                                <label for="dispute-reason" class="block text-[13px] font-medium text-ink">{{ __('Why are you disputing this return?') }}</label>
+                                <textarea id="dispute-reason" wire:model="disputeReason" rows="3"
+                                          placeholder="{{ __('Explain what the buyer\'s photos or description get wrong.') }}"
+                                          class="block w-full rounded-lg border bg-surface px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('disputeReason') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                                @error('disputeReason')
+                                    <p class="text-[13px] text-danger">{{ $message }}</p>
+                                @enderror
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button" wire:click="disputeReturn" wire:loading.attr="disabled"
+                                            wire:confirm="{{ __('Dispute this return? It goes straight to the marketplace team for a decision.') }}"
+                                            class="inline-flex min-h-11 items-center justify-center rounded-lg bg-danger px-4 text-sm font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                                        {{ __('Submit dispute') }}
+                                    </button>
+                                    <button type="button" wire:click="$set('disputing', false)"
+                                            class="inline-flex min-h-11 items-center justify-center rounded-lg px-4 text-sm font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                                        {{ __('Never mind') }}
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+                    @elseif ($subOrder->status === \App\Enums\SubOrderStatus::ReturnRequested && $returnRequest->status === \App\Enums\ReturnStatus::Accepted)
+                        <p class="mt-3 text-[13px] text-ink-soft">{{ __('Waiting for the buyer to ship the item back (manual for now). Confirm once it arrives.') }}</p>
+                        <button type="button" wire:click="confirmItemReceived" wire:loading.attr="disabled"
+                                wire:confirm="{{ __('Confirm the returned item arrived? The refund is then processed by the marketplace team.') }}"
+                                class="mt-2 inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                            {{ __('Item received') }}
+                        </button>
+                    @elseif (in_array($returnRequest->status, [\App\Enums\ReturnStatus::Disputed, \App\Enums\ReturnStatus::Escalated], true))
+                        <p class="mt-3 text-[13px] text-ink-soft">{{ __('With the marketplace team for review — you will be notified of the outcome.') }}</p>
+                    @elseif ($subOrder->status === \App\Enums\SubOrderStatus::Returned && $returnRequest->status === \App\Enums\ReturnStatus::Accepted)
+                        <p class="mt-3 text-[13px] text-ink-soft">{{ __('Item received back — awaiting the refund from the marketplace team.') }}</p>
+                    @endif
+                </x-ui.card>
+            @endif
+
             {{-- Status timeline (compact seller-side variant of the buyer timeline) --}}
             <x-ui.card class="p-4">
                 <h2 class="text-sm font-semibold">{{ __('Timeline') }}</h2>

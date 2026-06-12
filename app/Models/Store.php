@@ -117,11 +117,14 @@ class Store extends Model implements HasMedia
         return $this->status === StoreStatus::Approved;
     }
 
+    /**
+     * Balance = SUM of available entries. Payout requests already write a
+     * negative `payout` entry, so no extra filtering is needed.
+     */
     public function availableBalanceSen(): int
     {
         return (int) $this->ledgerEntries()
             ->where('status', LedgerEntryStatus::Available)
-            ->whereNull('payout_id')
             ->sum('amount_sen');
     }
 }

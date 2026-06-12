@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -80,5 +81,15 @@ class SubOrder extends Model
     public function statusHistories(): HasMany
     {
         return $this->hasMany(OrderStatusHistory::class)->orderBy('created_at');
+    }
+
+    public function ledgerEntries(): HasMany
+    {
+        return $this->hasMany(StoreLedgerEntry::class);
+    }
+
+    public function returnRequest(): HasOne
+    {
+        return $this->hasOne(ReturnRequest::class);
     }
 }

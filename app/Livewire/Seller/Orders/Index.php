@@ -16,7 +16,7 @@ use Livewire\WithPagination;
 /**
  * Seller order queue (docs/07 §B) — status tabs with live counts
  * (wire:poll.30s badge bump), store-scoped table, inline quick actions.
- * Returns tab arrives with M8.
+ * The Returns tab (docs/09 §D) surfaces sub-orders awaiting a response.
  */
 #[Layout('layouts.seller')]
 class Index extends Component
@@ -40,6 +40,7 @@ class Index extends Component
             'shipped' => SubOrderStatus::Shipped,
             'delivered' => SubOrderStatus::Delivered,
             'completed' => SubOrderStatus::Completed,
+            'returns' => SubOrderStatus::ReturnRequested,
             'cancelled' => SubOrderStatus::Cancelled,
         ];
     }
@@ -84,6 +85,7 @@ class Index extends Component
             ->where('store_id', $this->currentStore()->id)
             ->where('status', self::tabs()[$this->tab])
             ->with('order.user')
+            ->when($this->tab === 'returns', fn ($query) => $query->with('returnRequest'))
             ->withCount('items')
             ->latest('created_at')
             ->latest('id')
@@ -98,6 +100,7 @@ class Index extends Component
                 'shipped' => __('Shipped'),
                 'delivered' => __('Delivered'),
                 'completed' => __('Completed'),
+                'returns' => __('Returns'),
                 'cancelled' => __('Cancelled'),
             ],
             'couriers' => self::COURIERS,

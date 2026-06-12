@@ -267,7 +267,7 @@ test('Buy again re-adds the first item variant to the cart', function () {
     Livewire::test(Orders::class)
         ->call('setTab', 'completed')
         ->assertSee('Buy again')
-        ->assertSee('Reviews arrive in M8')
+        ->assertSee('Rate order')
         ->call('buyAgain', $subOrder->id)
         ->assertDispatched('toast');
 

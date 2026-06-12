@@ -120,7 +120,6 @@
                                         {{ __('Order received') }}
                                     </x-ui.button>
                                 @elseif ($subOrder->status === \App\Enums\SubOrderStatus::Completed)
-                                    <p class="text-xs text-ink-faint">{{ __('Reviews arrive in M8') }}</p>
                                     <x-ui.button variant="secondary" wire:click="buyAgain({{ $subOrder->id }})" wire:loading.attr="disabled">
                                         {{ __('Buy again') }}
                                     </x-ui.button>
@@ -130,6 +129,11 @@
                                 </x-ui.button>
                             </div>
                         </div>
+
+                        {{-- Review panel (M8): "Rate order" expands per-item forms; turns into "Reviewed ✓" once done --}}
+                        @if ($subOrder->status === \App\Enums\SubOrderStatus::Completed)
+                            <livewire:storefront.account.review-order :sub-order="$subOrder" :key="'review-order-'.$subOrder->id" />
+                        @endif
                     </x-ui.card>
                 @empty
                     <x-ui.card class="px-6 py-16 text-center">

@@ -52,6 +52,11 @@
                             {{ __('Cancel order') }}
                         </x-ui.button>
                     @endif
+                    @if ($canRequestReturn && ! $requestingReturn)
+                        <x-ui.button variant="secondary" wire:click="$set('requestingReturn', true)">
+                            {{ __('Request return') }}
+                        </x-ui.button>
+                    @endif
                 </div>
             </div>
 
@@ -83,7 +88,111 @@
                     </div>
                 </div>
             @endif
+
+            {{-- Return request panel (docs/09 §D): reason + description + up to 5 photos --}}
+            @if ($requestingReturn)
+                <div class="mt-4 rounded-lg border border-line-strong bg-paper p-4">
+                    <h3 class="text-sm font-semibold text-ink">{{ __('Request a return') }}</h3>
+
+                    <label for="return-reason" class="mt-3 block text-[13px] font-medium text-ink">{{ __('Why are you returning this order?') }}</label>
+                    <select id="return-reason" wire:model="returnReasonId"
+                            class="mt-2 block w-full max-w-sm rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald">
+                        <option value="">{{ __('Pick a reason') }}</option>
+                        @foreach ($returnReasons as $reason)
+                            <option value="{{ $reason->id }}">{{ $reason->label }}</option>
+                        @endforeach
+                    </select>
+                    @error('returnReasonId')
+                        <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
+                    @enderror
+
+                    <label for="return-description" class="mt-3 block text-[13px] font-medium text-ink">{{ __('Tell us more (optional)') }}</label>
+                    <textarea id="return-description" wire:model="returnDescription" rows="3"
+                              placeholder="{{ __('What went wrong with the order?') }}"
+                              class="mt-2 block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald"></textarea>
+                    @error('returnDescription')
+                        <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
+                    @enderror
+
+                    <label for="return-photos" class="mt-3 block text-[13px] font-medium text-ink">{{ __('Photos (up to :max, optional)', ['max' => \App\Models\ReturnRequest::MAX_PHOTOS]) }}</label>
+                    <input id="return-photos" type="file" wire:model="returnPhotos" multiple accept="image/*"
+                           class="mt-2 block w-full max-w-sm text-[13px] text-ink-soft file:mr-3 file:rounded-lg file:border file:border-line-strong file:bg-surface file:px-3 file:py-2 file:text-[13px] file:font-medium file:text-ink">
+                    <div wire:loading wire:target="returnPhotos" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                    @if (count($returnPhotos) > 0)
+                        <p class="mt-1.5 text-[13px] text-ink-soft">{{ trans_choice('{1}:count photo attached|[2,*]:count photos attached', count($returnPhotos), ['count' => count($returnPhotos)]) }}</p>
+                    @endif
+                    @error('returnPhotos')
+                        <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
+                    @enderror
+                    @error('returnPhotos.*')
+                        <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
+                    @enderror
+
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <x-ui.button variant="primary"
+                                     wire:click="submitReturn"
+                                     wire:confirm="{{ __('Submit this return request? The seller will be notified.') }}"
+                                     wire:loading.attr="disabled">
+                            {{ __('Submit return request') }}
+                        </x-ui.button>
+                        <x-ui.button variant="ghost" wire:click="$set('requestingReturn', false)">{{ __('Never mind') }}</x-ui.button>
+                    </div>
+                </div>
+            @endif
         </x-ui.card>
+
+        {{-- Return status card — visible whenever a return request exists --}}
+        @if ($returnRequest)
+            <x-ui.card class="p-4 sm:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 class="font-display text-lg font-semibold">{{ __('Return status') }}</h3>
+                    <x-return-status-pill :status="$returnRequest->status" />
+                </div>
+
+                @if ($returnRequest->status === \App\Enums\ReturnStatus::Requested)
+                    <p class="mt-2 text-sm text-ink-soft">
+                        {{ __('The seller has until :date to respond (:relative).', [
+                            'date' => $returnRequest->respond_by->format('j M Y, g:i a'),
+                            'relative' => $returnRequest->respond_by->diffForHumans(),
+                        ]) }}
+                    </p>
+                @elseif ($returnRequest->status === \App\Enums\ReturnStatus::Accepted)
+                    <p class="mt-2 text-sm text-ink-soft">{{ __('The seller accepted your return. Ship the item back, then wait for the refund to be processed.') }}</p>
+                @elseif (in_array($returnRequest->status, [\App\Enums\ReturnStatus::Disputed, \App\Enums\ReturnStatus::Escalated], true))
+                    <p class="mt-2 text-sm text-ink-soft">{{ __('Your return is with our support team for review.') }}</p>
+                @elseif ($returnRequest->status === \App\Enums\ReturnStatus::Refunded)
+                    <p class="mt-2 text-sm text-ink-soft">{{ __('Your refund has been processed.') }}</p>
+                @elseif ($returnRequest->status === \App\Enums\ReturnStatus::Rejected)
+                    <p class="mt-2 text-sm text-ink-soft">{{ __('This return request was reviewed and not approved.') }}</p>
+                @endif
+
+                <dl class="mt-3 space-y-1.5 border-t border-line pt-3 text-sm">
+                    <div class="flex gap-2">
+                        <dt class="shrink-0 text-ink-soft">{{ __('Reason') }}:</dt>
+                        <dd class="text-ink">{{ $returnRequest->reason?->label ?? '—' }}</dd>
+                    </div>
+                    @if ($returnRequest->description)
+                        <div class="flex gap-2">
+                            <dt class="shrink-0 text-ink-soft">{{ __('Details') }}:</dt>
+                            <dd class="text-ink">{{ $returnRequest->description }}</dd>
+                        </div>
+                    @endif
+                </dl>
+
+                @if ($returnRequest->getMedia('photos')->isNotEmpty())
+                    <ul class="mt-3 flex flex-wrap gap-2">
+                        @foreach ($returnRequest->getMedia('photos') as $photo)
+                            <li wire:key="return-photo-{{ $photo->id }}">
+                                <a href="{{ $photo->getUrl() }}" target="_blank" rel="noopener"
+                                   class="block size-16 overflow-hidden rounded-lg border border-line bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald">
+                                    <img src="{{ $photo->getUrl() }}" alt="{{ __('Return photo :n', ['n' => $loop->iteration]) }}" class="size-full object-cover" loading="lazy">
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </x-ui.card>
+        @endif
 
         <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
             <div class="space-y-4">

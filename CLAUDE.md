@@ -59,9 +59,17 @@ Migrations run clean on `migrate:fresh --seed` · Pest green · Pint clean · UI
 | `marketplace-docs/docs/02-bagisto-feature-analysis.md` | Why features exist/don't; schema deltas |
 | `marketplace-docs/docs/03-design-system.md` | Every UI decision — tokens, components, motion, microcopy |
 | `marketplace-docs/docs/04-foundation-plan.md` | Migrations, models, seeders, enums (M1 — done) |
-| `marketplace-docs/docs/05-storefront-plan.md` | Buyer-facing pages (M2) |
-| `marketplace-docs/docs/06-checkout-payments-plan.md` | Checkout, COD, iPay88, order lifecycle (M4–M6) |
-| `marketplace-docs/docs/07-seller-panel-plan.md` | Seller centre (M3, M6) |
-| `marketplace-docs/docs/08-admin-panel-plan.md` | Admin panel (M7) |
-| `marketplace-docs/docs/09-marketplace-depth-plan.md` | Reviews, vouchers, returns, seller finance (M8) |
-| `marketplace-docs/docs/10-deployment-ops.md` | Infra, scheduler, env, go-live checklists |
+| `marketplace-docs/docs/05-storefront-plan.md` | Buyer-facing pages (M2 — done) |
+| `marketplace-docs/docs/06-checkout-payments-plan.md` | Checkout, COD, iPay88, order lifecycle (M4–M6 — done) |
+| `marketplace-docs/docs/07-seller-panel-plan.md` | Seller centre (M3, M6 — done) |
+| `marketplace-docs/docs/08-admin-panel-plan.md` | Admin panel (M7 — done) |
+| `marketplace-docs/docs/09-marketplace-depth-plan.md` | Reviews, vouchers, returns, seller finance (M8 — done) |
+| `marketplace-docs/docs/10-deployment-ops.md` | Infra, scheduler, env, go-live checklists (prod cutover pending) |
+
+## Build status
+
+M1–M8 complete (June 2026). Local adaptations vs the docs: SQLite, sync
+queue (no Horizon on Windows), Scout `collection` driver, Turnstile dormant
+without keys, iPay88 verified against simulated callbacks — see plan notes.
+Remaining for production: real iPay88 sandbox/production cutover (docs/10
+checklist), Meilisearch + Redis + MySQL infra, ZH locale, Phase-4 features.

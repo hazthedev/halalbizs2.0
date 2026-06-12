@@ -19,10 +19,12 @@ Route::middleware('can:products.moderate')->group(function () {
     Route::get('/catalog/attributes', Admin\Catalog\Attributes::class)->name('catalog.attributes');
     Route::get('/catalog/brands', Admin\Catalog\Brands::class)->name('catalog.brands');
     Route::get('/catalog/moderation', Admin\Catalog\Moderation::class)->name('catalog.moderation');
+    Route::get('/catalog/reviews', Admin\Catalog\Reviews::class)->name('catalog.reviews');
 });
 
 Route::middleware('can:orders.manage')->group(function () {
     Route::get('/orders', Admin\Orders\Index::class)->name('orders.index');
+    Route::get('/orders/returns', Admin\Orders\Returns::class)->name('orders.returns'); // before {subOrder}
     Route::get('/orders/{subOrder}', Admin\Orders\Detail::class)->name('orders.show');
     Route::get('/payments', Admin\Orders\Payments::class)->name('payments.index');
 });
@@ -50,4 +52,5 @@ Route::middleware('can:settings.manage')->group(function () {
     Route::get('/system/settings', Admin\System\Settings::class)->name('system.settings');
     Route::get('/system/staff', Admin\System\Staff::class)->name('system.staff');
     Route::get('/system/audit', Admin\System\AuditLog::class)->name('system.audit');
+    Route::get('/system/search', Admin\System\SearchInsights::class)->name('system.search');
 });

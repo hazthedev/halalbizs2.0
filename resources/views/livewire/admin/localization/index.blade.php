@@ -133,7 +133,13 @@
                             <td class="px-3 py-2 text-right font-mono tabular-nums">{{ $latest !== null ? rtrim(rtrim((string) $latest->rate, '0'), '.') : '—' }}</td>
                             <td class="px-3 py-2 text-right font-mono tabular-nums">{{ $latest !== null ? rtrim(rtrim((string) $latest->margin_percent, '0'), '.') : '—' }}</td>
                             <td class="px-3 py-2 text-ink-soft">{{ $latest->source ?? '—' }}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">{{ $latest?->fetched_at?->diffForHumans() ?? __('Never') }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">
+                                {{ $latest?->fetched_at?->diffForHumans() ?? __('Never') }}
+                                {{-- Stale-rate warning (docs/09 §H): older than 48h --}}
+                                @if ($latest?->fetched_at !== null && $latest->fetched_at->lt(now()->subHours(48)))
+                                    <x-ui.badge variant="warn" class="ml-1">{{ __('Stale — older than 48h') }}</x-ui.badge>
+                                @endif
+                            </td>
                             <td class="px-3 py-2">
                                 <div class="flex items-start gap-2">
                                     <div>

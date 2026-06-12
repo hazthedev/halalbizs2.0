@@ -16,7 +16,6 @@ use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\SubOrder;
 use App\Models\User;
-use App\Models\Voucher;
 use App\Settings\CodSettings;
 use App\Settings\OrderSettings;
 use App\Support\Money;
@@ -34,11 +33,15 @@ class CheckoutService
         private CommissionResolver $commission,
         private SubOrderStatusService $statusService,
         private CartService $cartService,
+        private VoucherService $vouchers,
         private CodSettings $codSettings,
         private OrderSettings $orderSettings,
     ) {}
 
     /**
+     * Stacking (docs/09 §B, Shopee model): one platform voucher + one shop
+     * voucher per order. $platformCode keeps the old 4th-positional meaning.
+     *
      * @param  array<int, string>  $sellerNotes  keyed by store_id
      *
      * @throws CheckoutException
@@ -47,10 +50,11 @@ class CheckoutService
         User $buyer,
         Address $address,
         PaymentMethod $method,
-        ?string $voucherCode = null,
+        ?string $platformCode = null,
+        ?string $shopCode = null,
         array $sellerNotes = [],
     ): Order {
-        return DB::transaction(function () use ($buyer, $address, $method, $voucherCode) {
+        return DB::transaction(function () use ($buyer, $address, $method, $platformCode, $shopCode) {
             // 1. Reload selected cart lines with the variants locked.
             $items = $buyer->cart?->items()
                 ->where('selected', true)
@@ -126,26 +130,45 @@ class CheckoutService
                 $shippingTotalSen += $shippingFee;
             }
 
-            // 3. Voucher (voucher_lite until M8): platform scope only, consumed atomically.
-            $discountTotalSen = 0;
-            $voucher = null;
+            // 3. Vouchers (M8 engine, docs/09 §B): one platform + one shop
+            //    code, each re-validated and consumed under lockForUpdate in
+            //    THIS transaction — quota can never oversell.
+            $storeSubtotals = [];
 
-            if ($voucherCode !== null && $voucherCode !== '') {
-                $voucher = Voucher::where('scope', VoucherScope::Platform)
-                    ->whereNull('store_id')
-                    ->where('code', $voucherCode)
-                    ->lockForUpdate()
-                    ->first();
-
-                if ($voucher === null || ! $voucher->isRedeemableBy($buyer, $subtotalSen)) {
-                    throw new CheckoutException(__('This voucher can’t be applied to your order.'));
-                }
-
-                $discountTotalSen = min($voucher->discountSenFor($subtotalSen), $subtotalSen);
-                $voucher->increment('used_count');
+            foreach ($storeTotals as $storeId => $data) {
+                $storeSubtotals[$storeId] = $data['items_subtotal_sen'];
             }
 
-            $grandTotalSen = $subtotalSen + $shippingTotalSen - $discountTotalSen;
+            $platformDiscount = $platformCode !== null && $platformCode !== ''
+                ? $this->vouchers->validate($platformCode, $buyer, $storeSubtotals, VoucherScope::Platform, lock: true)
+                : null;
+
+            $shopDiscount = $shopCode !== null && $shopCode !== ''
+                ? $this->vouchers->validate($shopCode, $buyer, $storeSubtotals, VoucherScope::Shop, lock: true)
+                : null;
+
+            // Free-shipping vouchers zero the flagged stores' fees. Track what
+            // each slot actually waived for its usage row.
+            $waivedSen = ['platform' => 0, 'shop' => 0];
+
+            foreach (['platform' => $platformDiscount, 'shop' => $shopDiscount] as $slot => $discount) {
+                foreach ($discount?->freeShippingStoreIds ?? [] as $storeId) {
+                    $waivedSen[$slot] += $storeTotals[$storeId]['shipping_fee_sen'];
+                    $shippingTotalSen -= $storeTotals[$storeId]['shipping_fee_sen'];
+                    $storeTotals[$storeId]['shipping_fee_sen'] = 0;
+                }
+            }
+
+            // Platform share lives at order level (discount_total_sen); the
+            // shop discount lands on its sub-order's shop_discount_sen below.
+            $discountTotalSen = min($platformDiscount?->totalDiscountSen ?? 0, $subtotalSen);
+            $shopDiscountTotalSen = $shopDiscount?->totalDiscountSen ?? 0;
+
+            foreach ([$platformDiscount, $shopDiscount] as $discount) {
+                $discount?->voucher->increment('used_count');
+            }
+
+            $grandTotalSen = $subtotalSen + $shippingTotalSen - $discountTotalSen - $shopDiscountTotalSen;
 
             if ($grandTotalSen <= 0) {
                 throw new CheckoutException(__('Order total must be above zero.'));
@@ -176,11 +199,13 @@ class CheckoutService
                     : null,
             ]);
 
-            if ($voucher !== null) {
-                $voucher->usages()->create([
+            // Platform usage → order_id. For free shipping the "discount" is
+            // the shipping it waived.
+            if ($platformDiscount !== null) {
+                $platformDiscount->voucher->usages()->create([
                     'user_id' => $buyer->id,
                     'order_id' => $order->id,
-                    'discount_sen' => $discountTotalSen,
+                    'discount_sen' => $discountTotalSen + $waivedSen['platform'],
                     'created_at' => now(),
                 ]);
             }
@@ -203,6 +228,8 @@ class CheckoutService
                     ->first(fn ($line) => $line->variant->product->category_id === $dominantCategory)
                     ?->variant->product->category;
 
+                $shopDiscountSen = $shopDiscount?->discountForStore((int) $storeId) ?? 0;
+
                 $subOrder = SubOrder::create([
                     'sub_order_no' => SubOrder::generateSubOrderNo(),
                     'order_id' => $order->id,
@@ -212,10 +239,21 @@ class CheckoutService
                         : SubOrderStatus::PendingPayment,
                     'items_subtotal_sen' => $data['items_subtotal_sen'],
                     'shipping_fee_sen' => $data['shipping_fee_sen'],
-                    'shop_discount_sen' => 0,
-                    'total_sen' => $data['items_subtotal_sen'] + $data['shipping_fee_sen'],
+                    'shop_discount_sen' => $shopDiscountSen,
+                    'total_sen' => $data['items_subtotal_sen'] + $data['shipping_fee_sen'] - $shopDiscountSen,
                     'commission_rate' => $this->commission->resolve($store, $category),
                 ]);
+
+                // Shop usage → sub_order_id, written once the sub-order exists.
+                if ($shopDiscount !== null && (int) $shopDiscount->voucher->store_id === (int) $storeId) {
+                    $shopDiscount->voucher->usages()->create([
+                        'user_id' => $buyer->id,
+                        'order_id' => $order->id,
+                        'sub_order_id' => $subOrder->id,
+                        'discount_sen' => $shopDiscountSen + $waivedSen['shop'],
+                        'created_at' => now(),
+                    ]);
+                }
 
                 foreach ($data['lines'] as $line) {
                     $variant = $line->variant;

@@ -132,7 +132,7 @@ test('applying a platform voucher shows the discount and lower total', function 
         ->assertSee('RM 105.00')
         ->set('voucherCode', 'SAVE5')
         ->call('applyVoucher')
-        ->assertSet('appliedVoucherCode', 'SAVE5')
+        ->assertSet('appliedPlatformCode', 'SAVE5')
         ->assertSee('SAVE5')
         ->assertSee('-RM 5.00')
         ->assertSee('RM 100.00'); // grand total after discount
@@ -148,7 +148,7 @@ test('an invalid voucher code shows a human error and no discount', function () 
         ->test(Checkout::class)
         ->set('voucherCode', 'NOPE')
         ->call('applyVoucher')
-        ->assertSet('appliedVoucherCode', null)
+        ->assertSet('appliedPlatformCode', null)
         ->assertSee("We can't find that voucher");
 });
 
@@ -163,7 +163,7 @@ test('a voucher below its minimum spend says how far away you are', function () 
         ->test(Checkout::class)
         ->set('voucherCode', 'MIN150')
         ->call('applyVoucher')
-        ->assertSet('appliedVoucherCode', null)
+        ->assertSet('appliedPlatformCode', null)
         ->assertSee('needs a RM 150.00 minimum')
         ->assertSee('RM 50.00 away');
 });

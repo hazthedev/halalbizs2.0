@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller\Orders;
 
 use App\Enums\ActorType;
+use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
 use App\Livewire\Concerns\CurrentStore;
 use App\Livewire\Seller\Orders\Concerns\ManagesShipment;
@@ -27,12 +28,16 @@ class Detail extends Component
 
     public ?int $cancelReasonId = null;
 
+    public string $disputeReason = '';
+
+    public bool $disputing = false;
+
     public function mount(SubOrder $subOrder): void
     {
         // Leakage guard: another store's sub-order is a 403, not a redirect.
         $this->authorizeStore($subOrder->store_id);
 
-        $this->subOrder = $subOrder->load(['items.product.media', 'order.user', 'statusHistories']);
+        $this->subOrder = $subOrder->load(['items.product.media', 'order.user', 'statusHistories', 'returnRequest.reason', 'returnRequest.media']);
     }
 
     /** confirmed → processing. */
@@ -92,6 +97,74 @@ class Detail extends Component
         $this->dispatch('toast', message: __('Marked as delivered.'));
     }
 
+    /**
+     * Step 1 of the accept path (docs/09 §D): the request flips to accepted
+     * and the buyer ships the item back (manual v1). The sub-order stays
+     * return_requested until the seller confirms receipt.
+     */
+    public function acceptReturn(): void
+    {
+        $request = $this->subOrder->returnRequest;
+
+        if ($this->subOrder->status !== SubOrderStatus::ReturnRequested || $request?->status !== ReturnStatus::Requested) {
+            return;
+        }
+
+        $request->update(['status' => ReturnStatus::Accepted]);
+
+        $this->refreshSubOrder();
+
+        $this->dispatch('toast', message: __('Return accepted — the buyer will ship the item back to you.'));
+    }
+
+    /** Step 2: item came back → returned. The refund itself is an admin task. */
+    public function confirmItemReceived(): void
+    {
+        $request = $this->subOrder->returnRequest;
+
+        if ($this->subOrder->status !== SubOrderStatus::ReturnRequested || $request?->status !== ReturnStatus::Accepted) {
+            return;
+        }
+
+        app(SubOrderStatusService::class)->transition(
+            $this->subOrder,
+            SubOrderStatus::Returned,
+            ActorType::Seller,
+            auth()->id(),
+            __('Returned item received by the seller'),
+        );
+
+        $this->refreshSubOrder();
+
+        $this->dispatch('toast', message: __('Item received — our team will process the refund.'));
+    }
+
+    /** Dispute → straight to the admin queue. The sub-order status does not move. */
+    public function disputeReturn(): void
+    {
+        $this->validate(
+            ['disputeReason' => ['required', 'string', 'min:10', 'max:1000']],
+            [],
+            ['disputeReason' => __('dispute reason')],
+        );
+
+        $request = $this->subOrder->returnRequest;
+
+        if ($this->subOrder->status !== SubOrderStatus::ReturnRequested || $request?->status !== ReturnStatus::Requested) {
+            return;
+        }
+
+        $request->update([
+            'status' => ReturnStatus::Disputed,
+            'seller_response' => trim($this->disputeReason),
+            'escalated_at' => now(),
+        ]);
+
+        $this->refreshSubOrder();
+
+        $this->dispatch('toast', message: __('Return disputed — our team will review it and decide.'));
+    }
+
     protected function afterShipped(SubOrder $subOrder): void
     {
         $this->refreshSubOrder();
@@ -109,7 +182,9 @@ class Detail extends Component
 
     private function refreshSubOrder(): void
     {
-        $this->subOrder = $this->subOrder->fresh(['items.product.media', 'order.user', 'statusHistories']);
+        $this->subOrder = $this->subOrder->fresh(['items.product.media', 'order.user', 'statusHistories', 'returnRequest.reason', 'returnRequest.media']);
         $this->cancelReasonId = null;
+        $this->disputeReason = '';
+        $this->disputing = false;
     }
 }
