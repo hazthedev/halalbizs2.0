@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PreferenceController;
+use App\Livewire\Seller\ApplicationStatus;
+use App\Livewire\Seller\Apply;
 use App\Livewire\Storefront;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -57,8 +59,8 @@ Route::middleware(['auth'])->prefix('account')->name('account.')->group(function
     Route::view('/orders', 'storefront.placeholder')->name('orders'); // M4
 });
 
-// ===== Seller application (outside the approved-seller group) — M3 =====
-Route::middleware(['auth'])->group(function () {
-    Route::view('/seller/apply', 'storefront.placeholder')->name('seller.apply');
-    Route::view('/seller/status', 'storefront.placeholder')->name('seller.status');
+// ===== Seller application (outside the approved-seller group) =====
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/seller/apply', Apply::class)->name('seller.apply');
+    Route::get('/seller/status', ApplicationStatus::class)->name('seller.status');
 });

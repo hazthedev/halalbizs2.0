@@ -26,6 +26,7 @@ class Store extends Model implements HasMedia
         'user_id', 'name', 'slug', 'description', 'status', 'rejection_reason',
         'holiday_mode', 'commission_rate', 'state', 'sst_registered', 'sst_number',
         'bank_details', 'approved_at',
+        'shipping_mode', 'shipping_flat_fee_sen', 'shipping_matrix', 'free_shipping_over_sen',
     ];
 
     protected function casts(): array
@@ -38,6 +39,9 @@ class Store extends Model implements HasMedia
             'approved_at' => 'datetime',
             'commission_rate' => 'decimal:2',
             'rating_avg' => 'decimal:2',
+            'shipping_flat_fee_sen' => 'integer',
+            'shipping_matrix' => 'array',
+            'free_shipping_over_sen' => 'integer',
         ];
     }
 

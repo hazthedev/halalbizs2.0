@@ -8,7 +8,7 @@
     @stack('meta')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="flex min-h-screen flex-col bg-paper text-ink antialiased"
+<body class="flex min-h-screen flex-col overflow-x-clip bg-paper text-ink antialiased"
       x-data
       x-init="$store.cart.set({{ app(\App\Services\CartService::class)->itemCount(auth()->user()) }})">
 
