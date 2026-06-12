@@ -6,6 +6,7 @@ use App\Enums\DocumentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -30,5 +31,14 @@ class StoreDocument extends Model implements HasMedia
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
+    }
+
+    public function typeLabel(): string
+    {
+        return match ($this->type) {
+            'ssm' => __('SSM certificate'),
+            'ic' => __('IC copy'),
+            default => Str::headline($this->type),
+        };
     }
 }

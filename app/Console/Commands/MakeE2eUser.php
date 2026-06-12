@@ -2,12 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\StoreStatus;
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Console\Command;
 
 class MakeE2eUser extends Command
 {
-    protected $signature = 'e2e:user {email}';
+    protected $signature = 'e2e:user {email} {--pending-store}';
 
     protected $description = 'Create a verified buyer for Playwright journeys (local only)';
 
@@ -26,6 +28,17 @@ class MakeE2eUser extends Command
 
         $user->forceFill(['email_verified_at' => now()])->save();
         $user->assignRole('buyer');
+
+        if ($this->option('pending-store') && $user->store === null) {
+            $store = Store::factory()->create([
+                'user_id' => $user->id,
+                'name' => 'Pending Shop '.now()->format('His'),
+                'status' => StoreStatus::Pending,
+            ]);
+            $store->documents()->create(['type' => 'ssm']);
+            $store->documents()->create(['type' => 'ic']);
+            $this->line($store->name);
+        }
 
         $this->info("Ready: {$user->email}");
 
