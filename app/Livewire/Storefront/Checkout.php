@@ -139,16 +139,14 @@ class Checkout extends Component
 
         $this->dispatch('cart-updated', count: app(CartService::class)->itemCount(auth()->user()));
 
-        // M5 lands the /pay/{order} iPay88 bridge (auto-submitting gateway
-        // form). Until then iPay88 orders go straight to the success page,
-        // flagged as awaiting payment via the notice param.
-        $params = ['order' => $order->order_no];
-
         if ($order->payment_method === PaymentMethod::Ipay88) {
-            $params['notice'] = 'payment-pending';
+            // Hand off to the iPay88 bridge (full page load — gateway form POST).
+            $this->redirect(route('payments.ipay88.pay', $order));
+
+            return;
         }
 
-        $this->redirectRoute('checkout.success', $params, navigate: true);
+        $this->redirectRoute('checkout.success', ['order' => $order->order_no], navigate: true);
     }
 
     public function render(): View

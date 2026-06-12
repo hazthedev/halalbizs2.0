@@ -11,9 +11,8 @@
 
     @if ($awaitingPayment)
         <div class="mt-6 rounded-[10px] border border-warn/40 bg-warn-tint p-4">
-            <p class="text-sm font-medium text-warn">{{ __('Payment pending — online payment arrives in M5 sandbox.') }}</p>
-            {{-- Placeholder: the /pay/{order} iPay88 bridge replaces this button in M5. --}}
-            <x-ui.button variant="secondary" disabled class="mt-3">{{ __('Complete your payment') }}</x-ui.button>
+            <p class="text-sm font-medium text-warn">{{ __('Payment pending — complete it before the window closes.') }}</p>
+            <x-ui.button :href="route('payments.ipay88.pay', $order)" class="mt-3">{{ __('Complete your payment') }}</x-ui.button>
         </div>
     @endif
 

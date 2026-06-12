@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Scheduler — single source of truth, keep in sync with docs/10.
+Schedule::command('orders:expire-unpaid')->everyMinute();
+Schedule::command('orders:auto-complete')->hourly();

@@ -33,6 +33,13 @@ return Application::configure(basePath: dirname(__DIR__))
             SetDisplayCurrency::class,
         ]);
 
+        // Gateway callbacks are signature-gated, not CSRF-gated (docs/10:
+        // never exempt anything else).
+        $middleware->validateCsrfTokens(except: [
+            'payments/ipay88/response',
+            'payments/ipay88/backend',
+        ]);
+
         $middleware->alias([
             'seller' => EnsureSeller::class,
             'admin' => EnsureAdmin::class,

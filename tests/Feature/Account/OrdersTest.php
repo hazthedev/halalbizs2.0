@@ -108,7 +108,7 @@ test('To Pay lists unpaid iPay88 orders with a countdown and hides paid, expired
         ->assertSee($awaiting->order_no)
         ->assertSee('Expires in')
         ->assertSee('Pay now')
-        ->assertSee('Online payment arrives in M5')
+        ->assertSee('/pay/'.$awaiting->order_no, false)
         ->assertDontSee($expired->order_no)
         ->assertDontSee($paid->order_no)
         ->assertDontSee($cod->order_no);

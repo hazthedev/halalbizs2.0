@@ -214,7 +214,7 @@ test('placing a COD order creates it, empties the cart, and redirects to success
         ->and($buyer->cart->items()->count())->toBe(0);
 });
 
-test('an iPay88 order redirects to success flagged as awaiting payment', function () {
+test('an iPay88 order redirects to the payment bridge', function () {
     [$buyer] = checkoutPageBuyer();
     $product = checkoutPageProduct(10000);
 
@@ -223,10 +223,7 @@ test('an iPay88 order redirects to success flagged as awaiting payment', functio
     Livewire::actingAs($buyer)
         ->test(Checkout::class)
         ->call('placeOrder')
-        ->assertRedirect(route('checkout.success', [
-            'order' => Order::first()->order_no,
-            'notice' => 'payment-pending',
-        ]));
+        ->assertRedirect(route('payments.ipay88.pay', Order::first()));
 
     expect(Order::first()->payment_method)->toBe(PaymentMethod::Ipay88);
 });

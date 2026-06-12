@@ -1,11 +1,14 @@
 <?php
 
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\Ipay88Controller;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PreferenceController;
 use App\Livewire\Seller\ApplicationStatus;
 use App\Livewire\Seller\Apply;
 use App\Livewire\Storefront;
+use App\Models\Order;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -56,6 +59,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/checkout', Storefront\Checkout::class)->name('checkout');
     Route::get('/checkout/success/{order:order_no}', Storefront\CheckoutSuccess::class)->name('checkout.success');
 });
+
+// ===== iPay88 (docs/06 §D) =====
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/pay/{order:order_no}', [Ipay88Controller::class, 'pay'])->name('payments.ipay88.pay');
+    Route::get('/payments/processing/{order:order_no}', [Ipay88Controller::class, 'processing'])->name('payments.ipay88.processing');
+    Route::get('/payments/status/{order:order_no}', function (Request $request, Order $order) {
+        abort_unless($order->user_id === $request->user()->id, 403);
+
+        return response()->json(['paid' => $order->payment_status === PaymentStatus::Paid]);
+    })->name('payments.ipay88.status');
+});
+
+// Gateway callbacks — CSRF-exempt (bootstrap/app.php), signature-gated instead.
+Route::post('/payments/ipay88/response', [Ipay88Controller::class, 'response'])->name('payments.ipay88.response');
+Route::post('/payments/ipay88/backend', [Ipay88Controller::class, 'backend'])->name('payments.ipay88.backend');
 
 // ===== Buyer account =====
 Route::middleware(['auth'])->prefix('account')->name('account.')->group(function () {

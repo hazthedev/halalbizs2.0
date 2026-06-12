@@ -51,9 +51,10 @@
                                              wire:loading.attr="disabled">
                                     {{ __('Cancel order') }}
                                 </x-ui.button>
-                                <x-ui.button variant="primary" disabled title="{{ __('Online payment arrives in M5') }}">
+                                <a href="{{ route('payments.ipay88.pay', $order) }}"
+                                   class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep">
                                     {{ __('Pay now') }}
-                                </x-ui.button>
+                                </a>
                             </div>
                         </div>
                     </x-ui.card>
