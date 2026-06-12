@@ -68,7 +68,7 @@ class ProductVariant extends Model implements HasMedia
 
     public function discountPercent(): ?int
     {
-        if (! $this->isOnSale() || $this->price_sen === 0) {
+        if (! $this->isOnSale() || $this->price_sen === 0 || $this->sale_price_sen >= $this->price_sen) {
             return null;
         }
 

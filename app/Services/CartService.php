@@ -81,6 +81,15 @@ class CartService
         $this->cartFor($user)->items()->where('product_variant_id', $variant->id)->delete();
     }
 
+    public function hasItem(?User $user, int $variantId): bool
+    {
+        if ($user === null) {
+            return array_key_exists($variantId, $this->sessionItems());
+        }
+
+        return $this->cartFor($user)->items()->where('product_variant_id', $variantId)->exists();
+    }
+
     /** @return array<int, int> [variant_id => qty] */
     public function sessionItems(): array
     {

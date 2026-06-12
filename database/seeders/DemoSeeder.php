@@ -21,6 +21,12 @@ class DemoSeeder extends Seeder
     {
         $leafCategories = Category::whereDoesntHave('children')->get();
 
+        foreach (Category::whereNull('parent_id')->get() as $topCategory) {
+            if (! $topCategory->hasMedia('image')) {
+                $this->attachImage($topCategory, 'image', 400, 400, $topCategory->getTranslation('name', 'en'));
+            }
+        }
+
         // Demo buyer with default address — used by Playwright journeys.
         $buyer = User::factory()->create([
             'name' => 'Demo Buyer',

@@ -69,13 +69,20 @@ class ProductFactory extends Factory
             $basePriceSen = fake()->numberBetween(500, 50000);
             $position = 0;
 
+            $onSale = fake()->boolean(30);
+
             foreach ($colourValues as $colourValue) {
                 foreach ($sizeValues as $sizeValue) {
+                    $priceSen = $basePriceSen + fake()->numberBetween(0, 2000);
+
                     ProductVariant::factory()->create([
                         'product_id' => $product->id,
                         'options_label' => "{$colourValue->value} / {$sizeValue->value}",
                         'option_value_ids' => [$colourValue->id, $sizeValue->id],
-                        'price_sen' => $basePriceSen + fake()->numberBetween(0, 2000),
+                        'price_sen' => $priceSen,
+                        'sale_price_sen' => $onSale ? intdiv($priceSen * fake()->numberBetween(50, 90), 100) : null,
+                        'sale_starts_at' => $onSale ? now()->subDay() : null,
+                        'sale_ends_at' => $onSale ? now()->addDays(fake()->numberBetween(1, 14)) : null,
                         'is_default' => $position === 0,
                         'position' => $position++,
                     ]);
