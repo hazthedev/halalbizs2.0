@@ -1,5 +1,5 @@
-@import '@fontsource-variable/bricolage-grotesque';
-@import '@fontsource-variable/figtree';
+@import '@fontsource-variable/fraunces';
+@import '@fontsource-variable/plus-jakarta-sans';
 @import '@fontsource-variable/jetbrains-mono';
 @import 'tailwindcss';
 
@@ -9,20 +9,29 @@
 @source '../../app/Livewire/**/*.php';
 
 @theme {
-    /* canvas + ink */
-    --color-paper: #F7F7F4;
-    --color-surface: #FFFFFF;
-    --color-ink: #191B1A;
-    --color-ink-soft: #5B615D;
-    --color-ink-faint: #8B918D;
-    --color-line: #E5E7E2;
-    --color-line-strong: #C9CEC9;
+    /* ── Souk: Emerald & Brass ──
+       Warm ivory canvas, warmed ink, emerald = money/action,
+       brass = premium/ornament. */
 
-    /* emerald = money & action */
+    /* canvas + ink */
+    --color-paper: #FAF7F0;
+    --color-surface: #FFFDF8;
+    --color-ink: #1A1714;
+    --color-ink-soft: #5C544B;
+    --color-ink-faint: #8E867A;
+    --color-line: #E7E1D5;
+    --color-line-strong: #D2C9B8;
+
+    /* emerald = money & action (hexes kept exact — charts/tests depend on them) */
     --color-emerald: #047857;
     --color-emerald-deep: #065F46;
     --color-emerald-night: #03392B;
-    --color-emerald-tint: #EAF4EF;
+    --color-emerald-tint: #E7F1EB;
+
+    /* brass = premium & ornament */
+    --color-brass: #A8772E;
+    --color-brass-deep: #8A5F22;
+    --color-brass-tint: #F3EAD6;
 
     /* semantic (used sparingly) */
     --color-warn: #B45309;
@@ -30,14 +39,30 @@
     --color-warn-tint: #FBF3E8;
     --color-danger-tint: #FBEDF0;
 
-    --font-display: 'Bricolage Grotesque Variable', 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
-    --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, 'Noto Sans SC', sans-serif;
+    /* elevation — warm-tinted, low (no harsh shadows) */
+    --shadow-soft: 0 1px 2px rgba(26, 23, 20, 0.05);
+    --shadow-card: 0 1px 2px rgba(26, 23, 20, 0.04), 0 10px 28px -14px rgba(26, 23, 20, 0.14);
+    --shadow-pop: 0 8px 40px -8px rgba(26, 23, 20, 0.22);
+
+    /* radius scale */
+    --radius-control: 11px;
+    --radius-card: 14px;
+
+    /* type — Fraunces (display) + Plus Jakarta Sans (body) + JetBrains Mono (ids/amounts) */
+    --font-display: 'Fraunces Variable', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+    --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, 'Noto Sans SC', sans-serif;
     --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
 }
 
 @layer base {
     body {
         @apply bg-paper text-ink font-sans antialiased;
+    }
+
+    /* Fraunces shines at large optical sizes; tighten a touch for display use. */
+    .font-display {
+        font-optical-sizing: auto;
+        letter-spacing: -0.012em;
     }
 
     :focus-visible {
@@ -54,6 +79,57 @@
     }
 }
 
+/* tabular numerals for prices, counts, ids */
 @utility tnum {
     font-feature-settings: 'tnum';
+}
+
+/* ── Islamic geometric ornament ──
+   Rub-el-Hizb (interlaced-square / khatam) tilings as low-opacity fields.
+   Inner attrs single-quoted, '#' → %23 so the data URI is valid CSS. */
+
+/* light lines — for dark ink frames (header/footer/topbar watermark) */
+@utility surface-girih {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='46' viewBox='0 0 46 46'%3E%3Cg fill='none' stroke='%23F4EFE6' stroke-opacity='0.06' stroke-width='1'%3E%3Crect x='14' y='14' width='18' height='18'/%3E%3Crect x='14' y='14' width='18' height='18' transform='rotate(45 23 23)'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 46px 46px;
+}
+
+/* brass lines — for light surfaces (hero / section fields / empty states) */
+@utility surface-zellij {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23A8772E' stroke-opacity='0.12' stroke-width='1'%3E%3Crect x='18' y='18' width='24' height='24'/%3E%3Crect x='18' y='18' width='24' height='24' transform='rotate(45 30 30)'/%3E%3Ccircle cx='30' cy='30' r='2.5'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 60px 60px;
+}
+
+/* emerald lines — for emerald-tint blocks */
+@utility surface-girih-emerald {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='46' viewBox='0 0 46 46'%3E%3Cg fill='none' stroke='%23047857' stroke-opacity='0.10' stroke-width='1'%3E%3Crect x='14' y='14' width='18' height='18'/%3E%3Crect x='14' y='14' width='18' height='18' transform='rotate(45 23 23)'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 46px 46px;
+}
+
+/* ── Motion (all collapses under prefers-reduced-motion via the base rule) ── */
+@keyframes hb-rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* staggered page-load reveal — pair with inline style="animation-delay:..." */
+@utility reveal {
+    animation: hb-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes hb-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* warm shimmer for skeletons */
+@utility shimmer {
+    background-image: linear-gradient(
+        90deg,
+        var(--color-line) 25%,
+        color-mix(in srgb, var(--color-line) 55%, white) 50%,
+        var(--color-line) 75%
+    );
+    background-size: 200% 100%;
+    animation: hb-shimmer 1.5s ease-in-out infinite;
 }

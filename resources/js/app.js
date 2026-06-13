@@ -9,14 +9,17 @@ window.Swiper = Swiper;
 window.SwiperModules = { Navigation, Pagination, A11y };
 window.ApexCharts = ApexCharts;
 
-// ===== Ink & Emerald chart palette (design §2/§10: solid fills, no gradients) =====
-const HB_INK = '#191B1A';
-const HB_INK_SOFT = '#5B615D';
-const HB_LINE = '#E5E7E2';
+// ===== Souk (Emerald & Brass) chart palette — solid fills, warm neutrals =====
+// Emerald/warn/danger hexes are kept exact (dashboard tests + status semantics
+// assert them); only the neutrals are warmed to match the new ivory canvas.
+const HB_INK = '#1A1714';
+const HB_INK_SOFT = '#5C544B';
+const HB_LINE = '#E7E1D5';
 const HB_EMERALD = '#047857';
 const HB_WARN = '#B45309';
 const HB_DANGER = '#BE123C';
-const HB_SLATE = '#475569';
+const HB_SLATE = '#7C6F5A';
+const HB_BRASS = '#A8772E';
 
 // Status → token colour, shared by donuts across dashboards.
 window.hbStatusColor = (status) => ({
@@ -37,20 +40,20 @@ const prefersReducedMotion = () =>
 
 /**
  * Base ApexCharts options shared by every HalalBizs chart: flat, solid fills,
- * Figtree, tabular tooltips, no gradients/toolbar. Merged shallowly with the
+ * Plus Jakarta Sans, tabular tooltips, no toolbar. Merged shallowly with the
  * per-chart payload's `options`.
  */
 function hbBaseOptions(type) {
     return {
         chart: {
             type,
-            fontFamily: '"Figtree Variable", ui-sans-serif, system-ui, sans-serif',
+            fontFamily: '"Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif',
             toolbar: { show: false },
             zoom: { enabled: false },
             animations: { enabled: !prefersReducedMotion(), speed: 400 },
             background: 'transparent',
         },
-        colors: [HB_EMERALD, HB_INK_SOFT, HB_SLATE, HB_WARN, HB_DANGER],
+        colors: [HB_EMERALD, HB_BRASS, HB_SLATE, HB_WARN, HB_DANGER, HB_INK_SOFT],
         fill: { type: 'solid', opacity: type === 'area' ? 0.08 : 1 },
         stroke: { curve: 'smooth', width: type === 'line' || type === 'area' ? 2.5 : 0 },
         grid: { borderColor: HB_LINE, strokeDashArray: 0, padding: { left: 8, right: 8 } },
