@@ -1,13 +1,14 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <div class="flex items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold">{{ __('Products') }}</h1>
-        <x-ui.button :href="route('seller.products.create')">
-            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-            {{ __('Add product') }}
-        </x-ui.button>
-    </div>
+    <x-ui.section-heading as="h1" :title="__('Products')">
+        <x-slot:actions>
+            <x-ui.button :href="route('seller.products.create')">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                {{ __('Add product') }}
+            </x-ui.button>
+        </x-slot:actions>
+    </x-ui.section-heading>
 
     {{-- Filters --}}
     <x-ui.card class="p-3">
@@ -48,7 +49,7 @@
 
     {{-- Bulk actions --}}
     @if (count($selected) > 0)
-        <div class="flex items-center gap-3 rounded-[10px] border border-line bg-surface px-4 py-2">
+        <div class="flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-2 shadow-soft">
             <span class="text-[13px] font-medium text-ink">{{ trans_choice('{1}:count selected|[2,*]:count selected', count($selected), ['count' => count($selected)]) }}</span>
             <button type="button" wire:click="bulkDelist"
                     class="inline-flex min-h-11 items-center rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper">
@@ -68,18 +69,13 @@
         <x-ui.table-skeleton wire:loading wire:target="search, status, category, lowStock" />
         <div wire:loading.remove wire:target="search, status, category, lowStock">
         @if ($products->isEmpty())
-            <div class="px-6 py-16 text-center">
-                @if ($search !== '' || $status !== '' || $category !== null || $lowStock)
-                    <h2 class="font-display text-xl font-semibold">{{ __('No products match') }}</h2>
-                    <p class="mt-1 text-sm text-ink-soft">{{ __('Try removing a filter or searching for something else.') }}</p>
-                @else
-                    <h2 class="font-display text-xl font-semibold">{{ __('Nothing on the shelves yet') }}</h2>
-                    <p class="mt-1 text-sm text-ink-soft">{{ __('Your products appear here once you add them.') }}</p>
-                    <div class="mt-5">
-                        <x-ui.button :href="route('seller.products.create')">{{ __('Add your first product') }}</x-ui.button>
-                    </div>
-                @endif
-            </div>
+            @if ($search !== '' || $status !== '' || $category !== null || $lowStock)
+                <x-ui.empty-state :title="__('No products match')" :message="__('Try removing a filter or searching for something else.')" />
+            @else
+                <x-ui.empty-state :title="__('Nothing on the shelves yet')" :message="__('Your products appear here once you add them.')">
+                    <x-ui.button :href="route('seller.products.create')">{{ __('Add your first product') }}</x-ui.button>
+                </x-ui.empty-state>
+            @endif
         @else
             <table class="w-full min-w-[820px] text-[13px]">
                 <thead class="sticky top-14 z-10 bg-surface">

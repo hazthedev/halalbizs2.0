@@ -30,9 +30,6 @@
             </x-ui.card>
         </div>
     @else
-        <x-ui.card class="px-6 py-16 text-center">
-            <p class="font-display text-xl font-semibold">{{ __('No notifications') }}</p>
-            <p class="mt-1 text-sm text-ink-soft">{{ __('Order updates and announcements will appear here.') }}</p>
-        </x-ui.card>
+        <x-ui.empty-state :title="__('No notifications')" :message="__('Order updates and announcements will appear here.')" />
     @endif
 </x-account-shell>

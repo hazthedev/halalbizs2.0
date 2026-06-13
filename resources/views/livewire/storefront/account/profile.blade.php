@@ -2,7 +2,7 @@
     <div class="space-y-6">
         {{-- Account details --}}
         <x-ui.card class="p-6">
-            <h2 class="font-display text-xl font-semibold">{{ __('Account details') }}</h2>
+            <x-ui.section-heading :title="__('Account details')" />
 
             <form wire:submit="updateProfile" class="mt-5 space-y-4">
                 <x-ui.input
@@ -17,7 +17,7 @@
                 {{-- Email is fixed for now — shown read-only with its verification state --}}
                 <div>
                     <span class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Email') }}</span>
-                    <div class="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-line bg-paper px-3.5 py-2.5">
+                    <div class="flex min-h-11 items-center justify-between gap-3 rounded-[var(--radius-control)] border border-line bg-paper px-3.5 py-2.5">
                         <span class="truncate text-sm text-ink-soft">{{ auth()->user()->email }}</span>
                         @if (auth()->user()->hasVerifiedEmail())
                             <x-ui.badge variant="verified">
@@ -44,7 +44,7 @@
                     <div>
                         <label for="preferred_locale" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Language') }}</label>
                         <select id="preferred_locale" wire:model="preferred_locale"
-                                class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('preferred_locale') ? 'border-danger' : 'border-line-strong' }}">
+                                class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('preferred_locale') ? 'border-danger' : 'border-line-strong' }}">
                             @foreach ($locales as $locale)
                                 <option value="{{ $locale }}">{{ $locale === 'ms' ? 'Bahasa Melayu' : 'English' }}</option>
                             @endforeach
@@ -57,7 +57,7 @@
                     <div>
                         <label for="preferred_currency" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Currency') }}</label>
                         <select id="preferred_currency" wire:model="preferred_currency"
-                                class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('preferred_currency') ? 'border-danger' : 'border-line-strong' }}">
+                                class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('preferred_currency') ? 'border-danger' : 'border-line-strong' }}">
                             @foreach ($currencies as $currency)
                                 <option value="{{ $currency }}">{{ $currency }}</option>
                             @endforeach
@@ -76,7 +76,7 @@
 
         {{-- Password --}}
         <x-ui.card class="p-6">
-            <h2 class="font-display text-xl font-semibold">{{ __('Change password') }}</h2>
+            <x-ui.section-heading :title="__('Change password')" />
 
             <form wire:submit="updatePassword" class="mt-5 space-y-4">
                 <x-ui.input
@@ -118,7 +118,7 @@
 
         {{-- Security: 2FA + phone verification --}}
         <x-ui.card class="p-6" id="security">
-            <h2 class="font-display text-xl font-semibold">{{ __('Security') }}</h2>
+            <x-ui.section-heading :title="__('Security')" />
 
             {{-- ── Two-factor authentication ─────────────────────────── --}}
             <div class="mt-5">
@@ -140,7 +140,7 @@
                 {{-- Fresh recovery codes — shown exactly once --}}
                 @if ($freshRecoveryCodes !== null)
                     @php($recoveryCopyText = implode("\n", $freshRecoveryCodes))
-                    <div class="mt-4 rounded-lg border border-line bg-paper p-4">
+                    <div class="mt-4 rounded-[var(--radius-card)] border border-line bg-paper p-4">
                         <p class="text-sm font-semibold text-ink">{{ __('Your recovery codes') }}</p>
                         <p class="mt-0.5 text-[13px] text-ink-soft">{{ __('Save these somewhere safe — each works once, and this is the only time we show them.') }}</p>
                         <ul class="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 font-mono text-[13px] text-ink sm:grid-cols-3">
@@ -174,7 +174,7 @@
 
                     {{-- Email-code setup --}}
                     @if ($emailSetupPending)
-                        <form wire:submit="confirmEmailTwoFactor" class="mt-4 space-y-4 rounded-lg border border-line bg-paper p-4">
+                        <form wire:submit="confirmEmailTwoFactor" class="mt-4 space-y-4 rounded-[var(--radius-card)] border border-line bg-paper p-4">
                             <p class="text-[13px] text-ink-soft">{{ __('We\'ve emailed you a 6-digit code — enter it below to turn on email codes.') }}</p>
 
                             <x-ui.input
@@ -199,17 +199,17 @@
 
                     {{-- Authenticator (TOTP) setup --}}
                     @if ($totpSecret !== null)
-                        <form wire:submit="confirmTotpSetup" class="mt-4 space-y-4 rounded-lg border border-line bg-paper p-4">
+                        <form wire:submit="confirmTotpSetup" class="mt-4 space-y-4 rounded-[var(--radius-card)] border border-line bg-paper p-4">
                             <p class="text-[13px] text-ink-soft">{{ __('Add HalalBizs to your authenticator app (Google Authenticator, 1Password, Aegis…) by entering this secret, then confirm with the current code.') }}</p>
 
                             <div>
                                 <span class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Secret key') }}</span>
-                                <p class="select-all break-all rounded-lg border border-line bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink">{{ $totpSecret }}</p>
+                                <p class="select-all break-all rounded-[var(--radius-control)] border border-line bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink">{{ $totpSecret }}</p>
                             </div>
 
                             <div>
                                 <span class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Setup link (otpauth)') }}</span>
-                                <p class="select-all break-all rounded-lg border border-line bg-surface px-3.5 py-2.5 font-mono text-[12px] text-ink-soft">{{ $otpauthUri }}</p>
+                                <p class="select-all break-all rounded-[var(--radius-control)] border border-line bg-surface px-3.5 py-2.5 font-mono text-[12px] text-ink-soft">{{ $otpauthUri }}</p>
                                 <button type="button"
                                         x-data="{ copied: false }"
                                         x-on:click="navigator.clipboard.writeText(@js($otpauthUri)); copied = true; setTimeout(() => copied = false, 2000)"
@@ -301,7 +301,7 @@
                 </div>
 
                 @if ($phoneOtpPending)
-                    <form wire:submit="confirmPhoneCode" class="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-line bg-paper p-4">
+                    <form wire:submit="confirmPhoneCode" class="mt-4 flex flex-wrap items-end gap-3 rounded-[var(--radius-card)] border border-line bg-paper p-4">
                         <x-ui.input
                             :label="__('Code from the SMS')"
                             name="phone_otp_code"
@@ -321,7 +321,7 @@
 
         {{-- Active sessions --}}
         <x-ui.card class="p-6" id="sessions">
-            <h2 class="font-display text-xl font-semibold">{{ __('Active sessions') }}</h2>
+            <x-ui.section-heading :title="__('Active sessions')" />
             <p class="mt-1 max-w-md text-[13px] text-ink-soft">{{ __('Everywhere your account is currently logged in. Log the others out if you don\'t recognise one.') }}</p>
 
             <ul class="mt-5 divide-y divide-line">
@@ -364,7 +364,7 @@
 
         {{-- Privacy (PDPA) --}}
         <x-ui.card class="p-6">
-            <h2 class="font-display text-xl font-semibold">{{ __('Privacy') }}</h2>
+            <x-ui.section-heading :title="__('Privacy')" />
 
             <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -377,7 +377,7 @@
             </div>
 
             {{-- Danger zone --}}
-            <div class="mt-6 rounded-lg border border-danger/40 bg-danger-tint/40 p-4">
+            <div class="mt-6 rounded-[var(--radius-card)] border border-danger/40 bg-danger-tint/40 p-4">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <p class="text-sm font-semibold text-danger">{{ __('Delete account') }}</p>
@@ -397,7 +397,7 @@
             <div class="absolute inset-0 bg-ink/50" wire:click="$set('showDeleteModal', false)" aria-hidden="true"></div>
 
             {{-- shadow allowed: overlay surface --}}
-            <x-ui.card class="relative w-full max-w-md p-6 shadow-xl">
+            <x-ui.card class="relative w-full max-w-md p-6 shadow-pop">
                 <h3 id="delete-account-title" class="font-display text-xl font-semibold text-danger">{{ __('Delete this account?') }}</h3>
                 <p class="mt-2 text-[13px] text-ink-soft">{{ __('This cannot be undone. Your personal details are anonymized immediately; order records stay for legal and financial reasons.') }}</p>
 

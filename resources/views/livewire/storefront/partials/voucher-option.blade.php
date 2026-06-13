@@ -4,7 +4,7 @@
 <button type="button"
         @if ($option->minSpendMet && ! $applied) wire:click="selectVoucher({{ $option->voucher->id }})" @endif
         @if (! $option->minSpendMet) disabled @endif
-        class="flex w-full items-center justify-between gap-3 rounded-lg border p-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald
+        class="flex w-full items-center justify-between gap-3 rounded-[var(--radius-control)] border p-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald
             {{ $applied ? 'border-emerald bg-emerald-tint' : ($option->minSpendMet ? 'cursor-pointer border-line-strong hover:border-ink' : 'border-line opacity-60') }}">
     <span class="min-w-0">
         <span class="flex flex-wrap items-center gap-1.5">

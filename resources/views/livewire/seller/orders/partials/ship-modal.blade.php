@@ -11,7 +11,7 @@
     >
         <div class="fixed inset-0 bg-ink/40" wire:click="closeShipModal" aria-hidden="true"></div>
 
-        <div class="relative w-full max-w-md rounded-[10px] border border-line bg-surface p-5 shadow-xl">
+        <div class="relative w-full max-w-md rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-pop">
             <h2 id="ship-modal-title" class="font-display text-xl font-semibold">{{ __('Arrange shipment') }}</h2>
             <p class="mt-1 text-[13px] text-ink-soft">{{ __('Pick the courier and enter the tracking number from the consignment note.') }}</p>
 

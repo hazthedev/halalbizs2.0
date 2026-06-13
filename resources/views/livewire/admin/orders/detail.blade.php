@@ -115,13 +115,13 @@
                         <label for="cancel-reason" class="block text-[13px] font-medium text-ink">{{ __('Cancellation reason') }}</label>
                         <input id="cancel-reason" type="text" wire:model="cancelReason"
                                placeholder="{{ __('e.g. Fraudulent order, seller unreachable') }}"
-                               class="block min-h-11 w-full rounded-lg border bg-surface px-3 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('cancelReason') ? 'border-danger' : 'border-line-strong' }}">
+                               class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('cancelReason') ? 'border-danger' : 'border-line-strong' }}">
                         @error('cancelReason')
                             <p class="text-[13px] text-danger">{{ $message }}</p>
                         @enderror
                         <button type="button" wire:click="forceCancel" wire:loading.attr="disabled"
                                 wire:confirm="{{ __('Force-cancel this sub-order? Items return to stock and the buyer is notified — this cannot be undone.') }}"
-                                class="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-danger px-4 text-sm font-semibold text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                                class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-semibold text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                             {{ __('Force cancel') }}
                         </button>
                     </div>
@@ -132,14 +132,14 @@
                         <label for="refund-reference" class="block text-[13px] font-medium text-ink">{{ __('iPay88 portal reference') }}</label>
                         <input id="refund-reference" type="text" wire:model="refundReference"
                                placeholder="{{ __('Reference from the iPay88 merchant portal') }}"
-                               class="block min-h-11 w-full rounded-lg border bg-surface px-3 font-mono text-[13px] text-ink placeholder:font-sans placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('refundReference') ? 'border-danger' : 'border-line-strong' }}">
+                               class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 font-mono text-[13px] text-ink placeholder:font-sans placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('refundReference') ? 'border-danger' : 'border-line-strong' }}">
                         @error('refundReference')
                             <p class="text-[13px] text-danger">{{ $message }}</p>
                         @enderror
                         <p class="text-[12px] text-ink-soft">{{ __('Process the refund in the iPay88 merchant portal first, then record its reference here.') }}</p>
                         <button type="button" wire:click="markRefunded" wire:loading.attr="disabled"
                                 wire:confirm="{{ __('Mark this sub-order refunded? The order payment status flips to refunded — this cannot be undone.') }}"
-                                class="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-danger px-4 text-sm font-semibold text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                                class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-semibold text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                             {{ __('Mark refunded') }}
                         </button>
                     </div>

@@ -1,18 +1,18 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Reviews') }}</h1>
+    <x-ui.section-heading :title="__('Reviews')" as="h1" />
 
     {{-- Filters --}}
     <div class="flex flex-wrap items-center gap-3">
         <label class="sr-only" for="review-search">{{ __('Search by store') }}</label>
         <input id="review-search" type="search" wire:model.live.debounce.300ms="search"
                placeholder="{{ __('Search by store name…') }}"
-               class="w-full max-w-xs rounded-lg border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+               class="w-full max-w-xs rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
 
         <label class="sr-only" for="review-rating">{{ __('Filter by rating') }}</label>
         <select id="review-rating" wire:model.live="rating"
-                class="min-h-11 rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             <option value="">{{ __('Any rating') }}</option>
             @foreach ([5, 4, 3, 2, 1] as $star)
                 <option value="{{ $star }}">{{ $star }} ★</option>
@@ -29,10 +29,7 @@
     {{-- Datagrid --}}
     <x-ui.card class="overflow-x-auto">
         @if ($reviews->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No reviews found') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Buyer reviews appear here the moment they are posted.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No reviews found')" :message="__('Buyer reviews appear here the moment they are posted.')" />
         @else
             <table class="w-full min-w-[960px] text-[13px]">
                 <thead>
@@ -94,7 +91,7 @@
     {{-- Hide/unhide reason modal --}}
     @if ($moderating !== null)
         <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:p-8" wire:click.self="cancelModeration">
-            <x-ui.card class="w-full max-w-lg shadow-lg">
+            <x-ui.card class="w-full max-w-lg shadow-pop">
                 <form wire:submit="confirmModeration">
                     <div class="border-b border-line px-5 py-4">
                         <h2 class="font-display text-lg font-semibold">
@@ -106,7 +103,7 @@
                         <label for="moderation-reason" class="block text-[13px] font-medium text-ink">{{ __('Reason') }}</label>
                         <textarea id="moderation-reason" wire:model="moderationReason" rows="3"
                                   placeholder="{{ __('e.g. Offensive language — violates the review guidelines.') }}"
-                                  class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('moderationReason') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                                  class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('moderationReason') ? 'border-danger' : 'border-line-strong' }}"></textarea>
                         @error('moderationReason')<p class="text-[13px] text-danger">{{ $message }}</p>@enderror
                         <p class="text-[13px] text-ink-faint">
                             {{ $moderating->is_hidden
@@ -116,14 +113,14 @@
                     </div>
                     <div class="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
                         <button type="button" wire:click="cancelModeration"
-                                class="inline-flex min-h-11 items-center rounded-lg px-3 text-[13px] font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Cancel') }}
                         </button>
                         @if ($moderating->is_hidden)
                             <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Unhide review') }}</x-ui.button>
                         @else
                             <button type="submit" wire:loading.attr="disabled"
-                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-danger px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-danger px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
                                 {{ __('Hide review') }}
                             </button>
                         @endif

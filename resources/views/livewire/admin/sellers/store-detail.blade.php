@@ -4,9 +4,9 @@
     <div class="flex flex-wrap items-center gap-3">
         @php $logoUrl = $store->getFirstMediaUrl('logo'); @endphp
         @if ($logoUrl !== '')
-            <img src="{{ $logoUrl }}" alt="{{ $store->name }}" class="size-12 rounded-[10px] border border-line bg-paper object-cover">
+            <img src="{{ $logoUrl }}" alt="{{ $store->name }}" class="size-12 rounded-[var(--radius-card)] border border-line bg-paper object-cover">
         @else
-            <span class="flex size-12 items-center justify-center rounded-[10px] border border-line bg-paper font-display text-lg font-bold text-ink-faint" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($store->name, 0, 1)) }}</span>
+            <span class="flex size-12 items-center justify-center rounded-[var(--radius-card)] border border-line bg-paper font-display text-lg font-bold text-ink-faint" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($store->name, 0, 1)) }}</span>
         @endif
 
         <div class="min-w-0">
@@ -22,12 +22,12 @@
 
         <div class="ml-auto flex items-center gap-2">
             <a href="{{ route('admin.sellers.stores') }}" wire:navigate
-               class="inline-flex min-h-11 items-center rounded-lg px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+               class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('All stores') }}
             </a>
             @if ($store->isApproved())
                 <a href="{{ $store->storefrontUrl() }}" target="_blank" rel="noopener"
-                   class="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                   class="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('View storefront') }}
                     <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
                 </a>
@@ -80,7 +80,7 @@
                     <textarea id="suspend-reason"
                               wire:model="suspendReason"
                               rows="2"
-                              class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('suspendReason') ? 'border-danger' : 'border-line-strong' }}"
+                              class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('suspendReason') ? 'border-danger' : 'border-line-strong' }}"
                               placeholder="{{ __('e.g. Repeated counterfeit listings after two warnings.') }}"></textarea>
                     @error('suspendReason')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
@@ -114,7 +114,7 @@
                            max="100"
                            wire:model="commissionRate"
                            placeholder="{{ __('Inherit') }}"
-                           class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('commissionRate') ? 'border-danger' : 'border-line-strong' }}">
+                           class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('commissionRate') ? 'border-danger' : 'border-line-strong' }}"
                 </div>
                 <x-ui.button variant="secondary" wire:click="saveCommission" wire:loading.attr="disabled">
                     {{ __('Save override') }}

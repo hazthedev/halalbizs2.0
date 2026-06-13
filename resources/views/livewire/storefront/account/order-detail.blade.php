@@ -36,7 +36,7 @@
                     @if ($showInvoice)
                         {{-- Plain anchor: file download must not go through wire:navigate --}}
                         <a href="{{ route('account.orders.invoice', $subOrder) }}"
-                           class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-ink px-4 py-2.5 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper">
+                           class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-ink px-4 py-2.5 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper">
                             {{ __('Download invoice') }}
                         </a>
                     @endif
@@ -65,10 +65,10 @@
             @endif
 
             @if ($cancelling)
-                <div class="mt-4 rounded-lg border border-danger/40 bg-danger-tint/40 p-4">
+                <div class="mt-4 rounded-[var(--radius-card)] border border-danger/40 bg-danger-tint/40 p-4">
                     <label for="cancel-reason" class="block text-[13px] font-medium text-ink">{{ __('Why are you cancelling?') }}</label>
                     <select id="cancel-reason" wire:model="cancelReasonId"
-                            class="mt-2 block w-full max-w-sm rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald">
+                            class="mt-2 block w-full max-w-sm rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald">
                         <option value="">{{ __('Pick a reason') }}</option>
                         @foreach ($cancelReasons as $reason)
                             <option value="{{ $reason->id }}">{{ $reason->label }}</option>
@@ -91,12 +91,12 @@
 
             {{-- Return request panel (docs/09 §D): reason + description + up to 5 photos --}}
             @if ($requestingReturn)
-                <div class="mt-4 rounded-lg border border-line-strong bg-paper p-4">
+                <div class="mt-4 rounded-[var(--radius-card)] border border-line-strong bg-paper p-4">
                     <h3 class="text-sm font-semibold text-ink">{{ __('Request a return') }}</h3>
 
                     <label for="return-reason" class="mt-3 block text-[13px] font-medium text-ink">{{ __('Why are you returning this order?') }}</label>
                     <select id="return-reason" wire:model="returnReasonId"
-                            class="mt-2 block w-full max-w-sm rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald">
+                            class="mt-2 block w-full max-w-sm rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald">
                         <option value="">{{ __('Pick a reason') }}</option>
                         @foreach ($returnReasons as $reason)
                             <option value="{{ $reason->id }}">{{ $reason->label }}</option>
@@ -109,14 +109,14 @@
                     <label for="return-description" class="mt-3 block text-[13px] font-medium text-ink">{{ __('Tell us more (optional)') }}</label>
                     <textarea id="return-description" wire:model="returnDescription" rows="3"
                               placeholder="{{ __('What went wrong with the order?') }}"
-                              class="mt-2 block w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald"></textarea>
+                              class="mt-2 block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald"></textarea>
                     @error('returnDescription')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                     @enderror
 
                     <label for="return-photos" class="mt-3 block text-[13px] font-medium text-ink">{{ __('Photos (up to :max, optional)', ['max' => \App\Models\ReturnRequest::MAX_PHOTOS]) }}</label>
                     <input id="return-photos" type="file" wire:model="returnPhotos" multiple accept="image/*"
-                           class="mt-2 block w-full max-w-sm text-[13px] text-ink-soft file:mr-3 file:rounded-lg file:border file:border-line-strong file:bg-surface file:px-3 file:py-2 file:text-[13px] file:font-medium file:text-ink">
+                           class="mt-2 block w-full max-w-sm text-[13px] text-ink-soft file:mr-3 file:rounded-[var(--radius-control)] file:border file:border-line-strong file:bg-surface file:px-3 file:py-2 file:text-[13px] file:font-medium file:text-ink">
                     <div wire:loading wire:target="returnPhotos" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                     @if (count($returnPhotos) > 0)
                         <p class="mt-1.5 text-[13px] text-ink-soft">{{ trans_choice('{1}:count photo attached|[2,*]:count photos attached', count($returnPhotos), ['count' => count($returnPhotos)]) }}</p>
@@ -184,7 +184,7 @@
                         @foreach ($returnRequest->getMedia('photos') as $photo)
                             <li wire:key="return-photo-{{ $photo->id }}">
                                 <a href="{{ $photo->getUrl() }}" target="_blank" rel="noopener"
-                                   class="block size-16 overflow-hidden rounded-lg border border-line bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald">
+                                   class="block size-16 overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald">
                                     <img src="{{ $photo->getUrl() }}" alt="{{ __('Return photo :n', ['n' => $loop->iteration]) }}" class="size-full object-cover" loading="lazy">
                                 </a>
                             </li>
@@ -242,7 +242,7 @@
                                class="truncate text-sm font-semibold text-ink hover:text-emerald">{{ $subOrder->store->name }}</a>
                             <a href="{{ route('account.messages', ['store' => $subOrder->store_id]) }}" wire:navigate
                                data-testid="order-chat-seller"
-                               class="inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-[13px] font-medium text-ink-soft transition-colors duration-150 hover:text-ink">
+                               class="inline-flex min-h-11 items-center gap-1 rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft transition-colors duration-150 hover:text-ink">
                                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
                                 {{ __('Chat with seller') }}
                             </a>
@@ -252,7 +252,7 @@
                     <ul class="divide-y divide-line">
                         @foreach ($subOrder->items as $item)
                             <li class="flex gap-3 px-4 py-3" wire:key="item-{{ $item->id }}">
-                                <span class="block size-14 shrink-0 overflow-hidden rounded-lg border border-line bg-paper">
+                                <span class="block size-14 shrink-0 overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper">
                                     @if ($item->product?->getFirstMediaUrl('images', 'thumb'))
                                         <img src="{{ $item->product->getFirstMediaUrl('images', 'thumb') }}"
                                              alt="{{ $item->product_name }}{{ $item->variant_label ? ' — '.$item->variant_label : '' }}"
@@ -283,7 +283,7 @@
                             <p class="truncate font-mono text-sm text-ink">{{ $subOrder->tracking_no }}</p>
                             <button type="button" x-data
                                     x-on:click="navigator.clipboard.writeText(@js($subOrder->tracking_no)).then(() => $store.toasts.push(@js(__('Tracking number copied'))))"
-                                    class="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-ink-soft hover:text-ink"
+                                    class="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink"
                                     aria-label="{{ __('Copy tracking number') }}">
                                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"/></svg>
                             </button>

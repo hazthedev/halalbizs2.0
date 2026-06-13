@@ -1,25 +1,26 @@
 <div class="space-y-4">
 
-    <div class="flex items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold">{{ __('Staff & roles') }}</h1>
+    <x-ui.section-heading :title="__('Staff & roles')" as="h1">
         @unless ($showInvite)
-            <x-ui.button wire:click="startInvite">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                {{ __('Invite admin') }}
-            </x-ui.button>
+            <x-slot:actions>
+                <x-ui.button wire:click="startInvite">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    {{ __('Invite admin') }}
+                </x-ui.button>
+            </x-slot:actions>
         @endunless
-    </div>
+    </x-ui.section-heading>
 
     {{-- One-time temp password panel --}}
     @if ($generatedPassword !== null)
-        <div class="flex flex-wrap items-center gap-3 rounded-[10px] border border-emerald bg-emerald-tint px-4 py-3">
+        <div class="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-emerald bg-emerald-tint px-4 py-3 shadow-soft">
             <div class="flex-1 text-[13px] text-ink">
                 <p class="font-semibold">{{ __('Temporary password for :email', ['email' => $generatedFor]) }}</p>
                 <p class="mt-0.5 font-mono text-sm">{{ $generatedPassword }}</p>
                 <p class="mt-0.5 text-ink-soft">{{ __('Shown once — share it securely and ask them to change it after first login.') }}</p>
             </div>
             <button type="button" wire:click="dismissPassword"
-                    class="inline-flex min-h-11 items-center rounded-lg px-3 text-[13px] font-semibold text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-semibold text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Dismiss') }}
             </button>
         </div>

@@ -1,5 +1,5 @@
 <div class="mx-auto w-full max-w-3xl px-4 py-12 sm:py-16">
-    <h1 class="font-display text-3xl font-bold sm:text-4xl">{{ $page->getTranslation('title', app()->getLocale()) }}</h1>
+    <x-ui.section-heading as="h1" :title="$page->getTranslation('title', app()->getLocale())" />
 
     {{-- Trusted, admin-seeded HTML (docs/05 §B9) — prose-styled by hand, no typography plugin. --}}
     <div class="mt-8 text-base leading-relaxed text-ink

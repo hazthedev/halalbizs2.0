@@ -1,5 +1,5 @@
 <div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12">
-    <h1 class="font-display text-[28px] font-bold">{{ __('Checkout') }}</h1>
+    <x-ui.section-heading as="h1" :title="__('Checkout')" />
 
     <div class="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6">
 
@@ -13,7 +13,7 @@
                     @if ($addresses->isNotEmpty())
                         <button type="button" wire:click="$toggle('changingAddress')"
                                 wire:loading.attr="disabled" wire:target="changingAddress"
-                                class="-my-1 flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-emerald hover:text-emerald-deep">
+                                class="-my-1 flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-sm font-semibold text-emerald hover:text-emerald-deep">
                             {{ $changingAddress ? __('Close') : __('Change') }}
                         </button>
                     @endif
@@ -48,7 +48,7 @@
                         <ul class="space-y-2">
                             @foreach ($addresses as $option)
                                 <li wire:key="checkout-address-{{ $option->id }}">
-                                    <label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border p-3 {{ $option->id === $addressId ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
+                                    <label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-[var(--radius-control)] border p-3 {{ $option->id === $addressId ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
                                         <input type="radio" name="checkout-address" value="{{ $option->id }}"
                                                wire:click="selectAddress({{ $option->id }})" @checked($option->id === $addressId)
                                                class="mt-0.5 size-4 shrink-0 cursor-pointer accent-emerald">
@@ -90,7 +90,7 @@
                             <li wire:key="checkout-line-{{ $line->variant->id }}" class="flex gap-3 px-4 py-3.5">
                                 <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
                                      alt="{{ $line->variant->product->getTranslation('name', app()->getLocale()) }} {{ $line->variant->options_label }}"
-                                     class="size-16 shrink-0 rounded-[10px] border border-line bg-paper object-cover">
+                                     class="size-16 shrink-0 rounded-[var(--radius-card)] border border-line bg-paper object-cover">
                                 <div class="min-w-0 flex-1">
                                     <p class="line-clamp-2 text-sm font-medium">{{ $line->variant->product->getTranslation('name', app()->getLocale()) }}</p>
                                     @if ($line->variant->options_label)
@@ -133,7 +133,7 @@
                     <h2 class="text-sm font-semibold">{{ __('Vouchers') }}</h2>
                     <button type="button" wire:click="$toggle('voucherPanelOpen')"
                             wire:loading.attr="disabled" wire:target="voucherPanelOpen"
-                            class="-my-1 flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-emerald hover:text-emerald-deep">
+                            class="-my-1 flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-sm font-semibold text-emerald hover:text-emerald-deep">
                         {{ $voucherPanelOpen ? __('Close') : __('Select voucher') }}
                     </button>
                 </div>
@@ -231,7 +231,7 @@
                 <form wire:submit="applyVoucher" class="mt-3 flex gap-2">
                     <input type="text" wire:model="voucherCode" placeholder="{{ __('Voucher code') }}"
                            aria-label="{{ __('Voucher code') }}"
-                           class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 font-mono text-sm text-ink placeholder:font-sans placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $voucherError ? 'border-danger' : 'border-line-strong' }}">
+                           class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 font-mono text-sm text-ink placeholder:font-sans placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $voucherError ? 'border-danger' : 'border-line-strong' }}">
                     <x-ui.button type="submit" variant="secondary" class="shrink-0" wire:loading.attr="disabled" wire:target="applyVoucher">{{ __('Apply') }}</x-ui.button>
                 </form>
 
@@ -283,7 +283,7 @@
             <fieldset class="mt-4">
                 <legend class="text-[13px] font-medium">{{ __('Payment method') }}</legend>
                 <div class="mt-2 space-y-2">
-                    <label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border p-3 {{ $paymentMethod === 'ipay88' ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
+                    <label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-[var(--radius-control)] border p-3 {{ $paymentMethod === 'ipay88' ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
                         <input type="radio" name="payment-method" value="ipay88" wire:model.live="paymentMethod"
                                @checked($paymentMethod === 'ipay88')
                                class="mt-0.5 size-4 shrink-0 cursor-pointer accent-emerald">
@@ -295,14 +295,14 @@
                     </label>
 
                     @if ($codUnavailableReason === null)
-                        <label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border p-3 {{ $paymentMethod === 'cod' ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
+                        <label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-[var(--radius-control)] border p-3 {{ $paymentMethod === 'cod' ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
                             <input type="radio" name="payment-method" value="cod" wire:model.live="paymentMethod"
                                    @checked($paymentMethod === 'cod')
                                    class="mt-0.5 size-4 shrink-0 cursor-pointer accent-emerald">
                             <span class="block text-sm font-medium">{{ __('Cash on delivery') }}</span>
                         </label>
                     @else
-                        <div class="rounded-lg border border-line p-3">
+                        <div class="rounded-[var(--radius-control)] border border-line p-3">
                             <span class="block text-sm font-medium text-ink-faint">{{ __('Cash on delivery') }}</span>
                             <span class="mt-0.5 block text-[13px] text-ink-soft">{{ $codUnavailableReason }}</span>
                         </div>

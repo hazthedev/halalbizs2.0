@@ -1,6 +1,6 @@
 <div class="space-y-4">
 
-    <h1 class="font-display text-2xl font-bold">{{ __('Search insights') }}</h1>
+    <x-ui.section-heading :title="__('Search insights')" as="h1" />
 
     {{-- Searches/day count line — text only, no chart needed at this volume --}}
     <p class="text-[13px] text-ink-soft">
@@ -20,10 +20,7 @@
             </div>
 
             @if ($trending->isEmpty())
-                <div class="px-4 py-10 text-center">
-                    <p class="font-display text-lg font-semibold">{{ __('Nothing trending yet') }}</p>
-                    <p class="mt-1 text-sm text-ink-soft">{{ __('Terms appear here as buyers search.') }}</p>
-                </div>
+                <x-ui.empty-state :title="__('Nothing trending yet')" :message="__('Terms appear here as buyers search.')" />
             @else
                 <table class="w-full text-[13px]">
                     <thead>
@@ -54,10 +51,7 @@
             </div>
 
             @if ($zeroResult->isEmpty())
-                <div class="px-4 py-10 text-center">
-                    <p class="font-display text-lg font-semibold">{{ __('No dead-end searches') }}</p>
-                    <p class="mt-1 text-sm text-ink-soft">{{ __('Every recent search found at least one product. Nice.') }}</p>
-                </div>
+                <x-ui.empty-state :title="__('No dead-end searches')" :message="__('Every recent search found at least one product. Nice.')" />
             @else
                 <table class="w-full text-[13px]">
                     <thead>

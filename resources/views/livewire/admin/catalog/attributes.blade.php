@@ -1,7 +1,7 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Attributes') }}</h1>
+    <x-ui.section-heading :title="__('Attributes')" as="h1" />
 
     {{-- Inline create form --}}
     <x-ui.card class="p-4">
@@ -19,10 +19,7 @@
     {{-- List --}}
     <x-ui.card class="overflow-x-auto">
         @if ($attributeList->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No attributes yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Attributes power the storefront filters — Material, Colour, Size.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No attributes yet')" :message="__('Attributes power the storefront filters — Material, Colour, Size.')" />
         @else
             <table class="w-full min-w-[640px] text-[13px]">
                 <thead>
@@ -82,7 +79,7 @@
                         @if ($managingId === $attribute->id)
                             <tr class="border-b border-line bg-paper" wire:key="attribute-values-{{ $attribute->id }}">
                                 <td colspan="5" class="px-3 py-3">
-                                    <div class="max-w-xl space-y-2 rounded-lg border border-line bg-surface p-3">
+                                    <div class="max-w-xl space-y-2 rounded-[var(--radius-card)] border border-line bg-surface p-3 shadow-soft">
                                         <p class="text-[13px] font-semibold text-ink">{{ __('Values for :name', ['name' => $attribute->getTranslation('name', 'en')]) }}</p>
 
                                         @forelse ($managedValues as $value)
@@ -114,7 +111,7 @@
                                         <form wire:submit="addValue" class="flex flex-wrap items-end gap-2 border-t border-line pt-3">
                                             <x-ui.input class="min-w-36 flex-1" :label="__('Value (English)')" wire:model="valueDraft.en" :error="$errors->first('valueDraft.en')" />
                                             <x-ui.input class="min-w-36 flex-1" :label="__('Value (Bahasa Melayu)')" wire:model="valueDraft.ms" :error="$errors->first('valueDraft.ms')" placeholder="{{ __('Optional') }}" />
-                                            <button type="submit" class="inline-flex min-h-11 items-center rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Add value') }}</button>
+                                            <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Add value') }}</button>
                                         </form>
                                     </div>
                                 </td>

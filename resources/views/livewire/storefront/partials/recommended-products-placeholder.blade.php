@@ -4,7 +4,7 @@
         <x-ui.skeleton class="h-7 w-52" />
         <div class="mt-4 flex gap-3 overflow-x-hidden pb-2">
             @for ($i = 0; $i < 6; $i++)
-                <div class="w-44 shrink-0 overflow-hidden rounded-[10px] border border-line bg-surface sm:w-48">
+                <div class="w-44 shrink-0 overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface sm:w-48">
                     <x-ui.skeleton class="aspect-square w-full rounded-none" />
                     <div class="space-y-2 p-3">
                         <x-ui.skeleton class="h-4 w-full" />

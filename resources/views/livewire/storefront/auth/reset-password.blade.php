@@ -1,7 +1,6 @@
 <div class="mx-auto w-full max-w-md px-4 py-12 sm:py-16">
     <x-ui.card class="p-6 sm:p-8">
-        <h1 class="font-display text-[28px] font-bold leading-tight">{{ __('Reset password') }}</h1>
-        <p class="mt-1 text-sm text-ink-soft">{{ __('Choose a new password for your account.') }}</p>
+        <x-ui.section-heading as="h1" :title="__('Reset password')" :subtitle="__('Choose a new password for your account.')" />
 
         <form wire:submit="resetPassword" class="mt-6 space-y-4">
             <x-ui.input

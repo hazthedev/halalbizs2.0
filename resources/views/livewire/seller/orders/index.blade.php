@@ -1,7 +1,7 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Orders') }}</h1>
+    <x-ui.section-heading as="h1" :title="__('Orders')" />
 
     {{-- Status tabs — wire:poll.30s keeps the count chips fresh (sound-free badge bump, docs/07 §B).
          Returns tab: sub-orders with an open return request (docs/09 §D). --}}
@@ -39,10 +39,7 @@
                     default => [__('No new orders right now'), __('New orders appear here the moment a buyer pays.')],
                 };
             @endphp
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ $emptyTitle }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ $emptyBody }}</p>
-            </div>
+            <x-ui.empty-state :title="$emptyTitle" :message="$emptyBody" />
         @else
             <table class="w-full min-w-[760px] text-[13px]">
                 <thead class="sticky top-14 z-10 bg-surface">

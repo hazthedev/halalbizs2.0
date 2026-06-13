@@ -2,7 +2,7 @@
 
 <div class="space-y-4">
 
-    <h1 class="font-display text-[22px] font-bold leading-tight">{{ __('Earnings') }}</h1>
+    <x-ui.section-heading as="h1" :title="__('Earnings')" />
 
     {{-- ===== Balance cards ===== --}}
     <div class="grid gap-3 sm:grid-cols-3">
@@ -44,7 +44,7 @@
                 <div>
                     <label for="payout-amount" class="sr-only">{{ __('Amount (RM)') }}</label>
                     <input id="payout-amount" type="text" inputmode="decimal" wire:model="amount" placeholder="120.00"
-                           class="block min-h-11 w-36 rounded-lg border bg-surface px-3 py-2 text-right font-mono text-sm tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('amount') ? 'border-danger' : 'border-line-strong' }}">
+                           class="block min-h-11 w-36 rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-right font-mono text-sm tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('amount') ? 'border-danger' : 'border-line-strong' }}">
                     @error('amount')
                         <p class="mt-1 text-[13px] text-danger">{{ $message }}</p>
                     @enderror
@@ -78,10 +78,7 @@
         </div>
 
         @if ($entries->isEmpty())
-            <div class="px-4 py-12 text-center">
-                <p class="font-display text-lg font-semibold">{{ __('No entries yet') }}</p>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Sales land here when an order completes — that\'s when the money becomes yours.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No entries yet')" :message="__('Sales land here when an order completes — that\'s when the money becomes yours.')" />
         @else
             <table class="w-full min-w-[640px] text-[13px]">
                 <thead>
@@ -124,10 +121,7 @@
         </div>
 
         @if ($payouts->isEmpty())
-            <div class="px-4 py-10 text-center">
-                <p class="font-display text-lg font-semibold">{{ __('No payouts yet') }}</p>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Request your available balance above — payouts land here.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No payouts yet')" :message="__('Request your available balance above — payouts land here.')" />
         @else
             <table class="w-full min-w-[640px] text-[13px]">
                 <thead>

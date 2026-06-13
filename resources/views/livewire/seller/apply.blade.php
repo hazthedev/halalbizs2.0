@@ -1,6 +1,9 @@
 <div class="mx-auto w-full max-w-2xl px-4 py-12 sm:py-16">
-    <h1 class="font-display text-[28px] font-bold leading-tight">{{ __('Become a seller') }}</h1>
-    <p class="mt-1 text-sm text-ink-soft">{{ __('Tell us about your shop. Applications are reviewed within 2–3 business days.') }}</p>
+    <x-ui.section-heading
+        as="h1"
+        :title="__('Become a seller')"
+        :subtitle="__('Tell us about your shop. Applications are reviewed within 2–3 business days.')"
+    />
 
     <form wire:submit="submit" class="mt-6 space-y-4">
         {{-- ===== Shop details ===== --}}

@@ -2,16 +2,12 @@
     <x-account-shell active="dashboard" :title="__('Overview')">
         @if (! $hasOrders)
             {{-- Empty state (design §6): one display line, one sentence, one emerald action. --}}
-            <x-ui.card class="px-6 py-16 text-center">
-                <p class="font-display text-[22px] font-bold leading-tight">{{ __('Your shopping starts here') }}</p>
-                <p class="mx-auto mt-2 max-w-md text-sm text-ink-soft">
-                    {{ __('Once you place an order, your spending, deliveries and saved items show up on this overview.') }}
-                </p>
-                <a href="{{ route('home') }}" wire:navigate
-                   class="mt-6 inline-flex min-h-11 items-center rounded-lg bg-emerald px-5 text-sm font-semibold text-white hover:bg-emerald-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
-                    {{ __('Start shopping') }}
-                </a>
-            </x-ui.card>
+            <x-ui.empty-state
+                :title="__('Your shopping starts here')"
+                :message="__('Once you place an order, your spending, deliveries and saved items show up on this overview.')"
+            >
+                <x-ui.button :href="route('home')">{{ __('Start shopping') }}</x-ui.button>
+            </x-ui.empty-state>
 
             {{-- Even first-timers get picks (cold-start → popular). --}}
             <livewire:storefront.recommended-products context="dashboard" wire:key="rec-dash-empty" />
@@ -19,10 +15,9 @@
             <div class="space-y-6">
 
                 {{-- Header + period picker (mirrors the admin dashboard) --}}
-                <div class="flex flex-wrap items-center gap-3">
-                    <h2 class="font-display text-lg font-semibold leading-tight">{{ __('Your activity') }}</h2>
-
-                    <div class="ml-auto inline-flex rounded-lg border border-line bg-surface p-0.5" role="group" aria-label="{{ __('Spend period') }}">
+                <x-ui.section-heading :title="__('Your activity')">
+                    <x-slot:actions>
+                    <div class="inline-flex rounded-[var(--radius-control)] border border-line bg-surface p-0.5" role="group" aria-label="{{ __('Spend period') }}">
                         @foreach ($this->periods() as $key => $label)
                             <button type="button"
                                     wire:click="$set('period', '{{ $key }}')"
@@ -33,7 +28,8 @@
                             </button>
                         @endforeach
                     </div>
-                </div>
+                    </x-slot:actions>
+                </x-ui.section-heading>
 
                 {{-- Stat row — count up on first load (design §7, app.js countUp) --}}
                 <div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -72,7 +68,7 @@
                 <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     @foreach ($quickStatus as $shortcut)
                         <a href="{{ $shortcut['url'] }}" wire:navigate wire:key="quick-{{ $shortcut['key'] }}"
-                           class="group flex min-h-11 items-center justify-between rounded-[10px] border border-line bg-surface p-4 hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                           class="group flex min-h-11 items-center justify-between rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             <span class="text-[13px] font-medium text-ink-soft group-hover:text-ink">{{ $shortcut['label'] }}</span>
                             <span class="font-display text-[22px] font-bold tabular-nums {{ $shortcut['count'] > 0 ? 'text-ink' : 'text-ink-faint' }}">{{ number_format($shortcut['count']) }}</span>
                         </a>

@@ -1,10 +1,11 @@
 <div>
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="font-display text-[22px] font-bold leading-tight">{{ __('Notifications') }}</h1>
+    <x-ui.section-heading :title="__('Notifications')" as="h1">
         @if ($unreadCount > 0)
-            <x-ui.button type="button" variant="secondary" wire:click="markAllRead">{{ __('Mark all read') }}</x-ui.button>
+            <x-slot:actions>
+                <x-ui.button type="button" variant="secondary" wire:click="markAllRead">{{ __('Mark all read') }}</x-ui.button>
+            </x-slot:actions>
         @endif
-    </div>
+    </x-ui.section-heading>
 
     <div class="mt-4">
         @if ($notifications->isNotEmpty())
@@ -33,10 +34,7 @@
                 @endforeach
             </x-ui.card>
         @else
-            <x-ui.card class="px-6 py-16 text-center">
-                <p class="font-display text-xl font-semibold">{{ __('No notifications') }}</p>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Operational alerts — applications, payouts, disputes — appear here.') }}</p>
-            </x-ui.card>
+            <x-ui.empty-state :title="__('No notifications')" :message="__('Operational alerts — applications, payouts, disputes — appear here.')" />
         @endif
     </div>
 </div>

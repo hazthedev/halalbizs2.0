@@ -1,15 +1,13 @@
 <div class="mx-auto max-w-4xl space-y-4">
 
     {{-- Header --}}
-    <div class="flex items-center justify-between gap-3">
-        <div>
-            <a href="{{ route('seller.products.index') }}" wire:navigate class="text-[13px] font-medium text-ink-soft hover:text-ink">← {{ __('Products') }}</a>
-            <h1 class="font-display text-2xl font-bold">{{ $editing ? __('Edit product') : __('Add product') }}</h1>
-        </div>
+    <div>
+        <a href="{{ route('seller.products.index') }}" wire:navigate class="text-[13px] font-medium text-ink-soft hover:text-ink">← {{ __('Products') }}</a>
+        <x-ui.section-heading as="h1" :title="$editing ? __('Edit product') : __('Add product')" class="mt-1" />
     </div>
 
     @if ($requireApproval)
-        <div class="rounded-[10px] border border-line bg-warn-tint px-4 py-3 text-[13px] text-warn">
+        <div class="rounded-[var(--radius-card)] border border-line bg-warn-tint px-4 py-3 text-[13px] text-warn">
             {{ __('Product approval is on — published products are reviewed by the marketplace team before they go live.') }}
         </div>
     @endif
@@ -141,7 +139,7 @@
 
             <div class="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
                 @foreach ($existingMedia as $index => $media)
-                    <div class="group relative aspect-square overflow-hidden rounded-[10px] border border-line bg-paper" wire:key="media-{{ $media->id }}">
+                    <div class="group relative aspect-square overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper" wire:key="media-{{ $media->id }}">
                         <img src="{{ $media->getUrl() }}" alt="{{ __('Product image :n', ['n' => $index + 1]) }}" class="size-full object-cover">
                         <div class="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-ink/70 p-1">
                             <button type="button" wire:click="moveMedia({{ $media->id }}, -1)" @disabled($loop->first) class="flex size-8 items-center justify-center rounded text-paper disabled:opacity-40" aria-label="{{ __('Move image earlier') }}">←</button>
@@ -152,7 +150,7 @@
                 @endforeach
 
                 @foreach ($newImages as $index => $image)
-                    <div class="group relative aspect-square overflow-hidden rounded-[10px] border border-line bg-paper" wire:key="new-image-{{ $index }}-{{ $image->getFilename() }}">
+                    <div class="group relative aspect-square overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper" wire:key="new-image-{{ $index }}-{{ $image->getFilename() }}">
                         <img src="{{ $image->temporaryUrl() }}" alt="{{ __('New image :n', ['n' => $index + 1]) }}" class="size-full object-cover">
                         <div class="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-ink/70 p-1">
                             <button type="button" wire:click="moveNewImage({{ $index }}, -1)" @disabled($loop->first) class="flex size-8 items-center justify-center rounded text-paper disabled:opacity-40" aria-label="{{ __('Move image earlier') }}">←</button>
@@ -163,7 +161,7 @@
                 @endforeach
 
                 @if ($existingMedia->count() + count($newImages) < $maxImages)
-                    <label class="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[10px] border border-dashed border-line-strong text-ink-soft hover:border-ink hover:text-ink">
+                    <label class="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[var(--radius-card)] border border-dashed border-line-strong text-ink-soft hover:border-ink hover:text-ink">
                         <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                         <span class="text-[12px] font-medium">{{ __('Add images') }}</span>
                         <input type="file" wire:model="newImages" multiple accept="image/*" class="sr-only">
@@ -271,7 +269,7 @@
                 {{-- Option groups --}}
                 <div class="mt-4 space-y-3">
                     @foreach ($optionGroups as $groupIndex => $group)
-                        <div class="rounded-[10px] border border-line p-4" wire:key="option-group-{{ $groupIndex }}">
+                        <div class="rounded-[var(--radius-card)] border border-line p-4" wire:key="option-group-{{ $groupIndex }}">
                             <div class="flex items-end gap-2">
                                 <x-ui.input
                                     class="flex-1"
@@ -327,7 +325,7 @@
 
                 {{-- Matrix table --}}
                 @if ($matrix !== [])
-                    <div class="mt-5 overflow-x-auto rounded-[10px] border border-line">
+                    <div class="mt-5 overflow-x-auto rounded-[var(--radius-card)] border border-line">
                         <table class="w-full min-w-[640px] text-[13px]">
                             <thead>
                                 <tr class="border-b border-line bg-paper text-left text-ink-soft">

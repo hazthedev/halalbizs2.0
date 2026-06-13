@@ -1,7 +1,7 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Brands') }}</h1>
+    <x-ui.section-heading :title="__('Brands')" as="h1" />
 
     {{-- Inline create form --}}
     <x-ui.card class="p-4">
@@ -14,10 +14,7 @@
     {{-- List --}}
     <x-ui.card class="overflow-x-auto">
         @if ($brands->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No brands yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Brands are optional on products — add the ones sellers ask for.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No brands yet')" :message="__('Brands are optional on products — add the ones sellers ask for.')" />
         @else
             <table class="w-full min-w-[560px] text-[13px]">
                 <thead>

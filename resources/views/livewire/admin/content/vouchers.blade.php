@@ -1,16 +1,17 @@
 <div class="space-y-4">
 
-    <div class="flex items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold">{{ __('Platform vouchers') }}</h1>
+    <x-ui.section-heading :title="__('Platform vouchers')" as="h1">
         @unless ($showForm)
-            <x-ui.button wire:click="create">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                {{ __('Add voucher') }}
-            </x-ui.button>
+            <x-slot:actions>
+                <x-ui.button wire:click="create">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    {{ __('Add voucher') }}
+                </x-ui.button>
+            </x-slot:actions>
         @endunless
-    </div>
+    </x-ui.section-heading>
 
-    <div class="rounded-[10px] border border-line bg-surface px-4 py-3 text-[13px] text-ink-soft">
+    <div class="rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 text-[13px] text-ink-soft shadow-soft">
         {{ __('Shop vouchers and stacking arrive in M8. Platform vouchers created here already work at checkout.') }}
     </div>
 
@@ -27,7 +28,7 @@
                     <div>
                         <label for="voucher-type" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Type') }}</label>
                         <select id="voucher-type" wire:model.live="type"
-                                class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             @foreach ($types as $typeCase)
                                 <option value="{{ $typeCase->value }}">{{ $typeCase->label() }}</option>
                             @endforeach
@@ -74,10 +75,7 @@
     {{-- List --}}
     <x-ui.card class="overflow-x-auto">
         @if ($vouchers->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No platform vouchers yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Create one above — buyers apply codes at checkout.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No platform vouchers yet')" :message="__('Create one above — buyers apply codes at checkout.')" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead>

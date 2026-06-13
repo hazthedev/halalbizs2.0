@@ -1,6 +1,6 @@
 <div class="mx-auto w-full max-w-md px-4 py-12 sm:py-16">
     <x-ui.card class="p-6 sm:p-8">
-        <h1 class="font-display text-[28px] font-bold leading-tight">{{ __('Two-factor check') }}</h1>
+        <x-ui.section-heading as="h1" :title="__('Two-factor check')" />
 
         @if ($useRecoveryCode)
             <p class="mt-1 text-sm text-ink-soft">{{ __('Enter one of the recovery codes you saved when you set up your authenticator. Each code works once.') }}</p>

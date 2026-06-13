@@ -11,12 +11,12 @@
     <aside x-show="open" x-cloak
            x-transition:enter="transition-transform duration-300 ease-out" x-transition:enter-start="translate-x-full"
            x-transition:leave="transition-transform duration-200 ease-in" x-transition:leave-end="translate-x-full"
-           class="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col bg-surface shadow-xl"
+           class="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col bg-surface shadow-pop"
            role="dialog" aria-label="{{ __('Cart') }}">
 
         <div class="flex items-center justify-between border-b border-line px-4 py-3.5">
             <h2 class="font-display text-lg font-bold">{{ __('Cart') }}</h2>
-            <button type="button" x-on:click="open = false" class="flex size-9 items-center justify-center rounded-lg text-ink-soft hover:text-ink" aria-label="{{ __('Close') }}">
+            <button type="button" x-on:click="open = false" class="flex size-9 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink" aria-label="{{ __('Close') }}">
                 <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
             </button>
         </div>
@@ -32,7 +32,7 @@
                         @foreach ($lines as $line)
                             <li class="flex gap-3" wire:key="mini-line-{{ $line->variant->id }}">
                                 <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
-                                     alt="" class="size-16 shrink-0 rounded-lg border border-line object-cover bg-paper">
+                                     alt="" class="size-16 shrink-0 rounded-[var(--radius-card)] border border-line object-cover bg-paper">
                                 <div class="min-w-0 flex-1">
                                     <p class="line-clamp-1 text-[13px] font-medium">{{ $line->variant->product->getTranslation('name', app()->getLocale()) }}</p>
                                     @if ($line->variant->options_label)

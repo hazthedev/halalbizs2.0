@@ -1,14 +1,15 @@
 <div class="space-y-4">
 
-    <div class="flex items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold">{{ __('Help articles') }}</h1>
+    <x-ui.section-heading :title="__('Help articles')" as="h1">
         @unless ($showForm)
-            <x-ui.button wire:click="create">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                {{ __('Add article') }}
-            </x-ui.button>
+            <x-slot:actions>
+                <x-ui.button wire:click="create">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    {{ __('Add article') }}
+                </x-ui.button>
+            </x-slot:actions>
         @endunless
-    </div>
+    </x-ui.section-heading>
 
     {{-- Editor --}}
     @if ($showForm)
@@ -22,7 +23,7 @@
                     <div>
                         <label for="article-category" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Category') }}</label>
                         <select id="article-category" wire:model="category"
-                                class="block min-h-11 w-48 rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="block min-h-11 w-48 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             @foreach ($categories as $categoryOption)
                                 <option value="{{ $categoryOption->value }}">{{ $categoryOption->label() }}</option>
                             @endforeach
@@ -56,7 +57,7 @@
                             <div>
                                 <label for="article-body-en" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Body (English)') }}</label>
                                 <textarea id="article-body-en" wire:model="body.en" rows="10"
-                                          class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('body.en') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                                          class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('body.en') ? 'border-danger' : 'border-line-strong' }}"></textarea>
                                 @error('body.en')
                                     <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                                 @else
@@ -69,7 +70,7 @@
                             <div>
                                 <label for="article-body-ms" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Body (Bahasa Melayu)') }}</label>
                                 <textarea id="article-body-ms" wire:model="body.ms" rows="10"
-                                          class="block w-full rounded-lg border border-line-strong bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
+                                          class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
                                 @error('body.ms')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                             </div>
                         </div>
@@ -92,10 +93,7 @@
     {{-- List --}}
     <x-ui.card class="overflow-x-auto">
         @if ($articles->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No articles yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Run the seeder for the starter set, or add one above.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No articles yet')" :message="__('Run the seeder for the starter set, or add one above.')" />
         @else
             <table class="w-full min-w-[720px] text-[13px]">
                 <thead>

@@ -1,8 +1,7 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Commission') }}</h1>
-    <p class="text-[13px] text-ink-soft">{{ __('Hierarchy: store override → category chain upward → global default. Sub-orders snapshot their rate at checkout — changes here only affect future orders.') }}</p>
+    <x-ui.section-heading :title="__('Commission')" :subtitle="__('Hierarchy: store override → category chain upward → global default. Sub-orders snapshot their rate at checkout — changes here only affect future orders.')" as="h1" />
 
     <div class="grid gap-4 lg:grid-cols-2">
 
@@ -14,10 +13,10 @@
                 <div class="flex-1">
                     <label for="global-rate" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Rate (%)') }}</label>
                     <input id="global-rate" type="number" step="0.01" min="0" max="100" wire:model="globalRate"
-                           class="block min-h-11 w-full rounded-lg border bg-surface px-3 text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('globalRate') ? 'border-danger' : 'border-line-strong' }}">
+                           class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('globalRate') ? 'border-danger' : 'border-line-strong' }}">
                 </div>
                 <button type="submit" wire:loading.attr="disabled"
-                        class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                     {{ __('Save rate') }}
                 </button>
             </form>
@@ -34,7 +33,7 @@
                 <div>
                     <label for="tester-store" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Store') }}</label>
                     <select id="tester-store" wire:model.live="testerStoreId"
-                            class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                            class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         <option value="">{{ __('Select a store') }}</option>
                         @foreach ($stores as $id => $name)
                             <option value="{{ $id }}">{{ $name }}</option>
@@ -44,7 +43,7 @@
                 <div>
                     <label for="tester-category" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Category') }}</label>
                     <select id="tester-category" wire:model.live="testerCategoryId"
-                            class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                            class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         <option value="">{{ __('No category') }}</option>
                         @foreach ($categories as $id => $label)
                             <option value="{{ $id }}">{{ $label }}</option>
@@ -53,7 +52,7 @@
                 </div>
             </div>
             @if ($tester !== null)
-                <div class="mt-3 rounded-lg border border-line bg-paper p-3">
+                <div class="mt-3 rounded-[var(--radius-card)] border border-line bg-paper p-3">
                     <p class="font-display text-3xl font-bold tabular-nums">{{ $tester['rate'] }}%</p>
                     <p class="mt-0.5 text-[13px] text-ink-soft">{{ $tester['source'] }}</p>
                 </div>

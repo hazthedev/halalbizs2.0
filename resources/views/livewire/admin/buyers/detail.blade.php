@@ -14,7 +14,7 @@
             <p class="text-[13px] text-ink-soft">{{ __('Joined :date', ['date' => $user->created_at->format('j M Y')]) }}</p>
         </div>
         <a href="{{ route('admin.buyers.index') }}" wire:navigate
-           class="ml-auto inline-flex min-h-11 items-center rounded-lg px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+           class="ml-auto inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             {{ __('All buyers') }}
         </a>
     </div>
@@ -84,7 +84,7 @@
                     <textarea id="suspend-reason"
                               wire:model="suspendReason"
                               rows="2"
-                              class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('suspendReason') ? 'border-danger' : 'border-line-strong' }}"
+                              class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('suspendReason') ? 'border-danger' : 'border-line-strong' }}"
                               placeholder="{{ __('e.g. Chargeback abuse across multiple orders.') }}"></textarea>
                     @error('suspendReason')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
@@ -114,7 +114,7 @@
         @else
             <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($user->addresses as $address)
-                    <div class="rounded-lg border border-line p-3 text-[13px]" wire:key="address-{{ $address->id }}">
+                    <div class="rounded-[var(--radius-card)] border border-line p-3 text-[13px]" wire:key="address-{{ $address->id }}">
                         <div class="flex items-center gap-2">
                             <p class="font-semibold text-ink">{{ $address->label ?? __('Address') }}</p>
                             @if ($address->is_default)

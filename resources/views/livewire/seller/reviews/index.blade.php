@@ -1,13 +1,10 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Reviews') }}</h1>
+    <x-ui.section-heading as="h1" :title="__('Reviews')" />
 
     @if ($reviews->isEmpty())
-        <x-ui.card class="px-6 py-16 text-center">
-            <h2 class="font-display text-xl font-semibold">{{ __('No reviews yet') }}</h2>
-            <p class="mt-1 text-sm text-ink-soft">{{ __('Reviews appear here after buyers complete their orders and rate your products.') }}</p>
-        </x-ui.card>
+        <x-ui.empty-state :title="__('No reviews yet')" :message="__('Reviews appear here after buyers complete their orders and rate your products.')" />
     @else
         <div class="space-y-3">
             @foreach ($reviews as $review)

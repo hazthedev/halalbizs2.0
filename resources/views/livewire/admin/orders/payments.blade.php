@@ -3,15 +3,14 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Payments') }}</h1>
-    <p class="text-[13px] text-ink-soft">{{ __('Reconciliation grid — our payment rows against iPay88. Mismatched signatures are highlighted; stuck rows can be requeried.') }}</p>
+    <x-ui.section-heading :title="__('Payments')" :subtitle="__('Reconciliation grid — our payment rows against iPay88. Mismatched signatures are highlighted; stuck rows can be requeried.')" as="h1" />
 
     {{-- Filters --}}
     <x-ui.card class="flex flex-wrap items-center gap-3 p-3">
         <div>
             <label for="payments-status" class="sr-only">{{ __('Status') }}</label>
             <select id="payments-status" wire:model.live="status"
-                    class="block min-h-11 rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="block min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                 <option value="">{{ __('All statuses') }}</option>
                 @foreach ($statuses as $statusCase)
                     <option value="{{ $statusCase->value }}">{{ $statusCase->label() }}</option>
@@ -31,10 +30,7 @@
         <x-ui.table-skeleton wire:loading wire:target="status, mismatchesOnly" />
         <div wire:loading.remove wire:target="status, mismatchesOnly">
         @if ($payments->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No payments match') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Payment attempts appear here the moment a buyer reaches the gateway.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No payments match')" :message="__('Payment attempts appear here the moment a buyer reaches the gateway.')" />
         @else
             <table class="w-full min-w-[1000px] text-[13px]">
                 <thead class="sticky top-14 z-10 bg-surface">
@@ -95,7 +91,7 @@
                                     @if ($canRequery)
                                         <button type="button" wire:click="requery({{ $payment->id }})"
                                                 wire:loading.attr="disabled" wire:target="requery({{ $payment->id }})"
-                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald">
+                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald">
                                             <span wire:loading.remove wire:target="requery({{ $payment->id }})">{{ __('Requery') }}</span>
                                             <span wire:loading wire:target="requery({{ $payment->id }})">{{ __('Requerying…') }}</span>
                                         </button>

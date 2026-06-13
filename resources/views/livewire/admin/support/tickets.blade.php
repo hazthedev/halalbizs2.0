@@ -11,7 +11,7 @@
 
 <div class="space-y-4">
 
-    <h1 class="font-display text-2xl font-bold">{{ __('Support tickets') }}</h1>
+    <x-ui.section-heading :title="__('Support tickets')" as="h1" />
 
     @if ($selected)
         {{-- ===== Thread view ===== --}}
@@ -42,7 +42,7 @@
             <div class="mt-4 space-y-3">
                 @foreach ($selected->replies as $ticketReply)
                     <div wire:key="reply-{{ $ticketReply->id }}"
-                         class="rounded-[10px] border border-line p-3 {{ $ticketReply->isFromSupport() ? 'bg-surface' : 'bg-paper' }}">
+                         class="rounded-[var(--radius-card)] border border-line p-3 {{ $ticketReply->isFromSupport() ? 'bg-surface' : 'bg-paper' }}">
                         <div class="flex items-baseline justify-between gap-3">
                             <p class="text-[13px] font-semibold {{ $ticketReply->isFromSupport() ? 'text-emerald' : 'text-ink' }}">
                                 {{ $ticketReply->isFromSupport() ? __('Support') : __('Buyer') }}
@@ -61,7 +61,7 @@
                             <label for="admin-reply" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Reply') }}</label>
                             <textarea id="admin-reply" wire:model="replyBody" rows="4"
                                       placeholder="{{ __('Write a reply — the buyer gets an email and an in-app notification.') }}"
-                                      class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('replyBody') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                                      class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('replyBody') ? 'border-danger' : 'border-line-strong' }}"></textarea>
                             @error('replyBody')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
@@ -99,10 +99,7 @@
 
         <x-ui.card class="overflow-x-auto">
             @if ($tickets->isEmpty())
-                <div class="px-6 py-16 text-center">
-                    <h2 class="font-display text-xl font-semibold">{{ __('Queue clear') }}</h2>
-                    <p class="mt-1 text-sm text-ink-soft">{{ __('No :status tickets right now.', ['status' => TicketStatus::from($tab)->label()]) }}</p>
-                </div>
+                <x-ui.empty-state :title="__('Queue clear')" :message="__('No :status tickets right now.', ['status' => TicketStatus::from($tab)->label()])" />
             @else
                 <table class="w-full min-w-[720px] text-[13px]">
                     <thead>

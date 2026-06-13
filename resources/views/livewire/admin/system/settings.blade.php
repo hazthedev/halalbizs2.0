@@ -1,7 +1,6 @@
 <div class="space-y-6">
 
-    <h1 class="font-display text-2xl font-bold">{{ __('Settings') }}</h1>
-    <p class="text-[13px] text-ink-soft">{{ __('Each section saves on its own. Commission settings live under Finance.') }}</p>
+    <x-ui.section-heading :title="__('Settings')" :subtitle="__('Each section saves on its own. Commission settings live under Finance.')" as="h1" />
 
     <div class="grid gap-6 xl:grid-cols-2">
 
@@ -16,7 +15,7 @@
                     <legend class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Display currencies') }}</legend>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($activeCurrencies as $currency)
-                            <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink {{ $currency->is_base ? 'opacity-60' : '' }}">
+                            <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink {{ $currency->is_base ? 'opacity-60' : '' }}">
                                 <input type="checkbox" wire:model="displayCurrencies" value="{{ $currency->code }}" @disabled($currency->is_base) @checked($currency->is_base)
                                        class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ $currency->code }}

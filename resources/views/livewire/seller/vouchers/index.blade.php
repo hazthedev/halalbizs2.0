@@ -1,16 +1,17 @@
 <div class="space-y-4">
 
-    <div class="flex items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold">{{ __('Shop vouchers') }}</h1>
+    <x-ui.section-heading as="h1" :title="__('Shop vouchers')">
         @unless ($showForm)
-            <x-ui.button wire:click="create">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                {{ __('Add voucher') }}
-            </x-ui.button>
+            <x-slot:actions>
+                <x-ui.button wire:click="create">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    {{ __('Add voucher') }}
+                </x-ui.button>
+            </x-slot:actions>
         @endunless
-    </div>
+    </x-ui.section-heading>
 
-    <div class="rounded-[10px] border border-line bg-surface px-4 py-3 text-[13px] text-ink-soft">
+    <div class="rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 text-[13px] text-ink-soft shadow-soft">
         {{ __('Shop vouchers apply to your items only — buyers can stack one with a platform voucher at checkout.') }}
     </div>
 
@@ -74,10 +75,7 @@
     {{-- List --}}
     <x-ui.card class="overflow-x-auto">
         @if ($vouchers->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No shop vouchers yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Create one above — buyers pick it at checkout when your items are in their order.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No shop vouchers yet')" :message="__('Create one above — buyers pick it at checkout when your items are in their order.')" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead>

@@ -1,10 +1,9 @@
 <div class="space-y-4">
 
     {{-- Header + period picker --}}
-    <div class="flex flex-wrap items-center gap-3">
-        <h1 class="font-display text-[22px] font-bold leading-tight">{{ __('Dashboard') }}</h1>
-
-        <div class="ml-auto inline-flex rounded-lg border border-line bg-surface p-0.5" role="group" aria-label="{{ __('Stats period') }}">
+    <x-ui.section-heading :title="__('Dashboard')" as="h1">
+        <x-slot:actions>
+            <div class="inline-flex rounded-[var(--radius-control)] border border-line bg-surface p-0.5 shadow-soft" role="group" aria-label="{{ __('Stats period') }}">
             @foreach ($this->periods() as $key => $label)
                 <button type="button"
                         wire:click="setPeriod('{{ $key }}')"
@@ -14,8 +13,9 @@
                     {{ $label }}
                 </button>
             @endforeach
-        </div>
-    </div>
+            </div>
+        </x-slot:actions>
+    </x-ui.section-heading>
 
     {{-- Stat row --}}
     <div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -50,12 +50,12 @@
 
     {{-- Pending queues --}}
     <div>
-        <h2 class="mb-2 text-sm font-semibold">{{ __('Pending queues') }}</h2>
+        <x-ui.section-heading :title="__('Pending queues')" class="mb-2" />
         <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
             @foreach ($queues as $queue)
                 @if ($queue['url'] !== null)
                     <a href="{{ $queue['url'] }}" wire:navigate wire:key="queue-{{ $loop->index }}"
-                       class="group rounded-[10px] border border-line bg-surface p-4 hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                       class="group rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         <p class="flex items-center justify-between gap-2 text-[13px] font-medium text-ink-soft">
                             {{ $queue['label'] }}
                             <svg class="size-3.5 text-ink-faint group-hover:text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
@@ -146,10 +146,7 @@
         </div>
 
         @if ($topStores->isEmpty())
-            <div class="px-4 py-10 text-center">
-                <p class="font-display text-lg font-semibold">{{ __('No completed orders yet') }}</p>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Stores rank here once their orders complete.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No completed orders yet')" :message="__('Stores rank here once their orders complete.')" />
         @else
             <table class="w-full text-[13px]">
                 <thead>

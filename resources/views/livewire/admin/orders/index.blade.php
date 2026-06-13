@@ -1,7 +1,7 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Orders') }}</h1>
+    <x-ui.section-heading :title="__('Orders')" as="h1" />
 
     {{-- Filters (docs/08 §E: status, store, method, date; search order_no — mono) --}}
     <x-ui.card class="p-3">
@@ -13,13 +13,13 @@
                     type="search"
                     wire:model.live.debounce.300ms="search"
                     placeholder="{{ __('Search order no. or sub-order no.') }}"
-                    class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 font-mono text-[13px] text-ink placeholder:font-sans placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+                    class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 font-mono text-[13px] text-ink placeholder:font-sans placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
                 >
             </div>
             <div>
                 <label for="orders-status" class="sr-only">{{ __('Status') }}</label>
                 <select id="orders-status" wire:model.live="status"
-                        class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     <option value="">{{ __('All statuses') }}</option>
                     @foreach ($statuses as $statusCase)
                         <option value="{{ $statusCase->value }}">{{ $statusCase->label() }}</option>
@@ -29,7 +29,7 @@
             <div>
                 <label for="orders-store" class="sr-only">{{ __('Store') }}</label>
                 <select id="orders-store" wire:model.live="store"
-                        class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     <option value="">{{ __('All stores') }}</option>
                     @foreach ($stores as $id => $name)
                         <option value="{{ $id }}">{{ $name }}</option>
@@ -39,7 +39,7 @@
             <div>
                 <label for="orders-method" class="sr-only">{{ __('Payment method') }}</label>
                 <select id="orders-method" wire:model.live="method"
-                        class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     <option value="">{{ __('All methods') }}</option>
                     @foreach ($methods as $methodCase)
                         <option value="{{ $methodCase->value }}">{{ $methodCase->label() }}</option>
@@ -49,11 +49,11 @@
             <div class="flex items-center gap-2">
                 <label for="orders-date-from" class="sr-only">{{ __('From date') }}</label>
                 <input id="orders-date-from" type="date" wire:model.live="dateFrom"
-                       class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                       class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                 <span class="text-[13px] text-ink-faint" aria-hidden="true">–</span>
                 <label for="orders-date-to" class="sr-only">{{ __('To date') }}</label>
                 <input id="orders-date-to" type="date" wire:model.live="dateTo"
-                       class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                       class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             </div>
         </div>
         @if ($search !== '' || $status !== '' || $store !== '' || $method !== '' || $dateFrom !== '' || $dateTo !== '')
@@ -70,10 +70,7 @@
         <x-ui.table-skeleton wire:loading wire:target="search, status, store, method, dateFrom, dateTo, resetFilters" />
         <div wire:loading.remove wire:target="search, status, store, method, dateFrom, dateTo, resetFilters">
         @if ($subOrders->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No sub-orders match') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Adjust the filters or clear them to see every order on the marketplace.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No sub-orders match')" :message="__('Adjust the filters or clear them to see every order on the marketplace.')" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead class="sticky top-14 z-10 bg-surface">

@@ -1,6 +1,5 @@
 <div class="mx-auto w-full max-w-3xl px-4 py-12 sm:py-16">
-    <h1 class="font-display text-3xl font-bold sm:text-4xl">{{ __('Help centre') }}</h1>
-    <p class="mt-2 text-sm text-ink-soft">{{ __('Answers about ordering, payments, shipping, returns, and selling.') }}</p>
+    <x-ui.section-heading as="h1" :title="__('Help centre')" :subtitle="__('Answers about ordering, payments, shipping, returns, and selling.')" />
 
     {{-- Search --}}
     <div class="relative mt-6">
@@ -11,7 +10,7 @@
             type="search"
             wire:model.live.debounce.300ms="search"
             placeholder="{{ __('Search help articles…') }}"
-            class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface py-2.5 pl-10 pr-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+            class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface py-2.5 pl-10 pr-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
         >
     </div>
 
@@ -19,8 +18,8 @@
     <div class="mt-8 space-y-8" wire:loading.class="opacity-60" wire:target="search">
         @forelse ($groups as $group)
             <section wire:key="help-cat-{{ $group['category']->value }}">
-                <h2 class="font-display text-xl font-bold">{{ $group['category']->label() }}</h2>
-                <ul class="mt-3 divide-y divide-line rounded-[10px] border border-line bg-surface">
+                <x-ui.section-heading :title="$group['category']->label()" />
+                <ul class="mt-3 divide-y divide-line rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
                     @foreach ($group['articles'] as $article)
                         <li wire:key="help-article-{{ $article->id }}">
                             <a href="{{ route('help.article', $article) }}" wire:navigate
@@ -33,19 +32,15 @@
                 </ul>
             </section>
         @empty
-            <div class="rounded-[10px] border border-line bg-surface px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">
-                    {{ $searching ? __('Nothing matches that search') : __('No articles yet') }}
-                </h2>
-                <p class="mt-1 text-sm text-ink-soft">
-                    {{ $searching ? __('Try a different word, or ask us directly below.') : __('Help articles are on their way.') }}
-                </p>
-            </div>
+            <x-ui.empty-state
+                :title="$searching ? __('Nothing matches that search') : __('No articles yet')"
+                :message="$searching ? __('Try a different word, or ask us directly below.') : __('Help articles are on their way.')"
+            />
         @endforelse
     </div>
 
     {{-- Contact support CTA --}}
-    <div class="mt-12 rounded-[10px] border border-line bg-surface p-6 text-center sm:p-8">
+    <div class="mt-12 rounded-[var(--radius-card)] border border-line bg-surface p-6 text-center shadow-soft sm:p-8">
         <h2 class="font-display text-xl font-bold">{{ __('Still stuck?') }}</h2>
         <p class="mt-1 text-sm text-ink-soft">{{ __('Open a ticket and our support team will get back to you.') }}</p>
         <x-ui.button :href="route('help.tickets')" class="mt-4">{{ __('Contact support') }}</x-ui.button>

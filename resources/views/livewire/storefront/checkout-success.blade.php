@@ -10,7 +10,7 @@
     </div>
 
     @if ($awaitingPayment)
-        <div class="mt-6 rounded-[10px] border border-warn/40 bg-warn-tint p-4">
+        <div class="mt-6 rounded-[var(--radius-card)] border border-warn/40 bg-warn-tint p-4">
             <p class="text-sm font-medium text-warn">{{ __('Payment pending — complete it before the window closes.') }}</p>
             <x-ui.button :href="route('payments.ipay88.pay', $order)" class="mt-3">{{ __('Complete your payment') }}</x-ui.button>
         </div>

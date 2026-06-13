@@ -1,10 +1,9 @@
 <div class="mx-auto w-full max-w-md px-4 py-12 sm:py-16">
     <x-ui.card class="p-6 sm:p-8">
-        <h1 class="font-display text-[28px] font-bold leading-tight">{{ __('Log in') }}</h1>
-        <p class="mt-1 text-sm text-ink-soft">{{ __('Welcome back — your cart is right where you left it.') }}</p>
+        <x-ui.section-heading as="h1" :title="__('Log in')" :subtitle="__('Welcome back — your cart is right where you left it.')" />
 
         @if (session('status'))
-            <p class="mt-4 rounded-lg bg-emerald-tint px-3.5 py-2.5 text-[13px] text-emerald">{{ session('status') }}</p>
+            <p class="mt-4 rounded-[var(--radius-control)] bg-emerald-tint px-3.5 py-2.5 text-[13px] text-emerald">{{ session('status') }}</p>
         @endif
 
         <form wire:submit="login" class="mt-6 space-y-4">

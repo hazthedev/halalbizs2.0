@@ -76,7 +76,7 @@
                                 <button type="button"
                                         wire:key="review-photo-{{ $photo->id }}"
                                         x-on:click="lightbox = @js($photo->getUrl())"
-                                        class="size-16 overflow-hidden rounded-lg border border-line bg-paper transition-colors duration-150 hover:border-ink focus-visible:ring-2 focus-visible:ring-emerald"
+                                        class="size-16 overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper transition-colors duration-150 hover:border-ink focus-visible:ring-2 focus-visible:ring-emerald"
                                         aria-label="{{ __('View review photo :number', ['number' => $loop->iteration]) }}">
                                     <img src="{{ $photo->getUrl() }}" alt="{{ __('Review photo') }}" class="size-full object-cover" loading="lazy">
                                 </button>
@@ -84,7 +84,7 @@
                         </div>
                     @endif
                     @if ($review->seller_reply)
-                        <div class="ml-4 mt-3 max-w-prose rounded-lg border-l-2 border-line-strong bg-paper px-3.5 py-2.5">
+                        <div class="ml-4 mt-3 max-w-prose rounded-[var(--radius-control)] border-l-2 border-line-strong bg-paper px-3.5 py-2.5">
                             <p class="text-xs font-semibold text-ink">{{ __('Seller response') }}</p>
                             <p class="mt-1 text-[13px] leading-relaxed text-ink-soft">{{ $review->seller_reply }}</p>
                         </div>

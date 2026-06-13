@@ -1,5 +1,5 @@
 <div class="mx-auto max-w-3xl space-y-4">
-    <h1 class="font-display text-[22px] font-bold leading-tight">{{ __('Shop settings') }}</h1>
+    <x-ui.section-heading as="h1" :title="__('Shop settings')" />
 
     {{-- ===== Profile ===== --}}
     <x-ui.card class="p-4 lg:p-6">
@@ -16,7 +16,7 @@
                 <div>
                     <label for="logo" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Logo') }}</label>
                     @if ($store->getFirstMediaUrl('logo'))
-                        <img src="{{ $store->getFirstMediaUrl('logo') }}" alt="{{ __(':store logo', ['store' => $store->name]) }}" class="mb-2 size-16 rounded-[10px] border border-line object-cover">
+                        <img src="{{ $store->getFirstMediaUrl('logo') }}" alt="{{ __(':store logo', ['store' => $store->name]) }}" class="mb-2 size-16 rounded-[var(--radius-card)] border border-line object-cover">
                     @endif
                     <input type="file" id="logo" wire:model="logo" accept=".jpg,.jpeg,.png,.webp"
                            class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink hover:file:bg-paper">
@@ -31,7 +31,7 @@
                 <div>
                     <label for="banner" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Banner') }}</label>
                     @if ($store->getFirstMediaUrl('banner'))
-                        <img src="{{ $store->getFirstMediaUrl('banner') }}" alt="{{ __(':store banner', ['store' => $store->name]) }}" class="mb-2 h-16 w-full rounded-[10px] border border-line object-cover">
+                        <img src="{{ $store->getFirstMediaUrl('banner') }}" alt="{{ __(':store banner', ['store' => $store->name]) }}" class="mb-2 h-16 w-full rounded-[var(--radius-card)] border border-line object-cover">
                     @endif
                     <input type="file" id="banner" wire:model="banner" accept=".jpg,.jpeg,.png,.webp"
                            class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink hover:file:bg-paper">
@@ -137,7 +137,7 @@
                         <p class="mb-2 text-[13px] text-danger">{{ $message }}</p>
                     @enderror
 
-                    <div class="overflow-hidden rounded-lg border border-line">
+                    <div class="overflow-hidden rounded-[var(--radius-card)] border border-line">
                         <table class="w-full text-[13px]">
                             <thead>
                                 <tr class="border-b border-line bg-paper text-left text-ink-soft">

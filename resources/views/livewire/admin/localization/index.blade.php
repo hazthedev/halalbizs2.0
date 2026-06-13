@@ -1,10 +1,10 @@
 <div class="space-y-6">
 
-    <h1 class="font-display text-2xl font-bold">{{ __('Localization') }}</h1>
+    <x-ui.section-heading :title="__('Localization')" as="h1" />
 
     {{-- ── Languages ─────────────────────────────────────────────────── --}}
     <section class="space-y-3">
-        <h2 class="font-display text-lg font-semibold">{{ __('Languages') }}</h2>
+        <x-ui.section-heading :title="__('Languages')" />
         <x-ui.card>
             <ul class="divide-y divide-line">
                 <li class="flex items-center gap-3 px-4 py-2">
@@ -40,7 +40,7 @@
 
     {{-- ── Currencies ────────────────────────────────────────────────── --}}
     <section class="space-y-3">
-        <h2 class="font-display text-lg font-semibold">{{ __('Currencies') }}</h2>
+        <x-ui.section-heading :title="__('Currencies')" />
         <p class="text-[13px] text-ink-soft">{{ __('Display-only conversion — storage, checkout, and settlement stay MYR.') }}</p>
         <x-ui.card class="overflow-x-auto">
             <table class="w-full min-w-[560px] text-[13px]">
@@ -97,15 +97,16 @@
 
     {{-- ── Exchange rates ────────────────────────────────────────────── --}}
     <section class="space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="font-display text-lg font-semibold">{{ __('Exchange rates') }}</h2>
-            <div class="flex items-center gap-2 text-[13px] text-ink-faint">
-                <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-line-strong opacity-50" aria-hidden="true">
-                    <span class="inline-block size-4 translate-x-1 rounded-full bg-white"></span>
-                </span>
-                {{ __('Automatic API sync (rates:sync) ships with M8 ops — rates are manual for now.') }}
-            </div>
-        </div>
+        <x-ui.section-heading :title="__('Exchange rates')">
+            <x-slot:actions>
+                <div class="flex items-center gap-2 text-[13px] text-ink-faint">
+                    <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-line-strong opacity-50" aria-hidden="true">
+                        <span class="inline-block size-4 translate-x-1 rounded-full bg-white"></span>
+                    </span>
+                    {{ __('Automatic API sync (rates:sync) ships with M8 ops — rates are manual for now.') }}
+                </div>
+            </x-slot:actions>
+        </x-ui.section-heading>
         <p class="text-[13px] text-ink-soft">{{ __('Rates are append-only — saving writes a new row and the history keeps the trail.') }}</p>
 
         <x-ui.card class="overflow-x-auto">
@@ -145,17 +146,17 @@
                                     <div>
                                         <label for="rate-{{ $code }}" class="sr-only">{{ __(':code rate', ['code' => $code]) }}</label>
                                         <input id="rate-{{ $code }}" type="text" inputmode="decimal" wire:model="rateInput.{{ $code }}" placeholder="0.21"
-                                               class="block min-h-11 w-28 rounded-lg border bg-surface px-3 py-2 text-right font-mono text-[13px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('rateInput.'.$code) ? 'border-danger' : 'border-line-strong' }}">
+                                               class="block min-h-11 w-28 rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-right font-mono text-[13px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('rateInput.'.$code) ? 'border-danger' : 'border-line-strong' }}">
                                         @error('rateInput.'.$code)<p class="mt-1 max-w-40 text-[12px] text-danger">{{ $message }}</p>@enderror
                                     </div>
                                     <div>
                                         <label for="margin-{{ $code }}" class="sr-only">{{ __(':code margin %', ['code' => $code]) }}</label>
                                         <input id="margin-{{ $code }}" type="text" inputmode="decimal" wire:model="marginInput.{{ $code }}" placeholder="0"
-                                               class="block min-h-11 w-20 rounded-lg border bg-surface px-3 py-2 text-right font-mono text-[13px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('marginInput.'.$code) ? 'border-danger' : 'border-line-strong' }}">
+                                               class="block min-h-11 w-20 rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-right font-mono text-[13px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('marginInput.'.$code) ? 'border-danger' : 'border-line-strong' }}">
                                         @error('marginInput.'.$code)<p class="mt-1 max-w-32 text-[12px] text-danger">{{ $message }}</p>@enderror
                                     </div>
                                     <button type="button" wire:click="updateRate('{{ $code }}')" wire:loading.attr="disabled"
-                                            class="inline-flex min-h-11 items-center rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ __('Save rate') }}
                                     </button>
                                 </div>

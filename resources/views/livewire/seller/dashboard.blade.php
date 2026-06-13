@@ -1,5 +1,5 @@
 <div class="space-y-4">
-    <h1 class="font-display text-[22px] font-bold leading-tight">{{ __('Dashboard') }}</h1>
+    <x-ui.section-heading as="h1" :title="__('Dashboard')" />
 
     {{-- ===== Stat cards (count-up per design §7, reduced-motion renders final) ===== --}}
     @php
@@ -153,10 +153,7 @@
             </div>
 
             @if ($recentOrders->isEmpty())
-                <div class="px-4 py-10 text-center">
-                    <p class="font-display text-lg font-semibold">{{ __('No orders yet') }}</p>
-                    <p class="mt-1 text-sm text-ink-soft">{{ __('New orders appear here the moment a buyer pays.') }}</p>
-                </div>
+                <x-ui.empty-state :title="__('No orders yet')" :message="__('New orders appear here the moment a buyer pays.')" />
             @else
                 <div class="overflow-x-auto">
                     <table class="w-full text-[13px]">

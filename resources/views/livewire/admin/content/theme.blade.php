@@ -1,15 +1,16 @@
 <div class="max-w-3xl space-y-4">
 
-    <div class="flex items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold">{{ __('Theme') }}</h1>
-        <x-ui.button variant="ghost" wire:click="resetDefaults"
-                     wire:confirm="{{ __('Reset the occasion theme to defaults? The announcement, schedule, and hero image are cleared.') }}">
-            {{ __('Reset to defaults') }}
-        </x-ui.button>
-    </div>
+    <x-ui.section-heading :title="__('Theme')" as="h1">
+        <x-slot:actions>
+            <x-ui.button variant="ghost" wire:click="resetDefaults"
+                         wire:confirm="{{ __('Reset the occasion theme to defaults? The announcement, schedule, and hero image are cleared.') }}">
+                {{ __('Reset to defaults') }}
+            </x-ui.button>
+        </x-slot:actions>
+    </x-ui.section-heading>
 
     {{-- Hard rule 8 note --}}
-    <p class="rounded-[10px] border border-line bg-paper px-4 py-3 text-[13px] text-ink-soft">
+    <p class="rounded-[var(--radius-card)] border border-line bg-paper px-4 py-3 text-[13px] text-ink-soft">
         {{ __('Occasion colors style only the announcement bar and the home hero. Buttons, links, and prices keep the standard emerald — never recolor actions.') }}
     </p>
 
@@ -45,9 +46,9 @@
                     <label for="announcement-bg-hex" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Bar background') }}</label>
                     <div class="flex items-center gap-2">
                         <input type="color" x-model="value" aria-label="{{ __('Bar background color picker') }}"
-                               class="size-11 shrink-0 cursor-pointer rounded-lg border border-line-strong bg-surface p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                               class="size-11 shrink-0 cursor-pointer rounded-[var(--radius-control)] border border-line-strong bg-surface p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         <input id="announcement-bg-hex" type="text" x-model="value" wire:model="announcementBg"
-                               class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('announcementBg') ? 'border-danger' : 'border-line-strong' }}">
+                               class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('announcementBg') ? 'border-danger' : 'border-line-strong' }}">
                     </div>
                     @error('announcementBg')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
@@ -55,9 +56,9 @@
                     <label for="announcement-text-hex" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Bar text color') }}</label>
                     <div class="flex items-center gap-2">
                         <input type="color" x-model="value" aria-label="{{ __('Bar text color picker') }}"
-                               class="size-11 shrink-0 cursor-pointer rounded-lg border border-line-strong bg-surface p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                               class="size-11 shrink-0 cursor-pointer rounded-[var(--radius-control)] border border-line-strong bg-surface p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         <input id="announcement-text-hex" type="text" x-model="value" wire:model="announcementTextColor"
-                               class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('announcementTextColor') ? 'border-danger' : 'border-line-strong' }}">
+                               class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('announcementTextColor') ? 'border-danger' : 'border-line-strong' }}">
                     </div>
                     @error('announcementTextColor')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
@@ -88,17 +89,17 @@
             @if ($heroImage)
                 <div>
                     <p class="mb-1.5 text-[13px] font-medium text-ink">{{ __('New image (saved on Save)') }}</p>
-                    <img src="{{ $heroImage->temporaryUrl() }}" alt="{{ __('Hero preview') }}" class="h-24 w-full max-w-md rounded-lg border border-line object-cover">
+                    <img src="{{ $heroImage->temporaryUrl() }}" alt="{{ __('Hero preview') }}" class="h-24 w-full max-w-md rounded-[var(--radius-card)] border border-line object-cover">
                 </div>
             @elseif ($heroUrl)
                 <div class="flex items-end gap-3">
                     <div>
                         <p class="mb-1.5 text-[13px] font-medium text-ink">{{ __('Current image') }}</p>
-                        <img src="{{ $heroUrl }}" alt="{{ __('Current hero image') }}" class="h-24 w-full max-w-md rounded-lg border border-line object-cover">
+                        <img src="{{ $heroUrl }}" alt="{{ __('Current hero image') }}" class="h-24 w-full max-w-md rounded-[var(--radius-card)] border border-line object-cover">
                     </div>
                     <button type="button" wire:click="removeHeroImage"
                             wire:confirm="{{ __('Remove the hero image?') }}"
-                            class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         {{ __('Remove') }}
                     </button>
                 </div>

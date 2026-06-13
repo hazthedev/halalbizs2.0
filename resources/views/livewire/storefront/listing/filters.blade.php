@@ -9,7 +9,7 @@
                 <button
                     type="button"
                     wire:click="$set('childCategory', '')"
-                    class="flex min-h-11 w-full items-center rounded-lg px-3 text-left text-sm {{ $childCategory === '' ? 'bg-emerald-tint font-semibold text-emerald' : 'text-ink-soft hover:text-ink' }}"
+                    class="flex min-h-11 w-full items-center rounded-[var(--radius-control)] px-3 text-left text-sm {{ $childCategory === '' ? 'bg-emerald-tint font-semibold text-emerald' : 'text-ink-soft hover:text-ink' }}"
                 >
                     {{ __('All in :name', ['name' => $rootCategory->getTranslation('name', app()->getLocale())]) }}
                 </button>
@@ -19,7 +19,7 @@
                     <button
                         type="button"
                         wire:click="$set('childCategory', '{{ $child->slug }}')"
-                        class="flex min-h-11 w-full items-center rounded-lg px-3 text-left text-sm {{ $childCategory === $child->slug ? 'bg-emerald-tint font-semibold text-emerald' : 'text-ink-soft hover:text-ink' }}"
+                        class="flex min-h-11 w-full items-center rounded-[var(--radius-control)] px-3 text-left text-sm {{ $childCategory === $child->slug ? 'bg-emerald-tint font-semibold text-emerald' : 'text-ink-soft hover:text-ink' }}"
                     >
                         {{ $child->getTranslation('name', app()->getLocale()) }}
                     </button>
@@ -41,7 +41,7 @@
             inputmode="numeric"
             placeholder="{{ __('Min') }}"
             wire:model.live.debounce.500ms="priceMin"
-            class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink tnum placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+            class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm text-ink tnum placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
         >
         <span class="text-ink-faint" aria-hidden="true">–</span>
         <label for="{{ $idPrefix }}-price-max" class="sr-only">{{ __('Maximum price in RM') }}</label>
@@ -53,7 +53,7 @@
             inputmode="numeric"
             placeholder="{{ __('Max') }}"
             wire:model.live.debounce.500ms="priceMax"
-            class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink tnum placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+            class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm text-ink tnum placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
         >
     </div>
 </div>
@@ -66,7 +66,7 @@
                 <button
                     type="button"
                     wire:click="$set('rating', {{ $rating === $stars ? 'null' : $stars }})"
-                    class="flex min-h-11 w-full items-center gap-1.5 rounded-lg px-3 text-left text-sm {{ $rating === $stars ? 'bg-emerald-tint font-semibold text-emerald' : 'text-ink-soft hover:text-ink' }}"
+                    class="flex min-h-11 w-full items-center gap-1.5 rounded-[var(--radius-control)] px-3 text-left text-sm {{ $rating === $stars ? 'bg-emerald-tint font-semibold text-emerald' : 'text-ink-soft hover:text-ink' }}"
                     @if ($rating === $stars) aria-pressed="true" @endif
                 >
                     <span aria-hidden="true">{{ str_repeat('★', $stars) }}{{ str_repeat('☆', 5 - $stars) }}</span>
@@ -82,7 +82,7 @@
     <select
         id="{{ $idPrefix }}-state"
         wire:model.live="state"
-        class="block min-h-11 w-full cursor-pointer rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+        class="block min-h-11 w-full cursor-pointer rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
     >
         <option value="">{{ __('All states') }}</option>
         @foreach ($states as $stateOption)
@@ -93,7 +93,7 @@
 
 <div>
     <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Payment') }}</p>
-    <label for="{{ $idPrefix }}-cod" class="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-sm text-ink">
+    <label for="{{ $idPrefix }}-cod" class="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[var(--radius-control)] px-3 text-sm text-ink">
         <input
             id="{{ $idPrefix }}-cod"
             type="checkbox"

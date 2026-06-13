@@ -1,11 +1,6 @@
 <div class="space-y-4">
 
-    <div>
-        <h1 class="font-display text-2xl font-bold">{{ __('Boosts') }}</h1>
-        <p class="mt-1 max-w-prose text-[13px] text-ink-soft">
-            {{ __('Boost fees are platform income — charged up-front from seller available balances via the ledger. Cancelled boosts are not refunded, so they still count as revenue.') }}
-        </p>
-    </div>
+    <x-ui.section-heading :title="__('Boosts')" :subtitle="__('Boost fees are platform income — charged up-front from seller available balances via the ledger. Cancelled boosts are not refunded, so they still count as revenue.')" as="h1" />
 
     {{-- Revenue summary --}}
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -25,10 +20,7 @@
     {{-- All boosts --}}
     <x-ui.card class="overflow-x-auto">
         @if ($boosts->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No boosts yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Seller boosts appear here the moment they are paid for.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No boosts yet')" :message="__('Seller boosts appear here the moment they are paid for.')" />
         @else
             <table class="w-full min-w-[820px] text-[13px]">
                 <thead>

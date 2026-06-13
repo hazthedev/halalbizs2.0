@@ -1,9 +1,9 @@
 <div>
     @php($active = $this->activeConversation)
 
-    <h1 class="font-display text-[22px] font-bold leading-tight">{{ __('Messages') }}</h1>
+    <x-ui.section-heading as="h1" :title="__('Messages')" />
 
-    <div class="mt-4 flex h-[640px] max-h-[78vh] overflow-hidden rounded-[10px] border border-line bg-surface">
+    <div class="mt-4 flex h-[640px] max-h-[78vh] overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
         {{-- ===== Thread list ===== --}}
         <div class="{{ $active ? 'hidden lg:flex' : 'flex' }} w-full flex-col border-line lg:w-72 lg:shrink-0 lg:border-r">
             @if ($this->conversations->isNotEmpty())

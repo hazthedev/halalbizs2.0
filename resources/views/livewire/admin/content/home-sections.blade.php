@@ -1,31 +1,28 @@
 <div class="space-y-4">
 
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold">{{ __('Home sections') }}</h1>
-
+    <x-ui.section-heading :title="__('Home sections')" as="h1">
         @if ($missingTypes !== [])
-            <div class="flex items-center gap-2">
-                <label for="add-type" class="sr-only">{{ __('Section type') }}</label>
-                <select id="add-type" wire:model="addType"
-                        class="min-h-11 rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                    <option value="">{{ __('Choose a section…') }}</option>
-                    @foreach ($missingTypes as $type)
-                        <option value="{{ $type }}">{{ \App\Livewire\Admin\Content\HomeSections::typeLabel($type) }}</option>
-                    @endforeach
-                </select>
-                <x-ui.button wire:click="addSection">{{ __('Add section') }}</x-ui.button>
-            </div>
+            <x-slot:actions>
+                <div class="flex items-center gap-2">
+                    <label for="add-type" class="sr-only">{{ __('Section type') }}</label>
+                    <select id="add-type" wire:model="addType"
+                            class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                        <option value="">{{ __('Choose a section…') }}</option>
+                        @foreach ($missingTypes as $type)
+                            <option value="{{ $type }}">{{ \App\Livewire\Admin\Content\HomeSections::typeLabel($type) }}</option>
+                        @endforeach
+                    </select>
+                    <x-ui.button wire:click="addSection">{{ __('Add section') }}</x-ui.button>
+                </div>
+            </x-slot:actions>
         @endif
-    </div>
+    </x-ui.section-heading>
 
     <p class="text-[13px] text-ink-soft">{{ __('These sections render on the storefront home page, top to bottom.') }}</p>
 
     <x-ui.card>
         @if ($sections->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('The home page is empty') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Add a section above — buyers see it the moment it\'s active.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('The home page is empty')" :message="__('Add a section above — buyers see it the moment it\'s active.')" />
         @else
             <ul class="divide-y divide-line">
                 @foreach ($sections as $section)
@@ -89,7 +86,7 @@
                                         <div>
                                             <label for="section-source" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Source') }}</label>
                                             <select id="section-source" wire:model="source"
-                                                    class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                                    class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                                 <option value="latest">{{ __('Latest products') }}</option>
                                                 <option value="top">{{ __('Top sellers') }}</option>
                                             </select>

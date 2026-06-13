@@ -12,7 +12,7 @@
         </p>
 
         @if ($status)
-            <p class="mt-4 rounded-lg bg-emerald-tint px-3.5 py-2.5 text-[13px] text-emerald">{{ $status }}</p>
+            <p class="mt-4 rounded-[var(--radius-control)] bg-emerald-tint px-3.5 py-2.5 text-[13px] text-emerald">{{ $status }}</p>
         @endif
 
         @error('resend')

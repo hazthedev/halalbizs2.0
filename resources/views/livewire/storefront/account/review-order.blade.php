@@ -17,9 +17,9 @@
         @if ($open)
             <div class="space-y-3 border-t border-line bg-paper px-4 py-4">
                 @foreach ($items as $item)
-                    <div wire:key="review-item-{{ $item->id }}" class="rounded-[10px] border border-line bg-surface p-4">
+                    <div wire:key="review-item-{{ $item->id }}" class="rounded-[var(--radius-card)] border border-line bg-surface p-4">
                         <div class="flex items-start gap-3">
-                            <span class="block size-12 shrink-0 overflow-hidden rounded-lg border border-line bg-paper">
+                            <span class="block size-12 shrink-0 overflow-hidden rounded-[var(--radius-control)] border border-line bg-paper">
                                 @if ($item->product?->getFirstMediaUrl('images', 'thumb'))
                                     <img src="{{ $item->product->getFirstMediaUrl('images', 'thumb') }}"
                                          alt="{{ $item->product_name }}{{ $item->variant_label ? ' — '.$item->variant_label : '' }}"
@@ -66,7 +66,7 @@
                                 <textarea id="review-comment-{{ $item->id }}" rows="3"
                                           wire:model="comments.{{ $item->id }}"
                                           placeholder="{{ __('How was the quality? Would you buy it again?') }}"
-                                          class="mt-1 block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('comments.'.$item->id) ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                                          class="mt-1 block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('comments.'.$item->id) ? 'border-danger' : 'border-line-strong' }}"></textarea>
                                 @error('comments.'.$item->id)<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
                             </div>
 
@@ -77,7 +77,7 @@
                                 </label>
                                 <input id="review-photos-{{ $item->id }}" type="file" multiple accept="image/*"
                                        wire:model="photos.{{ $item->id }}"
-                                       class="mt-1 block w-full text-[13px] text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border file:border-ink file:bg-surface file:px-3 file:text-[13px] file:font-semibold file:text-ink hover:file:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                       class="mt-1 block w-full text-[13px] text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-3 file:text-[13px] file:font-semibold file:text-ink hover:file:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 <p class="mt-1 text-[13px] text-ink-faint" wire:loading wire:target="photos.{{ $item->id }}">{{ __('Uploading photos…') }}</p>
                                 @error('photos.'.$item->id)<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
                                 @error('photos.'.$item->id.'.*')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
@@ -86,7 +86,7 @@
                                     <div class="mt-2 flex flex-wrap gap-2">
                                         @foreach ($photos[$item->id] as $index => $photo)
                                             <span wire:key="photo-preview-{{ $item->id }}-{{ $index }}"
-                                                  class="block size-16 overflow-hidden rounded-lg border border-line bg-paper">
+                                                  class="block size-16 overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper">
                                                 <img src="{{ $photo->temporaryUrl() }}" alt="{{ __('Photo :number to upload', ['number' => $index + 1]) }}" class="size-full object-cover">
                                             </span>
                                         @endforeach
@@ -109,7 +109,7 @@
                 {{-- Seller SERVICE rating — once per sub-order, saved with the
                      first item review you post (never duplicated). --}}
                 @if (! $sellerRated)
-                    <div class="rounded-[10px] border border-line bg-surface p-4">
+                    <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4">
                         <fieldset>
                             <legend class="text-[13px] font-medium text-ink">
                                 {{ __("Rate the seller's service") }} <span class="font-normal text-ink-faint">{{ __('(optional)') }}</span>
@@ -137,7 +137,7 @@
                             <input id="seller-comment-{{ $subOrder->id }}" type="text" maxlength="500"
                                    wire:model="sellerComment"
                                    placeholder="{{ __('Fast replies? Careful packing?') }}"
-                                   class="mt-1 block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('sellerComment') ? 'border-danger' : 'border-line-strong' }}">
+                                   class="mt-1 block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('sellerComment') ? 'border-danger' : 'border-line-strong' }}">
                             @error('sellerComment')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
                             <p class="mt-1 text-[13px] text-ink-faint">{{ __('Saved together with the next item review you post.') }}</p>
                         </div>

@@ -1,14 +1,15 @@
 <div class="space-y-4">
 
-    <div class="flex items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold">{{ __('Pages') }}</h1>
+    <x-ui.section-heading :title="__('Pages')" as="h1">
         @unless ($showForm)
-            <x-ui.button wire:click="create">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                {{ __('Add page') }}
-            </x-ui.button>
+            <x-slot:actions>
+                <x-ui.button wire:click="create">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    {{ __('Add page') }}
+                </x-ui.button>
+            </x-slot:actions>
         @endunless
-    </div>
+    </x-ui.section-heading>
 
     {{-- Editor --}}
     @if ($showForm)
@@ -20,7 +21,7 @@
 
                 @if ($editingIsSystem)
                     <div class="flex items-center gap-2">
-                        <span class="rounded-lg bg-paper px-3 py-2 font-mono text-[13px] text-ink-soft">/{{ $slug }}</span>
+                        <span class="rounded-[var(--radius-control)] bg-paper px-3 py-2 font-mono text-[13px] text-ink-soft">/{{ $slug }}</span>
                         <x-ui.badge variant="neutral">{{ __('System page — slug locked') }}</x-ui.badge>
                     </div>
                 @else
@@ -50,7 +51,7 @@
                             <div>
                                 <label for="body-en" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Body (English)') }}</label>
                                 <textarea id="body-en" wire:model="body.en" rows="12"
-                                          class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('body.en') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                                          class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('body.en') ? 'border-danger' : 'border-line-strong' }}"></textarea>
                                 @error('body.en')
                                     <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                                 @else
@@ -63,7 +64,7 @@
                             <div>
                                 <label for="body-ms" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Body (Bahasa Melayu)') }}</label>
                                 <textarea id="body-ms" wire:model="body.ms" rows="12"
-                                          class="block w-full rounded-lg border border-line-strong bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
+                                          class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
                                 @error('body.ms')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                             </div>
                         </div>
@@ -90,10 +91,7 @@
     {{-- List --}}
     <x-ui.card class="overflow-x-auto">
         @if ($pages->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No pages yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Run the seeder to create the system pages, or add one above.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No pages yet')" :message="__('Run the seeder to create the system pages, or add one above.')" />
         @else
             <table class="w-full min-w-[640px] text-[13px]">
                 <thead>

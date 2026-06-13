@@ -8,12 +8,8 @@
             @endforeach
         </div>
     @else
-        <x-ui.card class="px-6 py-16 text-center">
-            <p class="font-display text-xl font-semibold">{{ __('Nothing saved yet') }}</p>
-            <p class="mt-1 text-sm text-ink-soft">{{ __('Tap the heart on any product and it will be kept here.') }}</p>
-            <div class="mt-5">
-                <x-ui.button :href="route('home')">{{ __('Browse products') }}</x-ui.button>
-            </div>
-        </x-ui.card>
+        <x-ui.empty-state :title="__('Nothing saved yet')" :message="__('Tap the heart on any product and it will be kept here.')">
+            <x-ui.button :href="route('home')">{{ __('Browse products') }}</x-ui.button>
+        </x-ui.empty-state>
     @endif
 </x-account-shell>

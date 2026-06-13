@@ -1,26 +1,26 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Moderation') }}</h1>
+    <x-ui.section-heading :title="__('Moderation')" as="h1" />
 
     @unless ($requireApproval)
-        <div class="rounded-[10px] border border-line bg-surface px-4 py-3 text-[13px] text-ink-soft">
+        <div class="rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 text-[13px] text-ink-soft shadow-soft">
             {{ __('Product approval is off — new products go live immediately. Turn it on under System → Settings to route them through this queue.') }}
         </div>
     @endunless
 
     {{-- Bulk actions --}}
     @if (count($selected) > 0)
-        <div class="flex flex-wrap items-center gap-3 rounded-[10px] border border-line bg-surface px-4 py-2">
+        <div class="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-2 shadow-soft">
             <span class="text-[13px] font-medium text-ink">{{ trans_choice('{1}:count selected|[2,*]:count selected', count($selected), ['count' => count($selected)]) }}</span>
             <x-ui.button wire:click="bulkApprove" wire:loading.attr="disabled">{{ __('Approve selected') }}</x-ui.button>
             <button type="button" wire:click="startBulkReject"
-                    class="inline-flex min-h-11 items-center rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Reject selected') }}
             </button>
             <button type="button" wire:click="bulkBan"
                     wire:confirm="{{ __('Ban the selected products? They disappear from the storefront and the sellers are notified.') }}"
-                    class="inline-flex min-h-11 items-center rounded-lg border border-danger px-3 text-[13px] font-semibold text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-semibold text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Ban selected') }}
             </button>
         </div>
@@ -29,10 +29,7 @@
     {{-- Pending queue --}}
     <x-ui.card class="overflow-x-auto">
         @if ($pending->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('Queue clear') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Products waiting for review appear here the moment sellers submit them.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('Queue clear')" :message="__('Products waiting for review appear here the moment sellers submit them.')" />
         @else
             <table class="w-full min-w-[880px] text-[13px]">
                 <thead>
@@ -96,7 +93,7 @@
 
     {{-- Banned reference list --}}
     <div class="space-y-2 pt-2">
-        <h2 class="font-display text-lg font-semibold">{{ __('Banned products') }}</h2>
+        <x-ui.section-heading :title="__('Banned products')" />
         <x-ui.card class="overflow-x-auto">
             @if ($banned->isEmpty())
                 <p class="px-4 py-6 text-[13px] text-ink-faint">{{ __('No banned products.') }}</p>
@@ -140,7 +137,7 @@
     {{-- Reject modal --}}
     @if ($rejectOpen)
         <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:p-8" wire:click.self="cancelReject">
-            <x-ui.card class="w-full max-w-lg shadow-lg">
+            <x-ui.card class="w-full max-w-lg shadow-pop">
                 <form wire:submit="confirmReject">
                     <div class="border-b border-line px-5 py-4">
                         <h2 class="font-display text-lg font-semibold">
@@ -151,14 +148,14 @@
                         <label for="reject-reason" class="block text-[13px] font-medium text-ink">{{ __('Reason for the seller') }}</label>
                         <textarea id="reject-reason" wire:model="rejectReason" rows="3" required
                                   placeholder="{{ __('e.g. Images are blurry — re-shoot on a plain background.') }}"
-                                  class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('rejectReason') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                                  class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('rejectReason') ? 'border-danger' : 'border-line-strong' }}"></textarea>
                         @error('rejectReason')<p class="text-[13px] text-danger">{{ $message }}</p>@enderror
                         <p class="text-[13px] text-ink-faint">{{ __('The product moves back to drafts and the seller gets this reason by email and in-app.') }}</p>
                     </div>
                     <div class="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
-                        <button type="button" wire:click="cancelReject" class="inline-flex min-h-11 items-center rounded-lg px-3 text-[13px] font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
+                        <button type="button" wire:click="cancelReject" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
                         <button type="submit" wire:loading.attr="disabled"
-                                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-danger px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
+                                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-danger px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
                             {{ __('Reject and notify') }}
                         </button>
                     </div>

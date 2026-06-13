@@ -3,10 +3,14 @@
     @if ($heroUrl)
         <section class="relative h-[280px] w-full overflow-hidden bg-ink" aria-label="{{ $occasion !== '' ? $occasion : __('Seasonal highlight') }}">
             <img src="{{ $heroUrl }}" alt="{{ $occasion !== '' ? $occasion : __('Seasonal highlight') }}" class="absolute inset-0 size-full object-cover">
-            <div class="absolute inset-0 bg-ink/40"></div>
+            <div class="surface-zellij absolute inset-0 opacity-40"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/35 to-ink/10"></div>
             @if ($occasion !== '')
                 <div class="relative mx-auto flex h-full max-w-7xl items-end px-4 pb-8">
-                    <h1 class="font-display text-3xl font-bold text-paper sm:text-4xl">{{ $occasion }}</h1>
+                    <h1 class="reveal flex items-center gap-3 font-display text-3xl font-bold text-paper sm:text-4xl">
+                        <x-ui.star-mark :size="28" class="text-brass" />
+                        {{ $occasion }}
+                    </h1>
                 </div>
             @endif
         </section>
@@ -36,7 +40,7 @@
                         class="relative"
                     >
                         <div
-                            class="swiper overflow-hidden rounded-[10px] border border-line"
+                            class="swiper overflow-hidden rounded-[var(--radius-card)] border border-line shadow-soft"
                             x-ref="container"
                             style="--swiper-pagination-color: var(--color-paper); --swiper-pagination-bullet-inactive-color: var(--color-paper); --swiper-pagination-bullet-inactive-opacity: 0.5;"
                         >
@@ -89,14 +93,14 @@
             @case('category_grid')
                 <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16" wire:key="section-{{ $section->id }}">
                     @if ($title)
-                        <h2 class="font-display text-2xl font-bold">{{ $title }}</h2>
+                        <x-ui.section-heading :title="$title" />
                     @endif
                     <div class="mt-4 grid grid-cols-4 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-8">
                         @foreach ($data as $category)
                             @php $categoryName = $category->getTranslation('name', app()->getLocale()); @endphp
                             <a href="{{ route('category.show', $category->slug) }}" wire:navigate
                                wire:key="category-{{ $category->id }}"
-                               class="group flex flex-col items-center gap-2 rounded-[10px] border border-line bg-surface p-3 transition-colors duration-150 hover:border-ink">
+                               class="group flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-3 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-brass/40 hover:shadow-card">
                                 <span class="block aspect-square w-full overflow-hidden rounded-lg bg-paper">
                                     @if ($categoryImage = $category->getFirstMediaUrl('image', 'thumb'))
                                         <img src="{{ $categoryImage }}" alt="{{ $categoryName }}"
@@ -113,16 +117,13 @@
             {{-- ===== Product carousel (horizontal scroll strip) ===== --}}
             @case('product_carousel')
                 <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16" wire:key="section-{{ $section->id }}">
-                    <div class="flex items-baseline justify-between gap-4">
-                        @if ($title)
-                            <h2 class="font-display text-2xl font-bold">{{ $title }}</h2>
-                        @endif
-                        <a href="{{ route('search') }}" wire:navigate
-                           class="inline-flex min-h-11 shrink-0 items-center gap-1 text-sm font-medium text-ink-soft transition-colors hover:text-ink">
-                            {{ __('View all') }}
-                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
-                        </a>
-                    </div>
+                    @if ($title)
+                        <x-ui.section-heading :title="$title" :href="route('search')" :link-label="__('View all')" />
+                    @else
+                        <div class="flex justify-end">
+                            <a href="{{ route('search') }}" wire:navigate class="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-ink-soft transition-colors hover:text-ink">{{ __('View all') }}</a>
+                        </div>
+                    @endif
                     <div class="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mt-6">
                         @foreach ($data as $product)
                             <div class="w-40 shrink-0 snap-start sm:w-48" wire:key="carousel-{{ $section->id }}-{{ $product->id }}">
@@ -136,16 +137,13 @@
             {{-- ===== Product grid (2/3/4/6 cols) ===== --}}
             @case('product_grid')
                 <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16" wire:key="section-{{ $section->id }}">
-                    <div class="flex items-baseline justify-between gap-4">
-                        @if ($title)
-                            <h2 class="font-display text-2xl font-bold">{{ $title }}</h2>
-                        @endif
-                        <a href="{{ route('search') }}" wire:navigate
-                           class="inline-flex min-h-11 shrink-0 items-center gap-1 text-sm font-medium text-ink-soft transition-colors hover:text-ink">
-                            {{ __('View all') }}
-                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
-                        </a>
-                    </div>
+                    @if ($title)
+                        <x-ui.section-heading :title="$title" :href="route('search')" :link-label="__('View all')" />
+                    @else
+                        <div class="flex justify-end">
+                            <a href="{{ route('search') }}" wire:navigate class="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-ink-soft transition-colors hover:text-ink">{{ __('View all') }}</a>
+                        </div>
+                    @endif
                     <div class="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
                         @foreach ($data as $product)
                             <div wire:key="grid-{{ $section->id }}-{{ $product->id }}">
@@ -164,7 +162,7 @@
                     @if ($data->isNotEmpty())
                         <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16">
                             @if ($title)
-                                <h2 class="font-display text-2xl font-bold">{{ $title }}</h2>
+                                <x-ui.section-heading :title="$title" />
                             @endif
                             <div class="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mt-6">
                                 @foreach ($data as $product)

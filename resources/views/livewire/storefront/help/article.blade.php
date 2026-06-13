@@ -10,7 +10,7 @@
         <span class="text-ink-soft">{{ $article->category->label() }}</span>
     </nav>
 
-    <h1 class="mt-4 font-display text-3xl font-bold sm:text-4xl">{{ $article->getTranslation('title', app()->getLocale()) }}</h1>
+    <x-ui.section-heading as="h1" class="mt-4" :title="$article->getTranslation('title', app()->getLocale())" />
 
     {{-- Admin-authored HTML, sanitized to the tag allowlist on save. --}}
     <div class="mt-8 text-base leading-relaxed text-ink
@@ -28,8 +28,8 @@
     {{-- Related articles --}}
     @if ($related->isNotEmpty())
         <section class="mt-12 border-t border-line pt-8">
-            <h2 class="font-display text-xl font-bold">{{ __('Related articles') }}</h2>
-            <ul class="mt-3 divide-y divide-line rounded-[10px] border border-line bg-surface">
+            <x-ui.section-heading :title="__('Related articles')" />
+            <ul class="mt-3 divide-y divide-line rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
                 @foreach ($related as $relatedArticle)
                     <li wire:key="related-{{ $relatedArticle->id }}">
                         <a href="{{ route('help.article', $relatedArticle) }}" wire:navigate
@@ -44,7 +44,7 @@
     @endif
 
     {{-- Contact support --}}
-    <div class="mt-12 rounded-[10px] border border-line bg-surface p-6 text-center">
+    <div class="mt-12 rounded-[var(--radius-card)] border border-line bg-surface p-6 text-center shadow-soft">
         <p class="text-sm text-ink-soft">{{ __('Didn’t answer your question?') }}</p>
         <x-ui.button :href="route('help.tickets')" class="mt-3">{{ __('Contact support') }}</x-ui.button>
     </div>

@@ -1,6 +1,6 @@
 <div class="space-y-4">
 
-    <h1 class="font-display text-[22px] font-bold leading-tight">{{ __('Buyers') }}</h1>
+    <x-ui.section-heading :title="__('Buyers')" as="h1" />
 
     {{-- Filters --}}
     <div class="flex flex-wrap items-center gap-2">
@@ -8,10 +8,10 @@
                wire:model.live.debounce.300ms="search"
                placeholder="{{ __('Search by name or email') }}"
                aria-label="{{ __('Search buyers') }}"
-               class="min-h-11 w-full max-w-xs rounded-lg border border-line-strong bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+               class="min-h-11 w-full max-w-xs rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
         <select wire:model.live="status"
                 aria-label="{{ __('Filter by status') }}"
-                class="min-h-11 rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             <option value="">{{ __('All statuses') }}</option>
             <option value="active">{{ __('Active') }}</option>
             <option value="suspended">{{ __('Suspended') }}</option>
@@ -20,10 +20,7 @@
 
     <x-ui.card class="overflow-x-auto">
         @if ($buyers->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No buyers found') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Every registered account that is not admin staff appears here.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No buyers found')" :message="__('Every registered account that is not admin staff appears here.')" />
         @else
             <table class="w-full min-w-[760px] text-[13px]">
                 <thead class="sticky top-14 z-10 bg-surface">

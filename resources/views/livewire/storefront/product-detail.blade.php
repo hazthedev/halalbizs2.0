@@ -18,7 +18,7 @@
 
             {{-- ===== Gallery ===== --}}
             <div wire:key="gallery-{{ $variant?->id ?? 'base' }}" x-data="{ activeImage: @js($mainImage), showVideo: false }">
-                <div class="aspect-square overflow-hidden rounded-[10px] border border-line bg-paper">
+                <div class="aspect-square overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper">
                     @if ($video)
                         <video x-show="showVideo" x-cloak controls preload="none"
                                src="{{ $video->getUrl() }}"
@@ -42,7 +42,7 @@
                             <button type="button"
                                     x-on:click="showVideo = true"
                                     x-bind:class="showVideo ? 'border-emerald' : 'border-line hover:border-line-strong'"
-                                    class="relative size-16 shrink-0 overflow-hidden rounded-lg border bg-paper"
+                                    class="relative size-16 shrink-0 overflow-hidden rounded-[var(--radius-control)] border bg-paper"
                                     aria-label="{{ __('Play video of :name', ['name' => $name]) }}">
                                 @if ($images->isNotEmpty())
                                     <img src="{{ $images->first()->getUrl('thumb') }}" alt="" aria-hidden="true" class="size-full object-cover" loading="lazy">
@@ -56,7 +56,7 @@
                             <button type="button"
                                     x-on:click="activeImage = @js($media->getUrl('card')); showVideo = false"
                                     x-bind:class="! showVideo && activeImage === @js($media->getUrl('card')) ? 'border-emerald' : 'border-line hover:border-line-strong'"
-                                    class="size-16 shrink-0 overflow-hidden rounded-lg border bg-paper"
+                                    class="size-16 shrink-0 overflow-hidden rounded-[var(--radius-control)] border bg-paper"
                                     aria-label="{{ __('View image :number of :name', ['number' => $loop->iteration, 'name' => $name]) }}">
                                 <img src="{{ $media->getUrl('thumb') }}" alt="{{ $name }}" class="size-full object-cover" loading="lazy">
                             </button>
@@ -80,7 +80,7 @@
                 </div>
 
                 {{-- Price block --}}
-                <div class="mt-4 rounded-[10px] bg-paper px-4 py-3">
+                <div class="mt-4 rounded-[var(--radius-card)] bg-paper px-4 py-3">
                     @if ($variant !== null)
                         <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
                             <span class="text-2xl font-bold text-ink tnum">@price($variant->effectivePriceSen())</span>
@@ -175,14 +175,14 @@
                             wire:click="addToCart({{ $variant?->id ?? 0 }}, {{ $qty }})"
                             wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                             @disabled(! $canBuy)
-                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-ink px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50">
+                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50">
                         {{ __('Add to cart') }}
                     </button>
                     <button type="button"
                             wire:click="buyNow"
                             wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                             @disabled(! $canBuy)
-                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-emerald px-4 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
+                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
                         {{ __('Buy now') }}
                     </button>
                 </div>
@@ -190,7 +190,7 @@
 
                 {{-- Seller card --}}
                 @if ($store !== null)
-                    <section class="mt-8 rounded-[10px] border border-line bg-surface p-4" aria-label="{{ __('Seller') }}">
+                    <section class="mt-8 rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft" aria-label="{{ __('Seller') }}">
                         <div class="flex flex-wrap items-center gap-3">
                             @if ($store->getFirstMediaUrl('logo'))
                                 <img src="{{ $store->getFirstMediaUrl('logo') }}" alt="{{ $store->name }}"
@@ -230,12 +230,12 @@
                             <a href="{{ auth()->check() ? route('account.messages', ['store' => $store->id, 'product' => $product->id]) : route('login') }}"
                                wire:navigate
                                data-testid="pdp-chat"
-                               class="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-ink-soft transition-colors duration-150 hover:text-ink">
+                               class="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] px-3 text-sm font-semibold text-ink-soft transition-colors duration-150 hover:text-ink">
                                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
                                 {{ __('Chat') }}
                             </a>
                             <a href="{{ $store->storefrontUrl() }}" wire:navigate
-                               class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-ink-soft transition-colors duration-150 hover:text-ink">
+                               class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-sm font-semibold text-ink-soft transition-colors duration-150 hover:text-ink">
                                 {{ __('Visit store') }}
                             </a>
                         </div>
@@ -307,7 +307,7 @@
                  x-on:click="lightbox = null"
                  class="fixed inset-0 z-50 flex items-center justify-center bg-ink/85 p-4"
                  role="dialog" aria-modal="true" aria-label="{{ __('Review photo') }}">
-                <img x-bind:src="lightbox" alt="{{ __('Review photo, enlarged') }}" class="max-h-[85vh] max-w-full rounded-[10px] object-contain shadow-lg">
+                <img x-bind:src="lightbox" alt="{{ __('Review photo, enlarged') }}" class="max-h-[85vh] max-w-full rounded-[var(--radius-card)] object-contain shadow-pop">
                 <button type="button" x-on:click="lightbox = null"
                         class="absolute right-4 top-4 flex size-11 items-center justify-center rounded-full text-paper transition-colors duration-150 hover:bg-paper/10 focus-visible:ring-2 focus-visible:ring-emerald"
                         aria-label="{{ __('Close photo') }}">
@@ -324,13 +324,13 @@
     </div>
 
     {{-- ===== Mobile sticky buy bar (ink frame) ===== --}}
-    <div class="fixed inset-x-0 bottom-0 z-30 bg-ink shadow-lg lg:hidden" style="border-top: 1px solid var(--color-emerald-night);">
+    <div class="fixed inset-x-0 bottom-0 z-30 border-t border-brass/25 bg-ink shadow-pop lg:hidden">
         <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3">
             @if ($store !== null)
                 <a href="{{ auth()->check() ? route('account.messages', ['store' => $store->id, 'product' => $product->id]) : route('login') }}"
                    wire:navigate
                    data-testid="pdp-chat-mobile"
-                   class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-paper/90 text-paper transition-colors duration-150 hover:bg-paper/10"
+                   class="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-paper/90 text-paper transition-colors duration-150 hover:bg-paper/10"
                    aria-label="{{ __('Chat with seller') }}">
                     <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
                 </a>
@@ -341,14 +341,14 @@
                     wire:click="addToCart({{ $variant?->id ?? 0 }}, {{ $qty }})"
                     wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                     @disabled(! $canBuy)
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-paper px-3 text-sm font-semibold text-paper transition-colors duration-150 hover:bg-paper/10 disabled:cursor-not-allowed disabled:opacity-50">
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-paper px-3 text-sm font-semibold text-paper transition-colors duration-150 hover:bg-paper/10 disabled:cursor-not-allowed disabled:opacity-50">
                 {{ __('Add to cart') }}
             </button>
             <button type="button"
                     wire:click="buyNow"
                     wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                     @disabled(! $canBuy)
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-emerald px-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
                 {{ __('Buy now') }}
             </button>
         </div>

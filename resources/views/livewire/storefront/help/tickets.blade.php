@@ -17,20 +17,21 @@
         </button>
 
         <div class="mt-4 flex flex-wrap items-start justify-between gap-3">
-            <div>
-                <h1 class="font-display text-2xl font-bold">{{ $selected->subject }}</h1>
-                <p class="mt-1 text-[13px] text-ink-soft">
-                    <span class="font-mono">#{{ $selected->id }}</span> · {{ __('updated :time', ['time' => $selected->updated_at->diffForHumans()]) }}
-                </p>
-            </div>
-            <x-ui.badge :variant="$statusVariant($selected->status)">{{ $selected->status->label() }}</x-ui.badge>
+            <x-ui.section-heading as="h1" :title="$selected->subject">
+                <x-slot:actions>
+                    <x-ui.badge :variant="$statusVariant($selected->status)">{{ $selected->status->label() }}</x-ui.badge>
+                </x-slot:actions>
+            </x-ui.section-heading>
+            <p class="mt-1 w-full text-[13px] text-ink-soft">
+                <span class="font-mono">#{{ $selected->id }}</span> · {{ __('updated :time', ['time' => $selected->updated_at->diffForHumans()]) }}
+            </p>
         </div>
 
         {{-- Replies --}}
         <div class="mt-6 space-y-3">
             @foreach ($selected->replies as $ticketReply)
                 <div wire:key="reply-{{ $ticketReply->id }}"
-                     class="rounded-[10px] border p-4 {{ $ticketReply->isFromSupport() ? 'border-line bg-surface' : 'border-line bg-paper' }}">
+                     class="rounded-[var(--radius-card)] border p-4 {{ $ticketReply->isFromSupport() ? 'border-line bg-surface' : 'border-line bg-paper' }}">
                     <div class="flex items-baseline justify-between gap-3">
                         <p class="text-[13px] font-semibold {{ $ticketReply->isFromSupport() ? 'text-emerald' : 'text-ink' }}">
                             {{ $ticketReply->isFromSupport() ? __('Support') : __('You') }}
@@ -49,7 +50,7 @@
                     <label for="reply-body" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Reply') }}</label>
                     <textarea id="reply-body" wire:model="replyBody" rows="4"
                               placeholder="{{ __('Write your reply…') }}"
-                              class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('replyBody') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                              class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('replyBody') ? 'border-danger' : 'border-line-strong' }}"></textarea>
                     @error('replyBody')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -61,15 +62,14 @@
                 </div>
             </form>
         @else
-            <p class="mt-6 rounded-[10px] border border-line bg-surface px-4 py-3 text-sm text-ink-soft">
+            <p class="mt-6 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 text-sm text-ink-soft">
                 {{ __('This ticket is closed. Need more help? Open a new ticket.') }}
             </p>
         @endif
 
     @elseif ($showForm)
         {{-- ===== New ticket form ===== --}}
-        <h1 class="font-display text-3xl font-bold">{{ __('New support ticket') }}</h1>
-        <p class="mt-2 text-sm text-ink-soft">{{ __('Tell us what happened — order numbers help us answer faster.') }}</p>
+        <x-ui.section-heading as="h1" :title="__('New support ticket')" :subtitle="__('Tell us what happened — order numbers help us answer faster.')" />
 
         <form wire:submit="create" class="mt-6 space-y-4">
             <x-ui.input :label="__('Subject')" wire:model="subject" :error="$errors->first('subject')"
@@ -78,7 +78,7 @@
                 <label for="ticket-body" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Message') }}</label>
                 <textarea id="ticket-body" wire:model="body" rows="6"
                           placeholder="{{ __('Describe the problem, with as much detail as you can.') }}"
-                          class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('body') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                          class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('body') ? 'border-danger' : 'border-line-strong' }}"></textarea>
                 @error('body')
                     <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                 @else
@@ -93,22 +93,20 @@
 
     @else
         {{-- ===== Ticket list ===== --}}
-        <div class="flex items-center justify-between gap-3">
-            <h1 class="font-display text-3xl font-bold">{{ __('Support tickets') }}</h1>
-            <x-ui.button wire:click="startTicket">{{ __('New ticket') }}</x-ui.button>
-        </div>
+        <x-ui.section-heading as="h1" :title="__('Support tickets')">
+            <x-slot:actions>
+                <x-ui.button wire:click="startTicket">{{ __('New ticket') }}</x-ui.button>
+            </x-slot:actions>
+        </x-ui.section-heading>
 
         @if ($tickets->isEmpty())
-            <div class="mt-8 rounded-[10px] border border-line bg-surface px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No tickets yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('When you need a hand, open a ticket — we usually reply within one working day.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No tickets yet')" :message="__('When you need a hand, open a ticket — we usually reply within one working day.')" />
             <p class="mt-6 text-center text-sm text-ink-soft">
                 {{ __('Looking for quick answers?') }}
                 <a href="{{ route('help.index') }}" wire:navigate class="font-medium text-emerald underline hover:text-emerald-deep">{{ __('Browse the help centre') }}</a>
             </p>
         @else
-            <ul class="mt-6 divide-y divide-line rounded-[10px] border border-line bg-surface">
+            <ul class="mt-6 divide-y divide-line rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
                 @foreach ($tickets as $ticket)
                     <li wire:key="ticket-{{ $ticket->id }}">
                         <button type="button" wire:click="select({{ $ticket->id }})"

@@ -35,7 +35,7 @@
          x-transition:enter-end="opacity-100 motion-safe:translate-y-0"
          x-transition:leave="motion-safe:transition motion-safe:duration-100 motion-safe:ease-in"
          x-transition:leave-end="opacity-0"
-         class="relative w-full max-w-sm rounded-[10px] border border-line bg-surface p-6 shadow-xl">
+         class="relative w-full max-w-sm rounded-[var(--radius-card)] border border-line bg-surface p-6 shadow-pop">
 
         <p class="text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-soft">
             {{ __('Welcome to HalalBizs') }} · <span x-text="tourStep" class="tnum"></span>/3
@@ -77,7 +77,7 @@
         <div class="mt-5 flex items-center justify-between gap-2">
             <button type="button"
                     x-on:click="finishTour()"
-                    class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-ink-soft transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-sm font-medium text-ink-soft transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Skip tour') }}
             </button>
             <div class="flex items-center gap-2">
@@ -85,13 +85,13 @@
                         x-show="tourStep > 1"
                         x-cloak
                         x-on:click="tourStep--"
-                        class="inline-flex min-h-11 items-center rounded-lg border border-ink px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Back') }}
                 </button>
                 <button type="button"
                         x-ref="tourPrimary"
                         x-on:click="tourStep < 3 ? tourStep++ : finishTour()"
-                        class="inline-flex min-h-11 items-center rounded-lg bg-emerald px-5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                     <span x-show="tourStep < 3">{{ __('Next') }}</span>
                     <span x-show="tourStep === 3" x-cloak>{{ __('Start shopping') }}</span>
                 </button>

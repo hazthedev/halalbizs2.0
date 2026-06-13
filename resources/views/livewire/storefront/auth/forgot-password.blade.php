@@ -1,10 +1,9 @@
 <div class="mx-auto w-full max-w-md px-4 py-12 sm:py-16">
     <x-ui.card class="p-6 sm:p-8">
-        <h1 class="font-display text-[28px] font-bold leading-tight">{{ __('Forgot password') }}</h1>
-        <p class="mt-1 text-sm text-ink-soft">{{ __('Enter your email and we\'ll send you a link to set a new one.') }}</p>
+        <x-ui.section-heading as="h1" :title="__('Forgot password')" :subtitle="__('Enter your email and we\'ll send you a link to set a new one.')" />
 
         @if ($status)
-            <p class="mt-4 rounded-lg bg-emerald-tint px-3.5 py-2.5 text-[13px] text-emerald">{{ $status }}</p>
+            <p class="mt-4 rounded-[var(--radius-control)] bg-emerald-tint px-3.5 py-2.5 text-[13px] text-emerald">{{ $status }}</p>
         @endif
 
         <form wire:submit="sendResetLink" class="mt-6 space-y-4">

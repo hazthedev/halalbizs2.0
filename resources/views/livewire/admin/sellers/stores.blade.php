@@ -1,6 +1,6 @@
 <div class="space-y-4">
 
-    <h1 class="font-display text-[22px] font-bold leading-tight">{{ __('Stores') }}</h1>
+    <x-ui.section-heading :title="__('Stores')" as="h1" />
 
     {{-- Filters --}}
     <div class="flex flex-wrap items-center gap-2">
@@ -8,10 +8,10 @@
                wire:model.live.debounce.300ms="search"
                placeholder="{{ __('Search by store name or owner email') }}"
                aria-label="{{ __('Search stores') }}"
-               class="min-h-11 w-full max-w-xs rounded-lg border border-line-strong bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+               class="min-h-11 w-full max-w-xs rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
         <select wire:model.live="status"
                 aria-label="{{ __('Filter by status') }}"
-                class="min-h-11 rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             <option value="">{{ __('All statuses') }}</option>
             @foreach ($statusOptions as $option)
                 <option value="{{ $option->value }}">{{ $option->label() }}</option>
@@ -21,10 +21,7 @@
 
     <x-ui.card class="overflow-x-auto">
         @if ($stores->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No stores found') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Approved, suspended and rejected stores appear here. Pending applications live in the queue.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No stores found')" :message="__('Approved, suspended and rejected stores appear here. Pending applications live in the queue.')" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead class="sticky top-14 z-10 bg-surface">

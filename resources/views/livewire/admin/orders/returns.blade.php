@@ -1,7 +1,7 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <h1 class="font-display text-2xl font-bold">{{ __('Returns') }}</h1>
+    <x-ui.section-heading :title="__('Returns')" as="h1" />
 
     {{-- Lifecycle tabs — the queue (disputed + escalated) is the work surface --}}
     <nav class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Return request status') }}">
@@ -61,7 +61,7 @@
                     @foreach ($resolving->getMedia('photos') as $photo)
                         <li wire:key="resolve-photo-{{ $photo->id }}">
                             <a href="{{ $photo->getUrl() }}" target="_blank" rel="noopener"
-                               class="block size-16 overflow-hidden rounded-lg border border-line bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                               class="block size-16 overflow-hidden rounded-[var(--radius-control)] border border-line bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                                 <img src="{{ $photo->getUrl() }}" alt="{{ __('Return photo :n', ['n' => $loop->iteration]) }}" class="size-full object-cover" loading="lazy">
                             </a>
                         </li>
@@ -69,13 +69,13 @@
                 </ul>
             @endif
 
-            <div class="space-y-2 rounded-lg border border-line bg-paper p-3">
+            <div class="space-y-2 rounded-[var(--radius-card)] border border-line bg-paper p-3">
                 @if ($resolvingOnline)
                     <p class="text-[13px] text-ink-soft">{{ __('Online payment — move the money in the iPay88 merchant portal first, then record the reference here.') }}</p>
                     <label for="refund-reference" class="block text-[13px] font-medium text-ink">{{ __('iPay88 portal reference') }}</label>
                     <input id="refund-reference" type="text" wire:model="refundReference"
                            placeholder="IP88-RFND-0000"
-                           class="block min-h-11 w-full max-w-sm rounded-lg border bg-surface px-3 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('refundReference') ? 'border-danger' : 'border-line-strong' }}">
+                           class="block min-h-11 w-full max-w-sm rounded-[var(--radius-control)] border bg-surface px-3 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('refundReference') ? 'border-danger' : 'border-line-strong' }}">
                     @error('refundReference')
                         <p class="text-[13px] text-danger">{{ $message }}</p>
                     @enderror
@@ -87,18 +87,18 @@
             <div class="flex flex-wrap gap-2">
                 <button type="button" wire:click="refundBuyer" wire:loading.attr="disabled"
                         wire:confirm="{{ __('Refund the buyer? This closes the return and adjusts the seller ledger — it cannot be undone.') }}"
-                        class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                     {{ __('Refund buyer') }}
                 </button>
                 @if ($resolving->subOrder->status === \App\Enums\SubOrderStatus::ReturnRequested)
                     <button type="button" wire:click="sideWithSeller({{ $resolving->id }})" wire:loading.attr="disabled"
                             wire:confirm="{{ __('Side with the seller? The return is rejected and the order goes back to its previous status.') }}"
-                            class="inline-flex min-h-11 items-center justify-center rounded-lg border border-ink px-4 text-sm font-semibold text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                            class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-semibold text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                         {{ __('Side with seller') }}
                     </button>
                 @endif
                 <button type="button" wire:click="closeResolve"
-                        class="inline-flex min-h-11 items-center justify-center rounded-lg px-4 text-sm font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] px-4 text-sm font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Close') }}
                 </button>
             </div>
@@ -108,16 +108,11 @@
     {{-- Table per design §6 — hairline rows, 13px, mono ids --}}
     <x-ui.card class="overflow-x-auto">
         @if ($requests->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">
-                    {{ $tab === 'queue' ? __('Nothing needs a decision') : __('No return requests here') }}
-                </h2>
-                <p class="mt-1 text-sm text-ink-soft">
-                    {{ $tab === 'queue'
-                        ? __('Disputed and auto-escalated returns land here for a refund-or-reject call.')
-                        : __('Switch tabs to see the rest of the returns lifecycle.') }}
-                </p>
-            </div>
+            <x-ui.empty-state
+                :title="$tab === 'queue' ? __('Nothing needs a decision') : __('No return requests here')"
+                :message="$tab === 'queue'
+                    ? __('Disputed and auto-escalated returns land here for a refund-or-reject call.')
+                    : __('Switch tabs to see the rest of the returns lifecycle.')" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead class="sticky top-14 z-10 bg-surface">
@@ -151,7 +146,7 @@
                                 <div class="flex justify-end">
                                     @if (in_array($request->status, [\App\Enums\ReturnStatus::Accepted, \App\Enums\ReturnStatus::Disputed, \App\Enums\ReturnStatus::Escalated], true))
                                         <button type="button" wire:click="openResolve({{ $request->id }})"
-                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                                             {{ __('Resolve') }}
                                         </button>
                                     @else

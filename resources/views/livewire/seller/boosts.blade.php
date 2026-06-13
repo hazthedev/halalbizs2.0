@@ -1,12 +1,11 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <div>
-        <h1 class="font-display text-2xl font-bold">{{ __('Boosts') }}</h1>
-        <p class="mt-1 max-w-prose text-[13px] text-ink-soft">
-            {{ __('Boosted products lead the top of category and search results with a Sponsored label, and open the Popular now section on the home page.') }}
-        </p>
-    </div>
+    <x-ui.section-heading
+        as="h1"
+        :title="__('Boosts')"
+        :subtitle="__('Boosted products lead the top of category and search results with a Sponsored label, and open the Popular now section on the home page.')"
+    />
 
     {{-- Pricing / status strip --}}
     <div class="grid gap-3 sm:grid-cols-3">
@@ -66,6 +65,7 @@
                 </div>
 
                 <x-ui.button
+                    variant="brass"
                     wire:click="boost"
                     wire:confirm="{{ __('Start this boost? The fee is charged from your available earnings now and is not refunded if you cancel early.') }}"
                     wire:loading.attr="disabled"
@@ -80,10 +80,7 @@
     {{-- Active & past boosts --}}
     <x-ui.card class="overflow-x-auto">
         @if ($boosts->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No boosts yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Boost a live product and it jumps to the top of category and search results.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No boosts yet')" :message="__('Boost a live product and it jumps to the top of category and search results.')" />
         @else
             <table class="w-full min-w-[720px] text-[13px]">
                 <thead>

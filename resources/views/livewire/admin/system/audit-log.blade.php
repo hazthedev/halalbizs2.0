@@ -1,6 +1,6 @@
 <div class="space-y-4">
 
-    <h1 class="font-display text-2xl font-bold">{{ __('Audit log') }}</h1>
+    <x-ui.section-heading :title="__('Audit log')" as="h1" />
 
     {{-- Filters --}}
     <x-ui.card class="p-3">
@@ -8,7 +8,7 @@
             <div>
                 <label for="filter-subject" class="mb-1 block text-[13px] font-medium text-ink">{{ __('Subject') }}</label>
                 <select id="filter-subject" wire:model.live="subjectType"
-                        class="min-h-11 rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     <option value="">{{ __('All subjects') }}</option>
                     @foreach ($subjectTypes as $type)
                         <option value="{{ $type }}">{{ $type }}</option>
@@ -18,12 +18,12 @@
             <div>
                 <label for="filter-from" class="mb-1 block text-[13px] font-medium text-ink">{{ __('From') }}</label>
                 <input id="filter-from" type="date" wire:model.live="dateFrom"
-                       class="min-h-11 rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                       class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             </div>
             <div>
                 <label for="filter-to" class="mb-1 block text-[13px] font-medium text-ink">{{ __('To') }}</label>
                 <input id="filter-to" type="date" wire:model.live="dateTo"
-                       class="min-h-11 rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                       class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             </div>
             @if ($subjectType !== '' || $dateFrom !== '' || $dateTo !== '')
                 <button type="button" wire:click="clearFilters"
@@ -37,10 +37,7 @@
     {{-- Datagrid --}}
     <x-ui.card class="overflow-x-auto">
         @if ($activities->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('Nothing logged yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Admin and system actions appear here as they happen.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('Nothing logged yet')" :message="__('Admin and system actions appear here as they happen.')" />
         @else
             <table class="w-full min-w-[820px] text-[13px]">
                 <thead>

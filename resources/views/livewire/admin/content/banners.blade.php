@@ -1,14 +1,15 @@
 <div class="space-y-4">
 
-    <div class="flex items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold">{{ __('Banners') }}</h1>
+    <x-ui.section-heading :title="__('Banners')" as="h1">
         @unless ($showForm)
-            <x-ui.button wire:click="create">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                {{ __('Add banner') }}
-            </x-ui.button>
+            <x-slot:actions>
+                <x-ui.button wire:click="create">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    {{ __('Add banner') }}
+                </x-ui.button>
+            </x-slot:actions>
         @endunless
-    </div>
+    </x-ui.section-heading>
 
     {{-- Create / edit form --}}
     @if ($showForm)
@@ -57,7 +58,7 @@
                         {{ $editingId !== null ? __('Replace image') : __('Image') }}
                     </label>
                     <input type="file" id="banner-image" wire:model="image" accept="image/*"
-                           class="block w-full rounded-lg border border-line-strong bg-surface px-3.5 py-2.5 text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-[13px] file:font-medium file:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                           class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-[13px] file:font-medium file:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     @error('image')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                     @else
@@ -65,14 +66,14 @@
                     @enderror
                     <div wire:loading wire:target="image" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                     @if ($image)
-                        <img src="{{ $image->temporaryUrl() }}" alt="{{ __('Banner preview') }}" class="mt-2 h-24 rounded-lg border border-line object-cover">
+                        <img src="{{ $image->temporaryUrl() }}" alt="{{ __('Banner preview') }}" class="mt-2 h-24 rounded-[var(--radius-card)] border border-line object-cover">
                     @endif
                 </div>
 
                 <div>
                     <label for="banner-video" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Video (optional)') }}</label>
                     <input type="file" id="banner-video" wire:model="video" accept="video/mp4,video/webm"
-                           class="block w-full rounded-lg border border-line-strong bg-surface px-3.5 py-2.5 text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-[13px] file:font-medium file:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                           class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-[13px] file:font-medium file:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     @error('video')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                     @else
@@ -82,7 +83,7 @@
                     @if ($editingId !== null && \App\Models\Banner::find($editingId)?->getFirstMedia('video') !== null)
                         <button type="button" wire:click="removeVideo"
                                 wire:confirm="{{ __('Remove the video from this banner? It falls back to the image.') }}"
-                                class="mt-2 inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="mt-2 inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Remove current video') }}
                         </button>
                     @endif
@@ -106,10 +107,7 @@
     {{-- List --}}
     <x-ui.card class="overflow-x-auto">
         @if ($banners->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('No banners yet') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('Banners appear in the storefront home carousel as soon as you add one.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('No banners yet')" :message="__('Banners appear in the storefront home carousel as soon as you add one.')" />
         @else
             <table class="w-full min-w-[760px] text-[13px]">
                 <thead>

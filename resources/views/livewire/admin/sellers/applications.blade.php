@@ -1,16 +1,10 @@
 <div class="space-y-4">
 
-    <div>
-        <h1 class="font-display text-[22px] font-bold leading-tight">{{ __('Seller applications') }}</h1>
-        <p class="mt-0.5 text-[13px] text-ink-soft">{{ __('Oldest first — verify the documents, then approve or reject.') }}</p>
-    </div>
+    <x-ui.section-heading :title="__('Seller applications')" :subtitle="__('Oldest first — verify the documents, then approve or reject.')" as="h1" />
 
     <x-ui.card class="overflow-x-auto">
         @if ($applications->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <h2 class="font-display text-xl font-semibold">{{ __('Queue clear') }}</h2>
-                <p class="mt-1 text-sm text-ink-soft">{{ __('New seller applications appear here the moment they are submitted.') }}</p>
-            </div>
+            <x-ui.empty-state :title="__('Queue clear')" :message="__('New seller applications appear here the moment they are submitted.')" />
         @else
             {{-- Table per design §6 — hairline rows, 13px, sticky header --}}
             <table class="w-full min-w-[760px] text-[13px]">
@@ -38,7 +32,7 @@
                                     <button type="button"
                                             wire:click="review({{ $application->id }})"
                                             aria-expanded="{{ $reviewing === $application->id ? 'true' : 'false' }}"
-                                            class="inline-flex min-h-11 items-center whitespace-nowrap rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ $reviewing === $application->id ? __('Close') : __('Review') }}
                                     </button>
                                 </div>
@@ -109,7 +103,7 @@
                                             <textarea id="rejection-reason-{{ $application->id }}"
                                                       wire:model="rejectionReason"
                                                       rows="2"
-                                                      class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('rejectionReason') ? 'border-danger' : 'border-line-strong' }}"
+                                                      class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('rejectionReason') ? 'border-danger' : 'border-line-strong' }}"
                                                       placeholder="{{ __('e.g. The SSM certificate is unreadable — upload a clearer copy.') }}"></textarea>
                                             @error('rejectionReason')
                                                 <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>

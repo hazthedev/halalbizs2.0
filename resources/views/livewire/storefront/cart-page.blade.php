@@ -1,15 +1,11 @@
 <div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12">
-    <h1 class="font-display text-[28px] font-bold">{{ __('Cart') }}</h1>
+    <x-ui.section-heading as="h1" :title="__('Cart')" />
 
     @if ($groups->isEmpty())
         {{-- Empty state (design §6: one display line + one sentence + one emerald action) --}}
-        <div class="mx-auto max-w-md py-16 text-center">
-            <p class="font-display text-[22px] font-semibold">{{ __('Your cart is empty') }}</p>
-            <p class="mt-2 text-sm text-ink-soft">{{ __('Things you add will appear here, grouped by seller.') }}</p>
-            <div class="mt-6 flex justify-center">
-                <x-ui.button :href="route('home')">{{ __('Start shopping') }}</x-ui.button>
-            </div>
-        </div>
+        <x-ui.empty-state :title="__('Your cart is empty')" :message="__('Things you add will appear here, grouped by seller.')">
+            <x-ui.button :href="route('home')">{{ __('Start shopping') }}</x-ui.button>
+        </x-ui.empty-state>
     @else
         <div class="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-6">
 
@@ -64,7 +60,7 @@
                                     <a href="{{ route('product.show', $line->variant->product->slug) }}" wire:navigate class="shrink-0 self-start">
                                         <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
                                              alt="{{ $line->variant->product->getTranslation('name', app()->getLocale()) }} {{ $line->variant->options_label }}"
-                                             class="size-20 rounded-[10px] border border-line bg-paper object-cover {{ $line->excluded ? 'opacity-40' : '' }}">
+                                             class="size-20 rounded-[var(--radius-card)] border border-line bg-paper object-cover {{ $line->excluded ? 'opacity-40' : '' }}">
                                     </a>
 
                                     <div class="ml-1 min-w-0 flex-1">
@@ -111,7 +107,7 @@
 
                                     <button type="button" wire:click="removeLine({{ $line->variant->id }})"
                                             wire:loading.attr="disabled" wire:target="removeLine"
-                                            class="-mr-2 flex size-11 shrink-0 items-center justify-center self-start rounded-lg text-ink-faint hover:text-danger disabled:cursor-not-allowed disabled:opacity-50"
+                                            class="-mr-2 flex size-11 shrink-0 items-center justify-center self-start rounded-[var(--radius-control)] text-ink-faint hover:text-danger disabled:cursor-not-allowed disabled:opacity-50"
                                             aria-label="{{ __('Remove') }}">
                                         <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                                     </button>

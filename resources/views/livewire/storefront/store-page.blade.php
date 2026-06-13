@@ -86,7 +86,7 @@
                 <div class="mb-4 flex items-center justify-between gap-3">
                     <p class="text-[13px] text-ink-soft tnum">{{ __(':count products', ['count' => number_format($total)]) }}</p>
                     <select wire:model.live="sort" aria-label="{{ __('Sort products') }}"
-                            class="h-11 cursor-pointer rounded-lg border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink">
+                            class="h-11 cursor-pointer rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink">
                         <option value="latest">{{ __('Latest') }}</option>
                         <option value="top">{{ __('Top sales') }}</option>
                         <option value="price_asc">{{ __('Price: low to high') }}</option>
@@ -106,17 +106,14 @@
                 @if ($products->count() < $total)
                     <div class="mt-6 text-center">
                         <button type="button" wire:click="loadMore"
-                                class="inline-flex min-h-11 items-center justify-center rounded-lg border border-ink px-6 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper">
+                                class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-6 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper">
                             <span wire:loading.remove wire:target="loadMore">{{ __('Load more') }}</span>
                             <span wire:loading wire:target="loadMore">{{ __('Loading…') }}</span>
                         </button>
                     </div>
                 @endif
             @else
-                <div class="py-16 text-center">
-                    <p class="font-display text-lg font-semibold">{{ __('No products yet') }}</p>
-                    <p class="mt-1 text-sm text-ink-soft">{{ __('This shop has not listed anything — check back soon.') }}</p>
-                </div>
+                <x-ui.empty-state :title="__('No products yet')" :message="__('This shop has not listed anything — check back soon.')" />
             @endif
         </div>
 
