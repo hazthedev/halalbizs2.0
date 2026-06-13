@@ -95,13 +95,15 @@
                             ? __('No products match these filters — loosen them and try again.')
                             : ($isSearch ? __('Check the spelling or try a more general term.') : __('Products will appear here as soon as sellers list them.'));
                     @endphp
-                    <x-ui.empty-state :title="$emptyTitle" :message="$emptyMessage">
+                    <x-ui.card class="flex flex-col items-center px-6 py-16 text-center">
+                        <p class="font-display text-[22px] font-semibold text-ink">{{ $emptyTitle }}</p>
+                        <p class="mx-auto mt-2 max-w-md text-sm text-ink-soft">{{ $emptyMessage }}</p>
                         @if (count($chips) > 0)
-                            <x-ui.button variant="primary" wire:click="clearFilters">{{ __('Clear filters') }}</x-ui.button>
+                            <x-ui.button variant="primary" wire:click="clearFilters" class="mt-6">{{ __('Clear filters') }}</x-ui.button>
                         @else
-                            <x-ui.button variant="primary" :href="route('home')">{{ __('Back to home') }}</x-ui.button>
+                            <x-ui.button variant="primary" :href="route('home')" class="mt-6">{{ __('Back to home') }}</x-ui.button>
                         @endif
-                    </x-ui.empty-state>
+                    </x-ui.card>
                 @else
                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
                         @foreach ($products as $product)

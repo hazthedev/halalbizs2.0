@@ -72,7 +72,7 @@ test('with lazy loading active the PDP serves skeleton placeholders, not review 
 
     $this->get('/p/'.$product->slug)
         ->assertOk()
-        ->assertSee('animate-pulse', false)        // skeleton shimmer blocks
+        ->assertSee('shimmer', false)              // skeleton shimmer blocks
         ->assertSee('__lazyLoad', false)           // Livewire lazy hydration hook
         ->assertDontSee('This comment must not be in the first response.');
 });

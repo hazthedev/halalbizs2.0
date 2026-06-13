@@ -71,16 +71,17 @@
                         </div>
                     </x-ui.card>
                 @empty
-                    @if (trim($search) !== '')
-                        @php $noMatchTitle = __('No orders match ":term".', ['term' => trim($search)]); @endphp
-                        <x-ui.empty-state :title="$noMatchTitle" :message="__('Check the spelling or try another tab — the search only looks within this one.')">
-                            <x-ui.button wire:click="$set('search', '')">{{ __('Clear search') }}</x-ui.button>
-                        </x-ui.empty-state>
-                    @else
-                        <x-ui.empty-state :title="__('Nothing waiting for payment.')" :message="__('Orders paid by FPX, card or e-wallet sit here until payment clears.')">
-                            <x-ui.button href="{{ route('home') }}">{{ __('Start shopping') }}</x-ui.button>
-                        </x-ui.empty-state>
-                    @endif
+                    <x-ui.card class="px-6 py-16 text-center">
+                        @if (trim($search) !== '')
+                            <p class="font-display text-[22px] font-semibold">{{ __('No orders match ":term".', ['term' => trim($search)]) }}</p>
+                            <p class="mx-auto mt-1 max-w-md text-sm text-ink-soft">{{ __('Check the spelling or try another tab — the search only looks within this one.') }}</p>
+                            <x-ui.button wire:click="$set('search', '')" class="mt-6">{{ __('Clear search') }}</x-ui.button>
+                        @else
+                            <p class="font-display text-[22px] font-semibold">{{ __('Nothing waiting for payment.') }}</p>
+                            <p class="mx-auto mt-1 max-w-md text-sm text-ink-soft">{{ __('Orders paid by FPX, card or e-wallet sit here until payment clears.') }}</p>
+                            <x-ui.button href="{{ route('home') }}" class="mt-6">{{ __('Start shopping') }}</x-ui.button>
+                        @endif
+                    </x-ui.card>
                 @endforelse
 
                 <div>{{ $orders->links() }}</div>
@@ -153,34 +154,31 @@
                         @endif
                     </x-ui.card>
                 @empty
-                    @php
-                        if (trim($search) !== '') {
-                            $emptyTitle = __('No orders match ":term".', ['term' => trim($search)]);
-                            $emptyMessage = __('Check the spelling or try another tab — the search only looks within this one.');
-                        } elseif ($tab === 'to-ship') {
-                            $emptyTitle = __('No orders to ship.');
-                            $emptyMessage = __('Paid orders appear here while the seller packs them.');
-                        } elseif ($tab === 'to-receive') {
-                            $emptyTitle = __('Nothing on the way.');
-                            $emptyMessage = __('Shipped orders appear here with their tracking numbers.');
-                        } elseif ($tab === 'completed') {
-                            $emptyTitle = __('No completed orders yet.');
-                            $emptyMessage = __('Orders you confirm as received are kept here.');
-                        } elseif ($tab === 'cancelled') {
-                            $emptyTitle = __('No cancelled orders.');
-                            $emptyMessage = __('Cancelled orders stay here for your records.');
-                        } else {
-                            $emptyTitle = __('No returns or refunds.');
-                            $emptyMessage = __('Return requests and refunds appear here.');
-                        }
-                    @endphp
-                    <x-ui.empty-state :title="$emptyTitle" :message="$emptyMessage">
+                    <x-ui.card class="px-6 py-16 text-center">
                         @if (trim($search) !== '')
-                            <x-ui.button wire:click="$set('search', '')">{{ __('Clear search') }}</x-ui.button>
+                            <p class="font-display text-[22px] font-semibold">{{ __('No orders match ":term".', ['term' => trim($search)]) }}</p>
+                            <p class="mx-auto mt-1 max-w-md text-sm text-ink-soft">{{ __('Check the spelling or try another tab — the search only looks within this one.') }}</p>
+                            <x-ui.button wire:click="$set('search', '')" class="mt-6">{{ __('Clear search') }}</x-ui.button>
+                        @elseif ($tab === 'to-ship')
+                            <p class="font-display text-[22px] font-semibold">{{ __('No orders to ship.') }}</p>
+                            <p class="mx-auto mt-1 max-w-md text-sm text-ink-soft">{{ __('Paid orders appear here while the seller packs them.') }}</p>
+                        @elseif ($tab === 'to-receive')
+                            <p class="font-display text-[22px] font-semibold">{{ __('Nothing on the way.') }}</p>
+                            <p class="mx-auto mt-1 max-w-md text-sm text-ink-soft">{{ __('Shipped orders appear here with their tracking numbers.') }}</p>
+                        @elseif ($tab === 'completed')
+                            <p class="font-display text-[22px] font-semibold">{{ __('No completed orders yet.') }}</p>
+                            <p class="mx-auto mt-1 max-w-md text-sm text-ink-soft">{{ __('Orders you confirm as received are kept here.') }}</p>
+                        @elseif ($tab === 'cancelled')
+                            <p class="font-display text-[22px] font-semibold">{{ __('No cancelled orders.') }}</p>
+                            <p class="mx-auto mt-1 max-w-md text-sm text-ink-soft">{{ __('Cancelled orders stay here for your records.') }}</p>
                         @else
-                            <x-ui.button href="{{ route('home') }}">{{ __('Start shopping') }}</x-ui.button>
+                            <p class="font-display text-[22px] font-semibold">{{ __('No returns or refunds.') }}</p>
+                            <p class="mx-auto mt-1 max-w-md text-sm text-ink-soft">{{ __('Return requests and refunds appear here.') }}</p>
                         @endif
-                    </x-ui.empty-state>
+                        @if (trim($search) === '')
+                            <x-ui.button href="{{ route('home') }}" class="mt-6">{{ __('Start shopping') }}</x-ui.button>
+                        @endif
+                    </x-ui.card>
                 @endforelse
 
                 <div>{{ $subOrders->links() }}</div>
