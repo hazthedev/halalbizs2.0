@@ -3,13 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Enums\StoreStatus;
+use App\Models\Address;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Console\Command;
 
 class MakeE2eUser extends Command
 {
-    protected $signature = 'e2e:user {email} {--pending-store}';
+    protected $signature = 'e2e:user {email} {--pending-store} {--with-address} {--two-factor}';
 
     protected $description = 'Create a verified buyer for Playwright journeys (local only)';
 
@@ -28,6 +29,17 @@ class MakeE2eUser extends Command
 
         $user->forceFill(['email_verified_at' => now()])->save();
         $user->assignRole('buyer');
+
+        if ($this->option('two-factor')) {
+            $user->forceFill(['two_factor_method' => 'email'])->save();
+        }
+
+        if ($this->option('with-address') && $user->addresses()->doesntExist()) {
+            Address::factory()->default()->create([
+                'user_id' => $user->id,
+                'state' => 'Selangor',
+            ]);
+        }
 
         if ($this->option('pending-store')) {
             // Prune stale fixture applications from earlier runs — the

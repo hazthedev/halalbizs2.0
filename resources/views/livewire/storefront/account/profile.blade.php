@@ -319,6 +319,49 @@
             </div>
         </x-ui.card>
 
+        {{-- Active sessions --}}
+        <x-ui.card class="p-6" id="sessions">
+            <h2 class="font-display text-xl font-semibold">{{ __('Active sessions') }}</h2>
+            <p class="mt-1 max-w-md text-[13px] text-ink-soft">{{ __('Everywhere your account is currently logged in. Log the others out if you don\'t recognise one.') }}</p>
+
+            <ul class="mt-5 divide-y divide-line">
+                @forelse ($activeSessions as $session)
+                    <li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-3">
+                        <svg class="size-5 shrink-0 text-ink-soft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25"/></svg>
+                        <div class="min-w-0 flex-1">
+                            <p class="flex flex-wrap items-center gap-2 text-sm font-medium text-ink">
+                                {{ $session->label }}
+                                @if ($session->isCurrent)
+                                    <x-ui.badge variant="verified">{{ __('This device') }}</x-ui.badge>
+                                @endif
+                            </p>
+                            <p class="mt-0.5 text-[13px] text-ink-soft">
+                                @if ($session->ip)<span class="font-mono text-[12px]">{{ $session->ip }}</span> · @endif{{ __('Last active :time', ['time' => $session->lastActive->diffForHumans()]) }}
+                            </p>
+                        </div>
+                    </li>
+                @empty
+                    <li class="py-3 text-sm text-ink-soft">{{ __('Only this session is active right now.') }}</li>
+                @endforelse
+            </ul>
+
+            <form wire:submit="logoutOtherDevices" class="mt-4 flex flex-wrap items-end gap-3 border-t border-line pt-4">
+                <x-ui.input
+                    :label="__('Confirm your password to log out other devices')"
+                    name="logout_others_password"
+                    type="password"
+                    wire:model="logout_others_password"
+                    autocomplete="current-password"
+                    required
+                    class="w-full max-w-xs"
+                    :error="$errors->first('logout_others_password')"
+                />
+                <x-ui.button type="submit" variant="secondary" wire:loading.attr="disabled" wire:target="logoutOtherDevices">
+                    {{ __('Log out other devices') }}
+                </x-ui.button>
+            </form>
+        </x-ui.card>
+
         {{-- Privacy (PDPA) --}}
         <x-ui.card class="p-6">
             <h2 class="font-display text-xl font-semibold">{{ __('Privacy') }}</h2>

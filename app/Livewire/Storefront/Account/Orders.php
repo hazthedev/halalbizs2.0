@@ -33,6 +33,15 @@ class Orders extends Component
     #[Url(except: 'to-pay')]
     public string $tab = 'to-pay';
 
+    /** Filters the active tab by order no, sub-order no or product name. */
+    #[Url(except: '')]
+    public string $search = '';
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
     public function mount(): void
     {
         if (! in_array($this->tab, $this->tabKeys(), true)) {
@@ -117,12 +126,13 @@ class Orders extends Component
             'tabs' => $this->tabLabels(),
             'counts' => $this->counts(),
             'orders' => $tabIsToPay
-                ? $this->awaitingPaymentQuery()->with('subOrders')->latest('placed_at')->paginate(10)
+                ? $this->applyOrderSearch($this->awaitingPaymentQuery())->with('subOrders')->latest('placed_at')->paginate(10)
                 : null,
             'subOrders' => $tabIsToPay
                 ? null
-                : $this->subOrderQuery()
-                    ->whereIn('status', self::TAB_STATUSES[$this->tab])
+                : $this->applySubOrderSearch(
+                    $this->subOrderQuery()->whereIn('status', self::TAB_STATUSES[$this->tab])
+                )
                     ->with(['items.product.media', 'store', 'order'])
                     ->latest('id')
                     ->paginate(10),
@@ -185,5 +195,36 @@ class Orders extends Component
     private function ownedSubOrder(int $subOrderId): SubOrder
     {
         return $this->subOrderQuery()->findOrFail($subOrderId);
+    }
+
+    /** Search within the To Pay tab: order no, sub-order no or item name. */
+    private function applyOrderSearch(Builder $query): Builder
+    {
+        $term = trim($this->search);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        return $query->where(fn (Builder $outer) => $outer
+            ->where('order_no', 'like', "%{$term}%")
+            ->orWhereHas('subOrders', fn (Builder $sub) => $sub
+                ->where('sub_order_no', 'like', "%{$term}%")
+                ->orWhereHas('items', fn (Builder $items) => $items->where('product_name', 'like', "%{$term}%"))));
+    }
+
+    /** Search within a sub-order tab: sub-order no, order no or item name (the snapshot, hard rule 5). */
+    private function applySubOrderSearch(Builder $query): Builder
+    {
+        $term = trim($this->search);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        return $query->where(fn (Builder $outer) => $outer
+            ->where('sub_order_no', 'like', "%{$term}%")
+            ->orWhereHas('order', fn (Builder $order) => $order->where('order_no', 'like', "%{$term}%"))
+            ->orWhereHas('items', fn (Builder $items) => $items->where('product_name', 'like', "%{$term}%")));
     }
 }

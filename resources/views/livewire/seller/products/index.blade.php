@@ -64,6 +64,9 @@
 
     {{-- Datagrid --}}
     <x-ui.card class="overflow-x-auto">
+        {{-- Row skeletons while search/filters refresh the grid (design §6) --}}
+        <x-ui.table-skeleton wire:loading wire:target="search, status, category, lowStock" />
+        <div wire:loading.remove wire:target="search, status, category, lowStock">
         @if ($products->isEmpty())
             <div class="px-6 py-16 text-center">
                 @if ($search !== '' || $status !== '' || $category !== null || $lowStock)
@@ -156,6 +159,7 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
 
     @if ($products->hasPages())

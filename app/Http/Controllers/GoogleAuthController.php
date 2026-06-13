@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\TwoFactorMethod;
 use App\Models\User;
 use App\Services\CartService;
+use App\Services\DeviceGuard;
 use App\Services\OtpService;
 use App\Settings\SecuritySettings;
 use Illuminate\Support\Facades\Auth;
@@ -86,6 +87,9 @@ class GoogleAuthController extends Controller
         session()->regenerate();
 
         $cart->mergeSessionCart($user);
+
+        // Unseen device? Record it and alert (silent on the first ever login).
+        app(DeviceGuard::class)->record($user, request());
 
         return redirect()->intended(route('home'));
     }

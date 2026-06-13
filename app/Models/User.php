@@ -92,6 +92,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(SupportTicket::class);
     }
 
+    public function knownDevices(): HasMany
+    {
+        return $this->hasMany(KnownDevice::class);
+    }
+
     public function isSuspended(): bool
     {
         return $this->status === 'suspended';

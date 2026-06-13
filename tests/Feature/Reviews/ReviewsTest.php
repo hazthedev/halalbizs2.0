@@ -6,6 +6,7 @@ use App\Livewire\Seller\Reviews\Index as SellerReviews;
 use App\Livewire\Storefront\Account\Orders;
 use App\Livewire\Storefront\Account\ReviewOrder;
 use App\Livewire\Storefront\ProductDetail;
+use App\Livewire\Storefront\ProductReviews;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -276,7 +277,8 @@ test('the With photos filter shows only reviews carrying photos', function () {
 
     reviewsMake(reviewsItem($subOrder, $product), 4, ['comment' => 'No photo on this one, plain words only.']);
 
-    Livewire::test(ProductDetail::class, ['product' => $product->fresh()])
+    // setReviewFilter lives on the lazy ProductReviews child (wave 2 polish).
+    Livewire::test(ProductReviews::class, ['product' => $product->fresh()])
         ->assertSee('Came with a lovely photo attached here.')
         ->assertSee('No photo on this one, plain words only.')
         ->call('setReviewFilter', 'photos')

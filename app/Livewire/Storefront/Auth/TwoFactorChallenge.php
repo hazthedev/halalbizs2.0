@@ -5,6 +5,7 @@ namespace App\Livewire\Storefront\Auth;
 use App\Enums\TwoFactorMethod;
 use App\Models\User;
 use App\Services\CartService;
+use App\Services\DeviceGuard;
 use App\Services\OtpService;
 use App\Support\Totp;
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +69,9 @@ class TwoFactorChallenge extends Component
         session()->regenerate();
 
         app(CartService::class)->mergeSessionCart($user);
+
+        // Unseen device? Record it and alert (silent on the first ever login).
+        app(DeviceGuard::class)->record($user, request());
 
         $this->redirectIntended(route('home'), navigate: true);
     }

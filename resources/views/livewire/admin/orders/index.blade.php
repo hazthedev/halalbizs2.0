@@ -66,6 +66,9 @@
 
     {{-- Table per design §6 — hairline rows, 13px, mono ids, right-aligned tabular numbers --}}
     <x-ui.card class="overflow-x-auto">
+        {{-- Row skeletons while search/filters refresh the grid (design §6) --}}
+        <x-ui.table-skeleton wire:loading wire:target="search, status, store, method, dateFrom, dateTo, resetFilters" />
+        <div wire:loading.remove wire:target="search, status, store, method, dateFrom, dateTo, resetFilters">
         @if ($subOrders->isEmpty())
             <div class="px-6 py-16 text-center">
                 <h2 class="font-display text-xl font-semibold">{{ __('No sub-orders match') }}</h2>
@@ -105,6 +108,7 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
 
     @if ($subOrders->hasPages())

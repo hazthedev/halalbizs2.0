@@ -24,6 +24,9 @@
 
     {{-- Table per design §6 — hairline rows, 13px, mono ids/amounts, sticky header --}}
     <x-ui.card class="overflow-x-auto">
+        {{-- Row skeletons while the tab switches (targeted: the 30s poll must not flash them) --}}
+        <x-ui.table-skeleton wire:loading wire:target="tab" />
+        <div wire:loading.remove wire:target="tab">
         @if ($subOrders->isEmpty())
             @php
                 [$emptyTitle, $emptyBody] = match ($tab) {
@@ -134,6 +137,7 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
 
     @if ($subOrders->hasPages())

@@ -179,4 +179,7 @@
                 @break
         @endswitch
     @endforeach
+
+    {{-- One-time welcome tour for first-time visitors (home only) --}}
+    @include('livewire.storefront.partials.welcome-tour')
 </div>

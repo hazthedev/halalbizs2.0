@@ -8,10 +8,14 @@ use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\SubOrder;
+use App\Services\DeviceGuard;
 use App\Services\OtpService;
 use App\Settings\GeneralSettings;
 use App\Support\Totp;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -50,6 +54,10 @@ class Profile extends Component
     public ?array $freshRecoveryCodes = null;
 
     public string $disable_password = '';
+
+    // ── Security: active sessions ───────────────────────────────────────
+
+    public string $logout_others_password = '';
 
     // ── Security: phone verification ────────────────────────────────────
 
@@ -261,6 +269,55 @@ class Profile extends Component
             ->all();
     }
 
+    // ── Active sessions ─────────────────────────────────────────────────
+
+    /**
+     * End every other session: Laravel invalidates them via the password
+     * rehash, and the rows are removed from the sessions table so the list
+     * updates immediately (database driver, config/session.php).
+     */
+    public function logoutOtherDevices(): void
+    {
+        $this->validate([
+            'logout_others_password' => ['required', 'current_password'],
+        ], [
+            'logout_others_password.current_password' => __('That doesn\'t match your current password — try again.'),
+        ]);
+
+        Auth::logoutOtherDevices($this->logout_others_password);
+
+        DB::table(config('session.table', 'sessions'))
+            ->where('user_id', auth()->id())
+            ->where('id', '!=', session()->getId())
+            ->delete();
+
+        $this->reset('logout_others_password');
+        $this->dispatch('toast', message: __('All other devices have been logged out.'));
+    }
+
+    /**
+     * Rows from the sessions table (database driver — config/session.php),
+     * newest activity first, with a "this device" marker for the current
+     * session id. The table simply stays empty under other drivers.
+     *
+     * @return Collection<int, object{label: string, ip: ?string, lastActive: Carbon, isCurrent: bool}>
+     */
+    private function activeSessions(): Collection
+    {
+        $deviceGuard = app(DeviceGuard::class);
+
+        return DB::table(config('session.table', 'sessions'))
+            ->where('user_id', auth()->id())
+            ->orderByDesc('last_activity')
+            ->get()
+            ->map(fn (object $session) => (object) [
+                'label' => $deviceGuard->describe($session->user_agent),
+                'ip' => $session->ip_address,
+                'lastActive' => Carbon::createFromTimestamp($session->last_activity),
+                'isCurrent' => $session->id === session()->getId(),
+            ]);
+    }
+
     // ── Phone verification ──────────────────────────────────────────────
 
     public function sendPhoneCode(): void
@@ -450,6 +507,7 @@ class Profile extends Component
             'otpauthUri' => $this->totpSecret !== null
                 ? app(Totp::class)->otpauthUri($this->totpSecret, auth()->user()->email)
                 : null,
+            'activeSessions' => $this->activeSessions(),
         ])->title(__('Profile'));
     }
 }

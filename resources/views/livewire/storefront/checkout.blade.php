@@ -12,6 +12,7 @@
                     <h2 class="text-sm font-semibold">{{ __('Delivery address') }}</h2>
                     @if ($addresses->isNotEmpty())
                         <button type="button" wire:click="$toggle('changingAddress')"
+                                wire:loading.attr="disabled" wire:target="changingAddress"
                                 class="-my-1 flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-emerald hover:text-emerald-deep">
                             {{ $changingAddress ? __('Close') : __('Change') }}
                         </button>
@@ -131,6 +132,7 @@
                 <div class="flex items-center justify-between gap-3">
                     <h2 class="text-sm font-semibold">{{ __('Vouchers') }}</h2>
                     <button type="button" wire:click="$toggle('voucherPanelOpen')"
+                            wire:loading.attr="disabled" wire:target="voucherPanelOpen"
                             class="-my-1 flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-emerald hover:text-emerald-deep">
                         {{ $voucherPanelOpen ? __('Close') : __('Select voucher') }}
                     </button>
@@ -145,6 +147,7 @@
                                     <span class="truncate font-mono">{{ $platformDiscount->voucher->code }}</span>
                                     <span class="hidden font-normal sm:inline">· {{ __('Platform') }}</span>
                                     <button type="button" wire:click="removeVoucher('platform')"
+                                            wire:loading.attr="disabled" wire:target="removeVoucher"
                                             class="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-emerald/10"
                                             aria-label="{{ __('Remove platform voucher') }}">
                                         <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
@@ -164,6 +167,7 @@
                                     <span class="truncate font-mono">{{ $shopDiscount->voucher->code }}</span>
                                     <span class="hidden truncate font-normal sm:inline">· {{ $shopDiscount->voucher->store?->name }}</span>
                                     <button type="button" wire:click="removeVoucher('shop')"
+                                            wire:loading.attr="disabled" wire:target="removeVoucher"
                                             class="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-emerald/10"
                                             aria-label="{{ __('Remove shop voucher') }}">
                                         <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
@@ -228,7 +232,7 @@
                     <input type="text" wire:model="voucherCode" placeholder="{{ __('Voucher code') }}"
                            aria-label="{{ __('Voucher code') }}"
                            class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 font-mono text-sm text-ink placeholder:font-sans placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $voucherError ? 'border-danger' : 'border-line-strong' }}">
-                    <x-ui.button type="submit" variant="secondary" class="shrink-0">{{ __('Apply') }}</x-ui.button>
+                    <x-ui.button type="submit" variant="secondary" class="shrink-0" wire:loading.attr="disabled" wire:target="applyVoucher">{{ __('Apply') }}</x-ui.button>
                 </form>
 
                 @if ($voucherError)
