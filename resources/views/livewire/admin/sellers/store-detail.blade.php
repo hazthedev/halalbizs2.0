@@ -26,7 +26,7 @@
                 {{ __('All stores') }}
             </a>
             @if ($store->isApproved())
-                <a href="{{ $store->subdomainUrl() }}" target="_blank" rel="noopener"
+                <a href="{{ $store->storefrontUrl() }}" target="_blank" rel="noopener"
                    class="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('View storefront') }}
                     <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>

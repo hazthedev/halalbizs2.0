@@ -27,7 +27,7 @@ test('sitemap:generate writes live product and store URLs and excludes drafts', 
 
     expect($xml)->toContain('<urlset')
         ->toContain('/p/'.$live->slug)
-        ->toContain($live->store->slug.'.'.config('app.store_subdomain_base')) // stores live on subdomains
+        ->toContain('/s/'.$live->store->slug) // store links default to the /s/ path (subdomains opt-in)
         ->toContain('/c/'.$live->category->slug)
         ->not->toContain('/p/'.$draft->slug);
 });

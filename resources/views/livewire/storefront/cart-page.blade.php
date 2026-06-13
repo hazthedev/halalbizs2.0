@@ -36,7 +36,7 @@
                                            aria-label="{{ __('Select all items from this seller') }}">
                                 </label>
                             @endauth
-                            <a href="{{ $group->store->subdomainUrl() }}"
+                            <a href="{{ $group->store->storefrontUrl() }}" wire:navigate
                                class="flex min-h-11 items-center truncate text-sm font-semibold hover:underline">
                                 {{ $group->store->name }}
                             </a>

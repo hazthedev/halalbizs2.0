@@ -92,7 +92,7 @@
                     <x-ui.card wire:key="sub-order-{{ $subOrder->id }}" class="overflow-hidden">
                         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5">
                             <div class="flex min-w-0 items-center gap-2.5">
-                                <a href="{{ $subOrder->store->subdomainUrl() }}"
+                                <a href="{{ $subOrder->store->storefrontUrl() }}" wire:navigate
                                    class="truncate text-sm font-semibold text-ink hover:text-emerald">{{ $subOrder->store->name }}</a>
                                 <span class="hidden font-mono text-xs text-ink-faint sm:inline">{{ $subOrder->sub_order_no }}</span>
                             </div>

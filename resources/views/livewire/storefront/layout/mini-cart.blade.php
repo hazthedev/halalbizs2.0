@@ -24,7 +24,7 @@
         <div class="flex-1 overflow-y-auto px-4 py-3">
             @forelse ($groups as $storeId => $lines)
                 <div class="mb-4">
-                    <a href="{{ $lines->first()->variant->product->store->subdomainUrl() }}"
+                    <a href="{{ $lines->first()->variant->product->store->storefrontUrl() }}" wire:navigate
                        class="mb-2 block text-[13px] font-semibold text-ink">
                         {{ $lines->first()->variant->product->store->name }}
                     </a>

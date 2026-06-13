@@ -238,7 +238,7 @@
                 <x-ui.card class="overflow-hidden">
                     <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
                         <div class="flex min-w-0 flex-wrap items-center gap-x-2">
-                            <a href="{{ $subOrder->store->subdomainUrl() }}"
+                            <a href="{{ $subOrder->store->storefrontUrl() }}" wire:navigate
                                class="truncate text-sm font-semibold text-ink hover:text-emerald">{{ $subOrder->store->name }}</a>
                             <a href="{{ route('account.messages', ['store' => $subOrder->store_id]) }}" wire:navigate
                                data-testid="order-chat-seller"

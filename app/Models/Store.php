@@ -90,6 +90,18 @@ class Store extends Model implements HasMedia
         return "{$scheme}://{$this->slug}.".config('app.store_subdomain_base');
     }
 
+    /**
+     * Canonical storefront URL for links. Uses the per-store subdomain only
+     * when explicitly enabled (production with wildcard DNS); otherwise the
+     * always-resolvable /s/{slug} path so links work in any environment.
+     */
+    public function storefrontUrl(): string
+    {
+        return config('app.store_subdomains_enabled')
+            ? $this->subdomainUrl()
+            : route('store.show', $this->slug);
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

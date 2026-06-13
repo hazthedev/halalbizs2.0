@@ -6,6 +6,18 @@ use Database\Seeders\RoleSeeder;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
 
+test('storefrontUrl uses the /s/ path by default and the subdomain when enabled', function () {
+    $store = Store::factory()->approved()->create(['name' => 'Link Mode Shop']);
+
+    config(['app.store_subdomains_enabled' => false]);
+    expect($store->storefrontUrl())->toBe(route('store.show', $store->slug))
+        ->and($store->storefrontUrl())->toContain('/s/'.$store->slug);
+
+    config(['app.store_subdomains_enabled' => true]);
+    expect($store->storefrontUrl())->toBe($store->subdomainUrl())
+        ->and($store->storefrontUrl())->toContain($store->slug.'.'.config('app.store_subdomain_base'));
+});
+
 test('an approved store resolves on its own subdomain', function () {
     $store = Store::factory()->approved()->create(['name' => 'Kedai Subdomain']);
 

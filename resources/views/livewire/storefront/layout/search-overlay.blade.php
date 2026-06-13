@@ -80,7 +80,7 @@
                         @if ($stores->isNotEmpty())
                             <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Stores') }}</p>
                             @foreach ($stores as $store)
-                                <a href="{{ $store->subdomainUrl() }}" x-on:click="close()"
+                                <a href="{{ $store->storefrontUrl() }}" wire:navigate x-on:click="close()"
                                    class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-paper">
                                     <img src="{{ $store->getFirstMediaUrl('logo') }}" alt="" class="size-8 rounded-full border border-line object-cover bg-paper">
                                     <span class="flex-1 text-sm">{{ $store->name }}</span>

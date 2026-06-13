@@ -57,6 +57,10 @@ return [
     // Base domain for per-store subdomains ({store-slug}.<base>).
     'store_subdomain_base' => env('STORE_SUBDOMAIN_BASE', 'halalbizs2.0.test'),
 
+    // Emit per-store subdomain links only when wildcard DNS + cert exist
+    // (production). Off → store links use the /s/{slug} path (works anywhere).
+    'store_subdomains_enabled' => (bool) env('STORE_SUBDOMAINS', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

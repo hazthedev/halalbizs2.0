@@ -65,7 +65,7 @@
                             {{ mb_substr($active->store?->name ?? '?', 0, 1) }}
                         </span>
                     @endif
-                    <a href="{{ $active->store?->subdomainUrl() }}" class="min-w-0 truncate text-sm font-semibold text-ink hover:text-emerald">
+                    <a href="{{ $active->store?->storefrontUrl() }}" wire:navigate class="min-w-0 truncate text-sm font-semibold text-ink hover:text-emerald">
                         {{ $active->store?->name }}
                     </a>
                 </div>

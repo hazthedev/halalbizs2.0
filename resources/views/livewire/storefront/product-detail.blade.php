@@ -202,7 +202,7 @@
                             @endif
                             <div class="min-w-0 flex-1">
                                 <p class="flex flex-wrap items-center gap-2">
-                                    <a href="{{ $store->subdomainUrl() }}" class="truncate text-sm font-semibold text-ink">{{ $store->name }}</a>
+                                    <a href="{{ $store->storefrontUrl() }}" wire:navigate class="truncate text-sm font-semibold text-ink">{{ $store->name }}</a>
                                     @if ($store->isApproved())
                                         <x-ui.badge variant="verified">
                                             <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
@@ -234,7 +234,7 @@
                                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
                                 {{ __('Chat') }}
                             </a>
-                            <a href="{{ $store->subdomainUrl() }}"
+                            <a href="{{ $store->storefrontUrl() }}" wire:navigate
                                class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-ink-soft transition-colors duration-150 hover:text-ink">
                                 {{ __('Visit store') }}
                             </a>

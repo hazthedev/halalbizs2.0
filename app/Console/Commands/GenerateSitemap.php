@@ -29,7 +29,7 @@ class GenerateSitemap extends Command
         }
 
         foreach (Store::query()->approved()->get(['slug', 'updated_at']) as $store) {
-            $urls[] = [$store->subdomainUrl(), $store->updated_at];
+            $urls[] = [$store->storefrontUrl(), $store->updated_at];
         }
 
         foreach (Category::query()->active()->get(['slug', 'updated_at']) as $category) {
