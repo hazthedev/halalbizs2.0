@@ -98,7 +98,7 @@
                                 <p class="truncate text-sm font-semibold">{{ auth()->user()->name }}</p>
                                 <p class="truncate text-xs text-ink-soft">{{ auth()->user()->email }}</p>
                             </div>
-                            <a href="{{ route('account.profile') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('My account') }}</a>
+                            <a href="{{ route('account.dashboard') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('My account') }}</a>
                             <a href="{{ route('account.orders') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('My orders') }}</a>
                             <a href="{{ route('account.messages') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('Messages') }}</a>
                             <a href="{{ route('account.wishlist') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('Wishlist') }}</a>

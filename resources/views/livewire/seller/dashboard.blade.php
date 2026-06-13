@@ -65,9 +65,89 @@
         </x-ui.card>
     @endif
 
+    {{-- ===== Period selector + earnings strip ===== --}}
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="inline-flex rounded-full border border-line p-1" role="group" aria-label="{{ __('Chart period') }}">
+            @foreach ($periods as $option)
+                <button
+                    type="button"
+                    wire:click="$set('period', '{{ $option }}')"
+                    wire:key="period-{{ $option }}"
+                    aria-pressed="{{ $period === $option ? 'true' : 'false' }}"
+                    class="inline-flex min-h-8 items-center rounded-full px-3 text-[13px] font-medium tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 {{ $period === $option ? 'bg-ink text-surface' : 'text-ink-soft hover:text-ink' }}"
+                >
+                    {{ __(':n days', ['n' => (int) $option]) }}
+                </button>
+            @endforeach
+        </div>
+
+        <dl class="flex flex-wrap items-center gap-x-6 gap-y-1 text-[13px]">
+            <div class="flex items-baseline gap-1.5">
+                <dt class="text-ink-soft">{{ __('Available balance') }}</dt>
+                <dd class="font-mono font-semibold tabular-nums text-emerald">@money($earnings['available'])</dd>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+                <dt class="text-ink-soft">{{ __('Gross (period)') }}</dt>
+                <dd class="font-mono font-semibold tabular-nums text-ink">@money($earnings['gross'])</dd>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+                <dt class="text-ink-soft">{{ __('Commission (period)') }}</dt>
+                <dd class="font-mono font-semibold tabular-nums text-ink-soft">@money($earnings['commission'])</dd>
+            </div>
+        </dl>
+    </div>
+
+    {{-- ===== Charts: revenue (emerald, money), status donut, top products ===== --}}
+    <div class="grid gap-4 lg:grid-cols-3">
+        {{-- CHART 1 — revenue over time (replaces the old zero sparkline). Own
+             refresh event so the foundation's single-payload handler updates it. --}}
+        <x-ui.card class="p-4 lg:col-span-2">
+            <h2 class="text-sm font-semibold">{{ __('Revenue over time') }}</h2>
+            <p class="mt-0.5 text-[13px] text-ink-soft">{{ __('Confirmed and progressing orders, by day (RM).') }}</p>
+            <div class="mt-3">
+                <x-ui.chart
+                    id="seller-revenue"
+                    :payload="$revenuePayload"
+                    refresh-event="seller-revenue"
+                    :height="260"
+                    aria-label="{{ __('Revenue over time') }}"
+                />
+            </div>
+        </x-ui.card>
+
+        {{-- CHART 2 — orders by status donut --}}
+        <x-ui.card class="p-4">
+            <h2 class="text-sm font-semibold">{{ __('Orders by status') }}</h2>
+            <div class="mt-3">
+                <x-ui.chart
+                    id="seller-status"
+                    :payload="$statusPayload"
+                    refresh-event="seller-status"
+                    :height="260"
+                    aria-label="{{ __('Orders by status') }}"
+                />
+            </div>
+        </x-ui.card>
+    </div>
+
+    {{-- CHART 3 — top products bar --}}
+    <x-ui.card class="p-4">
+        <h2 class="text-sm font-semibold">{{ __('Top products') }}</h2>
+        <p class="mt-0.5 text-[13px] text-ink-soft">{{ __('Best sellers this period by units sold.') }}</p>
+        <div class="mt-3">
+            <x-ui.chart
+                id="seller-top"
+                :payload="$topProductsPayload"
+                refresh-event="seller-top"
+                :height="240"
+                aria-label="{{ __('Top products') }}"
+            />
+        </div>
+    </x-ui.card>
+
     <div class="grid gap-4 lg:grid-cols-3">
         {{-- ===== Recent orders ===== --}}
-        <x-ui.card class="lg:col-span-2">
+        <x-ui.card class="lg:col-span-3">
             <div class="border-b border-line px-4 py-3">
                 <h2 class="text-sm font-semibold">{{ __('Recent orders') }}</h2>
             </div>
@@ -112,29 +192,6 @@
                     </table>
                 </div>
             @endif
-        </x-ui.card>
-
-        {{-- ===== 14-day sales sparkline (placeholder data until M4) ===== --}}
-        <x-ui.card class="p-4">
-            <h2 class="text-sm font-semibold">{{ __('Sales (14 days)') }}</h2>
-            @php
-                $maxSen = max(1, $sparkline->max('total_sen'));
-                $points = $sparkline->values()->map(function ($day, $i) use ($maxSen) {
-                    $x = round($i * (280 / 13), 1);
-                    $y = round(58 - ($day['total_sen'] / $maxSen) * 50, 1);
-
-                    return "$x,$y";
-                })->implode(' ');
-            @endphp
-            <svg viewBox="0 0 280 64" class="mt-3 h-16 w-full" role="img" aria-label="{{ __('Sales (14 days)') }}">
-                <line x1="0" y1="58" x2="280" y2="58" stroke="var(--color-line)" stroke-width="1" />
-                <polyline points="{{ $points }}" fill="none" stroke="var(--color-emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            <div class="mt-2 flex justify-between font-mono text-[11px] text-ink-faint">
-                <span>{{ $sparkline->first()['date']->format('j M') }}</span>
-                <span>{{ $sparkline->last()['date']->format('j M') }}</span>
-            </div>
-            <p class="mt-2 text-[13px] text-ink-soft">{{ __('Sales tracking starts with your first order.') }}</p>
         </x-ui.card>
     </div>
 </div>

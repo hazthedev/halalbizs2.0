@@ -2,6 +2,7 @@
 
 @php
 $items = [
+    'dashboard' => ['label' => __('Overview'), 'href' => route('account.dashboard')],
     'profile' => ['label' => __('Profile'), 'href' => route('account.profile')],
     'addresses' => ['label' => __('Addresses'), 'href' => route('account.addresses')],
     'orders' => ['label' => __('Orders'), 'href' => route('account.orders')],

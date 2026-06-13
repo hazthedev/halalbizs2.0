@@ -95,6 +95,7 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->
 
 // ===== Buyer account =====
 Route::middleware(['auth'])->prefix('account')->name('account.')->group(function () {
+    Route::get('/dashboard', Storefront\Account\Dashboard::class)->name('dashboard');
     Route::get('/', Storefront\Account\Profile::class)->name('profile');
     Route::get('/messages', Storefront\Account\Messages::class)->name('messages');
     Route::get('/addresses', Storefront\Account\Addresses::class)->name('addresses');

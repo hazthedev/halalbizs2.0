@@ -33,7 +33,7 @@ test('an approved seller sees the dashboard with stat cards', function () {
         ->assertSee(__('Live products'))
         ->assertSee(__('Low stock'))
         ->assertSee(__('Recent orders'))
-        ->assertSee(__('Sales (14 days)'));
+        ->assertSee(__('Revenue over time')); // replaced the placeholder "Sales (14 days)" sparkline
 });
 
 test('a pending seller is redirected away from the dashboard', function () {
