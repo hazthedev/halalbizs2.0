@@ -77,7 +77,11 @@ Migrations run clean on `migrate:fresh --seed` · Pest green · Pint clean · UI
 
 ## Build status
 
-M1–M8 complete (June 2026). Local adaptations vs the docs: SQLite, sync
+M1–M8 complete (June 2026). **Design: "Souk" (Emerald & Brass) redesign
+applied across storefront, seller and admin (June 2026)** — warm ivory canvas,
+Fraunces + Plus Jakarta Sans, brass = premium/ornament, soft elevation +
+Islamic geometric ornament; see `marketplace-docs/docs/03-design-system.md`.
+Local adaptations vs the docs: SQLite, sync
 queue (no Horizon on Windows), Scout `collection` driver, Turnstile dormant
 without keys, iPay88 verified against simulated callbacks — see plan notes.
 Remaining for production: real iPay88 sandbox/production cutover (docs/10
