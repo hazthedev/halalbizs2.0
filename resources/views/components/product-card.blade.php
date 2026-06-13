@@ -9,7 +9,7 @@
     $inStock = $product->variants->sum('stock') > 0;
 @endphp
 
-<div class="group relative flex flex-col overflow-hidden rounded-[10px] border border-line bg-surface transition-colors duration-150 hover:border-ink">
+<div class="group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-card">
     <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="absolute inset-0 z-10" aria-label="{{ $product->getTranslation('name', app()->getLocale()) }}"></a>
 
     <div class="relative aspect-square overflow-hidden bg-paper">
@@ -67,7 +67,7 @@
                 type="button"
                 x-on:click="$store.cart.bump()"
                 wire:click="addToCart({{ $defaultVariant->id }})"
-                class="relative z-20 mt-1 inline-flex min-h-9 items-center justify-center rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink transition-colors hover:bg-paper"
+                class="relative z-20 mt-1 inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-semibold text-ink transition-colors hover:border-emerald hover:bg-emerald-tint hover:text-emerald"
             >
                 {{ __('Add to cart') }}
             </button>

@@ -1,3 +1,3 @@
 @props(['class' => ''])
 
-<div {{ $attributes->merge(['class' => "animate-pulse rounded-lg bg-line $class"]) }}></div>
+<div {{ $attributes->merge(['class' => "shimmer rounded-[var(--radius-control)] $class"]) }}></div>

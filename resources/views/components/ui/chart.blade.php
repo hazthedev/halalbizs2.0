@@ -15,7 +15,7 @@
 >
     <div x-ref="canvas" role="img" aria-label="{{ $attributes->get('aria-label', __('Chart')) }}"></div>
     <noscript>
-        <div class="flex items-center justify-center rounded-[10px] border border-line bg-paper text-sm text-ink-faint" style="height: {{ $height }}px">
+        <div class="flex items-center justify-center rounded-[var(--radius-card)] border border-line bg-paper text-sm text-ink-faint" style="height: {{ $height }}px">
             {{ __('Charts need JavaScript enabled.') }}
         </div>
     </noscript>

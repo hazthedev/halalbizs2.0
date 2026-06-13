@@ -23,8 +23,8 @@ $items = [
                 @php($isActive = $active === $key)
                 <a href="{{ $item['href'] }}" wire:navigate
                    @if ($isActive) aria-current="page" @endif
-                   class="-mb-px flex min-h-11 shrink-0 items-center whitespace-nowrap border-b-2 px-3 text-sm lg:mb-0 lg:border-b-0 lg:border-l-2 lg:px-3.5 {{ $isActive
-                       ? 'border-ink font-semibold text-ink lg:border-emerald'
+                   class="-mb-px flex min-h-11 shrink-0 items-center whitespace-nowrap border-b-2 px-3 text-sm transition-colors lg:mb-0 lg:border-b-0 lg:border-l-2 lg:px-3.5 {{ $isActive
+                       ? 'border-brass font-semibold text-ink'
                        : 'border-transparent font-medium text-ink-soft hover:text-ink' }}">
                     {{ $item['label'] }}
                 </a>
