@@ -12,7 +12,7 @@ test('every markdown mail inherits the HalalBizs header and footer', function ()
 
     expect($html)
         ->toContain('HalalBizs')                                              // wordmark
-        ->toContain('#191B1A')                                                // ink header band
+        ->toContain('#1A1714')                                                // ink header band
         ->toContain('you have a HalalBizs account')                           // footer line
         ->toContain('© '.date('Y'))
         ->toContain('Body line for the layout snapshot.');

@@ -43,10 +43,10 @@ class Dashboard extends Component
     /** Status → donut colour (docs/03 §6 semantic palette). */
     private const STATUS_COLORS = [
         'pending_payment' => '#B45309',
-        'confirmed' => '#191B1A',
-        'processing' => '#191B1A',
-        'shipped' => '#475569',
-        'delivered' => '#475569',
+        'confirmed' => '#1A1714',
+        'processing' => '#1A1714',
+        'shipped' => '#7C6F5A',
+        'delivered' => '#7C6F5A',
         'completed' => '#047857',
         'cancelled' => '#BE123C',
         'return_requested' => '#BE123C',
@@ -243,7 +243,7 @@ class Dashboard extends Component
 
             $labels[] = $status->label();
             $series[] = $count;
-            $colors[] = self::STATUS_COLORS[$status->value] ?? '#5B615D';
+            $colors[] = self::STATUS_COLORS[$status->value] ?? '#5C544B';
         }
 
         $total = array_sum($series);
@@ -318,7 +318,7 @@ class Dashboard extends Component
             ]],
             'labels' => $labels,
             'options' => [
-                'colors' => ['#5B615D'],
+                'colors' => ['#5C544B'],
                 'plotOptions' => ['bar' => ['horizontal' => true, 'borderRadius' => 4, 'barHeight' => '62%']],
                 'xaxis' => ['categories' => $labels],
                 'dataLabels' => ['enabled' => false],
@@ -353,7 +353,7 @@ class Dashboard extends Component
             ]],
             'labels' => $days->all(),
             'options' => [
-                'colors' => ['#5B615D'],
+                'colors' => ['#5C544B'],
                 'xaxis' => ['categories' => $days->all(), 'type' => 'category', 'tickAmount' => 6],
                 'yaxis' => ['min' => 0, 'forceNiceScale' => true],
                 'markers' => ['size' => 0, 'hover' => ['size' => 5]],

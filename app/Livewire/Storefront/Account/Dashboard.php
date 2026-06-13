@@ -234,8 +234,8 @@ class Dashboard extends Component
     {
         return match ($status) {
             SubOrderStatus::PendingPayment => '#B45309',
-            SubOrderStatus::Confirmed, SubOrderStatus::Processing => '#191B1A',
-            SubOrderStatus::Shipped, SubOrderStatus::Delivered => '#475569',
+            SubOrderStatus::Confirmed, SubOrderStatus::Processing => '#1A1714',
+            SubOrderStatus::Shipped, SubOrderStatus::Delivered => '#7C6F5A',
             SubOrderStatus::Completed => '#047857',
             SubOrderStatus::Cancelled, SubOrderStatus::ReturnRequested,
             SubOrderStatus::Returned, SubOrderStatus::Refunded => '#BE123C',

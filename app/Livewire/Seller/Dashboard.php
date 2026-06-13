@@ -271,7 +271,7 @@ class Dashboard extends Component
                 'data' => $rows->pluck('units')->map(fn ($units) => (int) $units)->all(),
             ]],
             'options' => [
-                'colors' => ['#5B615D'], // ink-soft
+                'colors' => ['#5C544B'], // ink-soft
                 'plotOptions' => ['bar' => ['horizontal' => true, 'borderRadius' => 4]],
                 'xaxis' => ['categories' => $rows->pluck('name')->all()],
             ],
@@ -296,8 +296,8 @@ class Dashboard extends Component
     {
         return match ($status) {
             SubOrderStatus::PendingPayment => '#B45309',
-            SubOrderStatus::Confirmed, SubOrderStatus::Processing => '#191B1A',
-            SubOrderStatus::Shipped, SubOrderStatus::Delivered => '#475569',
+            SubOrderStatus::Confirmed, SubOrderStatus::Processing => '#1A1714',
+            SubOrderStatus::Shipped, SubOrderStatus::Delivered => '#7C6F5A',
             SubOrderStatus::Completed => '#047857',
             SubOrderStatus::Cancelled,
             SubOrderStatus::ReturnRequested,

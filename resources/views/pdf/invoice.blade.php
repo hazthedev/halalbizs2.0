@@ -3,17 +3,18 @@
 <head>
     <meta charset="utf-8">
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #191B1A; margin: 32px; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1A1714; margin: 32px; }
         .mono { font-family: DejaVu Sans Mono, monospace; }
-        h1 { font-size: 20px; margin: 0 0 2px; }
-        .muted { color: #5B615D; }
+        h1 { font-size: 20px; margin: 0 0 2px; color: #8A5F22; }
+        .muted { color: #5C544B; }
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: #5B615D; border-bottom: 1px solid #C9CEC9; padding: 6px 4px; }
-        td { padding: 8px 4px; border-bottom: 1px solid #E5E7E2; vertical-align: top; }
+        th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: #5C544B; border-bottom: 1px solid #D2C9B8; padding: 6px 4px; }
+        td { padding: 8px 4px; border-bottom: 1px solid #E7E1D5; vertical-align: top; }
         .num { text-align: right; }
         .totals td { border-bottom: none; padding: 3px 4px; }
-        .grand { font-size: 14px; font-weight: bold; border-top: 1px solid #191B1A; }
+        .grand { font-size: 14px; font-weight: bold; border-top: 1px solid #1A1714; }
         .header-table td { border: none; padding: 0; }
+        .header-rule { border: none; border-top: 2px solid #A8772E; margin: 10px 0 0; }
     </style>
 </head>
 <body>
@@ -30,6 +31,7 @@
             </td>
         </tr>
     </table>
+    <hr class="header-rule">
 
     <table class="header-table" style="margin-top: 24px;">
         <tr>

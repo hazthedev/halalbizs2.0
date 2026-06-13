@@ -39,7 +39,7 @@ php artisan scout:import "App\Models\Product"
 5. **Snapshots are sacred.** `order_items` carry name/variant/price at purchase; `orders` carry the address json; `sub_orders` carry commission_rate. Never read live product data for historical orders.
 6. **Every product has ≥1 variant.** No-variation products get a default variant. Cart/checkout/order code only touches variants.
 7. **Translatable writes include `en` at minimum** (fallback locale). UI strings go in `lang/` files, never hardcoded.
-8. **Emerald = money or action only** in the UI; ink frame surfaces per `docs/03-design-system.md` §5. No shadows outside overlays, no gradients.
+8. **Emerald = money/action; brass = premium/ornament.** "Souk (Emerald & Brass)" design language per `docs/03-design-system.md`: warm ivory canvas, Fraunces + Plus Jakarta Sans, soft elevation (`shadow-soft/card/pop`), and Islamic geometric ornament (khatam/girih) are sanctioned. Never recolour money/action elements brass, or decorate with emerald.
 9. **Tests accompany features.** Checkout, vouchers, ledger, status transitions, and iPay88 callback paths require Pest coverage including the race-condition cases.
 10. **No new packages** without noting why in the PR description.
 
