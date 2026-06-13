@@ -15,7 +15,7 @@ use Livewire\Component;
 class HomeSections extends Component
 {
     /** One section per type; only missing types are addable. */
-    public const TYPES = ['banner', 'category_grid', 'product_carousel', 'product_grid', 'recently_viewed'];
+    public const TYPES = ['banner', 'category_grid', 'product_carousel', 'product_grid', 'recommended', 'recently_viewed'];
 
     public const SOURCES = ['latest', 'top'];
 
@@ -38,6 +38,7 @@ class HomeSections extends Component
             'category_grid' => __('Category grid'),
             'product_carousel' => __('Product carousel'),
             'product_grid' => __('Product grid'),
+            'recommended' => __('Recommended for you'),
             'recently_viewed' => __('Recently viewed'),
             default => $type,
         };

@@ -5,6 +5,7 @@ namespace App\Livewire\Storefront;
 use App\Livewire\Concerns\InteractsWithCart;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ProductView;
 use App\Settings\CodSettings;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -35,6 +36,22 @@ class ProductDetail extends Component
         // Single-variant products resolve immediately — the picker is skipped.
         if ($product->variants->count() === 1) {
             $this->selectedVariantId = $product->variants->first()->id;
+        }
+
+        $this->recordView($product);
+    }
+
+    /**
+     * Server-side view signal for recommendations — one upsert per buyer ×
+     * product, recency-bumped. Guests rely on the localStorage strip instead.
+     */
+    private function recordView(Product $product): void
+    {
+        if (auth()->check() && $product->isLive()) {
+            ProductView::updateOrCreate(
+                ['user_id' => auth()->id(), 'product_id' => $product->id],
+                ['viewed_at' => now()],
+            );
         }
     }
 

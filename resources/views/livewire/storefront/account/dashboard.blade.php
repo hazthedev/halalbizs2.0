@@ -12,6 +12,9 @@
                     {{ __('Start shopping') }}
                 </a>
             </x-ui.card>
+
+            {{-- Even first-timers get picks (cold-start → popular). --}}
+            <livewire:storefront.recommended-products context="dashboard" wire:key="rec-dash-empty" />
         @else
             <div class="space-y-6">
 
@@ -127,6 +130,9 @@
                         @endforeach
                     </ul>
                 </x-ui.card>
+
+                {{-- Picked for you --}}
+                <livewire:storefront.recommended-products context="dashboard" wire:key="rec-dash" />
 
             </div>
         @endif

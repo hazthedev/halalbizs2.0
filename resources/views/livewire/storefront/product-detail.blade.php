@@ -318,6 +318,9 @@
 
         {{-- ===== Related products (lazy island — loads as it scrolls into view) ===== --}}
         <livewire:storefront.related-products :product="$product" />
+
+        {{-- ===== Personalised recommendations (distinct from same-category related) ===== --}}
+        <livewire:storefront.recommended-products context="pdp" :exclude-product-id="$product->id" />
     </div>
 
     {{-- ===== Mobile sticky buy bar (ink frame) ===== --}}

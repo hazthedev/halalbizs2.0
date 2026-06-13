@@ -44,9 +44,10 @@ class Home extends Component
                 'section' => $section,
                 'data' => $this->sectionData($section),
             ])
-            // Empty sections disappear — except recently_viewed, whose wrapper
-            // must render so Alpine can hydrate ids from localStorage.
-            ->reject(fn (array $row) => $row['data']->isEmpty() && $row['section']->type !== 'recently_viewed')
+            // Empty sections disappear — except recently_viewed and recommended,
+            // which render a self-contained component (data comes from it, not here).
+            ->reject(fn (array $row) => $row['data']->isEmpty()
+                && ! in_array($row['section']->type, ['recently_viewed', 'recommended'], true))
             ->values();
 
         $theme = app(ThemeSettings::class);

@@ -177,6 +177,13 @@
                     @endif
                 </div>
                 @break
+
+            {{-- ===== Recommended for you (lazy, personalised; self-renders, hidden when empty) ===== --}}
+            @case('recommended')
+                <div class="mx-auto max-w-7xl px-4" wire:key="section-{{ $section->id }}">
+                    <livewire:storefront.recommended-products context="home" :wire:key="'rec-home-'.$section->id" />
+                </div>
+                @break
         @endswitch
     @endforeach
 
