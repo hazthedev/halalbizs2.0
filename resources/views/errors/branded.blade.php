@@ -10,14 +10,20 @@
     @vite('resources/css/app.css')
 </head>
 <body class="flex min-h-screen flex-col bg-paper text-ink antialiased">
-    <header class="bg-ink" style="border-bottom: 1px solid var(--color-emerald-night);">
+    <header class="surface-girih border-b border-brass/25 bg-ink">
         <div class="mx-auto flex h-16 max-w-7xl items-center px-4">
-            <a href="{{ url('/') }}" class="font-display text-xl font-bold text-paper">HalalBizs</a>
+            <a href="{{ url('/') }}" class="flex items-center gap-2 font-display text-xl font-bold text-paper">
+                <x-ui.star-mark :size="22" class="text-brass" />
+                HalalBizs
+            </a>
         </div>
     </header>
 
     <main class="flex flex-1 items-center justify-center px-4 py-16">
         <div class="w-full max-w-md text-center">
+            <div class="surface-zellij mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-brass/25 bg-brass-tint/50 text-brass">
+                <x-ui.star-mark :size="30" />
+            </div>
             <p class="font-display text-7xl font-extrabold leading-none tracking-tight" aria-hidden="true">@yield('code')</p>
             <h1 class="mt-4 font-display text-2xl font-bold">@yield('title')</h1>
             <p class="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-soft">@yield('message')</p>
@@ -25,7 +31,7 @@
         </div>
     </main>
 
-    <footer class="bg-ink">
+    <footer class="surface-girih border-t border-brass/25 bg-ink">
         <p class="mx-auto max-w-7xl px-4 py-4 text-xs text-paper/64">© {{ now()->year }} HalalBizs. {{ __('All rights reserved.') }}</p>
     </footer>
 </body>

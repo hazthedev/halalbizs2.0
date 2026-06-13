@@ -33,9 +33,10 @@
     @endif
 
     {{-- ===== Ink header ===== --}}
-    <header class="sticky top-0 z-40 bg-ink" style="border-bottom: 1px solid var(--color-emerald-night);">
+    <header class="surface-girih sticky top-0 z-40 border-b border-brass/25 bg-ink">
         <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:gap-6">
-            <a href="{{ route('home') }}" wire:navigate class="shrink-0 font-display text-xl font-bold text-paper">
+            <a href="{{ route('home') }}" wire:navigate class="flex shrink-0 items-center gap-2 font-display text-xl font-bold tracking-tight text-paper">
+                <x-ui.star-mark :size="22" class="text-brass" />
                 HalalBizs
             </a>
 
@@ -43,7 +44,7 @@
             <button
                 type="button"
                 x-on:click="$dispatch('open-search')"
-                class="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-lg bg-surface px-3.5 text-sm text-ink-faint sm:max-w-xl sm:mx-auto"
+                class="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[var(--radius-control)] bg-surface px-3.5 text-sm text-ink-faint sm:max-w-xl sm:mx-auto"
             >
                 <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
                 <span class="min-w-0 truncate">{{ __('Search products, stores…') }}</span>
@@ -93,7 +94,7 @@
                             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
                         </button>
                         <div x-show="open" x-cloak x-on:click.outside="open = false" x-transition.origin.top.right.duration.150ms
-                             class="absolute right-0 top-12 w-56 rounded-[10px] border border-line bg-surface py-1 shadow-lg">
+                             class="absolute right-0 top-12 w-56 rounded-[var(--radius-card)] border border-line bg-surface py-1 shadow-pop">
                             <div class="border-b border-line px-4 py-2.5">
                                 <p class="truncate text-sm font-semibold">{{ auth()->user()->name }}</p>
                                 <p class="truncate text-xs text-ink-soft">{{ auth()->user()->email }}</p>
@@ -139,14 +140,17 @@
     </main>
 
     {{-- ===== Ink footer ===== --}}
-    <footer class="mt-12 bg-ink text-paper">
+    <footer class="surface-girih mt-12 border-t border-brass/25 bg-ink text-paper">
         <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-                <p class="font-display text-lg font-bold">HalalBizs</p>
+                <p class="flex items-center gap-2 font-display text-lg font-bold">
+                    <x-ui.star-mark :size="20" class="text-brass" />
+                    HalalBizs
+                </p>
                 <p class="mt-2 text-sm text-paper/64">{{ __('Malaysia’s trusted multi-vendor marketplace.') }}</p>
             </div>
             <div>
-                <p class="text-[11px] font-semibold uppercase tracking-[0.04em] text-paper/64">{{ __('About') }}</p>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-brass-tint/70">{{ __('About') }}</p>
                 <ul class="mt-3 space-y-2 text-sm">
                     <li><a href="{{ route('page.show', 'about') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('About us') }}</a></li>
                     <li><a href="{{ route('page.show', 'terms') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Terms & conditions') }}</a></li>
@@ -154,7 +158,7 @@
                 </ul>
             </div>
             <div>
-                <p class="text-[11px] font-semibold uppercase tracking-[0.04em] text-paper/64">{{ __('Help') }}</p>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-brass-tint/70">{{ __('Help') }}</p>
                 <ul class="mt-3 space-y-2 text-sm">
                     <li><a href="{{ route('help.index') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Help centre') }}</a></li>
                     <li><a href="{{ route('page.show', 'faq') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('FAQ') }}</a></li>
@@ -163,12 +167,12 @@
                 </ul>
             </div>
             <div>
-                <p class="text-[11px] font-semibold uppercase tracking-[0.04em] text-paper/64">{{ __('Newsletter') }}</p>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-brass-tint/70">{{ __('Newsletter') }}</p>
                 <form method="POST" action="{{ route('newsletter.subscribe') }}" class="mt-3 flex gap-2">
                     @csrf
                     <input type="email" name="email" required placeholder="{{ __('Your email') }}"
-                           class="h-10 w-full rounded-lg border-0 bg-surface px-3 text-sm text-ink placeholder:text-ink-faint">
-                    <button type="submit" class="h-10 shrink-0 rounded-lg bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep">{{ __('Subscribe') }}</button>
+                           class="h-10 w-full rounded-[var(--radius-control)] border-0 bg-surface px-3 text-sm text-ink placeholder:text-ink-faint">
+                    <button type="submit" class="h-10 shrink-0 rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep">{{ __('Subscribe') }}</button>
                 </form>
                 @if (session('newsletter.status'))
                     <p class="mt-2 text-[13px] text-paper/80">{{ session('newsletter.status') }}</p>
@@ -185,7 +189,7 @@
         <template x-for="toast in $store.toasts.items" :key="toast.id">
             <div x-transition:enter="transition duration-150 ease-out" x-transition:enter-start="translate-y-2 opacity-0"
                  x-transition:leave="transition duration-100 ease-in" x-transition:leave-end="opacity-0"
-                 class="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-[10px] bg-ink px-4 py-3 text-sm text-paper shadow-lg">
+                 class="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-[var(--radius-card)] border border-brass/20 bg-ink px-4 py-3 text-sm text-paper shadow-pop">
                 <svg x-show="toast.type === 'success'" class="size-4 shrink-0 text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                 <svg x-show="toast.type === 'error'" class="size-4 shrink-0 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                 <span x-text="toast.message" class="flex-1"></span>
