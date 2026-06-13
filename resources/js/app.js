@@ -3,11 +3,125 @@ import { Navigation, Pagination, A11y } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import ApexCharts from 'apexcharts';
 
 window.Swiper = Swiper;
 window.SwiperModules = { Navigation, Pagination, A11y };
+window.ApexCharts = ApexCharts;
+
+// ===== Ink & Emerald chart palette (design §2/§10: solid fills, no gradients) =====
+const HB_INK = '#191B1A';
+const HB_INK_SOFT = '#5B615D';
+const HB_LINE = '#E5E7E2';
+const HB_EMERALD = '#047857';
+const HB_WARN = '#B45309';
+const HB_DANGER = '#BE123C';
+const HB_SLATE = '#475569';
+
+// Status → token colour, shared by donuts across dashboards.
+window.hbStatusColor = (status) => ({
+    pending_payment: HB_WARN,
+    confirmed: HB_INK,
+    processing: HB_INK,
+    shipped: HB_SLATE,
+    delivered: HB_SLATE,
+    completed: HB_EMERALD,
+    cancelled: HB_DANGER,
+    return_requested: HB_DANGER,
+    returned: HB_DANGER,
+    refunded: HB_DANGER,
+}[status] ?? HB_INK_SOFT);
+
+const prefersReducedMotion = () =>
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
+/**
+ * Base ApexCharts options shared by every HalalBizs chart: flat, solid fills,
+ * Figtree, tabular tooltips, no gradients/toolbar. Merged shallowly with the
+ * per-chart payload's `options`.
+ */
+function hbBaseOptions(type) {
+    return {
+        chart: {
+            type,
+            fontFamily: '"Figtree Variable", ui-sans-serif, system-ui, sans-serif',
+            toolbar: { show: false },
+            zoom: { enabled: false },
+            animations: { enabled: !prefersReducedMotion(), speed: 400 },
+            background: 'transparent',
+        },
+        colors: [HB_EMERALD, HB_INK_SOFT, HB_SLATE, HB_WARN, HB_DANGER],
+        fill: { type: 'solid', opacity: type === 'area' ? 0.08 : 1 },
+        stroke: { curve: 'smooth', width: type === 'line' || type === 'area' ? 2.5 : 0 },
+        grid: { borderColor: HB_LINE, strokeDashArray: 0, padding: { left: 8, right: 8 } },
+        dataLabels: { enabled: false },
+        tooltip: { style: { fontSize: '13px' } },
+        legend: { fontSize: '13px', labels: { colors: HB_INK_SOFT }, markers: { radius: 12 } },
+        xaxis: { labels: { style: { colors: HB_INK_SOFT, fontSize: '12px' } }, axisBorder: { color: HB_LINE }, axisTicks: { color: HB_LINE } },
+        yaxis: { labels: { style: { colors: HB_INK_SOFT, fontSize: '12px' } } },
+    };
+}
+
+function deepMerge(base, extra) {
+    const out = { ...base };
+    for (const key of Object.keys(extra ?? {})) {
+        out[key] = extra[key] && typeof extra[key] === 'object' && !Array.isArray(extra[key])
+            ? deepMerge(base[key] ?? {}, extra[key])
+            : extra[key];
+    }
+    return out;
+}
 
 document.addEventListener('alpine:init', () => {
+    /**
+     * <x-ui.chart> driver. `payload` = { type, series, options }. When the
+     * dashboard recomputes (period change) it dispatches `refreshEvent` with a
+     * fresh payload; we update in place so there's no re-init flicker. The host
+     * div is wire:ignore so Livewire morphs leave the chart alone.
+     */
+    window.Alpine.data('hbChart', (payload, refreshEvent = null) => ({
+        chart: null,
+        init() {
+            const opts = deepMerge(hbBaseOptions(payload.type), payload.options ?? {});
+            opts.series = payload.series;
+            if (payload.labels) opts.labels = payload.labels;
+            this.chart = new window.ApexCharts(this.$refs.canvas, opts);
+            this.chart.render();
+
+            if (refreshEvent) {
+                this.$wire.on(refreshEvent, (fresh) => {
+                    const next = Array.isArray(fresh) ? fresh[0] : fresh;
+                    this.chart.updateOptions({
+                        series: next.series,
+                        ...(next.labels ? { labels: next.labels } : {}),
+                        ...(next.options ?? {}),
+                    });
+                });
+            }
+        },
+        destroy() {
+            this.chart?.destroy();
+        },
+    }));
+
+    // Count-up for stat cards (shared; honours reduced motion).
+    window.Alpine.data('countUp', (target, duration = 400) => ({
+        display: 0,
+        init() {
+            if (prefersReducedMotion() || target <= 0) {
+                this.display = target;
+                return;
+            }
+            const start = performance.now();
+            const tick = (now) => {
+                const p = Math.min(1, (now - start) / duration);
+                this.display = Math.round(target * p);
+                if (p < 1) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        },
+    }));
+
     // Header cart badge — optimistic bump, server reconciles via `cart-updated`.
     window.Alpine.store('cart', {
         count: 0,
