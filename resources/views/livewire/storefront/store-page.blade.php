@@ -1,34 +1,25 @@
 @php
-    $banner = $store->getFirstMediaUrl('banner');
     $logo = $store->getFirstMediaUrl('logo');
 @endphp
 
 <div>
     {{-- ===== Header ===== --}}
     <section class="border-b border-line bg-surface">
-        <div class="surface-girih relative h-40 overflow-hidden bg-ink sm:h-56">
-            @if ($banner)
-                <img src="{{ $banner }}" alt="{{ $store->name }}" class="size-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-ink/60 to-ink/10" aria-hidden="true"></div>
-            @endif
-        </div>
+        <div class="mx-auto max-w-7xl px-4 py-6">
+            <div class="flex flex-wrap items-center gap-4">
+                @if ($logo)
+                    <img src="{{ $logo }}" alt="{{ $store->name }}"
+                         class="size-20 shrink-0 rounded-full border border-line bg-paper object-cover shadow-soft">
+                @else
+                    <div class="flex size-20 shrink-0 items-center justify-center rounded-full border border-line bg-brass-tint font-display text-2xl font-bold text-brass-deep shadow-soft" aria-hidden="true">
+                        {{ mb_substr($store->name, 0, 1) }}
+                    </div>
+                @endif
 
-        <div class="mx-auto max-w-7xl px-4 pb-5">
-            {{-- Logo straddles the banner edge; name + meta sit below on the
-                 light surface so they stay legible over any banner. --}}
-            @if ($logo)
-                <img src="{{ $logo }}" alt="{{ $store->name }}"
-                     class="-mt-12 size-24 rounded-full border-[3px] border-surface bg-paper object-cover shadow-card">
-            @else
-                <div class="-mt-12 flex size-24 items-center justify-center rounded-full border-[3px] border-surface bg-brass-tint font-display text-3xl font-bold text-brass-deep shadow-card" aria-hidden="true">
-                    {{ mb_substr($store->name, 0, 1) }}
-                </div>
-            @endif
-
-            <div class="mt-3 min-w-0">
-                <h1 class="flex flex-wrap items-center gap-2 font-display text-2xl font-bold text-ink">
-                    {{ $store->name }}
-                    <x-ui.badge variant="verified">
+                <div class="min-w-0">
+                    <h1 class="flex flex-wrap items-center gap-2 font-display text-2xl font-bold text-ink">
+                        {{ $store->name }}
+                        <x-ui.badge variant="verified">
                             <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                             {{ __('Verified') }}
                         </x-ui.badge>
@@ -49,7 +40,8 @@
                         @endif
                         <span aria-hidden="true">·</span>
                         <span class="tnum">{{ number_format($total) }} {{ __('products') }}</span>
-                </p>
+                    </p>
+                </div>
             </div>
         </div>
     </section>
