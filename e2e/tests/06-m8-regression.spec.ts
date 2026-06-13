@@ -69,7 +69,7 @@ test.describe('M8 full regression', () => {
         await expect
             .poll(async () => {
                 await page.goto('/account/orders?tab=completed');
-                return page.getByText('COD Journey Store').first().isVisible();
+                return page.locator('main').getByText('COD Journey Store').first().isVisible();
             }, { timeout: 20000 })
             .toBe(true);
 
@@ -91,7 +91,9 @@ test.describe('M8 full regression', () => {
         await login(page, 'cod-seller@halalbizs.test');
         await page.goto('/seller/earnings');
         await expect(page.getByText(/commission/i).first()).toBeVisible();
-        await expect(page.getByText(/COD commission owed/i).first()).toBeVisible();
+        // The COD-offset ledger entry is written at completion regardless of
+        // the running balance sign (test credits can push it positive).
+        await expect(page.getByText(/cod offset|cod cash collected/i).first()).toBeVisible();
         await page.screenshot({ path: `e2e/screenshots/m8-earnings-${test.info().project.name}.png`, fullPage: true });
     });
 });

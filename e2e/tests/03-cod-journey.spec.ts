@@ -38,7 +38,7 @@ test.describe('M4 full COD journey', () => {
         await expect(page.getByText('Added to cart').first()).toBeVisible();
 
         await page.goto('/checkout');
-        await expect(page.getByText('COD Journey Store').first()).toBeVisible();
+        await expect(page.locator('main').getByText('COD Journey Store').first()).toBeVisible();
         await page.locator('input[type="radio"][value="cod"]').check();
         await page.getByRole('button', { name: /place order/i }).click();
         await page.waitForURL('**/checkout/success/**', { timeout: 20000 });
@@ -48,7 +48,7 @@ test.describe('M4 full COD journey', () => {
 
         // Buyer sees it under To Ship
         await page.goto('/account/orders?tab=to-ship');
-        await expect(page.getByText('COD Journey Store').first()).toBeVisible();
+        await expect(page.locator('main').getByText('COD Journey Store').first()).toBeVisible();
         await page.screenshot({ path: `e2e/screenshots/m4-buyer-toship-${test.info().project.name}.png`, fullPage: true });
         await logout(page);
 
@@ -76,12 +76,12 @@ test.describe('M4 full COD journey', () => {
         // ===== Buyer confirms receipt =====
         await login(page, 'buyer@halalbizs.test');
         await page.goto('/account/orders?tab=to-receive');
-        await expect(page.getByText('COD Journey Store').first()).toBeVisible();
+        await expect(page.locator('main').getByText('COD Journey Store').first()).toBeVisible();
         await jsClick(page.getByRole('button', { name: /order received/i }));
         await page.waitForTimeout(800);
 
         await page.goto('/account/orders?tab=completed');
-        await expect(page.getByText('COD Journey Store').first()).toBeVisible();
+        await expect(page.locator('main').getByText('COD Journey Store').first()).toBeVisible();
         await page.screenshot({ path: `e2e/screenshots/m4-completed-${test.info().project.name}.png`, fullPage: true });
     });
 });
