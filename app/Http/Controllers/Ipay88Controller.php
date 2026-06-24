@@ -40,6 +40,12 @@ class Ipay88Controller extends Controller
             ]);
         }
 
+        // No real gateway configured → built-in simulator (lets a preview finish
+        // online-payment checkouts). Production sets a merchant code → real bridge.
+        if ($ipay88->isMock()) {
+            return view('payments.mock', ['order' => $order, 'payment' => $payment]);
+        }
+
         $fields = $ipay88->entryFields($order, $payment);
 
         $payment->update(['request_payload' => $fields]);
@@ -48,6 +54,47 @@ class Ipay88Controller extends Controller
             'order' => $order,
             'fields' => $fields,
             'entryUrl' => $ipay88->entryUrl(),
+        ]);
+    }
+
+    /**
+     * Payment SIMULATOR confirm — ONLY when no real gateway is configured
+     * (Ipay88Service::isMock). Mirrors a successful/failed callback so a preview
+     * can complete checkout. Never reachable in production with real creds.
+     */
+    public function mockConfirm(Request $request, Order $order, string $result, Ipay88Service $ipay88)
+    {
+        abort_unless($ipay88->isMock(), 404);
+        abort_unless($order->user_id === $request->user()->id, 403);
+        abort_unless($order->isAwaitingPayment(), 404);
+
+        $payment = $order->payments()
+            ->where('status', GatewayPaymentStatus::Pending)
+            ->latest('id')
+            ->first();
+
+        abort_if($payment === null, 404);
+
+        if ($result === 'success') {
+            // dispatchSync: confirm inline regardless of the queue driver.
+            ConfirmIpay88PaymentJob::dispatchSync($payment, [
+                'PaymentId' => 'MOCK',
+                'TransId' => 'MOCK-'.$payment->ref_no,
+                'AuthCode' => 'MOCK',
+                'Status' => '1',
+            ]);
+
+            return redirect()->route('checkout.success', ['order' => $order->order_no]);
+        }
+
+        $payment->update([
+            'status' => GatewayPaymentStatus::Failed,
+            'requery_result' => 'MOCK-FAILED',
+        ]);
+
+        return redirect()->route('checkout')->with('toast', [
+            'type' => 'error',
+            'message' => __('Payment was not completed. Please try again.'),
         ]);
     }
 

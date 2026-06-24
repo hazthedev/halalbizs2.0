@@ -78,6 +78,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // ===== iPay88 (docs/06 §D) =====
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pay/{order:order_no}', [Ipay88Controller::class, 'pay'])->name('payments.ipay88.pay');
+    // Built-in payment simulator confirm — only active when no merchant code is set (Ipay88Service::isMock).
+    Route::post('/pay/{order:order_no}/mock/{result}', [Ipay88Controller::class, 'mockConfirm'])
+        ->whereIn('result', ['success', 'fail'])
+        ->name('payments.ipay88.mock');
     Route::get('/payments/processing/{order:order_no}', [Ipay88Controller::class, 'processing'])->name('payments.ipay88.processing');
     Route::get('/payments/status/{order:order_no}', function (Request $request, Order $order) {
         abort_unless($order->user_id === $request->user()->id, 403);

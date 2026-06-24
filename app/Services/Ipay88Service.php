@@ -33,6 +33,16 @@ class Ipay88Service implements PaymentGateway
         return true;
     }
 
+    /**
+     * No merchant code configured → run the built-in payment SIMULATOR instead
+     * of hitting the real gateway, so a preview can complete online-payment
+     * checkouts end-to-end. Production MUST set a merchant code (false then).
+     */
+    public function isMock(): bool
+    {
+        return blank($this->settings->merchant_code);
+    }
+
     public function entryUrl(): string
     {
         return $this->settings->sandbox
