@@ -22,7 +22,7 @@ return new class extends Migration
 
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('conversation_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('conversation_id')->constrained()->cascadeOnDelete();
             $table->string('sender_type'); // buyer | seller (string-backed, no DB enum)
             $table->foreignId('sender_id')->constrained('users')->cascadeOnDelete();
             $table->text('body');

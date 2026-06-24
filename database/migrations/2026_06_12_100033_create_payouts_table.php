@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('payouts', function (Blueprint $table) {
             $table->id();
             $table->string('payout_no')->unique();
-            $table->foreignId('store_id')->constrained()->restrictOnDelete()->index();
+            $table->foreignId('store_id')->constrained()->restrictOnDelete();
             $table->unsignedBigInteger('amount_sen');
             $table->string('status')->default('requested')->index();
             $table->json('bank_snapshot');
@@ -25,7 +25,7 @@ return new class extends Migration
 
         Schema::create('store_ledger_entries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('store_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('store_id')->constrained()->cascadeOnDelete();
             $table->foreignId('sub_order_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('payout_id')->nullable()->constrained()->nullOnDelete();
             $table->string('type');

@@ -25,7 +25,7 @@ return new class extends Migration
 
         Schema::create('flash_sale_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('flash_sale_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('flash_sale_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_variant_id')->constrained()->cascadeOnDelete();
             $table->unsignedBigInteger('promo_price_sen');
             $table->unsignedInteger('allocated_qty');

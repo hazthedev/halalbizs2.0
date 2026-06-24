@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_no')->unique();
-            $table->foreignId('user_id')->constrained()->restrictOnDelete()->index();
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->string('payment_method');
             $table->string('payment_status')->default('pending')->index();
             $table->json('shipping_address');

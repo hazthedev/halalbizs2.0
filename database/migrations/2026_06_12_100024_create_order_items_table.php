@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sub_order_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('sub_order_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('product_variant_id')->nullable()->constrained()->nullOnDelete();
             $table->string('product_name');
@@ -23,7 +23,7 @@ return new class extends Migration
 
         Schema::create('order_status_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sub_order_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('sub_order_id')->constrained()->cascadeOnDelete();
             $table->string('from_status')->nullable();
             $table->string('to_status');
             $table->string('actor_type');
