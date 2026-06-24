@@ -4,6 +4,7 @@ use App\Enums\ActorType;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\SubOrderStatus;
+use App\Enums\TaxClass;
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
 use App\Exceptions\CheckoutException;
@@ -69,6 +70,50 @@ test('COD checkout splits orders per store with snapshots and stock decrement', 
     expect($productA->variants->first()->fresh()->stock)->toBe(3)
         ->and($buyer->cart->items)->toHaveCount(0)
         ->and($order->payment->amount_sen)->toBe($order->grand_total_sen);
+});
+
+test('SST is computed, snapshotted and added to totals for a registered seller', function () {
+    [$buyer, $address] = checkoutBuyer(); // Selangor, Malaysia
+
+    $product = Product::factory()->create(['cod_enabled' => true, 'tax_class' => TaxClass::Standard]);
+    $product->store->update([
+        'sst_registered' => true,
+        'sst_number' => 'W10-1234-56789',
+        'shipping_mode' => 'flat',
+        'shipping_flat_fee_sen' => 0,
+        'free_shipping_over_sen' => null,
+    ]);
+    $product->variants->first()->update(['price_sen' => 10000, 'sale_price_sen' => null, 'stock' => 5]);
+    cartWith($buyer, $product, 2); // RM200.00 of goods
+
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    $subOrder = $order->subOrders->first();
+    $item = $subOrder->items->first();
+
+    expect($item->tax_rate_bp)->toBe(1000)            // 10% standard rate snapshotted
+        ->and($item->tax_sen)->toBe(2000)             // 10% of RM200.00
+        ->and($subOrder->tax_sen)->toBe(2000)
+        ->and($order->tax_total_sen)->toBe(2000)
+        ->and($subOrder->total_sen)->toBe(20000 + $subOrder->shipping_fee_sen + 2000)
+        ->and($order->grand_total_sen)->toBe(20000 + $order->shipping_total_sen + 2000)
+        ->and($order->payment->amount_sen)->toBe($order->grand_total_sen);
+});
+
+test('no SST is charged when the seller is not tax-registered', function () {
+    [$buyer, $address] = checkoutBuyer();
+
+    // Store defaults to sst_registered = false even though the product is taxable.
+    $product = Product::factory()->create(['cod_enabled' => true, 'tax_class' => TaxClass::Standard]);
+    $product->variants->first()->update(['price_sen' => 10000, 'sale_price_sen' => null, 'stock' => 5]);
+    cartWith($buyer, $product, 1);
+
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    expect($order->tax_total_sen)->toBe(0)
+        ->and($order->subOrders->first()->tax_sen)->toBe(0)
+        ->and($order->subOrders->first()->items->first()->tax_sen)->toBe(0)
+        ->and($order->grand_total_sen)->toBe($order->subtotal_sen + $order->shipping_total_sen);
 });
 
 test('iPay88 checkout starts pending_payment with an expiry window', function () {

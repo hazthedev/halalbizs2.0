@@ -60,11 +60,14 @@
                             ['admin.orders.index', __('All orders'), 'admin.orders.index'],
                             ['admin.orders.returns', __('Returns'), 'admin.orders.returns'],
                             ['admin.payments.index', __('Payments'), 'admin.payments.*'],
+                            ['admin.subscriptions.index', __('Subscriptions'), 'admin.subscriptions.*'],
                         ],
                         __('Finance') => [
                             ['admin.finance.commission', __('Commission'), 'admin.finance.commission'],
                             ['admin.finance.payouts', __('Payouts'), 'admin.finance.payouts'],
                             ['admin.finance.boosts', __('Boosts'), 'admin.finance.boosts'],
+                            ['admin.coins.index', __('Loyalty Coins'), 'admin.coins.*'],
+                            ['admin.affiliates.index', __('Affiliates'), 'admin.affiliates.*'],
                         ],
                         __('Content') => [
                             ['admin.content.banners', __('Banners'), 'admin.content.banners'],
@@ -72,6 +75,7 @@
                             ['admin.content.pages', __('Pages'), 'admin.content.pages'],
                             ['admin.content.vouchers', __('Vouchers'), 'admin.content.vouchers'],
                             ['admin.content.theme', __('Theme'), 'admin.content.theme'],
+                            ['admin.live.index', __('Live shopping'), 'admin.live.*'],
                         ],
                         __('Support') => [
                             ['admin.support.articles', __('Help articles'), 'admin.support.articles'],

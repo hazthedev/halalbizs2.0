@@ -3,13 +3,11 @@
 namespace App\Livewire\Admin\Orders;
 
 use App\Enums\ActorType;
-use App\Enums\LedgerEntryType;
 use App\Enums\PaymentMethod;
-use App\Enums\PaymentStatus;
 use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
 use App\Models\ReturnRequest;
-use App\Services\LedgerService;
+use App\Services\RefundService;
 use App\Services\SubOrderStatusService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -114,45 +112,27 @@ class Returns extends Component
 
         $reference = trim($this->refundReference);
 
-        DB::transaction(function () use ($request, $subOrder, $isOnline, $reference) {
-            app(SubOrderStatusService::class)->transition(
+        // Refund the line-item amount when recorded, else the full sub-order total.
+        $amountSen = $request->refund_sen > 0 ? (int) $request->refund_sen : (int) $subOrder->total_sen;
+
+        DB::transaction(function () use ($request, $subOrder, $isOnline, $reference, $amountSen) {
+            // RefundService does the proportional ledger reversal, payment refund
+            // tracking, gateway attempt, and the sub-order/order status moves.
+            app(RefundService::class)->refund(
                 $subOrder,
-                SubOrderStatus::Refunded,
+                $amountSen,
                 ActorType::Admin,
                 auth()->id(),
-                $isOnline
-                    ? __('Refunded via iPay88 portal — ref :ref', ['ref' => $reference])
-                    : __('COD refund recorded as a ledger adjustment'),
+                $isOnline ? $reference : null,
+                markRefunded: true,
             );
-
-            // Order-level payment status flips only once everything is settled.
-            $order = $subOrder->order;
-            $allSettled = $order->subOrders()
-                ->whereNotIn('status', [SubOrderStatus::Refunded, SubOrderStatus::Cancelled])
-                ->doesntExist();
-
-            if ($allSettled) {
-                $order->update(['payment_status' => PaymentStatus::Refunded]);
-            }
 
             $request->update([
                 'status' => ReturnStatus::Refunded,
+                'refund_sen' => $amountSen,
                 'resolved_at' => now(),
                 'resolved_by' => auth()->id(),
             ]);
-
-            // Completed-before-refund → reverse sale and commission exactly
-            // (integer sen): −(items+shipping−shop_discount) + commission_sen.
-            if ($subOrder->ledgerEntries()->where('type', LedgerEntryType::Sale)->exists()) {
-                $saleSen = $subOrder->items_subtotal_sen + $subOrder->shipping_fee_sen - $subOrder->shop_discount_sen;
-
-                app(LedgerService::class)->adjustment(
-                    $subOrder->store,
-                    -$saleSen + (int) $subOrder->commission_sen,
-                    __('Refund :no', ['no' => $subOrder->sub_order_no]),
-                    $subOrder,
-                );
-            }
         });
 
         $this->closeResolve();

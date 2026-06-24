@@ -1,4 +1,17 @@
 <div>
+    @if ($boughtTogether->isNotEmpty())
+        <section class="mt-10" aria-label="{{ __('Frequently bought together') }}">
+            <x-ui.section-heading :title="__('Frequently bought together')" />
+            <div class="mt-4 flex gap-3 overflow-x-auto pb-2">
+                @foreach ($boughtTogether as $item)
+                    <div class="w-44 shrink-0 sm:w-48" wire:key="fbt-{{ $item->id }}">
+                        <x-product-card :product="$item" :wishlisted="in_array($item->id, $wishlistedIds, true)" />
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     @if ($related->isNotEmpty())
         <section class="mt-10" aria-label="{{ __('Related products') }}">
             <x-ui.section-heading :title="__('Related products')" />

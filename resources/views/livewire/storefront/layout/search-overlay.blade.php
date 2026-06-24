@@ -57,6 +57,14 @@
                                 @endforeach
                             </div>
                         @endif
+
+                        @if (config('search.enabled', true))
+                            <a href="{{ route('search.visual') }}" wire:navigate x-on:click="close()"
+                               class="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[13px] font-semibold text-ink-soft hover:border-ink hover:text-ink">
+                                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z"/></svg>
+                                {{ __('Search by image') }}
+                            </a>
+                        @endif
                     </div>
                 @else
                     {{-- Grouped results --}}

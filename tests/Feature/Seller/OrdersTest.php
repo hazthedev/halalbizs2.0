@@ -260,7 +260,7 @@ test('packing slip downloads for the owner store and 403s otherwise', function (
     $this->actingAs($seller)
         ->get(route('seller.orders.packing-slip', $subOrder))
         ->assertOk()
-        ->assertDownload("{$subOrder->sub_order_no}.pdf");
+        ->assertDownload("{$subOrder->sub_order_no}-packing-slip.pdf");
 
     $this->actingAs(ordersSeller())
         ->get(route('seller.orders.packing-slip', $subOrder))

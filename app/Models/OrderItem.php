@@ -16,8 +16,9 @@ class OrderItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'sub_order_id', 'product_id', 'product_variant_id',
+        'sub_order_id', 'product_id', 'product_variant_id', 'group_buy_id',
         'product_name', 'variant_label', 'unit_price_sen', 'qty', 'line_total_sen',
+        'tax_sen', 'tax_rate_bp',
     ];
 
     protected function casts(): array
@@ -26,6 +27,8 @@ class OrderItem extends Model
             'unit_price_sen' => 'integer',
             'qty' => 'integer',
             'line_total_sen' => 'integer',
+            'tax_sen' => 'integer',
+            'tax_rate_bp' => 'integer',
         ];
     }
 

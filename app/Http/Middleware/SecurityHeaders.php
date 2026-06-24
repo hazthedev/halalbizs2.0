@@ -49,6 +49,12 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
+        // HSTS only over HTTPS (docs/10) — never on local HTTP, so dev/tests
+        // and plain-HTTP health checks are unaffected.
+        if ($request->secure()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+        }
+
         return $response;
     }
 }

@@ -44,7 +44,14 @@
                     :error="$errors->first('name.en')"
                 />
                 <div>
-                    <label for="description.en" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Description (English)') }}</label>
+                    <div class="mb-1.5 flex items-center justify-between gap-2">
+                        <label for="description.en" class="block text-[13px] font-medium text-ink">{{ __('Description (English)') }}</label>
+                        <button type="button" wire:click="generateCopy" wire:loading.attr="disabled" wire:target="generateCopy"
+                                class="inline-flex items-center gap-1 rounded-lg border border-brass/40 px-2.5 py-1 text-[12px] font-semibold text-brass hover:bg-brass-tint/40">
+                            <span wire:loading.remove wire:target="generateCopy">{{ __('Generate with AI') }}</span>
+                            <span wire:loading wire:target="generateCopy">{{ __('Generating…') }}</span>
+                        </button>
+                    </div>
                     <textarea id="description.en" wire:model="description.en" rows="6"
                               class="block w-full rounded-lg border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
                               placeholder="{{ __('What is it, what is it made of, how big is it…') }}"></textarea>
@@ -129,8 +136,73 @@
                     </div>
                     @error('condition')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </fieldset>
+
+                <fieldset class="mt-4">
+                    <legend class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Tax class') }}</legend>
+                    <select wire:model="taxClass" class="min-h-11 w-full rounded-lg border border-line-strong bg-canvas px-3 text-sm text-ink focus:border-emerald focus:ring-emerald">
+                        @foreach (\App\Enums\TaxClass::cases() as $taxCase)
+                            <option value="{{ $taxCase->value }}">{{ $taxCase->label() }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-[12px] text-ink-faint">{{ __('SST is only charged when your store is SST-registered.') }}</p>
+                    @error('taxClass')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
+                </fieldset>
+
+                @if ($this->availableAttributes()->isNotEmpty())
+                    <fieldset class="mt-4">
+                        <legend class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Attributes') }}</legend>
+                        <p class="mb-2 text-[12px] text-ink-faint">{{ __('Tagging values helps buyers filter to your product.') }}</p>
+                        <div class="space-y-3">
+                            @foreach ($this->availableAttributes() as $facetAttribute)
+                                <div>
+                                    <p class="text-[12px] font-medium text-ink-soft">{{ $facetAttribute->getTranslation('name', app()->getLocale()) }}</p>
+                                    <div class="mt-1 flex flex-wrap gap-1.5">
+                                        @foreach ($facetAttribute->values as $facetValue)
+                                            <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] {{ in_array($facetValue->id, $attributeValueIds) ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink' }}">
+                                                <input type="checkbox" wire:model.live="attributeValueIds" value="{{ $facetValue->id }}" class="sr-only">
+                                                {{ $facetValue->getTranslation('value', app()->getLocale()) }}
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </fieldset>
+                @endif
             </div>
         </x-ui.card>
+
+        {{-- ── Trust & details metafields (M2.7) ──────────────────── --}}
+        @if (config('metafields.enabled', true))
+            <x-ui.card class="p-5">
+                <h2 class="font-display text-lg font-semibold">{{ __('Halal & product details') }}</h2>
+                <p class="mt-1 text-[13px] text-ink-soft">{{ __('Optional trust signals shown to buyers — certification, ingredients, expiry.') }}</p>
+
+                @foreach (config('metafields.groups', []) as $groupKey => $groupLabel)
+                    @php($fields = collect(config('metafields.definitions', []))->filter(fn ($d) => ($d['group'] ?? 'details') === $groupKey))
+                    @if ($fields->isNotEmpty())
+                        <fieldset class="mt-4">
+                            <legend class="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-faint">{{ __($groupLabel) }}</legend>
+                            <div class="mt-2 grid gap-3 sm:grid-cols-2">
+                                @foreach ($fields as $key => $def)
+                                    <div @class(['sm:col-span-2' => ($def['type'] ?? 'text') === 'textarea'])>
+                                        <label for="mf-{{ $key }}" class="text-[13px] font-medium text-ink">{{ __($def['label']) }}</label>
+                                        @if (($def['type'] ?? 'text') === 'textarea')
+                                            <textarea id="mf-{{ $key }}" wire:model="metafields.{{ $key }}" rows="2" maxlength="2000"
+                                                      class="mt-1 block w-full rounded-lg border border-line-strong bg-canvas px-3 py-2 text-sm text-ink focus:border-emerald focus:ring-emerald"></textarea>
+                                        @else
+                                            <input id="mf-{{ $key }}" type="{{ ($def['type'] ?? 'text') === 'date' ? 'date' : 'text' }}"
+                                                   wire:model="metafields.{{ $key }}" maxlength="255"
+                                                   class="mt-1 block min-h-11 w-full rounded-lg border border-line-strong bg-canvas px-3 text-sm text-ink focus:border-emerald focus:ring-emerald">
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </fieldset>
+                    @endif
+                @endforeach
+            </x-ui.card>
+        @endif
 
         {{-- ── Images ─────────────────────────────────────────────── --}}
         <x-ui.card class="p-5">

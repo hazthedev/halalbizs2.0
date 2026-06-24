@@ -52,6 +52,15 @@
             </button>
 
             <div class="flex shrink-0 items-center gap-1 sm:gap-2">
+                {{-- Shopping concierge — mobile entry point (desktop uses the floating launcher, which is hidden on mobile to clear the sticky buy bars). Opens the same global panel via its open-concierge listener. --}}
+                @if (config('services.concierge.enabled', true))
+                    <button type="button" x-on:click="$dispatch('open-concierge')"
+                            class="flex size-10 items-center justify-center rounded-lg text-brass hover:bg-paper/10 sm:hidden"
+                            aria-label="{{ __('Ask the concierge') }}">
+                        <x-ui.star-mark :size="20" />
+                    </button>
+                @endif
+
                 {{-- Locale switcher --}}
                 <form method="POST" action="{{ route('preferences.locale') }}" class="hidden sm:block">
                     @csrf
@@ -125,6 +134,12 @@
     {{-- Category strip --}}
     <nav class="border-b border-line bg-paper" aria-label="{{ __('Categories') }}">
         <div class="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-2">
+            @if (config('live.enabled', true))
+                <a href="{{ route('live.index') }}" wire:navigate
+                   class="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold text-danger hover:bg-danger/5">
+                    <span class="size-1.5 animate-pulse rounded-full bg-danger"></span>{{ __('Live') }}
+                </a>
+            @endif
             @foreach (\App\Models\Category::active()->whereNull('parent_id')->orderBy('position')->get() as $topCategory)
                 <a href="{{ route('category.show', $topCategory->slug) }}" wire:navigate
                    class="shrink-0 rounded-lg px-3 py-1.5 text-[13px] font-medium text-ink-soft hover:text-ink">
@@ -212,6 +227,9 @@
     {{-- Global overlays --}}
     <livewire:storefront.layout.search-overlay />
     <livewire:storefront.layout.mini-cart />
+    @if (config('services.concierge.enabled', true))
+        <livewire:storefront.shop-assistant />
+    @endif
 
     @stack('scripts')
 </body>

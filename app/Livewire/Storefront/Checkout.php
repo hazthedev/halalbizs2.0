@@ -3,6 +3,7 @@
 namespace App\Livewire\Storefront;
 
 use App\Enums\PaymentMethod;
+use App\Enums\TaxClass;
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
 use App\Exceptions\CheckoutException;
@@ -10,7 +11,9 @@ use App\Models\Address;
 use App\Models\Voucher;
 use App\Services\CartService;
 use App\Services\CheckoutService;
+use App\Services\CoinService;
 use App\Services\ShippingCalculator;
+use App\Services\TaxService;
 use App\Services\VoucherService;
 use App\Settings\CodSettings;
 use App\Support\Money;
@@ -41,6 +44,9 @@ class Checkout extends Component
 
     public ?string $appliedShopCode = null;
 
+    /** M1.1 dedicated free-shipping slot — stacks with platform + shop. */
+    public ?string $appliedShippingCode = null;
+
     public ?string $voucherError = null;
 
     public bool $voucherPanelOpen = false;
@@ -48,6 +54,9 @@ class Checkout extends Component
     public ?string $addressError = null;
 
     public string $paymentMethod = 'ipay88';
+
+    /** Apply the buyer's Loyalty Coins to this order (M2.1). */
+    public bool $useCoins = false;
 
     /** @var array<int|string, string> note to the seller, keyed by store_id */
     public array $sellerNotes = [];
@@ -124,11 +133,11 @@ class Checkout extends Component
 
     public function removeVoucher(string $slot): void
     {
-        if ($slot === 'platform') {
-            $this->appliedPlatformCode = null;
-        } else {
-            $this->appliedShopCode = null;
-        }
+        match ($slot) {
+            'platform' => $this->appliedPlatformCode = null,
+            'shipping' => $this->appliedShippingCode = null,
+            default => $this->appliedShopCode = null,
+        };
 
         $this->voucherError = null;
     }
@@ -151,6 +160,8 @@ class Checkout extends Component
                 $this->appliedPlatformCode,
                 $this->appliedShopCode,
                 array_map(fn ($note) => trim((string) $note), $this->sellerNotes),
+                $this->appliedShippingCode,
+                $this->requestedCoins(),
             );
         } catch (CheckoutException $e) {
             // Surface the human reason; the re-render that follows refreshes
@@ -176,10 +187,20 @@ class Checkout extends Component
     {
         $address = $this->selectedAddress();
         $shipping = app(ShippingCalculator::class);
+        $tax = app(TaxService::class);
+        $jurisdiction = $address === null ? null : $tax->jurisdictionFor($address->country);
 
-        $groups = $this->selectedGroups()->map(function (Collection $lines) use ($address, $shipping) {
+        $groups = $this->selectedGroups()->map(function (Collection $lines) use ($address, $shipping, $tax, $jurisdiction) {
             $store = $lines->first()->variant->product->store;
             $itemsSubtotalSen = (int) $lines->sum(fn ($line) => $line->variant->effectivePriceSen() * $line->qty);
+            $registered = (bool) $store->sst_registered;
+
+            $taxSen = $jurisdiction === null ? 0 : (int) $lines->sum(function ($line) use ($tax, $registered, $jurisdiction) {
+                $lineTotal = $line->variant->effectivePriceSen() * $line->qty;
+                $class = $line->variant->product->tax_class ?? TaxClass::Exempt;
+
+                return $tax->lineTaxSen($lineTotal, $class, $registered, $jurisdiction);
+            });
 
             return (object) [
                 'store' => $store,
@@ -187,7 +208,14 @@ class Checkout extends Component
                 'itemsSubtotalSen' => $itemsSubtotalSen,
                 'shippingFeeSen' => $address === null
                     ? null
-                    : $shipping->feeForStore($store, $address->state, $itemsSubtotalSen),
+                    : $shipping->feeForStore(
+                        $store,
+                        $address->state,
+                        $itemsSubtotalSen,
+                        $address->postcode,
+                        (int) $lines->sum(fn ($line) => (int) ($line->variant->product->weight_grams ?? 0) * $line->qty),
+                    ),
+                'taxSen' => $taxSen,
             ];
         })->values();
 
@@ -198,9 +226,10 @@ class Checkout extends Component
         // can never go stale between apply and submit.
         $platformDiscount = $this->appliedDiscount($this->appliedPlatformCode, VoucherScope::Platform, $storeSubtotals);
         $shopDiscount = $this->appliedDiscount($this->appliedShopCode, VoucherScope::Shop, $storeSubtotals);
+        $shippingDiscount = $this->appliedDiscount($this->appliedShippingCode, null, $storeSubtotals);
 
         // Free-shipping vouchers zero the flagged stores' fees in the preview.
-        foreach ([$platformDiscount, $shopDiscount] as $discount) {
+        foreach ([$platformDiscount, $shopDiscount, $shippingDiscount] as $discount) {
             foreach ($discount?->freeShippingStoreIds ?? [] as $storeId) {
                 $group = $groups->first(fn ($candidate) => $candidate->store->id === $storeId);
 
@@ -211,11 +240,20 @@ class Checkout extends Component
         }
 
         $shippingTotalSen = (int) $groups->sum(fn ($group) => $group->shippingFeeSen ?? 0);
+        $taxTotalSen = (int) $groups->sum(fn ($group) => $group->taxSen ?? 0);
 
         $platformDiscountSen = min($platformDiscount?->totalDiscountSen ?? 0, $subtotalSen);
         $shopDiscountSen = $shopDiscount?->totalDiscountSen ?? 0;
 
-        $grandTotalSen = max($subtotalSen + $shippingTotalSen - $platformDiscountSen - $shopDiscountSen, 0);
+        $preCoinTotalSen = max($subtotalSen + $shippingTotalSen + $taxTotalSen - $platformDiscountSen - $shopDiscountSen, 0);
+
+        // Coins preview (M2.1) — display only. CheckoutService re-derives and
+        // re-caps under the wallet lock on submit, so a stale paint is harmless.
+        $coinsEnabled = (bool) config('coins.enabled', true);
+        $coinBalance = $coinsEnabled ? app(CoinService::class)->balance(auth()->user()) : 0;
+        $coinRedemptionSen = $this->coinRedemptionPreviewSen($preCoinTotalSen);
+
+        $grandTotalSen = $preCoinTotalSen - $coinRedemptionSen;
 
         $codUnavailableReason = $this->codUnavailableReason($groups, $grandTotalSen);
 
@@ -231,8 +269,10 @@ class Checkout extends Component
             'groups' => $groups,
             'subtotalSen' => $subtotalSen,
             'shippingTotalSen' => $shippingTotalSen,
+            'taxTotalSen' => $taxTotalSen,
             'platformDiscount' => $platformDiscount,
             'shopDiscount' => $shopDiscount,
+            'shippingDiscount' => $shippingDiscount,
             'platformDiscountSen' => $platformDiscountSen,
             'shopDiscountSen' => $shopDiscountSen,
             'platformVoucherOptions' => $platformVoucherOptions,
@@ -241,7 +281,41 @@ class Checkout extends Component
             'grandTotalSen' => $grandTotalSen,
             'codUnavailableReason' => $codUnavailableReason,
             'displayCurrency' => session('display_currency', 'MYR'),
+            'coinsEnabled' => $coinsEnabled,
+            'coinBalance' => $coinBalance,
+            'coinRedemptionSen' => $coinRedemptionSen,
         ])->title(__('Checkout'));
+    }
+
+    /**
+     * Coins the buyer is requesting to spend (capped by balance + the per-order
+     * config ceiling). CheckoutService applies the final bill-aware cap under
+     * the wallet lock, so this need not subtract the order total here.
+     */
+    private function requestedCoins(): int
+    {
+        if (! $this->useCoins || ! config('coins.enabled', true)) {
+            return 0;
+        }
+
+        $rate = max(1, (int) config('coins.redemption_rate_sen', 1));
+        $balance = app(CoinService::class)->balance(auth()->user());
+
+        return min($balance, intdiv((int) config('coins.max_redemption_sen', 5000), $rate));
+    }
+
+    /** Sen the applied coins would shave off this bill (mirrors the service cap). */
+    private function coinRedemptionPreviewSen(int $preCoinTotalSen): int
+    {
+        if (! $this->useCoins || ! config('coins.enabled', true)) {
+            return 0;
+        }
+
+        $rate = max(1, (int) config('coins.redemption_rate_sen', 1));
+        $capSen = min((int) config('coins.max_redemption_sen', 5000), max(0, $preCoinTotalSen - 1));
+        $coins = min(app(CoinService::class)->balance(auth()->user()), intdiv($capSen, $rate));
+
+        return $coins * $rate;
     }
 
     /**
@@ -285,25 +359,28 @@ class Checkout extends Component
         }
     }
 
-    /** One slot per scope (Shopee model) — applying again replaces the slot. */
+    /**
+     * Three slots (Shopee model): free-shipping has its own slot so it stacks
+     * with a platform discount + a shop voucher. Applying again replaces a slot.
+     */
     private function acceptDiscount(VoucherDiscount $discount): void
     {
-        if ($discount->scope === VoucherScope::Platform) {
-            $this->appliedPlatformCode = $discount->voucher->code;
-        } else {
-            $this->appliedShopCode = $discount->voucher->code;
-        }
+        match (true) {
+            $discount->voucher->type === VoucherType::FreeShipping => $this->appliedShippingCode = $discount->voucher->code,
+            $discount->scope === VoucherScope::Platform => $this->appliedPlatformCode = $discount->voucher->code,
+            default => $this->appliedShopCode = $discount->voucher->code,
+        };
 
         $this->voucherError = null;
     }
 
     /**
      * Re-validate an applied code for this paint; drop it with the reason
-     * when it no longer applies.
+     * when it no longer applies. A null scope is the free-shipping slot.
      *
      * @param  array<int, int>  $storeSubtotals
      */
-    private function appliedDiscount(?string $code, VoucherScope $scope, array $storeSubtotals): ?VoucherDiscount
+    private function appliedDiscount(?string $code, ?VoucherScope $scope, array $storeSubtotals): ?VoucherDiscount
     {
         if ($code === null) {
             return null;
@@ -312,11 +389,11 @@ class Checkout extends Component
         try {
             return app(VoucherService::class)->validate($code, auth()->user(), $storeSubtotals, $scope);
         } catch (CheckoutException $e) {
-            if ($scope === VoucherScope::Platform) {
-                $this->appliedPlatformCode = null;
-            } else {
-                $this->appliedShopCode = null;
-            }
+            match ($scope) {
+                VoucherScope::Platform => $this->appliedPlatformCode = null,
+                VoucherScope::Shop => $this->appliedShopCode = null,
+                default => $this->appliedShippingCode = null,
+            };
 
             $this->voucherError = $e->getMessage();
 

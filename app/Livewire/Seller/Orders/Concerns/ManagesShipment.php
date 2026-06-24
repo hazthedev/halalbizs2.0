@@ -5,6 +5,7 @@ namespace App\Livewire\Seller\Orders\Concerns;
 use App\Enums\ActorType;
 use App\Enums\SubOrderStatus;
 use App\Models\SubOrder;
+use App\Services\EasyParcelService;
 use App\Services\SubOrderStatusService;
 use Illuminate\Validation\Rule;
 
@@ -80,8 +81,12 @@ trait ManagesShipment
 
         app(SubOrderStatusService::class)->transition($subOrder, SubOrderStatus::Shipped, ActorType::Seller, auth()->id());
 
+        // Book a real courier shipment when the store uses EasyParcel (no-op
+        // otherwise) — augments the manual tracking with an AWB + label.
+        app(EasyParcelService::class)->bookIfEnabled($subOrder);
+
         $this->closeShipModal();
-        $this->afterShipped($subOrder);
+        $this->afterShipped($subOrder->fresh());
 
         $this->dispatch('toast', message: __(':no marked as shipped.', ['no' => $subOrder->sub_order_no]));
     }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,10 +17,13 @@ class ProductVariant extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
 
+    /** Default reorder point when a variant has no explicit low_stock_threshold. */
+    public const DEFAULT_LOW_STOCK = 5;
+
     protected $fillable = [
         'product_id', 'sku', 'options_label', 'option_value_ids',
         'price_sen', 'sale_price_sen', 'sale_starts_at', 'sale_ends_at',
-        'stock', 'is_default', 'position',
+        'stock', 'low_stock_threshold', 'is_default', 'position',
     ];
 
     protected function casts(): array
@@ -30,8 +35,21 @@ class ProductVariant extends Model implements HasMedia
             'sale_starts_at' => 'datetime',
             'sale_ends_at' => 'datetime',
             'stock' => 'integer',
+            'low_stock_threshold' => 'integer',
             'is_default' => 'boolean',
         ];
+    }
+
+    /** Variants at or below their reorder point (explicit threshold, else default). */
+    #[Scope]
+    protected function lowStock(Builder $query): void
+    {
+        $query->whereRaw('stock <= COALESCE(low_stock_threshold, ?)', [self::DEFAULT_LOW_STOCK]);
+    }
+
+    public function movements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class)->latest('id');
     }
 
     public function registerMediaCollections(): void

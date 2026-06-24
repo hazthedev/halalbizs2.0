@@ -16,9 +16,10 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_no', 'user_id', 'payment_method', 'payment_status', 'shipping_address',
-        'subtotal_sen', 'shipping_total_sen', 'discount_total_sen', 'grand_total_sen',
+        'order_no', 'user_id', 'affiliate_id', 'subscription_id', 'payment_method', 'payment_status', 'shipping_address',
+        'subtotal_sen', 'shipping_total_sen', 'discount_total_sen', 'coin_redemption_sen', 'tax_total_sen', 'grand_total_sen',
         'display_currency', 'display_rate', 'placed_at', 'paid_at', 'expires_at',
+        'einvoice_requested',
     ];
 
     protected function casts(): array
@@ -30,10 +31,13 @@ class Order extends Model
             'subtotal_sen' => 'integer',
             'shipping_total_sen' => 'integer',
             'discount_total_sen' => 'integer',
+            'coin_redemption_sen' => 'integer',
+            'tax_total_sen' => 'integer',
             'grand_total_sen' => 'integer',
             'placed_at' => 'datetime',
             'paid_at' => 'datetime',
             'expires_at' => 'datetime',
+            'einvoice_requested' => 'boolean',
         ];
     }
 
@@ -49,6 +53,11 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function affiliate(): BelongsTo
+    {
+        return $this->belongsTo(Affiliate::class);
     }
 
     public function subOrders(): HasMany

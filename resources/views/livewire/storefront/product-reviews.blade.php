@@ -54,6 +54,12 @@
                         <span class="font-medium text-ink">{{ $review->reviewerDisplayName() }}</span>
                         <span class="text-ink-faint" aria-hidden="true">·</span>
                         <span class="text-ink-soft">{{ $review->created_at->diffForHumans() }}</span>
+                        @if ($review->isVerifiedPurchase())
+                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-tint px-2 py-0.5 text-[11px] font-semibold text-emerald">
+                                <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                {{ __('Verified purchase') }}
+                            </span>
+                        @endif
                     </div>
                     <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                         <span class="flex gap-0.5 text-sm leading-none" aria-hidden="true">
@@ -83,6 +89,12 @@
                             @endforeach
                         </div>
                     @endif
+                    <div class="mt-2.5">
+                        <button type="button" wire:click="markHelpful({{ $review->id }})"
+                                class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium {{ in_array($review->id, $votedReviewIds) ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink-soft hover:text-ink' }}">
+                            {{ __('Helpful') }}@if ($review->helpful_count > 0)<span class="tnum"> · {{ $review->helpful_count }}</span>@endif
+                        </button>
+                    </div>
                     @if ($review->seller_reply)
                         <div class="ml-4 mt-3 max-w-prose rounded-[var(--radius-control)] border-l-2 border-line-strong bg-paper px-3.5 py-2.5">
                             <p class="text-xs font-semibold text-ink">{{ __('Seller response') }}</p>

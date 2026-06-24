@@ -9,8 +9,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 #[ObservedBy([ReviewObserver::class])]
 class Review extends Model implements HasMedia
@@ -20,7 +22,7 @@ class Review extends Model implements HasMedia
     protected $fillable = [
         'order_item_id', 'product_id', 'store_id', 'user_id',
         'rating', 'comment', 'seller_rating', 'seller_comment',
-        'seller_reply', 'seller_replied_at', 'is_hidden',
+        'seller_reply', 'seller_replied_at', 'is_hidden', 'helpful_count',
     ];
 
     protected function casts(): array
@@ -28,6 +30,7 @@ class Review extends Model implements HasMedia
         return [
             'rating' => 'integer',
             'seller_rating' => 'integer',
+            'helpful_count' => 'integer',
             'seller_replied_at' => 'datetime',
             'is_hidden' => 'boolean',
         ];
@@ -36,6 +39,22 @@ class Review extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('photos');
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')->width(240)->height(240)->performOnCollections('photos');
+    }
+
+    /** Every review is tied to a purchased order item, so all are verified. */
+    public function isVerifiedPurchase(): bool
+    {
+        return $this->order_item_id !== null;
+    }
+
+    public function helpfuls(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'review_helpfuls');
     }
 
     public function orderItem(): BelongsTo

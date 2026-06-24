@@ -2,18 +2,26 @@
 
 namespace App\Livewire\Admin;
 
+use App\Enums\GroupBuyTeamStatus;
+use App\Enums\LiveSessionStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\PayoutStatus;
 use App\Enums\ProductStatus;
 use App\Enums\StoreStatus;
 use App\Enums\SubOrderStatus;
+use App\Enums\SubscriptionStatus;
+use App\Models\AffiliateReferral;
 use App\Models\Category;
+use App\Models\CoinWallet;
+use App\Models\GroupBuyTeam;
+use App\Models\LiveSession;
 use App\Models\Order;
 use App\Models\Payout;
 use App\Models\Product;
 use App\Models\ProductBoost;
 use App\Models\Store;
 use App\Models\SubOrder;
+use App\Models\Subscription;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -123,10 +131,18 @@ class Dashboard extends Component
             ->with('store')
             ->get();
 
+        // Take-rate = commission revenue as a share of completed GMV (M1.5).
+        $completedGmvSen = (int) SubOrder::query()
+            ->where('status', SubOrderStatus::Completed)
+            ->where('completed_at', '>=', $start)
+            ->sum('total_sen');
+        $takeRateBp = $completedGmvSen > 0 ? intdiv($commissionSen * 10000, $completedGmvSen) : 0;
+
         return view('livewire.admin.dashboard', [
             'gmvSen' => $gmvSen,
             'commissionKnown' => $commissionKnown,
             'commissionSen' => $commissionSen,
+            'takeRateBp' => $takeRateBp,
             'boostRevenueSen' => $boostRevenueSen,
             'ordersToday' => $ordersToday,
             'newBuyersToday' => $newBuyersToday,
@@ -136,7 +152,28 @@ class Dashboard extends Component
             'categoriesChart' => $this->categoriesChartPayload(),
             'buyersChart' => $this->buyersChartPayload(),
             'topStores' => $topStores,
+            'm2' => $this->m2Metrics(),
         ])->title(__('Dashboard'));
+    }
+
+    /**
+     * Engagement KPIs for the M2 features (coins, subscriptions, affiliate,
+     * live, group-buy). Lifetime snapshots — cheap aggregate counts.
+     *
+     * @return array<string, int>
+     */
+    private function m2Metrics(): array
+    {
+        $totalTeams = GroupBuyTeam::count();
+        $unlockedTeams = GroupBuyTeam::where('status', GroupBuyTeamStatus::Unlocked)->count();
+
+        return [
+            'coin_circulation' => (int) CoinWallet::sum('balance'),
+            'active_subscriptions' => Subscription::where('status', SubscriptionStatus::Active)->count(),
+            'affiliate_referrals' => AffiliateReferral::count(),
+            'live_now' => LiveSession::where('status', LiveSessionStatus::Live)->count(),
+            'group_unlock_rate_pct' => $totalTeams > 0 ? intdiv($unlockedTeams * 100, $totalTeams) : 0,
+        ];
     }
 
     /**

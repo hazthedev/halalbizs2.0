@@ -14,7 +14,7 @@ class Voucher extends Model
     use HasFactory;
 
     protected $fillable = [
-        'scope', 'store_id', 'code', 'type', 'value_sen', 'percent', 'max_discount_sen',
+        'scope', 'store_id', 'code', 'type', 'funded_by', 'value_sen', 'percent', 'max_discount_sen',
         'min_spend_sen', 'quota', 'per_user_limit', 'used_count', 'starts_at', 'ends_at', 'is_active',
     ];
 

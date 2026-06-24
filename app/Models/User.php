@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'preferred_currency',
         'status',
         'google_id',
+        'tin',
     ];
 
     protected $hidden = [
@@ -75,6 +76,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function cart(): HasOne
     {
         return $this->hasOne(Cart::class);
+    }
+
+    public function coinWallet(): HasOne
+    {
+        return $this->hasOne(CoinWallet::class);
+    }
+
+    public function affiliate(): HasOne
+    {
+        return $this->hasOne(Affiliate::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
     }
 
     public function wishlists(): HasMany

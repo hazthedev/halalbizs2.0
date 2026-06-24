@@ -4,15 +4,19 @@ namespace App\Livewire\Storefront;
 
 use App\Enums\BoostStatus;
 use App\Livewire\Concerns\InteractsWithCart;
+use App\Models\Attribute;
+use App\Models\AttributeValue;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductBoost;
 use App\Models\ProductVariant;
 use App\Models\SearchLog;
 use App\Models\Store;
+use App\Services\VectorSearchService;
 use App\Settings\BoostSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -67,6 +71,14 @@ class Listing extends Component
     #[Url(except: false)]
     public bool $cod = false;
 
+    /** Selected attribute-value ids for faceting (M1.3). */
+    #[Url(as: 'attrs', except: [])]
+    public array $attrs = [];
+
+    /** Search mode: '' = keyword (Scout), 'smart' = semantic vectors (M2.3). */
+    #[Url(except: '')]
+    public string $mode = '';
+
     public int $perPage = self::PER_PAGE;
 
     /** Per-request guard against duplicate consecutive search logs. */
@@ -86,8 +98,12 @@ class Listing extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['q', 'sort', 'childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod'], true)) {
+        if (in_array($property, ['q', 'sort', 'childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'attrs', 'mode'], true)) {
             $this->perPage = self::PER_PAGE;
+        }
+
+        if ($property === 'mode') {
+            $this->searchIdCache = null;
         }
 
         if ($property === 'q' && $this->isSearch()) {
@@ -103,7 +119,19 @@ class Listing extends Component
 
     public function clearFilters(): void
     {
-        $this->reset('childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod');
+        $this->reset('childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'attrs');
+        $this->perPage = self::PER_PAGE;
+    }
+
+    /** Toggle an attribute value in/out of the facet selection. */
+    public function toggleAttr(int $valueId): void
+    {
+        $current = array_map('intval', $this->attrs);
+
+        $this->attrs = in_array($valueId, $current, true)
+            ? array_values(array_filter($current, fn (int $v) => $v !== $valueId))
+            : [...$current, $valueId];
+
         $this->perPage = self::PER_PAGE;
     }
 
@@ -135,6 +163,7 @@ class Listing extends Component
 
         return view('livewire.storefront.listing', [
             'isSearch' => $this->isSearch(),
+            'smartAvailable' => $this->isSearch() && $this->hasSearchTerm() && app(VectorSearchService::class)->enabled(),
             'products' => $sponsored->concat($query->take($this->perPage)->get()),
             'total' => $total,
             'hasMore' => ($total - $sponsored->count()) > $this->perPage,
@@ -144,6 +173,8 @@ class Listing extends Component
             'chips' => $this->activeChips(),
             'states' => Store::query()->approved()->whereNotNull('state')->distinct()->orderBy('state')->pluck('state'),
             'wishlistedIds' => $this->wishlistedIds(),
+            'facetAttributes' => $this->facetAttributes(),
+            'selectedAttrs' => array_map('intval', $this->attrs),
         ])->title($this->pageTitle());
     }
 
@@ -202,7 +233,7 @@ class Listing extends Component
     }
 
     /** Filtered (unsorted) query for the current entry — shared by organic + sponsored. */
-    private function filteredQuery(): Builder
+    private function filteredQuery(bool $applyAttrs = true): Builder
     {
         $query = Product::query()->live()->with(['media', 'variants', 'store']);
 
@@ -246,7 +277,55 @@ class Listing extends Component
             $query->where('cod_enabled', true);
         }
 
+        if ($applyAttrs && $this->attrs !== []) {
+            // AND across attributes, OR within an attribute (standard faceting).
+            $byAttribute = AttributeValue::query()
+                ->whereIn('id', array_map('intval', $this->attrs))
+                ->get(['id', 'attribute_id'])
+                ->groupBy('attribute_id');
+
+            foreach ($byAttribute as $values) {
+                $ids = $values->pluck('id')->all();
+                $query->whereHas('attributeValues', fn (Builder $av) => $av->whereIn('attribute_values.id', $ids));
+            }
+        }
+
         return $query;
+    }
+
+    /**
+     * Filterable attributes + their values for the current scope. Category
+     * browse uses the category's filterable attributes; search derives them
+     * from values present on the result products.
+     *
+     * @return Collection<int, Attribute>
+     */
+    private function facetAttributes(): Collection
+    {
+        if (! $this->isSearch() && $this->rootCategory !== null) {
+            return $this->rootCategory->attributes()
+                ->where('is_filterable', true)
+                ->with(['values' => fn ($values) => $values->orderBy('position')])
+                ->get();
+        }
+
+        if (! $this->hasSearchTerm()) {
+            return collect();
+        }
+
+        $valueIds = AttributeValue::query()
+            ->whereHas('products', fn (Builder $p) => $p->whereIn('products.id', $this->searchIds()))
+            ->pluck('id');
+
+        if ($valueIds->isEmpty()) {
+            return collect();
+        }
+
+        return Attribute::query()
+            ->where('is_filterable', true)
+            ->whereHas('values', fn ($values) => $values->whereIn('attribute_values.id', $valueIds))
+            ->with(['values' => fn ($values) => $values->whereIn('id', $valueIds)->orderBy('position')])
+            ->get();
     }
 
     private function applySort(Builder $query): Builder
@@ -281,10 +360,17 @@ class Listing extends Component
         return $query->orderByRaw("CASE products.id {$cases} END");
     }
 
-    /** @return array<int> Scout result ids, relevance-ordered (cached per request). */
+    /** @return array<int> result ids, relevance-ordered (cached per request). */
     private function searchIds(): array
     {
-        return $this->searchIdCache ??= Product::search(trim($this->q))->keys()->all();
+        if ($this->searchIdCache !== null) {
+            return $this->searchIdCache;
+        }
+
+        // Smart mode (M2.3): semantic vector ranking; keyword Scout otherwise.
+        return $this->searchIdCache = $this->mode === 'smart' && app(VectorSearchService::class)->enabled()
+            ? app(VectorSearchService::class)->semanticSearch(trim($this->q))
+            : Product::search(trim($this->q))->keys()->all();
     }
 
     /** Log once per distinct executed search (search entry only). */

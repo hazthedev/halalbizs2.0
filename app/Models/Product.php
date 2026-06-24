@@ -4,11 +4,13 @@ namespace App\Models;
 
 use App\Enums\ProductCondition;
 use App\Enums\ProductStatus;
+use App\Enums\TaxClass;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -30,7 +32,7 @@ class Product extends Model implements HasMedia
 
     protected $fillable = [
         'store_id', 'category_id', 'brand_id', 'name', 'slug', 'description',
-        'condition', 'status', 'weight_grams', 'length_mm', 'width_mm', 'height_mm',
+        'condition', 'status', 'tax_class', 'weight_grams', 'length_mm', 'width_mm', 'height_mm',
         'cod_enabled', 'halal_status', 'halal_cert_number', 'halal_cert_expiry', 'published_at',
     ];
 
@@ -39,6 +41,7 @@ class Product extends Model implements HasMedia
         return [
             'condition' => ProductCondition::class,
             'status' => ProductStatus::class,
+            'tax_class' => TaxClass::class,
             'cod_enabled' => 'boolean',
             'halal_cert_expiry' => 'date',
             'published_at' => 'datetime',
@@ -91,9 +94,26 @@ class Product extends Model implements HasMedia
         return $this->belongsTo(Brand::class);
     }
 
+    /** Specific attribute values assigned to this product (faceted search, M1.3). */
+    public function attributeValues(): BelongsToMany
+    {
+        return $this->belongsToMany(AttributeValue::class, 'attribute_value_product');
+    }
+
     public function options(): HasMany
     {
         return $this->hasMany(ProductOption::class)->orderBy('position');
+    }
+
+    /** Curated trust/detail metafields (M2.7). */
+    public function metafields(): HasMany
+    {
+        return $this->hasMany(ProductMetafield::class);
+    }
+
+    public function metafield(string $key): ?string
+    {
+        return $this->metafields->firstWhere('key', $key)?->value;
     }
 
     public function variants(): HasMany
@@ -145,7 +165,7 @@ class Product extends Model implements HasMedia
 
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['category', 'store', 'variants']);
+        $this->loadMissing(['category', 'store', 'variants', 'attributeValues', 'metafields']);
 
         return [
             'id' => $this->id,
@@ -156,6 +176,38 @@ class Product extends Model implements HasMedia
             'store' => $this->store?->name,
             'min_price_sen' => $this->variants->isNotEmpty() ? $this->minPriceSen() : 0,
             'sold_count' => $this->sold_count,
+            // Faceting (Meilisearch filterableAttributes, M1.3).
+            'attribute_value_ids' => $this->attributeValues->pluck('id')->all(),
+            // Trust/detail signals — ingredients, halal body, SIRIM, origin (M2.7).
+            'metafields' => $this->searchableMetafieldText(),
         ];
+    }
+
+    /** The text blended into this product's search embedding (M2.3). */
+    public function embeddingText(): string
+    {
+        $this->loadMissing(['category', 'metafields']);
+
+        return collect([
+            $this->getTranslation('name', 'en'),
+            $this->getTranslation('name', 'ms', false),
+            strip_tags($this->getTranslation('description', 'en')),
+            $this->category?->getTranslation('name', 'en'),
+            $this->searchableMetafieldText(),
+        ])->filter()->implode(' ');
+    }
+
+    /** Concatenated text of the searchable metafields (M2.7). */
+    private function searchableMetafieldText(): string
+    {
+        $searchableKeys = array_keys(array_filter(
+            (array) config('metafields.definitions', []),
+            fn ($def) => $def['searchable'] ?? false,
+        ));
+
+        return $this->metafields
+            ->whereIn('key', $searchableKeys)
+            ->pluck('value')
+            ->implode(' ');
     }
 }

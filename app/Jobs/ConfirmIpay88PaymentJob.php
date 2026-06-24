@@ -6,6 +6,7 @@ use App\Enums\ActorType;
 use App\Enums\GatewayPaymentStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\SubOrderStatus;
+use App\Events\OrderPaid;
 use App\Models\Payment;
 use App\Services\Ipay88Service;
 use App\Services\SubOrderStatusService;
@@ -53,6 +54,8 @@ class ConfirmIpay88PaymentJob implements ShouldQueue
             $payment->update([
                 'status' => GatewayPaymentStatus::Success,
                 'requery_result' => '00',
+                // PaymentId is the chosen channel (FPX bank / wallet / card code).
+                'channel' => $this->callbackPayload['PaymentId'] ?? $payment->channel,
                 'ipay88_payment_id' => $this->callbackPayload['PaymentId'] ?? $payment->ipay88_payment_id,
                 'ipay88_trans_id' => $this->callbackPayload['TransId'] ?? $payment->ipay88_trans_id,
                 'ipay88_auth_code' => $this->callbackPayload['AuthCode'] ?? $payment->ipay88_auth_code,
@@ -73,5 +76,8 @@ class ConfirmIpay88PaymentJob implements ShouldQueue
                 }
             }
         });
+
+        // After commit: trigger e-invoicing (and any other post-payment work).
+        OrderPaid::dispatch($payment->order->fresh());
     }
 }

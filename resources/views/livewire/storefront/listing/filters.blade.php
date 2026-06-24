@@ -103,3 +103,29 @@
         {{ __('Cash on delivery') }}
     </label>
 </div>
+
+{{-- Attribute facets (M1.3) --}}
+@if (isset($facetAttributes))
+    @foreach ($facetAttributes as $facetAttribute)
+        @if ($facetAttribute->values->isNotEmpty())
+            <div>
+                <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ $facetAttribute->getTranslation('name', app()->getLocale()) }}</p>
+                <ul class="space-y-1">
+                    @foreach ($facetAttribute->values as $facetValue)
+                        <li>
+                            <label class="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[var(--radius-control)] px-3 text-sm text-ink">
+                                <input
+                                    type="checkbox"
+                                    wire:click="toggleAttr({{ $facetValue->id }})"
+                                    @checked(in_array($facetValue->id, $selectedAttrs ?? [], true))
+                                    class="size-5 rounded border-line-strong text-emerald focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+                                >
+                                {{ $facetValue->getTranslation('value', app()->getLocale()) }}
+                            </label>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    @endforeach
+@endif

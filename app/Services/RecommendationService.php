@@ -217,6 +217,49 @@ class RecommendationService
     }
 
     /**
+     * Frequently bought together (M1.8): products co-purchased in the same
+     * orders as $productId, ranked by co-occurrence, live + in stock. Pure
+     * Eloquent co-visitation — no ML.
+     */
+    public function frequentlyBoughtTogether(int $productId, int $limit = 6): Collection
+    {
+        $orderIds = OrderItem::query()
+            ->where('product_id', $productId)
+            ->join('sub_orders', 'order_items.sub_order_id', '=', 'sub_orders.id')
+            ->distinct()
+            ->pluck('sub_orders.order_id');
+
+        if ($orderIds->isEmpty()) {
+            return new Collection;
+        }
+
+        $coIds = OrderItem::query()
+            ->join('sub_orders', 'order_items.sub_order_id', '=', 'sub_orders.id')
+            ->whereIn('sub_orders.order_id', $orderIds)
+            ->where('order_items.product_id', '!=', $productId)
+            ->whereNotNull('order_items.product_id')
+            ->selectRaw('order_items.product_id, COUNT(*) as freq')
+            ->groupBy('order_items.product_id')
+            ->orderByDesc('freq')
+            ->limit($limit * 3)
+            ->pluck('order_items.product_id');
+
+        if ($coIds->isEmpty()) {
+            return new Collection;
+        }
+
+        $products = Product::query()
+            ->live()
+            ->whereIn('id', $coIds)
+            ->whereHas('variants', fn (Builder $query) => $query->where('stock', '>', 0))
+            ->with(['variants', 'media', 'store'])
+            ->get()
+            ->keyBy('id');
+
+        return $coIds->map(fn ($id) => $products->get($id))->filter()->take($limit)->values();
+    }
+
+    /**
      * Popularity fallback — live, in stock, most sold (mirrors Home 'top').
      *
      * @param  array<int>  $exclude

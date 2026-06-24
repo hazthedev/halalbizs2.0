@@ -5,6 +5,7 @@ namespace App\Livewire\Storefront;
 use App\Models\Product;
 use App\Models\Review;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
@@ -44,6 +45,32 @@ class ProductReviews extends Component
         $this->reviewsLimit += 5;
     }
 
+    /** Toggle the current buyer's "helpful" vote on a review (M1.8). */
+    public function markHelpful(int $reviewId): void
+    {
+        if (! auth()->check()) {
+            $this->dispatch('toast', message: __('Log in to vote on reviews.'), type: 'error');
+
+            return;
+        }
+
+        $review = $this->product->reviews()->visible()->find($reviewId);
+
+        if ($review === null) {
+            return;
+        }
+
+        $userId = auth()->id();
+
+        if ($review->helpfuls()->where('user_id', $userId)->exists()) {
+            $review->helpfuls()->detach($userId);
+            $review->decrement('helpful_count');
+        } else {
+            $review->helpfuls()->attach($userId);
+            $review->increment('helpful_count');
+        }
+    }
+
     public function placeholder(): View
     {
         return view('livewire.storefront.partials.product-reviews-placeholder');
@@ -55,6 +82,9 @@ class ProductReviews extends Component
             'reviews' => $this->visibleReviews(),
             'hasMoreReviews' => $this->filteredReviewsQuery()->count() > $this->reviewsLimit,
             'reviewDistribution' => $this->reviewDistribution(),
+            'votedReviewIds' => auth()->check()
+                ? DB::table('review_helpfuls')->where('user_id', auth()->id())->pluck('review_id')->all()
+                : [],
         ]);
     }
 

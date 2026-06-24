@@ -87,4 +87,19 @@ test.describe('M2 storefront journey', () => {
         await expect(page.locator('input[value="Demo Buyer"], input[wire\\:model\\.defer="name"], input[wire\\:model="name"]').first()).toBeVisible();
         await page.screenshot({ path: `e2e/screenshots/m2-account-${test.info().project.name}.png`, fullPage: true });
     });
+
+    test('mobile header opens the shopping concierge panel', async ({ page }) => {
+        // The floating launcher is desktop-only; mobile reaches the concierge
+        // through the header icon. (Desktop's entry point is exercised by the
+        // visible launcher, so this guards the mobile path specifically.)
+        test.skip(test.info().project.name !== 'mobile', 'mobile-only entry point');
+
+        await page.goto('/');
+        await page.getByRole('button', { name: 'Ask the concierge' }).click();
+
+        // The panel reveals its composer + brand heading.
+        await expect(page.getByPlaceholder(/Ask about products/)).toBeVisible();
+        await expect(page.getByText('Shopping concierge')).toBeVisible();
+        await page.screenshot({ path: `e2e/screenshots/m2-concierge-${test.info().project.name}.png`, fullPage: true });
+    });
 });

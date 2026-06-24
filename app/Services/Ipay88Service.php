@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\Payments\PaymentGateway;
 use App\Settings\Ipay88Settings;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 /**
  * iPay88 MY (hosted page) integration per technical doc family v1.6.x.
@@ -16,9 +18,20 @@ use Illuminate\Support\Facades\Http;
  * Signatures use the amount with separators stripped — which is exactly
  * our integer sen as a string (RM12.50 → "1250").
  */
-class Ipay88Service
+class Ipay88Service implements PaymentGateway
 {
     public function __construct(private Ipay88Settings $settings) {}
+
+    public function name(): string
+    {
+        return 'ipay88';
+    }
+
+    /** A launch rail — always enabled (sandbox/prod toggled in Ipay88Settings). */
+    public function isEnabled(): bool
+    {
+        return true;
+    }
 
     public function entryUrl(): string
     {
@@ -100,6 +113,43 @@ class Ipay88Service
         ]);
 
         return trim($response->body());
+    }
+
+    /**
+     * Best-effort automated refund. iPay88 hosted-page refunds are normally
+     * issued in the merchant portal; an API refund endpoint exists only on some
+     * merchant contracts. When one is configured we call it; otherwise we
+     * return false and the recorded portal reference is the source of truth
+     * (RefundService keeps the manual record either way). Never throws.
+     */
+    public function refund(Payment $payment, int $amountSen, ?string $reference = null): bool
+    {
+        $refundUrl = config('services.ipay88.refund_url');
+
+        if (empty($refundUrl)) {
+            Log::info('iPay88 refund requested with no API endpoint — recorded for manual portal refund.', [
+                'ref_no' => $payment->ref_no,
+                'amount_sen' => $amountSen,
+                'reference' => $reference,
+            ]);
+
+            return false;
+        }
+
+        try {
+            $response = Http::asForm()->post($refundUrl, [
+                'MerchantCode' => $this->settings->merchant_code,
+                'RefNo' => $payment->ref_no,
+                'Amount' => self::formatAmount($amountSen),
+                'Signature' => $this->requestSignature($payment->ref_no, $amountSen),
+            ]);
+
+            return $response->successful();
+        } catch (\Throwable $e) {
+            Log::error('iPay88 refund API call failed.', ['ref_no' => $payment->ref_no, 'error' => $e->getMessage()]);
+
+            return false;
+        }
     }
 
     /** 125000 sen → "1250.00" (2dp, no thousand separators). */

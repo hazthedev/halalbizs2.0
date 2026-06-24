@@ -19,6 +19,14 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
+        // Never seed demo data (incl. password-'password' demo accounts) into a
+        // production database (docs/10 launch checklist).
+        if (app()->isProduction()) {
+            $this->command?->warn('DemoSeeder skipped — refusing to seed demo data in production.');
+
+            return;
+        }
+
         $leafCategories = Category::whereDoesntHave('children')->get();
 
         foreach (Category::whereNull('parent_id')->get() as $topCategory) {

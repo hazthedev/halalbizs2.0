@@ -22,8 +22,9 @@ class SubOrder extends Model
 
     protected $fillable = [
         'sub_order_no', 'order_id', 'store_id', 'status',
-        'items_subtotal_sen', 'shipping_fee_sen', 'shop_discount_sen', 'total_sen',
+        'items_subtotal_sen', 'shipping_fee_sen', 'shop_discount_sen', 'shipping_subsidy_sen', 'tax_sen', 'total_sen',
         'commission_rate', 'commission_sen', 'tracking_courier', 'tracking_no',
+        'awb_no', 'shipping_label_url', 'courier_service',
         'shipped_at', 'delivered_at', 'completed_at', 'auto_complete_at',
         'cancelled_at', 'cancel_reason',
     ];
@@ -35,6 +36,8 @@ class SubOrder extends Model
             'items_subtotal_sen' => 'integer',
             'shipping_fee_sen' => 'integer',
             'shop_discount_sen' => 'integer',
+            'shipping_subsidy_sen' => 'integer',
+            'tax_sen' => 'integer',
             'total_sen' => 'integer',
             'commission_rate' => 'decimal:2',
             'commission_sen' => 'integer',
@@ -44,6 +47,11 @@ class SubOrder extends Model
             'auto_complete_at' => 'datetime',
             'cancelled_at' => 'datetime',
         ];
+    }
+
+    public function einvoiceDocument(): HasOne
+    {
+        return $this->hasOne(EInvoiceDocument::class);
     }
 
     public static function generateSubOrderNo(): string

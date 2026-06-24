@@ -20,6 +20,6 @@ class InvoiceController extends Controller
     {
         abort_unless($subOrder->store_id === $request->user()->store?->id, 403);
 
-        return response()->download($invoices->path($subOrder), "{$subOrder->sub_order_no}.pdf");
+        return response()->download($invoices->packingSlipPath($subOrder), "{$subOrder->sub_order_no}-packing-slip.pdf");
     }
 }

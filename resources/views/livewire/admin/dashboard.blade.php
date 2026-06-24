@@ -29,7 +29,7 @@
             <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">
                 @if ($commissionKnown) @money($commissionSen) @else — @endif
             </p>
-            <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Completed sub-orders') }}</p>
+            <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Completed sub-orders') }} · {{ __('Take-rate') }} {{ number_format($takeRateBp / 100, 2) }}%</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Boost revenue') }}</p>
@@ -45,6 +45,35 @@
             <p class="text-[13px] font-medium text-ink-soft">{{ __('New buyers today') }}</p>
             <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">{{ number_format($newBuyersToday) }}</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Registrations since midnight') }}</p>
+        </x-ui.card>
+    </div>
+
+    {{-- Engagement (M2) KPI row --}}
+    <div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <x-ui.card class="p-4">
+            <p class="text-[13px] font-medium text-ink-soft">{{ __('Coins in circulation') }}</p>
+            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ number_format($m2['coin_circulation']) }}</p>
+            <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Loyalty Coins') }}</p>
+        </x-ui.card>
+        <x-ui.card class="p-4">
+            <p class="text-[13px] font-medium text-ink-soft">{{ __('Active subscriptions') }}</p>
+            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ number_format($m2['active_subscriptions']) }}</p>
+            <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Subscribe & save') }}</p>
+        </x-ui.card>
+        <x-ui.card class="p-4">
+            <p class="text-[13px] font-medium text-ink-soft">{{ __('Affiliate referrals') }}</p>
+            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ number_format($m2['affiliate_referrals']) }}</p>
+            <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Confirmed commissions') }}</p>
+        </x-ui.card>
+        <x-ui.card class="p-4">
+            <p class="text-[13px] font-medium text-ink-soft">{{ __('Live now') }}</p>
+            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ number_format($m2['live_now']) }}</p>
+            <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Streaming sessions') }}</p>
+        </x-ui.card>
+        <x-ui.card class="p-4">
+            <p class="text-[13px] font-medium text-ink-soft">{{ __('Group-buy unlock rate') }}</p>
+            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ $m2['group_unlock_rate_pct'] }}%</p>
+            <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Teams that unlocked') }}</p>
         </x-ui.card>
     </div>
 

@@ -75,7 +75,15 @@
                     @endif
                 </a>
 
-                @foreach ([['seller.vouchers.index', __('Vouchers')], ['seller.earnings', __('Earnings')], ['seller.reviews.index', __('Reviews')]] as [$routeName, $label])
+                @php($sellerNavItems = [['seller.vouchers.index', __('Vouchers')]])
+                @if (config('groupbuy.enabled', true))
+                    @php($sellerNavItems[] = ['seller.group-buys.index', __('Group buys')])
+                @endif
+                @if (config('live.enabled', true))
+                    @php($sellerNavItems[] = ['seller.live.index', __('Live shopping')])
+                @endif
+                @php($sellerNavItems = array_merge($sellerNavItems, [['seller.earnings', __('Earnings')], ['seller.reviews.index', __('Reviews')]]))
+                @foreach ($sellerNavItems as [$routeName, $label])
                     @if (Illuminate\Support\Facades\Route::has($routeName))
                         <a href="{{ route($routeName) }}" wire:navigate
                            class="block rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs(str_replace('.index', '.*', $routeName)) ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">

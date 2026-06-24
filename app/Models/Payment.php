@@ -14,6 +14,7 @@ class Payment extends Model
 
     protected $fillable = [
         'order_id', 'gateway', 'ref_no', 'amount_sen', 'currency', 'status',
+        'channel', 'bank_code', 'refunded_sen', 'refunded_at',
         'ipay88_payment_id', 'ipay88_trans_id', 'ipay88_auth_code',
         'signature_valid', 'requery_result', 'request_payload', 'response_payload', 'paid_at',
     ];
@@ -24,6 +25,8 @@ class Payment extends Model
             'gateway' => PaymentMethod::class,
             'status' => GatewayPaymentStatus::class,
             'amount_sen' => 'integer',
+            'refunded_sen' => 'integer',
+            'refunded_at' => 'datetime',
             'signature_valid' => 'boolean',
             'request_payload' => 'array',
             'response_payload' => 'array',

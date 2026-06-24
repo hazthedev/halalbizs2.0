@@ -87,7 +87,7 @@ class Dashboard extends Component
             ->count();
 
         $this->lowStock = ProductVariant::query()
-            ->where('stock', '<', self::LOW_STOCK_THRESHOLD)
+            ->lowStock() // respects each variant's low_stock_threshold (default 5)
             ->whereHas('product', fn ($query) => $query
                 ->where('store_id', $store->id)
                 ->where('status', ProductStatus::Live))

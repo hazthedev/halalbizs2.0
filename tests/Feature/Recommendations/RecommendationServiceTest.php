@@ -31,8 +31,11 @@ function recBuyer(): User
 /** A live, in-stock product in a given category. */
 function recProduct(Category $category, int $sold = 0): Product
 {
-    $product = Product::factory()->create(['category_id' => $category->id, 'sold_count' => $sold]);
-    $product->variants()->update(['stock' => 50, 'sale_price_sen' => null]);
+    // recBuy() always checks out via COD, so force cod_enabled (factory rolls it
+    // at 80%) and a low price (factory price can exceed the RM500 COD cap) — both
+    // made this suite intermittently fail.
+    $product = Product::factory()->create(['category_id' => $category->id, 'sold_count' => $sold, 'cod_enabled' => true]);
+    $product->variants()->update(['stock' => 50, 'sale_price_sen' => null, 'price_sen' => 5000]);
 
     return $product;
 }

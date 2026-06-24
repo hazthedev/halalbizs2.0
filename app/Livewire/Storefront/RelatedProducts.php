@@ -4,6 +4,7 @@ namespace App\Livewire\Storefront;
 
 use App\Livewire\Concerns\InteractsWithCart;
 use App\Models\Product;
+use App\Services\RecommendationService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Lazy;
 use Livewire\Component;
@@ -41,6 +42,8 @@ class RelatedProducts extends Component
                 ->orderByDesc('published_at')
                 ->take(6)
                 ->get(),
+            // Frequently bought together — co-purchase, falls back to empty (M1.8).
+            'boughtTogether' => app(RecommendationService::class)->frequentlyBoughtTogether($this->product->id),
             'wishlistedIds' => $this->wishlistedIds(),
         ]);
     }

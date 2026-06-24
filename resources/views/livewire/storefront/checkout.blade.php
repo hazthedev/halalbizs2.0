@@ -139,8 +139,23 @@
                 </div>
 
                 {{-- Applied chips --}}
-                @if ($platformDiscount !== null || $shopDiscount !== null)
+                @if ($platformDiscount !== null || $shopDiscount !== null || $shippingDiscount !== null)
                     <ul class="mt-2 space-y-2">
+                        @if ($shippingDiscount !== null)
+                            <li class="flex items-center justify-between gap-3">
+                                <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-semibold text-emerald">
+                                    <span class="truncate font-mono">{{ $shippingDiscount->voucher->code }}</span>
+                                    <span class="hidden font-normal sm:inline">· {{ __('Free shipping') }}</span>
+                                    <button type="button" wire:click="removeVoucher('shipping')"
+                                            wire:loading.attr="disabled" wire:target="removeVoucher"
+                                            class="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-emerald/10"
+                                            aria-label="{{ __('Remove free-shipping voucher') }}">
+                                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </span>
+                                <span class="shrink-0 text-sm font-bold text-emerald">{{ __('Free shipping') }}</span>
+                            </li>
+                        @endif
                         @if ($platformDiscount !== null)
                             <li class="flex items-center justify-between gap-3">
                                 <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-semibold text-emerald">
@@ -254,6 +269,12 @@
                     <dt class="text-ink-soft">{{ __('Shipping total') }}</dt>
                     <dd class="font-bold tnum">@if ($address === null) — @else @money($shippingTotalSen) @endif</dd>
                 </div>
+                @if ($taxTotalSen > 0)
+                    <div class="flex items-center justify-between">
+                        <dt class="text-ink-soft">{{ __('SST') }}</dt>
+                        <dd class="font-bold tnum">@money($taxTotalSen)</dd>
+                    </div>
+                @endif
                 @if ($platformDiscountSen > 0)
                     <div class="flex items-center justify-between">
                         <dt class="text-ink-soft">{{ __('Platform voucher') }}</dt>
@@ -266,7 +287,30 @@
                         <dd class="font-bold text-emerald tnum">-@money($shopDiscountSen)</dd>
                     </div>
                 @endif
+                @if ($coinsEnabled && $useCoins && $coinRedemptionSen > 0)
+                    <div class="flex items-center justify-between">
+                        <dt class="flex items-center gap-1 text-ink-soft">
+                            <x-ui.star-mark :size="13" class="text-brass" />
+                            {{ __('Coins') }}
+                        </dt>
+                        <dd class="font-bold text-emerald tnum">-@money($coinRedemptionSen)</dd>
+                    </div>
+                @endif
             </dl>
+
+            {{-- Loyalty Coins redemption (M2.1) --}}
+            @if ($coinsEnabled && $coinBalance > 0)
+                <label class="mt-3 flex cursor-pointer items-center gap-3 rounded-[var(--radius-control)] border p-3 {{ $useCoins ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
+                    <input type="checkbox" wire:model.live="useCoins" class="size-4 shrink-0 cursor-pointer accent-emerald">
+                    <span class="min-w-0 flex-1">
+                        <span class="flex items-center gap-1.5 text-sm font-medium">
+                            <x-ui.star-mark :size="14" class="text-brass" />
+                            {{ __('Use my coins') }}
+                        </span>
+                        <span class="block text-[13px] text-ink-soft">{{ __(':n coins available', ['n' => number_format($coinBalance)]) }}</span>
+                    </span>
+                </label>
+            @endif
 
             <div class="mt-3 border-t border-line pt-3">
                 <div class="flex items-baseline justify-between">

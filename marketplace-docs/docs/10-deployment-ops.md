@@ -7,7 +7,7 @@
 One VPS, 4 vCPU / 8 GB, Ubuntu 24.04 — Nginx, PHP-FPM 8.4 (opcache, `pm.max_children` tuned), MySQL 8 (dedicated 2–4 GB buffer pool), Redis, Meilisearch (systemd, master key). Provision + deploy via **Laravel Forge** (zero-downtime deploy script: composer install → migrate --force → config/route/view cache → scout sync check → horizon:terminate → restart fpm). Cloudflare in front: DNS, CDN on media domain, WAF, rate-limit rules on `/login`, `/register`, `/payments/*`. Scale path documented: split DB → add worker box → managed MySQL.
 
 ## Services & processes
-- **Horizon** (supervisor): queues `default`, `mail`, `media`, `payments` (payments = dedicated worker, low concurrency, high priority — callbacks and requery jobs never wait behind image conversions).
+- **Horizon** (supervisor): queues `default`, `mail`, `media`, `payments` (payments = dedicated worker, low concurrency, high priority — callbacks and requery jobs never wait behind image conversions), plus `webhooks` (outbound `SendWebhookJob`, M1.7), `einvoice` (`IssueEInvoiceOnOrderPaid`, M0.2), `search` (`EmbedProductJob`, M2.3), `coins` (`AwardCoinsOnCompletion`, M2.1) and `affiliate` (`RecordAffiliateCommissionOnCompletion`, M2.5). Backup/scheduled commands run on `default`.
 - **Scheduler** — single source of truth, keep in sync with `routes/console.php`:
 
 | Job | Cadence |
@@ -15,6 +15,14 @@ One VPS, 4 vCPU / 8 GB, Ubuntu 24.04 — Nginx, PHP-FPM 8.4 (opcache, `pm.max_ch
 | `orders:expire-unpaid` (requery rescue → cancel + restock) | everyMinute |
 | `orders:auto-complete` (delivered + 7d → completed, ledger) | hourly |
 | `returns:auto-escalate` (seller response timeout) | hourly |
+| `boosts:expire` (M-FE sponsored placements) | hourly |
+| `carts:remind-abandoned` (M1.4 recovery nudge) | hourly |
+| `seller:compute-health` (M1.4 scorecards) | daily 02:00 |
+| `einvoice:consolidate` (M0.2 monthly B2C, prior month) | monthly 1st 04:00 |
+| `coins:expire` (M2.1 lapsed Loyalty Coin lots) | daily 01:00 |
+| `group-buy:expire` (M2.6 lapsed recruiting teams) | every 15 min |
+| `subscriptions:process` (M2.8 due subscribe-and-save orders) | hourly |
+| `search:embed` (M2.3 embedding backfill — run on demand / after driver change) | manual |
 | `rates:sync` (if API enabled, with margin) | daily 06:00 |
 | `sitemap:generate` | daily 03:00 |
 | `backup:run` (DB + .env reference, → R2) / `backup:clean` | daily 02:00 / 02:30 |

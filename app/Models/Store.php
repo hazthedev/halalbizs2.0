@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\LedgerEntryStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\StoreStatus;
+use App\Enums\SubOrderStatus;
 use App\Support\ReservedSubdomains;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -26,9 +29,10 @@ class Store extends Model implements HasMedia
 
     protected $fillable = [
         'user_id', 'name', 'slug', 'description', 'status', 'rejection_reason',
-        'holiday_mode', 'commission_rate', 'state', 'sst_registered', 'sst_number',
+        'holiday_mode', 'commission_rate', 'state', 'sst_registered', 'sst_number', 'tin',
         'bank_details', 'approved_at',
         'shipping_mode', 'shipping_flat_fee_sen', 'shipping_matrix', 'free_shipping_over_sen',
+        'shipping_origin_postcode',
     ];
 
     protected function casts(): array
@@ -155,6 +159,11 @@ class Store extends Model implements HasMedia
         return $this->hasMany(ProductBoost::class);
     }
 
+    public function health(): HasOne
+    {
+        return $this->hasOne(SellerHealth::class);
+    }
+
     #[Scope]
     protected function approved(Builder $query): void
     {
@@ -175,5 +184,30 @@ class Store extends Model implements HasMedia
         return (int) $this->ledgerEntries()
             ->where('status', LedgerEntryStatus::Available)
             ->sum('amount_sen');
+    }
+
+    /**
+     * Held in escrow (M1.4): expected net for paid orders still in flight
+     * (confirmed → delivered, not yet completed). Released to the available
+     * balance via the ledger when the order completes / the guarantee window
+     * lapses. Estimated commission mirrors LedgerService's integer math.
+     */
+    public function heldBalanceSen(): int
+    {
+        return (int) $this->subOrders()
+            ->whereIn('status', [
+                SubOrderStatus::Confirmed,
+                SubOrderStatus::Processing,
+                SubOrderStatus::Shipped,
+                SubOrderStatus::Delivered,
+            ])
+            ->whereHas('order', fn ($order) => $order->where('payment_status', PaymentStatus::Paid))
+            ->get(['items_subtotal_sen', 'total_sen', 'commission_rate'])
+            ->sum(function ($subOrder) {
+                $rateBp = (int) round((float) $subOrder->commission_rate * 100);
+                $commission = intdiv($subOrder->items_subtotal_sen * $rateBp + 5000, 10000);
+
+                return max(0, $subOrder->total_sen - $commission);
+            });
     }
 }

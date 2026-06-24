@@ -25,4 +25,19 @@ class InvoiceService
 
         return Storage::disk('local')->path($path);
     }
+
+    /** Seller picking document — items + ship-to + tracking, NO prices. */
+    public function packingSlipPath(SubOrder $subOrder): string
+    {
+        $path = "packing-slips/{$subOrder->sub_order_no}.pdf";
+
+        if (! Storage::disk('local')->exists($path)) {
+            $subOrder->loadMissing(['items.variant', 'order', 'store']);
+
+            $pdf = Pdf::loadView('pdf.packing-slip', ['subOrder' => $subOrder]);
+            Storage::disk('local')->put($path, $pdf->output());
+        }
+
+        return Storage::disk('local')->path($path);
+    }
 }

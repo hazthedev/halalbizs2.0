@@ -27,12 +27,15 @@ Route::middleware('can:orders.manage')->group(function () {
     Route::get('/orders/returns', Admin\Orders\Returns::class)->name('orders.returns'); // before {subOrder}
     Route::get('/orders/{subOrder}', Admin\Orders\Detail::class)->name('orders.show');
     Route::get('/payments', Admin\Orders\Payments::class)->name('payments.index');
+    Route::get('/subscriptions', Admin\Subscriptions\Index::class)->name('subscriptions.index'); // M2.8
 });
 
 Route::middleware('can:finance.manage')->group(function () {
     Route::get('/finance/commission', Admin\Finance\Commission::class)->name('finance.commission');
     Route::get('/finance/payouts', Admin\Finance\Payouts::class)->name('finance.payouts');
     Route::get('/finance/boosts', Admin\Finance\Boosts::class)->name('finance.boosts');
+    Route::get('/coins', Admin\Coins\Index::class)->name('coins.index');                 // M2.1
+    Route::get('/affiliates', Admin\Affiliates\Index::class)->name('affiliates.index');   // M2.5
 });
 
 Route::middleware('can:cms.manage')->group(function () {
@@ -40,6 +43,8 @@ Route::middleware('can:cms.manage')->group(function () {
     Route::get('/content/home-sections', Admin\Content\HomeSections::class)->name('content.home-sections');
     Route::get('/content/pages', Admin\Content\Pages::class)->name('content.pages');
     Route::get('/content/theme', Admin\Content\Theme::class)->name('content.theme');
+    Route::get('/live', Admin\Live\Index::class)->name('live.index'); // M2.4
+    Route::get('/content/flash-sales', Admin\Content\FlashSales::class)->name('content.flash-sales');
     Route::get('/support/articles', Admin\Support\Articles::class)->name('support.articles');
     Route::get('/support/tickets', Admin\Support\Tickets::class)->name('support.tickets');
 });

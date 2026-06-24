@@ -2,16 +2,25 @@
 
 <div class="space-y-4">
 
-    <x-ui.section-heading as="h1" :title="__('Earnings')" />
+    <div class="flex items-center justify-between gap-3">
+        <x-ui.section-heading as="h1" :title="__('Earnings')" />
+        <button type="button" wire:click="exportCsv" class="inline-flex min-h-11 shrink-0 items-center rounded-lg border border-line-strong px-3 text-[13px] font-medium text-ink hover:border-emerald hover:text-emerald">{{ __('Export CSV') }}</button>
+    </div>
 
     {{-- ===== Balance cards ===== --}}
-    <div class="grid gap-3 sm:grid-cols-3">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Available') }}</p>
             <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums {{ $availableSen < 0 ? 'text-danger' : 'text-ink' }}">@money($availableSen)</p>
             @if ($availableSen < 0)
                 <p class="mt-1 text-[12px] text-danger">{{ __('COD commission owed — future online-payment sales recover it.') }}</p>
             @endif
+        </x-ui.card>
+
+        <x-ui.card class="p-4">
+            <p class="text-[13px] font-medium text-ink-soft">{{ __('In escrow') }}</p>
+            <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums text-ink">@money($heldSen)</p>
+            <p class="mt-1 text-[12px] text-ink-soft">{{ __('Released when buyers receive their orders.') }}</p>
         </x-ui.card>
 
         <x-ui.card class="p-4">

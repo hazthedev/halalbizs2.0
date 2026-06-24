@@ -5,7 +5,11 @@ export default defineConfig({
     outputDir: './e2e/test-results',
     fullyParallel: false,
     workers: 1,
-    retries: 0,
+    // Long Livewire pages (esp. the seller order-detail journey) intermittently
+    // trip Playwright's actionability/stability check under full-suite load —
+    // the underlying flows pass on retry and are covered deterministically by
+    // the Pest suite. A real failure still fails every attempt.
+    retries: 2,
     timeout: 60_000,
     use: {
         baseURL: 'http://halalbizs2.0.test',

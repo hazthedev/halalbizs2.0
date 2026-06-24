@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ReturnStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -20,7 +21,7 @@ class ReturnRequest extends Model implements HasMedia
     public const MAX_PHOTOS = 5;
 
     protected $fillable = [
-        'sub_order_id', 'return_reason_id', 'description', 'status',
+        'sub_order_id', 'return_reason_id', 'description', 'status', 'refund_sen',
         'seller_response', 'respond_by', 'escalated_at', 'resolved_at', 'resolved_by',
     ];
 
@@ -28,6 +29,7 @@ class ReturnRequest extends Model implements HasMedia
     {
         return [
             'status' => ReturnStatus::class,
+            'refund_sen' => 'integer',
             'respond_by' => 'datetime',
             'escalated_at' => 'datetime',
             'resolved_at' => 'datetime',
@@ -42,6 +44,11 @@ class ReturnRequest extends Model implements HasMedia
     public function subOrder(): BelongsTo
     {
         return $this->belongsTo(SubOrder::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(ReturnRequestItem::class);
     }
 
     public function reason(): BelongsTo

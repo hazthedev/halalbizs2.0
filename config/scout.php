@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Product;
+
 return [
 
     /*
@@ -140,9 +142,21 @@ return [
         'host' => env('MEILISEARCH_HOST', 'http://localhost:7700'),
         'key' => env('MEILISEARCH_KEY'),
         'index-settings' => [
-            // 'users' => [
-            //     'filterableAttributes'=> ['id', 'name', 'email'],
-            // ],
+            // Products: facet on attribute values + price/category/store (M1.3),
+            // tolerate typos, rank by relevance then popularity, and expand
+            // common BM<->EN synonyms. Applied with `php artisan scout:sync-index-settings`.
+            Product::class => [
+                'filterableAttributes' => ['attribute_value_ids', 'category', 'store', 'min_price_sen'],
+                'sortableAttributes' => ['min_price_sen', 'sold_count'],
+                'searchableAttributes' => ['name_en', 'name_ms', 'description_en', 'category', 'store'],
+                'rankingRules' => ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness', 'sold_count:desc'],
+                'synonyms' => [
+                    'kasut' => ['shoe', 'shoes'],
+                    'baju' => ['shirt', 'clothing', 'top'],
+                    'telefon' => ['phone', 'handphone', 'mobile'],
+                    'beg' => ['bag'],
+                ],
+            ],
         ],
     ],
 

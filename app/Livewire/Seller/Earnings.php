@@ -7,10 +7,12 @@ use App\Exceptions\CheckoutException;
 use App\Livewire\Concerns\CurrentStore;
 use App\Services\LedgerService;
 use App\Settings\OrderSettings;
+use App\Support\Csv;
 use App\Support\RinggitInput;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Seller earnings (docs/09 §A): the store's escrow ledger, the available /
@@ -56,6 +58,24 @@ class Earnings extends Component
         $this->dispatch('toast', message: __('Payout :no requested — we\'ll review it and run the bank transfer.', ['no' => $payout->payout_no]));
     }
 
+    /** Download the full ledger as a CSV (M1.5). */
+    public function exportCsv(): StreamedResponse
+    {
+        $store = $this->currentStore();
+
+        $rows = $store->ledgerEntries()
+            ->latest('created_at')->latest('id')->get()
+            ->map(fn ($entry) => [
+                $entry->created_at?->toDateTimeString(),
+                $entry->type->value,
+                $entry->status->value,
+                RinggitInput::fromSen($entry->amount_sen),
+                $entry->description,
+            ]);
+
+        return Csv::stream("earnings-{$store->slug}.csv", ['datetime', 'type', 'status', 'amount_rm', 'description'], $rows);
+    }
+
     public function render()
     {
         $store = $this->currentStore();
@@ -63,6 +83,7 @@ class Earnings extends Component
 
         return view('livewire.seller.earnings', [
             'availableSen' => $ledger->availableBalanceSen($store),
+            'heldSen' => $store->heldBalanceSen(), // escrow — released on order completion (M1.4)
             'pendingPayout' => $store->payouts()
                 ->whereIn('status', [PayoutStatus::Requested, PayoutStatus::Approved])
                 ->latest('requested_at')

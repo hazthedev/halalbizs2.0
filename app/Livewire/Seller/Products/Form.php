@@ -4,15 +4,20 @@ namespace App\Livewire\Seller\Products;
 
 use App\Enums\ProductCondition;
 use App\Enums\ProductStatus;
+use App\Enums\TaxClass;
 use App\Livewire\Concerns\CurrentStore;
+use App\Models\Attribute;
+use App\Models\AttributeValue;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductVariant;
+use App\Services\ListingCopyService;
 use App\Settings\ModerationSettings;
 use App\Support\RinggitInput;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -58,6 +63,15 @@ class Form extends Component
     public ?int $brandId = null;
 
     public string $condition = 'new';
+
+    /** Tax class — drives SST only when the store is SST-registered (TaxService). */
+    public string $taxClass = 'exempt';
+
+    /** Selected attribute-value ids for faceted search (M1.3). */
+    public array $attributeValueIds = [];
+
+    /** Trust/detail metafields keyed by definition key (M2.7). */
+    public array $metafields = [];
 
     // ── Images ─────────────────────────────────────────────────────────
     /** @var array<int, TemporaryUploadedFile> */
@@ -320,6 +334,30 @@ class Form extends Component
         $this->save(ProductStatus::Draft);
     }
 
+    /** Generate bilingual draft description copy with AI (M1.6). */
+    public function generateCopy(ListingCopyService $copy): void
+    {
+        $title = trim($this->name['en']) !== '' ? trim($this->name['en']) : trim($this->name['ms']);
+
+        if ($title === '') {
+            $this->dispatch('toast', message: __('Add a product name first.'), type: 'error');
+
+            return;
+        }
+
+        $attributes = AttributeValue::query()
+            ->whereIn('id', array_map('intval', $this->attributeValueIds))
+            ->get()
+            ->map(fn (AttributeValue $value) => $value->getTranslation('value', 'en'))
+            ->all();
+
+        $generated = $copy->generate($title, $attributes);
+        $this->description['en'] = $generated['en'];
+        $this->description['ms'] = $generated['ms'];
+
+        $this->dispatch('toast', message: __('Draft copy generated — review and edit before publishing.'));
+    }
+
     public function publish(): void
     {
         $status = app(ModerationSettings::class)->require_product_approval
@@ -362,6 +400,7 @@ class Form extends Component
                 'category_id' => $this->selectedCategoryId(),
                 'brand_id' => $this->brandId,
                 'condition' => $this->condition,
+                'tax_class' => $this->taxClass,
                 'status' => $status,
                 'weight_grams' => $this->weightGrams,
                 'length_mm' => $this->lengthMm,
@@ -377,6 +416,9 @@ class Form extends Component
             $this->applyTranslations($product);
 
             $product->save();
+
+            $product->attributeValues()->sync(array_map('intval', $this->attributeValueIds));
+            $this->syncMetafields($product);
 
             if ($this->hasVariations) {
                 $this->syncVariantMatrix($product);
@@ -407,6 +449,22 @@ class Form extends Component
         });
 
         $this->redirect(route('seller.products.index'), navigate: true);
+    }
+
+    /** Upsert non-empty metafields and drop cleared ones (M2.7). */
+    private function syncMetafields(Product $product): void
+    {
+        foreach (array_keys((array) config('metafields.definitions', [])) as $key) {
+            $value = trim((string) ($this->metafields[$key] ?? ''));
+
+            if ($value === '') {
+                $product->metafields()->where('key', $key)->delete();
+
+                continue;
+            }
+
+            $product->metafields()->updateOrCreate(['key' => $key], ['value' => $value]);
+        }
     }
 
     private function applyTranslations(Product $product): void
@@ -627,6 +685,7 @@ class Form extends Component
             'description.ms' => ['nullable', 'string', 'max:65000'],
             'brandId' => ['nullable', Rule::exists('brands', 'id')->where('is_active', true)],
             'condition' => ['required', Rule::enum(ProductCondition::class)],
+            'taxClass' => ['required', Rule::enum(TaxClass::class)],
             'newImages' => ['array', 'max:'.self::MAX_IMAGES],
             'newImages.*' => ['image', 'max:4096'],
             'newVideo' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm', 'max:30720'],
@@ -833,6 +892,26 @@ class Form extends Component
         return $this->categoryLeaf ?? $this->categoryChild ?? $this->categoryTop;
     }
 
+    /**
+     * Filterable attributes (+ values) for the chosen category — the facet
+     * picker (M1.3). Called from the form blade.
+     *
+     * @return Collection<int, Attribute>
+     */
+    public function availableAttributes(): Collection
+    {
+        $categoryId = $this->selectedCategoryId();
+
+        if ($categoryId === null) {
+            return collect();
+        }
+
+        return Category::find($categoryId)?->attributes()
+            ->where('is_filterable', true)
+            ->with(['values' => fn ($values) => $values->orderBy('position')])
+            ->get() ?? collect();
+    }
+
     private function parseScheduleDate(string $value): ?Carbon
     {
         if (trim($value) === '') {
@@ -876,6 +955,9 @@ class Form extends Component
 
         $this->brandId = $product->brand_id;
         $this->condition = $product->condition->value;
+        $this->taxClass = $product->tax_class?->value ?? 'exempt';
+        $this->attributeValueIds = $product->attributeValues->pluck('id')->all();
+        $this->metafields = $product->metafields->pluck('value', 'key')->all();
         $this->weightGrams = $product->weight_grams;
         $this->lengthMm = $product->length_mm;
         $this->widthMm = $product->width_mm;

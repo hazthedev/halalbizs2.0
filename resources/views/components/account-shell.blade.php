@@ -6,6 +6,21 @@ $items = [
     'profile' => ['label' => __('Profile'), 'href' => route('account.profile')],
     'addresses' => ['label' => __('Addresses'), 'href' => route('account.addresses')],
     'orders' => ['label' => __('Orders'), 'href' => route('account.orders')],
+];
+
+if (config('coins.enabled', true)) {
+    $items['coins'] = ['label' => __('Coins'), 'href' => route('account.coins')];
+}
+
+if (config('affiliate.enabled', true)) {
+    $items['affiliate'] = ['label' => __('Creator'), 'href' => route('account.affiliate')];
+}
+
+if (config('subscriptions.enabled', true)) {
+    $items['subscriptions'] = ['label' => __('Subscriptions'), 'href' => route('account.subscriptions')];
+}
+
+$items += [
     'messages' => ['label' => __('Messages'), 'href' => route('account.messages')],
     'wishlist' => ['label' => __('Wishlist'), 'href' => route('account.wishlist')],
     'notifications' => ['label' => __('Notifications'), 'href' => route('account.notifications')],

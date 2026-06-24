@@ -29,7 +29,7 @@ class ProductDetail extends Component
     {
         abort_unless($product->isLive() || $this->canPreview($product), 404);
 
-        $product->load(['options.values', 'variants.media', 'media', 'store', 'category', 'brand']);
+        $product->load(['options.values', 'variants.media', 'media', 'store', 'category', 'brand', 'metafields']);
 
         $this->product = $product;
 

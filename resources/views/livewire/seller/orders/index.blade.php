@@ -1,7 +1,10 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <x-ui.section-heading as="h1" :title="__('Orders')" />
+    <div class="flex items-center justify-between gap-3">
+        <x-ui.section-heading as="h1" :title="__('Orders')" />
+        <button type="button" wire:click="exportCsv" class="inline-flex min-h-11 shrink-0 items-center rounded-lg border border-line-strong px-3 text-[13px] font-medium text-ink hover:border-emerald hover:text-emerald">{{ __('Export CSV') }}</button>
+    </div>
 
     {{-- Status tabs — wire:poll.30s keeps the count chips fresh (sound-free badge bump, docs/07 §B).
          Returns tab: sub-orders with an open return request (docs/09 §D). --}}

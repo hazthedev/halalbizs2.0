@@ -88,6 +88,12 @@
                 <td class="num">-{{ \App\Support\Money::format($subOrder->shop_discount_sen) }}</td>
             </tr>
         @endif
+        @if ($subOrder->tax_sen > 0)
+            <tr>
+                <td class="muted">{{ __('SST') }}</td>
+                <td class="num">{{ \App\Support\Money::format($subOrder->tax_sen) }}</td>
+            </tr>
+        @endif
         <tr class="grand">
             <td>{{ __('Total') }}</td>
             <td class="num">{{ \App\Support\Money::format($subOrder->total_sen) }}</td>
@@ -99,7 +105,10 @@
     </table>
 
     <p class="muted" style="margin-top: 40px; font-size: 10px;">
-        {{ __('Prices are final and tax-inclusive. The platform is not the seller of record.') }}
+        @if ($subOrder->tax_sen > 0)
+            {{ __('SST shown is charged by the seller (SST no. :no).', ['no' => $subOrder->store->sst_number ?? '—']) }}
+        @endif
+        {{ __('The platform is not the seller of record.') }}
     </p>
 </body>
 </html>

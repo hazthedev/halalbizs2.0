@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\PaymentStatus;
+use App\Http\Controllers\AffiliateReferralController;
+use App\Http\Controllers\EasyParcelWebhookController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Ipay88Controller;
@@ -26,9 +28,14 @@ Route::domain('{store:slug}.'.config('app.store_subdomain_base'))->group(functio
 Route::get('/', Storefront\Home::class)->name('home');
 Route::get('/c/{category:slug}', Storefront\Listing::class)->name('category.show');
 Route::get('/search', Storefront\Listing::class)->name('search');
+Route::get('/search/visual', Storefront\VisualSearch::class)->name('search.visual');
 Route::get('/p/{product:slug}', Storefront\ProductDetail::class)->name('product.show');
 Route::get('/s/{store:slug}', Storefront\StorePage::class)->name('store.show');
 Route::get('/cart', Storefront\CartPage::class)->name('cart');
+Route::get('/flash-sale', Storefront\FlashSale::class)->name('flash-sale');
+Route::get('/group-buy/{team:code}', Storefront\GroupBuy\Team::class)->name('group-buy.team');
+Route::get('/live', Storefront\Live\Index::class)->name('live.index');
+Route::get('/live/{session:slug}', Storefront\Live\Room::class)->name('live.room');
 Route::get('/page/{slug}', Storefront\StaticPage::class)->name('page.show');
 
 // ===== Preferences & newsletter =====
@@ -83,6 +90,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/payments/ipay88/response', [Ipay88Controller::class, 'response'])->name('payments.ipay88.response');
 Route::post('/payments/ipay88/backend', [Ipay88Controller::class, 'backend'])->name('payments.ipay88.backend');
 
+// Courier tracking webhook (token-gated, CSRF-exempt in bootstrap/app.php).
+Route::post('/shipping/easyparcel/tracking', [EasyParcelWebhookController::class, 'tracking'])->name('shipping.easyparcel.tracking');
+
+// ===== Affiliate share links (M2.5) =====
+Route::get('/r/{code}', [AffiliateReferralController::class, 'refer'])->name('affiliate.refer');
+
 // ===== Help center =====
 Route::get('/help', Storefront\Help\Index::class)->name('help.index');
 Route::get('/help/article/{article}', Storefront\Help\Article::class)->name('help.article');
@@ -100,6 +113,9 @@ Route::middleware(['auth'])->prefix('account')->name('account.')->group(function
     Route::get('/messages', Storefront\Account\Messages::class)->name('messages');
     Route::get('/addresses', Storefront\Account\Addresses::class)->name('addresses');
     Route::get('/wishlist', Storefront\Account\WishlistPage::class)->name('wishlist');
+    Route::get('/coins', Storefront\Account\Coins::class)->name('coins');
+    Route::get('/affiliate', Storefront\Account\Affiliate::class)->name('affiliate');
+    Route::get('/subscriptions', Storefront\Account\Subscriptions::class)->name('subscriptions');
     Route::get('/notifications', Storefront\Account\Notifications::class)->name('notifications');
     Route::get('/orders', Storefront\Account\Orders::class)->name('orders');
     Route::get('/orders/{subOrder}', Storefront\Account\OrderDetail::class)->name('orders.show');

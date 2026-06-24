@@ -6,7 +6,9 @@ use App\Enums\ActorType;
 use App\Enums\GatewayPaymentStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Enums\StockMovementType;
 use App\Enums\SubOrderStatus;
+use App\Events\OrderPaid;
 use App\Models\SubOrder;
 use Illuminate\Support\Facades\DB;
 
@@ -32,9 +34,34 @@ class OrderService
             }
 
             $this->restock($subOrder);
+            $this->refundCoinsIfFullyCancelled($subOrder);
 
             return $subOrder;
         });
+    }
+
+    /**
+     * When the LAST active sub-order of an unpaid order is cancelled, return any
+     * coins the buyer redeemed at checkout (idempotent). Paid orders keep their
+     * redemption — coin handling on post-payment refunds is out of M2.1 scope.
+     */
+    private function refundCoinsIfFullyCancelled(SubOrder $subOrder): void
+    {
+        $order = $subOrder->order->fresh();
+
+        if ($order === null
+            || $order->payment_status === PaymentStatus::Paid
+            || (int) $order->coin_redemption_sen <= 0) {
+            return;
+        }
+
+        $stillActive = $order->subOrders()
+            ->where('status', '!=', SubOrderStatus::Cancelled)
+            ->exists();
+
+        if (! $stillActive) {
+            app(CoinService::class)->refundForOrder($order);
+        }
     }
 
     /**
@@ -42,7 +69,9 @@ class OrderService
      */
     public function markDelivered(SubOrder $subOrder, ActorType $actor, ?int $actorId = null): SubOrder
     {
-        return DB::transaction(function () use ($subOrder, $actor, $actorId) {
+        $becamePaid = false;
+
+        $subOrder = DB::transaction(function () use ($subOrder, $actor, $actorId, &$becamePaid) {
             $subOrder = $this->statusService->transition($subOrder, SubOrderStatus::Delivered, $actor, $actorId);
 
             $order = $subOrder->order;
@@ -59,11 +88,19 @@ class OrderService
                 if ($allDeliveredOrBetter) {
                     $order->update(['payment_status' => PaymentStatus::Paid, 'paid_at' => now()]);
                     $order->payment?->update(['status' => GatewayPaymentStatus::Success, 'paid_at' => now()]);
+                    $becamePaid = true;
                 }
             }
 
             return $subOrder;
         });
+
+        // After commit: e-invoicing fires on the verified-paid event.
+        if ($becamePaid) {
+            OrderPaid::dispatch($subOrder->order->fresh());
+        }
+
+        return $subOrder;
     }
 
     /**
@@ -79,7 +116,7 @@ class OrderService
     {
         foreach ($subOrder->items()->with('variant')->get() as $item) {
             if ($item->variant !== null) {
-                $item->variant->increment('stock', $item->qty);
+                app(StockService::class)->apply($item->variant, $item->qty, StockMovementType::Restock, $subOrder->sub_order_no);
             }
         }
     }

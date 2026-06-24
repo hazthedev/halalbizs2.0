@@ -188,6 +188,19 @@
                 </div>
                 {{-- Mobile actions live in the sticky buy bar below --}}
 
+                {{-- Group-buy / share-to-unlock (M2.6) --}}
+                @if (config('groupbuy.enabled', true))
+                    <livewire:storefront.group-buy.panel :product="$product" :wire:key="'gb-'.$product->id" />
+                @endif
+
+                {{-- Subscribe & save (M2.8) --}}
+                @if (config('subscriptions.enabled', true))
+                    <livewire:storefront.subscribe.panel :product="$product" :wire:key="'sub-'.$product->id" />
+                @endif
+
+                {{-- Halal & product details (M2.7) --}}
+                <x-product-metafields :product="$product" />
+
                 {{-- Seller card --}}
                 @if ($store !== null)
                     <section class="mt-8 rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft" aria-label="{{ __('Seller') }}">

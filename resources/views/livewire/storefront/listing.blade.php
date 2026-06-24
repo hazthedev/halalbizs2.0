@@ -28,6 +28,22 @@
             <p class="mt-1 text-[13px] text-ink-soft tnum">{{ trans_choice(':count product|:count products', $total, ['count' => $total]) }}</p>
         </div>
 
+        @if ($smartAvailable)
+            {{-- Smart (semantic) search toggle (M2.3) --}}
+            <div class="flex items-center gap-2">
+                <button type="button" wire:click="$set('mode', '{{ $mode === 'smart' ? '' : 'smart' }}')"
+                        @class([
+                            'inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-semibold transition-colors',
+                            'border-brass bg-brass/10 text-brass-deep' => $mode === 'smart',
+                            'border-line-strong text-ink-soft hover:border-ink hover:text-ink' => $mode !== 'smart',
+                        ])
+                        aria-pressed="{{ $mode === 'smart' ? 'true' : 'false' }}">
+                    <x-ui.star-mark :size="14" />
+                    {{ __('Smart search') }}
+                </button>
+            </div>
+        @endif
+
         <div class="ml-auto">
             <label for="listing-sort" class="sr-only">{{ __('Sort by') }}</label>
             <select

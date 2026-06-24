@@ -12,6 +12,9 @@ class CartItem extends Model
 
     protected $fillable = ['cart_id', 'product_variant_id', 'qty', 'selected'];
 
+    /** Keep the cart's updated_at fresh on every item change (abandoned-cart idle clock). */
+    protected $touches = ['cart'];
+
     protected function casts(): array
     {
         return [

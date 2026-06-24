@@ -38,7 +38,10 @@ class LedgerService
                 return; // idempotent — completion fires once, but be safe
             }
 
-            $saleSen = $subOrder->items_subtotal_sen + $subOrder->shipping_fee_sen - $subOrder->shop_discount_sen;
+            // Tax collected belongs to the (registered) seller to remit — it is
+            // part of the sale they receive, but commission is charged on the
+            // pre-tax items subtotal only.
+            $saleSen = $subOrder->items_subtotal_sen + $subOrder->shipping_fee_sen - $subOrder->shop_discount_sen + $subOrder->tax_sen;
 
             // round(items_subtotal × rate%) with integer math: rate is decimal(5,2).
             $rateBasisPoints = (int) round((float) $subOrder->commission_rate * 100); // e.g. 5.25% → 525

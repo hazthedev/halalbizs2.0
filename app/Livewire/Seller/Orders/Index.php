@@ -8,10 +8,13 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Livewire\Seller\Orders\Concerns\ManagesShipment;
 use App\Models\SubOrder;
 use App\Services\SubOrderStatusService;
+use App\Support\Csv;
+use App\Support\RinggitInput;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Seller order queue (docs/07 §B) — status tabs with live counts
@@ -77,6 +80,33 @@ class Index extends Component
         $statusService->transition($subOrder, SubOrderStatus::Processing, ActorType::Seller, auth()->id());
 
         $this->dispatch('toast', message: __(':no confirmed — pack it, then arrange shipment.', ['no' => $subOrder->sub_order_no]));
+    }
+
+    /** Download this store's orders as a CSV (M1.5). */
+    public function exportCsv(): StreamedResponse
+    {
+        $store = $this->currentStore();
+
+        $rows = SubOrder::query()
+            ->where('store_id', $store->id)
+            ->with('order')
+            ->latest('created_at')->latest('id')->get()
+            ->map(fn (SubOrder $subOrder) => [
+                $subOrder->sub_order_no,
+                $subOrder->created_at?->toDateTimeString(),
+                $subOrder->status->value,
+                RinggitInput::fromSen($subOrder->items_subtotal_sen),
+                RinggitInput::fromSen($subOrder->shipping_fee_sen),
+                RinggitInput::fromSen($subOrder->tax_sen),
+                RinggitInput::fromSen($subOrder->total_sen),
+                $subOrder->order?->payment_method?->value,
+            ]);
+
+        return Csv::stream(
+            "orders-{$store->slug}.csv",
+            ['sub_order_no', 'placed_at', 'status', 'items_rm', 'shipping_rm', 'tax_rm', 'total_rm', 'payment'],
+            $rows,
+        );
     }
 
     public function render()
