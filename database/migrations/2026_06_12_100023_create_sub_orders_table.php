@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('sub_orders', function (Blueprint $table) {
             $table->id();
             $table->string('sub_order_no')->unique();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete()->index();
-            $table->foreignId('store_id')->constrained()->restrictOnDelete()->index();
+            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('store_id')->constrained()->restrictOnDelete();
             $table->string('status')->default('pending_payment')->index();
             $table->unsignedBigInteger('items_subtotal_sen');
             $table->unsignedBigInteger('shipping_fee_sen')->default(0);

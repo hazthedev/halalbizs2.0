@@ -17,7 +17,7 @@ return new class extends Migration
     {
         Schema::create('einvoice_documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('store_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('store_id')->constrained()->cascadeOnDelete();
             // Individual docs reference a sub-order + its order; consolidated docs leave them null.
             $table->foreignId('sub_order_id')->nullable()->unique()->constrained()->nullOnDelete();
             $table->foreignId('order_id')->nullable()->constrained()->nullOnDelete();

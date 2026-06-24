@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('product_options', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->unsignedTinyInteger('position')->default(0);
             $table->timestamps();
@@ -18,7 +18,7 @@ return new class extends Migration
 
         Schema::create('product_option_values', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_option_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('product_option_id')->constrained()->cascadeOnDelete();
             $table->string('value');
             $table->unsignedTinyInteger('position')->default(0);
             $table->timestamps();

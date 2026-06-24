@@ -26,7 +26,7 @@ return new class extends Migration
 
         Schema::create('return_request_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('return_request_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('return_request_id')->constrained()->cascadeOnDelete();
             $table->foreignId('order_item_id')->constrained()->cascadeOnDelete();
             $table->unsignedInteger('qty');
             $table->unsignedBigInteger('refund_sen');

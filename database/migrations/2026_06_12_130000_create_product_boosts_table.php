@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('product_boosts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete()->index();
-            $table->foreignId('store_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('store_id')->constrained()->cascadeOnDelete();
             $table->timestamp('starts_at');
             $table->timestamp('ends_at');
             $table->unsignedBigInteger('amount_sen');

@@ -30,7 +30,7 @@ return new class extends Migration
 
         Schema::create('voucher_usages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('voucher_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('voucher_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('order_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('sub_order_id')->nullable()->constrained()->cascadeOnDelete();

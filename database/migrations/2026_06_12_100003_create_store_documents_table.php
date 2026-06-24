@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('store_documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('store_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('store_id')->constrained()->cascadeOnDelete();
             $table->string('type');
             $table->string('status')->default('pending');
             $table->string('notes')->nullable();

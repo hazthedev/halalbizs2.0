@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('stock_movements', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_variant_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('product_variant_id')->constrained()->cascadeOnDelete();
             $table->string('type');                      // App\Enums\StockMovementType
             $table->integer('qty_delta');                // signed: −sale, +restock
             $table->unsignedInteger('balance_after');
