@@ -45,7 +45,7 @@ class CatalogController extends Controller
     public function search(Request $request)
     {
         $term = trim((string) $request->query('q', ''));
-        $ids = $term === '' ? [] : Product::search($term)->keys()->all();
+        $ids = Product::searchKeywordIds($term);
 
         $products = Product::query()
             ->live()

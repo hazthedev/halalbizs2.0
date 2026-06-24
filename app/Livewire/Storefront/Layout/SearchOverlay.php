@@ -22,7 +22,10 @@ class SearchOverlay extends Component
         $term = trim($this->query);
 
         if (mb_strlen($term) >= 2) {
-            $products = Product::search($term)->take(6)->get()->load(['media', 'variants', 'store']);
+            $products = (config('scout.driver') === 'meilisearch'
+                ? Product::search($term)->take(6)->get()
+                : Product::query()->live()->keywordSearch($term)->orderByDesc('sold_count')->take(6)->get()
+            )->load(['media', 'variants', 'store']);
 
             $stores = Store::approved()
                 ->where('name', 'like', "%{$term}%")
