@@ -37,7 +37,11 @@ class ConfirmIpay88PaymentJob implements ShouldQueue
             return; // idempotent — already confirmed
         }
 
-        $requeryResult = $ipay88->requery($payment->ref_no, $payment->amount_sen);
+        // Mock/simulator mode (no merchant code configured): skip the real
+        // requery and treat as settled, so preview checkouts can complete.
+        $requeryResult = $ipay88->isMock()
+            ? '00'
+            : $ipay88->requery($payment->ref_no, $payment->amount_sen);
 
         if ($requeryResult !== '00') {
             $payment->update(['requery_result' => $requeryResult]);
