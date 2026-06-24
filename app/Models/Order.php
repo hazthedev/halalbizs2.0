@@ -25,6 +25,12 @@ class Order extends Model
     protected function casts(): array
     {
         return [
+            // FK ints: MySQL (emulated prepares) returns these as strings, which
+            // breaks strict `===` ownership checks (e.g. /pay user guard). SQLite
+            // returns native ints, so this only bites on MySQL. Cast explicitly.
+            'user_id' => 'integer',
+            'affiliate_id' => 'integer',
+            'subscription_id' => 'integer',
             'payment_method' => PaymentMethod::class,
             'payment_status' => PaymentStatus::class,
             'shipping_address' => 'array',
