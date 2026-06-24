@@ -18,7 +18,8 @@
 /reference
 /e2e/test-results
 /e2e/screenshots
-/public/build
+# /public/build is committed: the cPanel deploy host has no Node, so built
+# Vite/Tailwind assets ship via git. Rebuild + commit on FE changes.
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
