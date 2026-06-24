@@ -142,6 +142,48 @@ class Product extends Model implements HasMedia
         $query->where('status', ProductStatus::Live);
     }
 
+    /**
+     * Real-column keyword search — the MySQL/SQLite fallback for when Scout's
+     * Meilisearch index isn't available. Scout's collection/database engines
+     * query toSearchableArray() keys as if they were columns (name_en, category,
+     * min_price_sen…) and 500 on any SQL connection. `name`/`description` are
+     * translatable JSON columns, so a LIKE on the raw JSON text matches any locale.
+     */
+    #[Scope]
+    protected function keywordSearch(Builder $query, ?string $term): void
+    {
+        $like = '%'.trim((string) $term).'%';
+
+        $query->where(function (Builder $q) use ($like): void {
+            $q->where('name', 'like', $like)
+                ->orWhere('description', 'like', $like)
+                ->orWhereHas('store', fn (Builder $s) => $s->where('name', 'like', $like))
+                ->orWhereHas('brand', fn (Builder $b) => $b->where('name', 'like', $like));
+        });
+    }
+
+    /**
+     * Relevance-ordered product IDs for a keyword term: Meilisearch via Scout
+     * when configured, else the real-column SQL search above (the only path that
+     * works on a host without Meilisearch). Empty term → no results.
+     *
+     * @return array<int>
+     */
+    public static function searchKeywordIds(?string $term): array
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return [];
+        }
+
+        if (config('scout.driver') === 'meilisearch') {
+            return static::search($term)->keys()->all();
+        }
+
+        return static::query()->keywordSearch($term)->orderByDesc('sold_count')->pluck('id')->all();
+    }
+
     public function isLive(): bool
     {
         return $this->status === ProductStatus::Live;

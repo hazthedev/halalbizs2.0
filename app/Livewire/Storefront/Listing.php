@@ -370,7 +370,7 @@ class Listing extends Component
         // Smart mode (M2.3): semantic vector ranking; keyword Scout otherwise.
         return $this->searchIdCache = $this->mode === 'smart' && app(VectorSearchService::class)->enabled()
             ? app(VectorSearchService::class)->semanticSearch(trim($this->q))
-            : Product::search(trim($this->q))->keys()->all();
+            : Product::searchKeywordIds(trim($this->q));
     }
 
     /** Log once per distinct executed search (search entry only). */
