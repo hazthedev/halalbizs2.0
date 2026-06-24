@@ -9,3 +9,7 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# Built frontend assets are committed (Node-less deploy host) but generated —
+# don't expand them in diffs; mark them generated so GitHub collapses them.
+public/build/** -diff linguist-generated
