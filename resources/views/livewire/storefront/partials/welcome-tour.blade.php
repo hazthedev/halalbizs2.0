@@ -5,19 +5,22 @@
 <div x-data="{
         tourOpen: false,
         tourStep: 1,
+        {{-- navigator.webdriver guard keeps browser-automation journeys deterministic; ?tour forces it for the tour's own journey. Kept in a method (not x-init) because Alpine wraps directive bodies in `return (...)`, so a bare `try {}` statement there is a syntax error. --}}
+        startTour() {
+            try {
+                const force = new URLSearchParams(window.location.search).has('tour');
+                if ((force || ! navigator.webdriver) && ! localStorage.getItem('hb_tour_done')) {
+                    this.tourOpen = true;
+                    this.$nextTick(() => this.$refs.tourPrimary?.focus());
+                }
+            } catch (e) {}
+        },
         finishTour() {
             this.tourOpen = false;
             try { localStorage.setItem('hb_tour_done', '1') } catch (e) {}
         },
      }"
-     {{-- navigator.webdriver guard keeps browser-automation journeys deterministic; ?tour forces it for the tour's own journey --}}
-     x-init="try {
-        const force = new URLSearchParams(window.location.search).has('tour');
-        if ((force || ! navigator.webdriver) && ! localStorage.getItem('hb_tour_done')) {
-            tourOpen = true;
-            $nextTick(() => $refs.tourPrimary?.focus());
-        }
-     } catch (e) {}"
+     x-init="startTour()"
      x-on:keydown.escape.window="if (tourOpen) finishTour()"
      x-show="tourOpen"
      x-cloak

@@ -12,6 +12,11 @@
       x-data
       x-init="$store.cart.set({{ app(\App\Services\CartService::class)->itemCount(auth()->user()) }})">
 
+    {{-- Auth/utility pages (login, sign-up, password, email verification) drop the
+         shopping chrome — category strip + concierge are noise there. Extend this
+         route list if other non-shopping pages should go bare too. --}}
+    @php($bareChrome = request()->routeIs('login', 'register', 'password.request', 'password.reset', 'verification.notice'))
+
     {{-- ===== Occasion announcement bar (colors from ThemeSettings — never recolors actions) ===== --}}
     @php($themeSettings = app(\App\Settings\ThemeSettings::class))
     @if ($themeSettings->announcementActive())
@@ -53,7 +58,7 @@
 
             <div class="flex shrink-0 items-center gap-1 sm:gap-2">
                 {{-- Shopping concierge — mobile entry point (desktop uses the floating launcher, which is hidden on mobile to clear the sticky buy bars). Opens the same global panel via its open-concierge listener. --}}
-                @if (config('services.concierge.enabled', true))
+                @if (config('services.concierge.enabled', true) && ! $bareChrome)
                     <button type="button" x-on:click="$dispatch('open-concierge')"
                             class="flex size-10 items-center justify-center rounded-lg text-brass hover:bg-paper/10 sm:hidden"
                             aria-label="{{ __('Ask the concierge') }}">
@@ -131,23 +136,25 @@
         </div>
     </header>
 
-    {{-- Category strip --}}
-    <nav class="border-b border-line bg-paper" aria-label="{{ __('Categories') }}">
-        <div class="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-2">
-            @if (config('live.enabled', true))
-                <a href="{{ route('live.index') }}" wire:navigate
-                   class="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold text-danger hover:bg-danger/5">
-                    <span class="size-1.5 animate-pulse rounded-full bg-danger"></span>{{ __('Live') }}
-                </a>
-            @endif
-            @foreach (\App\Models\Category::active()->whereNull('parent_id')->orderBy('position')->get() as $topCategory)
-                <a href="{{ route('category.show', $topCategory->slug) }}" wire:navigate
-                   class="shrink-0 rounded-lg px-3 py-1.5 text-[13px] font-medium text-ink-soft hover:text-ink">
-                    {{ $topCategory->getTranslation('name', app()->getLocale()) }}
-                </a>
-            @endforeach
-        </div>
-    </nav>
+    {{-- Category strip (hidden on auth/utility pages) --}}
+    @unless ($bareChrome)
+        <nav class="border-b border-line bg-paper" aria-label="{{ __('Categories') }}">
+            <div class="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-2">
+                @if (config('live.enabled', true))
+                    <a href="{{ route('live.index') }}" wire:navigate
+                       class="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold text-danger hover:bg-danger/5">
+                        <span class="size-1.5 animate-pulse rounded-full bg-danger"></span>{{ __('Live') }}
+                    </a>
+                @endif
+                @foreach (\App\Models\Category::active()->whereNull('parent_id')->orderBy('position')->get() as $topCategory)
+                    <a href="{{ route('category.show', $topCategory->slug) }}" wire:navigate
+                       class="shrink-0 rounded-lg px-3 py-1.5 text-[13px] font-medium text-ink-soft hover:text-ink">
+                        {{ $topCategory->getTranslation('name', app()->getLocale()) }}
+                    </a>
+                @endforeach
+            </div>
+        </nav>
+    @endunless
 
     {{-- ===== Main ===== --}}
     <main class="flex-1">
@@ -227,7 +234,7 @@
     {{-- Global overlays --}}
     <livewire:storefront.layout.search-overlay />
     <livewire:storefront.layout.mini-cart />
-    @if (config('services.concierge.enabled', true))
+    @if (config('services.concierge.enabled', true) && ! $bareChrome)
         <livewire:storefront.shop-assistant />
     @endif
 
