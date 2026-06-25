@@ -134,3 +134,15 @@ test('filters reset paging and sync to the query string', function () {
         ->set('state', 'Selangor')
         ->assertSet('perPage', 24);
 });
+
+test('a pathologically long search query is truncated, never a 500', function () {
+    // Regression: a 6000-char term overflowed search_logs.term (VARCHAR) → QueryException → 500
+    // on MySQL (SQLite silently tolerates it). The term must be clamped before logging.
+    $long = str_repeat('a', 6000);
+
+    $this->get(route('search', ['q' => $long]))->assertOk();
+
+    $log = SearchLog::latest('id')->first();
+    expect($log)->not->toBeNull()
+        ->and(mb_strlen($log->term))->toBeLessThanOrEqual(190);
+});
