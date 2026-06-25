@@ -385,7 +385,8 @@ class Listing extends Component
         $this->loggedTerm = $term;
 
         SearchLog::create([
-            'term' => $term,
+            // ponytail: clamp to the column width — a pathologically long query must not 500 the search
+            'term' => mb_substr($term, 0, 190),
             'results_count' => count($this->searchIds()),
             'user_id' => auth()->id(),
         ]);
