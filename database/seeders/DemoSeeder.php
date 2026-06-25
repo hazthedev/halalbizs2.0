@@ -80,6 +80,9 @@ class DemoSeeder extends Seeder
             ]);
             $this->attachImage($banner, 'image', 1200, 400, "HalalBizs Campaign {$i}");
         }
+
+        // Demo reviews + completed orders (populates product/store rating aggregates).
+        $this->call(DemoReviewsSeeder::class);
     }
 
     /**
