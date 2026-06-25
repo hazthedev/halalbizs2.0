@@ -57,6 +57,11 @@ echo "→ seed idempotent reference data"
 "$PHP_BIN" artisan db:seed --class=RoleSeeder --force || echo "  ! role seed reported errors — continuing"
 "$PHP_BIN" artisan db:seed --class=CurrencySeeder --force || echo "  ! currency seed reported errors — continuing"
 
+# PREVIEW DEMO DATA — populates the reviews feature with demo ratings on first
+# run only (idempotent: skips once any review exists; faker-free so it runs under
+# the web user with no dev deps). REMOVE THIS LINE before deploying to real prod.
+"$PHP_BIN" artisan db:seed --class=DemoReviewsSeeder --force || echo "  ! demo reviews seed reported errors — continuing"
+
 echo "→ clear caches"
 "$PHP_BIN" artisan optimize:clear
 
