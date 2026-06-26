@@ -6,6 +6,7 @@ use App\Livewire\Concerns\InteractsWithCart;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductView;
+use App\Models\StockSubscription;
 use App\Settings\CodSettings;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -82,6 +83,27 @@ class ProductDetail extends Component
         $this->qty = max(1, $this->qty - 1);
     }
 
+    /** Register a one-shot back-in-stock alert for an out-of-stock variant. */
+    public function notifyWhenAvailable(int $variantId): void
+    {
+        if (auth()->guest()) {
+            $this->redirectRoute('login', navigate: true);
+
+            return;
+        }
+
+        $variant = $this->product->variants->firstWhere('id', $variantId);
+
+        abort_if($variant === null, 404);
+
+        StockSubscription::firstOrCreate([
+            'user_id' => auth()->id(),
+            'product_variant_id' => $variant->id,
+        ]);
+
+        $this->dispatch('toast', message: __("Done — we'll email you the moment it's back in stock."));
+    }
+
     public function buyNow(): void
     {
         $variant = $this->resolvedVariant();
@@ -106,6 +128,7 @@ class ProductDetail extends Component
             'codAvailable' => $this->product->cod_enabled && app(CodSettings::class)->enabled,
             'storeProductsCount' => $this->product->store?->products()->live()->count() ?? 0,
             'jsonLd' => $this->jsonLd(),
+            'subscribedVariantIds' => $this->subscribedVariantIds(),
         ])->title($this->product->getTranslation('name', app()->getLocale()));
     }
 
@@ -183,6 +206,25 @@ class ProductDetail extends Component
         }
 
         return $map;
+    }
+
+    /**
+     * Variant ids this buyer already has a live back-in-stock alert on, so the
+     * button can render its "we'll email you" state.
+     *
+     * @return array<int, int>
+     */
+    private function subscribedVariantIds(): array
+    {
+        if (auth()->guest()) {
+            return [];
+        }
+
+        return StockSubscription::query()
+            ->where('user_id', auth()->id())
+            ->whereIn('product_variant_id', $this->product->variants->pluck('id'))
+            ->pluck('product_variant_id')
+            ->all();
     }
 
     /** @return array<string, mixed> */

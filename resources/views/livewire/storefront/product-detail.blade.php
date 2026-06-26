@@ -148,7 +148,18 @@
                     @if ($variant !== null && $variant->stock > 0 && $variant->stock < 10)
                         <span class="text-[13px] font-medium text-warn">{{ __('Only :count left', ['count' => $variant->stock]) }}</span>
                     @elseif ($variant !== null && $variant->stock < 1)
-                        <x-ui.badge variant="out-of-stock">{{ __('Out of stock') }}</x-ui.badge>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <x-ui.badge variant="out-of-stock">{{ __('Out of stock') }}</x-ui.badge>
+                            @if (in_array($variant->id, $subscribedVariantIds, true))
+                                <span class="text-[13px] font-medium text-emerald">{{ __("We'll email you when it's back.") }}</span>
+                            @else
+                                <button type="button" wire:click="notifyWhenAvailable({{ $variant->id }})"
+                                        wire:loading.attr="disabled" wire:target="notifyWhenAvailable"
+                                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    {{ __('Notify me when available') }}
+                                </button>
+                            @endif
+                        </div>
                     @endif
                 </div>
 
