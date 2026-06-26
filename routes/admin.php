@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StoreDocumentController;
 use App\Livewire\Admin;
 use Illuminate\Support\Facades\Route;
 
@@ -10,6 +11,8 @@ Route::middleware('can:sellers.manage')->group(function () {
     Route::get('/sellers/applications', Admin\Sellers\Applications::class)->name('sellers.applications');
     Route::get('/sellers/stores', Admin\Sellers\Stores::class)->name('sellers.stores');
     Route::get('/sellers/stores/{store}', Admin\Sellers\StoreDetail::class)->name('sellers.stores.show');
+    // KYC document download — private disk, admin-only (replaces the old public /storage URL)
+    Route::get('/sellers/documents/{storeDocument}', [StoreDocumentController::class, 'show'])->name('sellers.documents.show');
     Route::get('/buyers', Admin\Buyers\Index::class)->name('buyers.index');
     Route::get('/buyers/{user}', Admin\Buyers\Detail::class)->name('buyers.show');
 });

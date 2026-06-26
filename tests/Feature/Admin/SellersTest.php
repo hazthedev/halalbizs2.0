@@ -12,6 +12,7 @@ use App\Notifications\SellerApplicationDecision;
 use App\Notifications\StoreSuspended;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -128,6 +129,30 @@ test('application documents can be verified and rejected with notes', function (
     expect($ssm->fresh()->status)->toBe(DocumentStatus::Verified)
         ->and($ic->fresh()->status)->toBe(DocumentStatus::Rejected)
         ->and($ic->fresh()->notes)->toBe('Too blurry to read.');
+});
+
+test('KYC documents live on the private disk and only an admin can download them', function () {
+    Storage::fake('local');
+
+    $store = Store::factory()->create();
+    $doc = StoreDocument::create(['store_id' => $store->id, 'type' => 'ic', 'status' => DocumentStatus::Pending]);
+    $doc->addMediaFromString('%PDF-1.4 fake ic copy')
+        ->usingFileName('ic.pdf')
+        ->toMediaCollection('file');
+
+    // Stored on the PRIVATE disk — never the web-served public one (no enumerable /storage URL).
+    expect($doc->getFirstMedia('file')->disk)->toBe('local');
+
+    $url = route('admin.sellers.documents.show', $doc);
+
+    // Guest → login; buyer → 403; admin (sellers.manage) → streams the file.
+    $this->get($url)->assertRedirect(route('login'));
+
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $this->actingAs($buyer)->get($url)->assertForbidden();
+
+    $this->actingAs(sellersAdmin())->get($url)->assertOk();
 });
 
 test('the stores list shows decided stores, hides pending ones and searches by owner email', function () {
