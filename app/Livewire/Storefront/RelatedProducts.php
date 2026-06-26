@@ -4,6 +4,7 @@ namespace App\Livewire\Storefront;
 
 use App\Livewire\Concerns\InteractsWithCart;
 use App\Models\Product;
+use App\Services\CartService;
 use App\Services\RecommendationService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Lazy;
@@ -24,6 +25,30 @@ class RelatedProducts extends Component
     public function mount(Product $product): void
     {
         $this->product = $product;
+    }
+
+    /** "Add all to cart" for the frequently-bought-together strip — one in-stock variant each, single toast. */
+    public function addAllBoughtTogether(): void
+    {
+        $cart = app(CartService::class);
+        $added = 0;
+
+        foreach (app(RecommendationService::class)->frequentlyBoughtTogether($this->product->id) as $product) {
+            $variant = $product->variants->firstWhere(fn ($v) => $v->stock > 0);
+
+            if ($variant !== null) {
+                $cart->addItem(auth()->user(), $variant, 1);
+                $added++;
+            }
+        }
+
+        if ($added > 0) {
+            $this->reconcileCart(
+                trans_choice('{1}:count item added to cart|[2,*]:count items added to cart', $added, ['count' => $added]),
+                actionLabel: __('View cart'),
+                actionEvent: 'view-cart',
+            );
+        }
     }
 
     public function placeholder(): View
