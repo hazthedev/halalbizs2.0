@@ -289,6 +289,12 @@
                         class="-mb-px min-h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors duration-150">
                     {{ __('Reviews') }}
                 </button>
+                <button type="button" role="tab" x-on:click="tab = 'questions'"
+                        x-bind:aria-selected="tab === 'questions' ? 'true' : 'false'"
+                        x-bind:class="tab === 'questions' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
+                        class="-mb-px min-h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors duration-150">
+                    {{ __('Q&A') }}
+                </button>
             </div>
 
             <div x-show="tab === 'description'" role="tabpanel" class="max-w-prose space-y-3 py-5 text-sm leading-relaxed text-ink [&_h2]:font-display [&_h2]:text-lg [&_h2]:font-bold [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc">
@@ -323,6 +329,11 @@
             <div x-show="tab === 'reviews'" x-cloak role="tabpanel" class="py-5">
                 {{-- Lazy island: review queries run only when this scrolls/toggles into view --}}
                 <livewire:storefront.product-reviews :product="$product" />
+            </div>
+
+            <div x-show="tab === 'questions'" x-cloak role="tabpanel" class="py-5">
+                {{-- Lazy island: Q&A queries run only when this tab opens --}}
+                <livewire:storefront.product-questions :product="$product" />
             </div>
 
             {{-- Review photo lightbox (true overlay — the only place shadows are allowed) --}}

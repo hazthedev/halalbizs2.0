@@ -82,7 +82,7 @@
                 @if (config('live.enabled', true))
                     @php($sellerNavItems[] = ['seller.live.index', __('Live shopping')])
                 @endif
-                @php($sellerNavItems = array_merge($sellerNavItems, [['seller.earnings', __('Earnings')], ['seller.reviews.index', __('Reviews')]]))
+                @php($sellerNavItems = array_merge($sellerNavItems, [['seller.earnings', __('Earnings')], ['seller.reviews.index', __('Reviews')], ['seller.questions.index', __('Questions')]]))
                 @foreach ($sellerNavItems as [$routeName, $label])
                     @if (Illuminate\Support\Facades\Route::has($routeName))
                         <a href="{{ route($routeName) }}" wire:navigate
