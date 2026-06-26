@@ -24,6 +24,7 @@
                 <input
                     x-ref="searchInput"
                     type="search"
+                    maxlength="100"
                     wire:model.live.debounce.300ms="query"
                     x-on:keydown.enter="go()"
                     placeholder="{{ __('Search products, stores, categories…') }}"
