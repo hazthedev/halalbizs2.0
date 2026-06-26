@@ -131,6 +131,11 @@ class Product extends Model implements HasMedia
         return $this->hasMany(Review::class);
     }
 
+    public function questions(): HasMany
+    {
+        return $this->hasMany(ProductQuestion::class);
+    }
+
     public function boosts(): HasMany
     {
         return $this->hasMany(ProductBoost::class);

@@ -21,6 +21,7 @@ Route::get('/group-buys', Seller\GroupBuys::class)->name('group-buys.index');
 Route::get('/live', Seller\LiveSessions::class)->name('live.index');
 Route::get('/earnings', Seller\Earnings::class)->name('earnings');
 Route::get('/reviews', Seller\Reviews\Index::class)->name('reviews.index');
+Route::get('/questions', Seller\Questions\Index::class)->name('questions.index');
 Route::get('/messages', Seller\Messages::class)->name('messages');
 Route::get('/notifications', Seller\Notifications::class)->name('notifications');
 Route::get('/boosts', Seller\Boosts::class)->name('boosts');
