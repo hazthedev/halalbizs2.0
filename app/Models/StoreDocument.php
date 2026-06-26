@@ -25,7 +25,10 @@ class StoreDocument extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('file')->singleFile();
+        // KYC docs (IC + SSM) are sensitive PII — keep them on the PRIVATE disk
+        // (storage/app/private), never the web-served public disk. Served only
+        // through the admin-gated StoreDocumentController.
+        $this->addMediaCollection('file')->singleFile()->useDisk('local');
     }
 
     public function store(): BelongsTo

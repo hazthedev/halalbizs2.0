@@ -9,7 +9,9 @@
                 \App\Enums\DocumentStatus::Verified => 'sale',
                 \App\Enums\DocumentStatus::Rejected => 'danger',
             };
-            $fileUrl = $document->getFirstMediaUrl('file');
+            $fileUrl = $document->getFirstMedia('file') !== null
+                ? route('admin.sellers.documents.show', $document)
+                : '';
         @endphp
 
         <div class="rounded-[var(--radius-card)] border border-line bg-surface p-3 shadow-soft" wire:key="document-{{ $document->id }}">
