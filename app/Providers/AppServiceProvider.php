@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Events\OrderPaid;
+use App\Events\ProductRestocked;
 use App\Events\SubOrderStatusChanged;
 use App\Listeners\DispatchOrderWebhooks;
+use App\Listeners\NotifyBackInStockSubscribers;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Payment;
@@ -80,6 +82,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Outbound order webhooks (M1.7) — explicit single registration.
         Event::listen(OrderPaid::class, [DispatchOrderWebhooks::class, 'onOrderPaid']);
+        Event::listen(ProductRestocked::class, NotifyBackInStockSubscribers::class);
         Event::listen(SubOrderStatusChanged::class, [DispatchOrderWebhooks::class, 'onSubOrderStatusChanged']);
 
         // Affiliate last-click attribution snapshot at order creation (M2.5).

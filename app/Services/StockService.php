@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\StockMovementType;
+use App\Events\ProductRestocked;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 
@@ -16,10 +17,17 @@ class StockService
 {
     public function apply(ProductVariant $variant, int $qtyDelta, StockMovementType $type, ?string $reference = null): StockMovement
     {
+        $before = (int) $variant->stock;
+
         if ($qtyDelta >= 0) {
             $variant->increment('stock', $qtyDelta);
         } else {
             $variant->decrement('stock', -$qtyDelta);
+        }
+
+        // Crossed out-of-stock → in-stock: alert anyone waiting on this variant.
+        if ($before < 1 && (int) $variant->stock >= 1) {
+            ProductRestocked::dispatch($variant);
         }
 
         return StockMovement::create([
