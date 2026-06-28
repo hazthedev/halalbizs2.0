@@ -22,3 +22,13 @@ Schedule::command('subscriptions:process')->hourly();
 // Ops — daily database + .env backup, then prune old ones (docs/10).
 Schedule::command('backup:run')->dailyAt('02:00');
 Schedule::command('backup:clean')->dailyAt('02:30');
+
+// Async queue drain — shared cPanel hosting has no supervisor / persistent worker,
+// so ride the scheduler cron: a short-lived worker each minute that processes the
+// database queue and exits. Pinned to the `database` connection so it's a harmless
+// no-op while QUEUE_CONNECTION=sync and starts working the instant that flips.
+// ponytail: no second cron, no daemon — the one schedule:run cron covers everything.
+Schedule::command('queue:work database --stop-when-empty --max-time=50 --tries=3')
+    ->everyMinute()
+    ->withoutOverlapping(5)
+    ->runInBackground();
