@@ -5,7 +5,7 @@
 ])
 
 @php
-$base = 'inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] px-4 py-2.5 text-sm font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 min-h-11';
+$base = 'inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] px-4 py-2.5 text-sm font-semibold transition-all duration-150 ease-out-soft active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 min-h-11';
 
 $classes = match ($variant) {
     'primary' => "$base bg-emerald text-white shadow-soft hover:bg-emerald-deep hover:-translate-y-px active:translate-y-0 active:bg-emerald-night",

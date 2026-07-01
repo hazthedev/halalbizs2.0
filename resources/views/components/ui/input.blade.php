@@ -15,7 +15,7 @@
         type="{{ $type }}"
         @if($name) name="{{ $name }}" id="{{ $name }}" @endif
         {{ $attributes->except('class')->merge([
-            'class' => 'block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink transition-colors placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald/60 focus-visible:border-emerald min-h-11 '
+            'class' => 'block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink transition-[color,box-shadow,border-color] duration-[120ms] ease-out-soft placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald/60 focus-visible:border-emerald min-h-11 '
                 .($error ? 'border-danger' : 'border-line-strong'),
         ]) }}
     >

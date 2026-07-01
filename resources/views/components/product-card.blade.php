@@ -9,13 +9,13 @@
     $inStock = $product->variants->sum('stock') > 0;
 @endphp
 
-<div class="group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-card">
+<div class="group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft hb-lift hover:border-line-strong">
     <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="absolute inset-0 z-10" aria-label="{{ $product->getTranslation('name', app()->getLocale()) }}"></a>
 
     <div class="relative aspect-square overflow-hidden bg-paper">
         @if ($image)
             <img src="{{ $image }}" alt="{{ $product->getTranslation('name', app()->getLocale()) }}{{ $defaultVariant?->options_label ? ' — '.$defaultVariant->options_label : '' }}"
-                 class="size-full object-cover transition-transform duration-150 group-hover:scale-[1.02]" loading="lazy">
+                 class="size-full object-cover transition-transform duration-200 ease-out-soft group-hover:scale-[1.02]" loading="lazy">
         @endif
 
         {{-- Paid placement disclosure — deliberately neutral, never emerald --}}
@@ -29,7 +29,7 @@
             <button
                 type="button"
                 wire:click="toggleWishlist({{ $product->id }})"
-                class="absolute right-2 top-2 z-20 flex size-9 items-center justify-center rounded-full border border-line bg-surface/90 {{ $wishlisted ? 'text-danger' : 'text-ink-faint hover:text-ink' }}"
+                class="absolute right-2 top-2 z-20 flex size-9 items-center justify-center rounded-full border border-line bg-surface/90 hb-press [--press:0.9] {{ $wishlisted ? 'text-danger' : 'text-ink-faint hover:text-ink' }}"
                 aria-label="{{ $wishlisted ? __('Remove from wishlist') : __('Add to wishlist') }}"
             >
                 <svg class="size-4" viewBox="0 0 24 24" fill="{{ $wishlisted ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
@@ -67,7 +67,7 @@
                 type="button"
                 x-on:click="$store.cart.bump()"
                 wire:click="addToCart({{ $defaultVariant->id }})"
-                class="relative z-20 mt-1 inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-semibold text-ink transition-colors hover:border-emerald hover:bg-emerald-tint hover:text-emerald"
+                class="relative z-20 mt-1 inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-semibold text-ink hb-press hover:border-emerald hover:bg-emerald-tint hover:text-emerald"
             >
                 {{ __('Add to cart') }}
             </button>
