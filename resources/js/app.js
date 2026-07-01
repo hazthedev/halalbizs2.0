@@ -4,6 +4,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import ApexCharts from 'apexcharts';
+import './fly-to-cart';
 
 window.Swiper = Swiper;
 window.SwiperModules = { Navigation, Pagination, A11y };
