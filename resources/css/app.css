@@ -52,6 +52,19 @@
     --font-display: 'Fraunces Variable', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
     --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, 'Noto Sans SC', sans-serif;
     --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+
+    /* ── Motion vocabulary ──
+       Two working easings + three durations. ease-out-soft (the .reveal curve)
+       carries ~90% of motion; ease-in-soft is for overlay/close exits only.
+       Easings emit Tailwind ease-* utilities; durations are CSS vars for the
+       shared @utilities below. Kept quiet on purpose — tints, 1-2px lifts,
+       soft scale-ins, gentle fades. Nothing flies or bounces. */
+    --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --ease-in-soft: cubic-bezier(0.4, 0, 1, 1);
+    --ease-emphasis: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --dur-fast: 120ms;
+    --dur-base: 220ms;
+    --dur-slow: 320ms;
 }
 
 @layer base {
@@ -114,7 +127,37 @@
 
 /* staggered page-load reveal — pair with inline style="animation-delay:..." */
 @utility reveal {
-    animation: hb-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation: hb-rise 0.55s var(--ease-out-soft) both;
+}
+
+/* count / attention pulse — cart badge on add, error nudge. Re-adding the
+   class replays it (Alpine toggles it off after the bump window). */
+@keyframes hb-pulse {
+    0%, 100% { transform: scale(1); }
+    40% { transform: scale(1.22); }
+}
+@utility hb-pulse {
+    animation: hb-pulse var(--dur-base) var(--ease-out-soft);
+}
+
+/* tactile press — scale down on :active, springs back on release. Set --press
+   per element (0.9 firm/destructive, 0.97 subtle). Also transitions colour so
+   one class covers hover-tint + press on flat controls (pills, icon buttons). */
+@utility hb-press {
+    transition: transform var(--dur-fast) var(--ease-out-soft),
+                background-color var(--dur-fast) var(--ease-out-soft),
+                border-color var(--dur-fast) var(--ease-out-soft),
+                color var(--dur-fast) var(--ease-out-soft);
+    &:active { transform: scale(var(--press, 0.97)); }
+}
+
+/* canonical card/tile hover lift — product cards, rails, tiles all elevate
+   identically. Pair with a hover:border-* for the border target. */
+@utility hb-lift {
+    transition: transform var(--dur-base) var(--ease-out-soft),
+                box-shadow var(--dur-base) var(--ease-out-soft),
+                border-color var(--dur-base) var(--ease-out-soft);
+    &:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); }
 }
 
 @keyframes hb-shimmer {

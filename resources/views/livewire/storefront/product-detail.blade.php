@@ -121,7 +121,7 @@
                                                 wire:click="selectValue({{ $option->id }}, {{ $value->id }})"
                                                 @disabled(! $available)
                                                 aria-pressed="{{ $selected ? 'true' : 'false' }}"
-                                                class="min-h-11 rounded-full border px-4 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40 {{ $selected ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink hover:border-ink' }}">
+                                                class="min-h-11 rounded-full border px-4 text-sm font-medium hb-press disabled:cursor-not-allowed disabled:opacity-40 {{ $selected ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink hover:border-ink' }}">
                                             {{ $value->value }}
                                         </button>
                                     @endforeach
@@ -137,12 +137,12 @@
                     <div class="inline-flex items-center rounded-full border border-line-strong">
                         <button type="button" wire:click="decrementQty"
                                 @disabled($variant === null || $qty <= 1)
-                                class="flex size-11 items-center justify-center rounded-l-full text-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                                class="flex size-11 items-center justify-center rounded-l-full text-ink-soft hb-press [--press:0.9] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="{{ __('Decrease quantity') }}">−</button>
                         <span class="min-w-8 text-center font-mono text-sm font-medium tnum">{{ $qty }}</span>
                         <button type="button" wire:click="incrementQty"
                                 @disabled($variant === null || $qty >= $variant->stock)
-                                class="flex size-11 items-center justify-center rounded-r-full text-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                                class="flex size-11 items-center justify-center rounded-r-full text-ink-soft hb-press [--press:0.9] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="{{ __('Increase quantity') }}">+</button>
                     </div>
                     @if ($variant !== null && $variant->stock > 0 && $variant->stock < 10)
@@ -186,14 +186,14 @@
                             wire:click="addToCart({{ $variant?->id ?? 0 }}, {{ $qty }})"
                             wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                             @disabled(! $canBuy)
-                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50">
+                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-semibold text-ink transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-paper active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
                         {{ __('Add to cart') }}
                     </button>
                     <button type="button"
                             wire:click="buyNow"
                             wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                             @disabled(! $canBuy)
-                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
+                            class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-emerald-deep active:scale-[0.98] active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
                         {{ __('Buy now') }}
                     </button>
                 </div>
@@ -376,14 +376,14 @@
                     wire:click="addToCart({{ $variant?->id ?? 0 }}, {{ $qty }})"
                     wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                     @disabled(! $canBuy)
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-paper px-3 text-sm font-semibold text-paper transition-colors duration-150 hover:bg-paper/10 disabled:cursor-not-allowed disabled:opacity-50">
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-paper px-3 text-sm font-semibold text-paper transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-paper/10 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
                 {{ __('Add to cart') }}
             </button>
             <button type="button"
                     wire:click="buyNow"
                     wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                     @disabled(! $canBuy)
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-3 text-sm font-semibold text-white transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-emerald-deep active:scale-[0.98] active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
                 {{ __('Buy now') }}
             </button>
         </div>

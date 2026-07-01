@@ -25,9 +25,9 @@
 
     @if ($href)
         <a href="{{ $href }}" wire:navigate
-           class="group inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-emerald hover:text-emerald-deep">
+           class="group inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-emerald transition-colors duration-[120ms] ease-out-soft hover:text-emerald-deep">
             {{ $linkLabel ?? __('View all') }}
-            <span aria-hidden="true" class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+            <span aria-hidden="true" class="transition-transform duration-[120ms] ease-out-soft group-hover:translate-x-0.5">&rarr;</span>
         </a>
     @elseif (isset($actions))
         <div class="shrink-0">{{ $actions }}</div>
