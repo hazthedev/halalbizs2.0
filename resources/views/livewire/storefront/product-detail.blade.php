@@ -27,7 +27,7 @@
                                class="size-full object-cover"></video>
                     @endif
                     @if ($mainImage)
-                        <img data-fly-source @if ($video) x-show="! showVideo" @endif x-bind:src="activeImage" src="{{ $mainImage }}"
+                        <img @if ($video) x-show="! showVideo" @endif x-bind:src="activeImage" src="{{ $mainImage }}"
                              alt="{{ $name }}{{ $variant?->options_label ? ' — '.$variant->options_label : '' }}"
                              class="size-full object-cover">
                     @elseif (! $video)
@@ -182,7 +182,7 @@
                 <div class="mt-6 hidden gap-3 lg:flex">
                     <button type="button"
                             data-testid="pdp-add-to-cart"
-                            x-on:click="$store.cart.bump(); window.flyToCart?.(document.querySelector('[data-fly-source]'))"
+                            x-on:click="$store.cart.bump()"
                             wire:click="addToCart({{ $variant?->id ?? 0 }}, {{ $qty }})"
                             wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                             @disabled(! $canBuy)
@@ -372,7 +372,7 @@
             @endif
             <button type="button"
                     data-testid="pdp-add-to-cart"
-                    x-on:click="$store.cart.bump(); window.flyToCart?.(document.querySelector('[data-fly-source]'))"
+                    x-on:click="$store.cart.bump()"
                     wire:click="addToCart({{ $variant?->id ?? 0 }}, {{ $qty }})"
                     wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                     @disabled(! $canBuy)
