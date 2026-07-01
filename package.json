@@ -21,6 +21,7 @@
         "@fontsource-variable/jetbrains-mono": "^5.2.8",
         "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
         "apexcharts": "^5.15.0",
+        "motion": "^12.42.2",
         "swiper": "^12.2.0"
     }
 }
