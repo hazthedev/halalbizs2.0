@@ -5,6 +5,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import ApexCharts from 'apexcharts';
+import intersect from '@alpinejs/intersect';
 
 window.Swiper = Swiper;
 window.SwiperModules = { Navigation, Pagination, A11y, Autoplay, EffectFade };
@@ -77,6 +78,10 @@ function deepMerge(base, extra) {
 }
 
 document.addEventListener('alpine:init', () => {
+    // Livewire's bundled Alpine does NOT ship the intersect plugin — register
+    // it ourselves (drives the motion-reveal scroll entrances).
+    window.Alpine.plugin(intersect);
+
     /**
      * <x-ui.chart> driver. `payload` = { type, series, options }. When the
      * dashboard recomputes (period change) it dispatches `refreshEvent` with a
