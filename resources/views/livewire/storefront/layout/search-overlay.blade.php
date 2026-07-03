@@ -16,8 +16,15 @@
     x-on:keydown.window.prevent.slash="if (!open && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) openOverlay()"
     x-on:keydown.escape.window="close()"
 >
-    <div x-show="open" x-cloak x-transition.opacity.duration.150ms class="fixed inset-0 z-50 bg-ink/50 p-4 pt-[10vh]" x-on:click.self="close()">
-        <div class="mx-auto w-full max-w-2xl overflow-hidden rounded-[var(--radius-card)] bg-surface shadow-pop" role="dialog" aria-label="{{ __('Search') }}">
+    <div x-show="open" x-cloak
+         x-transition:enter="transition-opacity duration-(--dur-standard) ease-standard" x-transition:enter-start="opacity-0"
+         x-transition:leave="transition-opacity duration-200 ease-in-soft" x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 bg-ink/50 p-4 pt-[10vh]" x-on:click.self="close()">
+        {{-- Dialog slides 16px down from its edge + fades, faster exit --}}
+        <div x-show="open"
+             x-transition:enter="transition duration-(--dur-standard) ease-out-soft" x-transition:enter-start="-translate-y-4 opacity-0"
+             x-transition:leave="transition duration-200 ease-in-soft" x-transition:leave-end="-translate-y-4 opacity-0"
+             class="mx-auto w-full max-w-2xl overflow-hidden rounded-[var(--radius-card)] bg-surface shadow-pop" role="dialog" aria-label="{{ __('Search') }}">
             {{-- Input row --}}
             <div class="flex items-center gap-3 border-b border-line px-4">
                 <svg class="size-5 shrink-0 text-ink-faint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>

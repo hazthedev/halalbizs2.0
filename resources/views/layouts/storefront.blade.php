@@ -12,6 +12,10 @@
       x-data
       x-init="$store.cart.set({{ app(\App\Services\CartService::class)->itemCount(auth()->user()) }})">
 
+    {{-- Top-of-page sentinel — the sticky header elevates once this scrolls out
+         (IntersectionObserver in hbHeaderElevate, no scroll listener). --}}
+    <div id="hb-top-sentinel" aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-6"></div>
+
     {{-- Auth/utility pages (login, sign-up, password, email verification) drop the
          shopping chrome — category strip + concierge are noise there. Extend this
          route list if other non-shopping pages should go bare too. --}}
@@ -38,7 +42,8 @@
     @endif
 
     {{-- ===== Ink header ===== --}}
-    <header class="surface-girih sticky top-0 z-40 border-b border-brass/25 bg-ink">
+    <header class="surface-girih header-motion sticky top-0 z-40 border-b border-brass/25 bg-ink"
+            x-data="hbHeaderElevate" x-bind:class="elevated && 'is-elevated'">
         <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:gap-6">
             <a href="{{ route('home') }}" wire:navigate class="flex shrink-0 items-center gap-2 font-display text-xl font-bold tracking-tight text-paper">
                 <x-ui.star-mark :size="22" class="text-brass" />
@@ -163,15 +168,16 @@
 
     {{-- ===== Ink footer ===== --}}
     <footer class="surface-girih mt-12 border-t border-brass/25 bg-ink text-paper">
-        <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
+        <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4"
+             x-data="{ shown: false }" x-intersect.once="shown = true">
+            <div class="motion-reveal" x-bind:class="shown && 'revealed'">
                 <p class="flex items-center gap-2 font-display text-lg font-bold">
                     <x-ui.star-mark :size="20" class="text-brass" />
                     HalalBizs
                 </p>
                 <p class="mt-2 text-sm text-paper/64">{{ __('Malaysia’s trusted multi-vendor marketplace.') }}</p>
             </div>
-            <div>
+            <div class="motion-reveal" x-bind:class="shown && 'revealed'" style="animation-delay: 60ms">
                 <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-brass-tint/70">{{ __('About') }}</p>
                 <ul class="mt-3 space-y-2 text-sm">
                     <li><a href="{{ route('page.show', 'about') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('About us') }}</a></li>
@@ -179,7 +185,7 @@
                     <li><a href="{{ route('page.show', 'privacy') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Privacy policy') }}</a></li>
                 </ul>
             </div>
-            <div>
+            <div class="motion-reveal" x-bind:class="shown && 'revealed'" style="animation-delay: 120ms">
                 <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-brass-tint/70">{{ __('Help') }}</p>
                 <ul class="mt-3 space-y-2 text-sm">
                     <li><a href="{{ route('help.index') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Help centre') }}</a></li>
@@ -188,7 +194,7 @@
                     <li><a href="{{ route('seller.apply') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Become a seller') }}</a></li>
                 </ul>
             </div>
-            <div>
+            <div class="motion-reveal" x-bind:class="shown && 'revealed'" style="animation-delay: 180ms">
                 <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-brass-tint/70">{{ __('Newsletter') }}</p>
                 <form method="POST" action="{{ route('newsletter.subscribe') }}" class="mt-3 flex gap-2">
                     @csrf
