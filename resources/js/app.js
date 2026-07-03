@@ -1,12 +1,13 @@
 import Swiper from 'swiper';
-import { Navigation, Pagination, A11y } from 'swiper/modules';
+import { Navigation, Pagination, A11y, Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
 import ApexCharts from 'apexcharts';
 
 window.Swiper = Swiper;
-window.SwiperModules = { Navigation, Pagination, A11y };
+window.SwiperModules = { Navigation, Pagination, A11y, Autoplay, EffectFade };
 window.ApexCharts = ApexCharts;
 
 // ===== Souk (Emerald & Brass) chart palette — solid fills, warm neutrals =====
@@ -133,18 +134,45 @@ document.addEventListener('alpine:init', () => {
     }));
 
     // Header cart badge — optimistic bump, server reconciles via `cart-updated`.
+    // Pulses on ANY count change (add, drawer qty, server reconcile), but not
+    // on the initial page-load set.
     window.Alpine.store('cart', {
         count: 0,
         pulse: false,
+        ready: false,
         set(n) {
+            if (this.ready && n !== this.count) this.ping();
             this.count = n;
+            this.ready = true;
         },
         bump(n = 1) {
             this.count += n;
+            this.ping();
+        },
+        ping() {
             this.pulse = true;
-            setTimeout(() => (this.pulse = false), 300);
+            clearTimeout(this._pulseTimer);
+            this._pulseTimer = setTimeout(() => (this.pulse = false), 360);
         },
     });
+
+    // Sticky-header elevation — top-of-page sentinel + IntersectionObserver
+    // (no scroll listener). destroy() disconnects across wire:navigate swaps.
+    window.Alpine.data('hbHeaderElevate', () => ({
+        elevated: false,
+        observer: null,
+        init() {
+            const sentinel = document.getElementById('hb-top-sentinel');
+            if (!sentinel) return;
+            this.observer = new IntersectionObserver(([entry]) => {
+                this.elevated = !entry.isIntersecting;
+            });
+            this.observer.observe(sentinel);
+        },
+        destroy() {
+            this.observer?.disconnect();
+        },
+    }));
 
     // Toast store — ink surface, 4s auto-dismiss, optional action slot (design §5).
     window.Alpine.store('toasts', {

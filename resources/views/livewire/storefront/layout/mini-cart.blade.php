@@ -4,13 +4,15 @@
     x-on:keydown.escape.window="open = false"
 >
     {{-- Backdrop --}}
-    <div x-show="open" x-cloak x-transition.opacity.duration.150ms
+    <div x-show="open" x-cloak
+         x-transition:enter="transition-opacity duration-(--dur-standard) ease-standard" x-transition:enter-start="opacity-0"
+         x-transition:leave="transition-opacity duration-200 ease-in-soft" x-transition:leave-end="opacity-0"
          class="fixed inset-0 z-40 bg-ink/40" x-on:click="open = false"></div>
 
-    {{-- Slide-over --}}
+    {{-- Slide-over — 16px edge slide + fade, faster exit --}}
     <aside x-show="open" x-cloak
-           x-transition:enter="transition-transform duration-300 ease-out" x-transition:enter-start="translate-x-full"
-           x-transition:leave="transition-transform duration-200 ease-in" x-transition:leave-end="translate-x-full"
+           x-transition:enter="transition duration-(--dur-standard) ease-out-soft" x-transition:enter-start="translate-x-4 opacity-0"
+           x-transition:leave="transition duration-200 ease-in-soft" x-transition:leave-end="translate-x-4 opacity-0"
            class="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col bg-surface shadow-pop"
            role="dialog" aria-label="{{ __('Cart') }}">
 

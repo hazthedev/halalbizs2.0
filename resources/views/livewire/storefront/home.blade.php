@@ -25,7 +25,7 @@
         @endphp
 
         @switch($section->type)
-            {{-- ===== Banner carousel (Swiper — swipe + arrows, no autoplay) ===== --}}
+            {{-- ===== Banner carousel (Swiper — quiet 6s crossfade; swipe + arrows kept) ===== --}}
             @case('banner')
                 <section class="mx-auto max-w-7xl px-4 pt-6 sm:pt-8" aria-label="{{ __('Promotions') }}" wire:key="section-{{ $section->id }}">
                     <div
@@ -34,9 +34,22 @@
                         x-init="new window.Swiper($refs.container, {
                             modules: Object.values(window.SwiperModules),
                             slidesPerView: 1,
+                            @if ($data->count() > 1)
+                            loop: true,
+                            effect: 'fade',
+                            fadeEffect: { crossFade: true },
+                            speed: 600,
+                            {{-- reduced motion: no auto-advance at all --}}
+                            autoplay: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                                ? false
+                                : { delay: 6000, pauseOnMouseEnter: true, disableOnInteraction: false },
+                            @endif
                             navigation: { prevEl: $refs.prev, nextEl: $refs.next },
                             pagination: { el: $refs.pagination, clickable: true },
                         })"
+                        {{-- autoplay also pauses while focus is inside (keyboard users) --}}
+                        x-on:focusin="$refs.container.swiper?.autoplay?.stop()"
+                        x-on:focusout="if ($refs.container.swiper?.params.autoplay?.enabled) $refs.container.swiper.autoplay.start()"
                         class="relative"
                     >
                         <div
@@ -93,21 +106,25 @@
             @case('category_grid')
                 <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16" wire:key="section-{{ $section->id }}">
                     @if ($title)
-                        <x-ui.section-heading :title="$title" />
+                        <x-ui.section-heading :title="$title" class="motion-reveal"
+                                              x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'" />
                     @endif
                     <div class="mt-4 grid grid-cols-4 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-8">
                         @foreach ($data as $category)
                             @php $categoryName = $category->getTranslation('name', app()->getLocale()); @endphp
                             <a href="{{ route('category.show', $category->slug) }}" wire:navigate
                                wire:key="category-{{ $category->id }}"
-                               class="group flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-3 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-brass/40 hover:shadow-card">
+                               x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'"
+                               style="animation-delay: {{ min($loop->index * 40, 320) }}ms"
+                               class="group motion-reveal flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-3 shadow-soft hb-lift hover:border-brass/40">
                                 <span class="block aspect-square w-full overflow-hidden rounded-lg bg-paper">
                                     @if ($categoryImage = $category->getFirstMediaUrl('image', 'thumb'))
                                         <img src="{{ $categoryImage }}" alt="{{ $categoryName }}"
-                                             class="size-full object-cover transition-transform duration-150 group-hover:scale-[1.02]" loading="lazy">
+                                             x-data="{ ld: false }" x-init="ld = $el.complete" x-on:load="ld = true" x-bind:class="ld && 'loaded'"
+                                             class="img-motion [--img-zoom-dur:450ms] size-full object-cover group-hover:scale-[1.05]" loading="lazy">
                                     @endif
                                 </span>
-                                <span class="line-clamp-2 text-center text-[13px] font-medium leading-snug text-ink">{{ $categoryName }}</span>
+                                <span class="line-clamp-2 text-center text-[13px] font-medium leading-snug text-ink transition-colors duration-(--dur-micro) group-hover:text-emerald">{{ $categoryName }}</span>
                             </a>
                         @endforeach
                     </div>
@@ -118,7 +135,8 @@
             @case('product_carousel')
                 <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16" wire:key="section-{{ $section->id }}">
                     @if ($title)
-                        <x-ui.section-heading :title="$title" :href="route('search')" :link-label="__('View all')" />
+                        <x-ui.section-heading :title="$title" :href="route('search')" :link-label="__('View all')" class="motion-reveal"
+                                              x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'" />
                     @else
                         <div class="flex justify-end">
                             <a href="{{ route('search') }}" wire:navigate class="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-ink-soft transition-colors hover:text-ink">{{ __('View all') }}</a>
@@ -126,7 +144,9 @@
                     @endif
                     <div class="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mt-6">
                         @foreach ($data as $product)
-                            <div class="w-40 shrink-0 snap-start sm:w-48" wire:key="carousel-{{ $section->id }}-{{ $product->id }}">
+                            <div class="motion-reveal w-40 shrink-0 snap-start sm:w-48" wire:key="carousel-{{ $section->id }}-{{ $product->id }}"
+                                 x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'"
+                                 style="animation-delay: {{ min($loop->index * 40, 320) }}ms">
                                 <x-product-card :product="$product" :wishlisted="in_array($product->id, $wishlistedIds)" :sponsored="(bool) ($product->sponsored ?? false)" />
                             </div>
                         @endforeach
@@ -138,7 +158,8 @@
             @case('product_grid')
                 <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16" wire:key="section-{{ $section->id }}">
                     @if ($title)
-                        <x-ui.section-heading :title="$title" :href="route('search')" :link-label="__('View all')" />
+                        <x-ui.section-heading :title="$title" :href="route('search')" :link-label="__('View all')" class="motion-reveal"
+                                              x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'" />
                     @else
                         <div class="flex justify-end">
                             <a href="{{ route('search') }}" wire:navigate class="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-ink-soft transition-colors hover:text-ink">{{ __('View all') }}</a>
@@ -146,7 +167,9 @@
                     @endif
                     <div class="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
                         @foreach ($data as $product)
-                            <div wire:key="grid-{{ $section->id }}-{{ $product->id }}">
+                            <div class="motion-reveal" wire:key="grid-{{ $section->id }}-{{ $product->id }}"
+                                 x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'"
+                                 style="animation-delay: {{ min($loop->index * 40, 320) }}ms">
                                 <x-product-card :product="$product" :wishlisted="in_array($product->id, $wishlistedIds)" :sponsored="(bool) ($product->sponsored ?? false)" />
                             </div>
                         @endforeach
@@ -162,11 +185,14 @@
                     @if ($data->isNotEmpty())
                         <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16">
                             @if ($title)
-                                <x-ui.section-heading :title="$title" />
+                                <x-ui.section-heading :title="$title" class="motion-reveal"
+                                                      x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'" />
                             @endif
                             <div class="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mt-6">
                                 @foreach ($data as $product)
-                                    <div class="w-40 shrink-0 snap-start sm:w-48" wire:key="recent-{{ $product->id }}">
+                                    <div class="motion-reveal w-40 shrink-0 snap-start sm:w-48" wire:key="recent-{{ $product->id }}"
+                                         x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'"
+                                         style="animation-delay: {{ min($loop->index * 40, 320) }}ms">
                                         <x-product-card :product="$product" :wishlisted="in_array($product->id, $wishlistedIds)" />
                                     </div>
                                 @endforeach

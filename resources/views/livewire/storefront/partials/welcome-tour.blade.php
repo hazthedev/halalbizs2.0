@@ -33,10 +33,10 @@
 
     {{-- Overlay surface — shadow permitted --}}
     <div x-show="tourOpen"
-         x-transition:enter="motion-safe:transition motion-safe:duration-150 motion-safe:ease-out"
-         x-transition:enter-start="opacity-0 motion-safe:translate-y-2"
+         x-transition:enter="motion-safe:transition motion-safe:duration-(--dur-standard) motion-safe:ease-out-soft"
+         x-transition:enter-start="opacity-0 motion-safe:translate-y-4"
          x-transition:enter-end="opacity-100 motion-safe:translate-y-0"
-         x-transition:leave="motion-safe:transition motion-safe:duration-100 motion-safe:ease-in"
+         x-transition:leave="motion-safe:transition motion-safe:duration-200 motion-safe:ease-in-soft"
          x-transition:leave-end="opacity-0"
          class="relative w-full max-w-sm rounded-[var(--radius-card)] border border-line bg-surface p-6 shadow-pop">
 

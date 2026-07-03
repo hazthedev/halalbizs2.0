@@ -15,7 +15,8 @@
     <div class="relative aspect-square overflow-hidden bg-paper">
         @if ($image)
             <img src="{{ $image }}" alt="{{ $product->getTranslation('name', app()->getLocale()) }}{{ $defaultVariant?->options_label ? ' — '.$defaultVariant->options_label : '' }}"
-                 class="size-full object-cover transition-transform duration-200 ease-out-soft group-hover:scale-[1.02]" loading="lazy">
+                 x-data="{ ld: false }" x-init="ld = $el.complete" x-on:load="ld = true" x-bind:class="ld && 'loaded'"
+                 class="img-motion size-full object-cover group-hover:scale-[1.04]" loading="lazy">
         @endif
 
         {{-- Paid placement disclosure — deliberately neutral, never emerald --}}
@@ -63,13 +64,19 @@
         </div>
 
         @if ($singleVariant && $inStock && $defaultVariant)
+            {{-- Label crossfades to "✓ Added" for 1.2s; both labels share one grid
+                 cell so the button keeps the width of the wider one — no jump.
+                 ponytail: flips optimistically on click (like the badge bump);
+                 a failed add just reverts silently at 1.2s. --}}
             <button
                 type="button"
-                x-on:click="$store.cart.bump()"
+                x-data="{ added: false, flash() { this.added = true; clearTimeout(this._t); this._t = setTimeout(() => this.added = false, 1200); } }"
+                x-on:click="$store.cart.bump(); flash()"
                 wire:click="addToCart({{ $defaultVariant->id }})"
-                class="relative z-20 mt-1 inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-semibold text-ink hb-press hover:border-emerald hover:bg-emerald-tint hover:text-emerald"
+                class="relative z-20 mt-1 inline-grid min-h-9 place-items-center rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-semibold text-ink hb-press hover:border-emerald hover:bg-emerald-tint hover:text-emerald"
             >
-                {{ __('Add to cart') }}
+                <span class="col-start-1 row-start-1 transition-opacity duration-(--dur-micro)" x-bind:style="added && { opacity: 0 }">{{ __('Add to cart') }}</span>
+                <span class="col-start-1 row-start-1 text-emerald opacity-0 transition-opacity duration-(--dur-micro)" x-bind:style="added && { opacity: 1 }" aria-hidden="true">✓ {{ __('Added') }}</span>
             </button>
         @endif
     </div>
