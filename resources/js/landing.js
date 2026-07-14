@@ -86,11 +86,13 @@ function heroEntrance(hero) {
     // state at the instant it runs, so if the script never executes at all
     // (blocked, errors before this point), these elements are simply never
     // touched and stay at their normal, visible, server-rendered state.
+    // "Louder" pass (Haze 2026-07-14): larger travel + wider stagger gaps so the
+    // choreography reads clearly; same ease family, so it stays Souk-calm.
     const tl = gsap.timeline({ defaults: { ease: ENTER_EASE, clearProps: 'all' } });
-    if (mark) tl.from(mark, { opacity: 0, scale: 0.5, rotate: -25, duration: DUR_STD }, 0);
-    if (eyebrow) tl.from(eyebrow, { opacity: 0, y: 14, duration: DUR_REVEAL }, 0.05);
-    if (subcopy) tl.from(subcopy, { opacity: 0, y: 16, duration: DUR_REVEAL }, 0.16);
-    if (ctaRow) tl.from(ctaRow, { opacity: 0, y: 16, duration: DUR_REVEAL }, 0.28);
+    if (mark) tl.from(mark, { opacity: 0, scale: 0.35, rotate: -45, duration: DUR_STD * 1.6 }, 0);
+    if (eyebrow) tl.from(eyebrow, { opacity: 0, y: 26, duration: DUR_REVEAL * 1.3 }, 0.08);
+    if (subcopy) tl.from(subcopy, { opacity: 0, y: 30, duration: DUR_REVEAL * 1.3 }, 0.24);
+    if (ctaRow) tl.from(ctaRow, { opacity: 0, y: 30, scale: 0.97, duration: DUR_REVEAL * 1.3 }, 0.42);
 }
 
 /**
@@ -106,25 +108,26 @@ function scrollReveal(sectionSelector, itemsSelector, stagger = 0.08) {
 
     gsap.from(targets, {
         opacity: 0,
-        y: 24,
-        duration: DUR_REVEAL,
+        y: 48,
+        scale: 0.97,
+        duration: DUR_REVEAL * 1.35,
         ease: ENTER_EASE,
         stagger,
         clearProps: 'all',
         scrollTrigger: {
             trigger: section,
-            start: 'top 82%',
+            start: 'top 78%',
             once: true,
         },
     });
 }
 
 function scrollReveals() {
-    scrollReveal('[data-land="trust"]', '[data-motion="item"]', 0.1);
-    scrollReveal('[data-land="categories"]', '[data-motion="item"]', 0.05);
+    scrollReveal('[data-land="trust"]', '[data-motion="item"]', 0.14);
+    scrollReveal('[data-land="categories"]', '[data-motion="item"]', 0.08);
     // "Sequential" — a longer stagger reads as one-step-after-another rather
     // than a grid popping in together.
-    scrollReveal('[data-land="how"]', '[data-motion="item"]', 0.18);
+    scrollReveal('[data-land="how"]', '[data-motion="item"]', 0.24);
     scrollReveal('[data-land="seller"] > div', null);
     scrollReveal('[data-land="footer-cta"] > div', null);
 }
@@ -150,7 +153,7 @@ function countUps() {
                 const proxy = { val: 0 };
                 gsap.to(proxy, {
                     val: target,
-                    duration: 1.3,
+                    duration: 2,
                     ease: STD_EASE,
                     onUpdate: () => {
                         el.textContent = formatCount(proxy.val);
@@ -183,7 +186,7 @@ function parallax() {
         if (getComputedStyle(el).backgroundImage === 'none') return;
 
         gsap.to(el, {
-            backgroundPositionY: '+=28',
+            backgroundPositionY: '+=64',
             ease: 'none',
             scrollTrigger: {
                 trigger: el,

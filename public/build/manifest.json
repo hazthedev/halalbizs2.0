@@ -104,7 +104,7 @@
     "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CTrfKef_.css",
+    "file": "assets/app-C5TdZfaB.css",
     "name": "app",
     "names": [
       "app.css"
@@ -137,7 +137,7 @@
     ]
   },
   "resources/js/landing.js": {
-    "file": "assets/landing-Dkglt-mK.js",
+    "file": "assets/landing-CKVNKoNI.js",
     "name": "landing",
     "src": "resources/js/landing.js",
     "isEntry": true
