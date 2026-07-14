@@ -37,6 +37,7 @@ Route::get('/group-buy/{team:code}', Storefront\GroupBuy\Team::class)->name('gro
 Route::get('/live', Storefront\Live\Index::class)->name('live.index');
 Route::get('/live/{session:slug}', Storefront\Live\Room::class)->name('live.room');
 Route::get('/page/{slug}', Storefront\StaticPage::class)->name('page.show');
+Route::get('/welcome', Storefront\Landing::class)->name('landing');
 
 // ===== Preferences & newsletter =====
 Route::post('/preferences/locale', [PreferenceController::class, 'locale'])->name('preferences.locale');
