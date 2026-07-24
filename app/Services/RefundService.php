@@ -40,12 +40,27 @@ class RefundService
         bool $markRefunded = true,
     ): void {
         $total = (int) $subOrder->total_sen;
-        $amountSen = max(0, min($amountSen, $total));
+
+        // Idempotency + partial cap: this sub-order can only ever refund up to its
+        // own total, cumulatively. A repeated (or racing) call with nothing left
+        // to refund is a no-op — the previous code re-ran the whole reversal every
+        // call and drove refunded_sen past what was charged.
+        $alreadyRefunded = (int) $subOrder->refunded_sen;
+        $sellerRefundable = max(0, $total - $alreadyRefunded);
+        $amountSen = max(0, min($amountSen, $sellerRefundable));
+
+        if ($amountSen <= 0) {
+            return;
+        }
+
         $online = $subOrder->order->payment_method === PaymentMethod::Ipay88;
 
-        DB::transaction(function () use ($subOrder, $amountSen, $actor, $actorId, $reference, $markRefunded, $online, $total) {
-            // 1. Ledger reversal — only once the sale was booked (completed).
-            if ($amountSen > 0 && $total > 0
+        DB::transaction(function () use ($subOrder, $amountSen, $actor, $actorId, $reference, $markRefunded, $online, $total, $alreadyRefunded) {
+            // 1. Ledger reversal — only once the sale was booked (completed). The
+            //    seller was credited the full sub-order total, so this side reverses
+            //    the sub-order amount (per-sub-order), commission scaled in exact
+            //    integer math.
+            if ($total > 0
                 && $subOrder->ledgerEntries()->where('type', LedgerEntryType::Sale)->exists()) {
                 $commissionReversal = intdiv((int) $subOrder->commission_sen * $amountSen + intdiv($total, 2), $total);
 
@@ -61,27 +76,44 @@ class RefundService
             //     (M2.1 money integrity) — bounded so it can't over-reverse.
             $order = $subOrder->order;
 
-            if ($amountSen > 0 && (int) $order->coin_redemption_sen > 0) {
+            if ((int) $order->coin_redemption_sen > 0) {
                 $payableBasisSen = (int) $order->grand_total_sen + (int) $order->coin_redemption_sen;
                 $this->coins->reverseForRefund($order, $amountSen, $payableBasisSen);
             }
 
-            // 2. Track on the payment + best-effort gateway refund (manual portal is the fallback).
+            // 2. Track on the payment + best-effort gateway refund. The buyer is
+            //    only ever refunded the CASH they actually paid: order-level
+            //    platform vouchers + coins lowered grand_total below the sum of the
+            //    sub-order totals, so cap cumulative cash at grand_total. (The seller
+            //    reversal above still uses the full sub-order amount — the platform,
+            //    not the seller, funded that discount.)
             $payment = $subOrder->order->payment;
 
             if ($payment !== null) {
-                if ($online && $amountSen > 0) {
-                    $this->gateways->driver($subOrder->order->payment_method?->value)?->refund($payment, $amountSen, $reference);
+                $cashRefundable = max(0, (int) $order->grand_total_sen - (int) $payment->refunded_sen);
+                $cashSen = min($amountSen, $cashRefundable);
+
+                if ($online && $cashSen > 0) {
+                    $this->gateways->driver($subOrder->order->payment_method?->value)?->refund($payment, $cashSen, $reference);
                 }
 
-                $payment->forceFill([
-                    'refunded_sen' => (int) $payment->refunded_sen + $amountSen,
-                    'refunded_at' => now(),
-                ])->save();
+                if ($cashSen > 0) {
+                    $payment->forceFill([
+                        'refunded_sen' => (int) $payment->refunded_sen + $cashSen,
+                        'refunded_at' => now(),
+                    ])->save();
+                }
             }
 
-            // 3. A full refund moves the sub-order to Refunded; the order follows once all settled.
-            if ($markRefunded && $this->status->canTransition($subOrder, SubOrderStatus::Refunded)) {
+            // 2b. Record the refund against the sub-order (idempotency source of truth).
+            $subOrder->increment('refunded_sen', $amountSen);
+
+            // 3. Only a genuinely FULL refund moves the sub-order to the terminal
+            //    Refunded state — a partial must not mislabel a half-refunded order
+            //    as fully refunded (and trap it in a terminal status).
+            $fullyRefunded = ($alreadyRefunded + $amountSen) >= $total;
+
+            if ($markRefunded && $fullyRefunded && $this->status->canTransition($subOrder, SubOrderStatus::Refunded)) {
                 $this->status->transition(
                     $subOrder,
                     SubOrderStatus::Refunded,

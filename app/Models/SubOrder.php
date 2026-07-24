@@ -23,7 +23,7 @@ class SubOrder extends Model
     protected $fillable = [
         'sub_order_no', 'order_id', 'store_id', 'status',
         'items_subtotal_sen', 'shipping_fee_sen', 'shop_discount_sen', 'shipping_subsidy_sen', 'tax_sen', 'total_sen',
-        'commission_rate', 'commission_sen', 'tracking_courier', 'tracking_no',
+        'refunded_sen', 'commission_rate', 'commission_sen', 'tracking_courier', 'tracking_no',
         'awb_no', 'shipping_label_url', 'courier_service',
         'shipped_at', 'delivered_at', 'completed_at', 'auto_complete_at',
         'cancelled_at', 'cancel_reason',
@@ -39,6 +39,7 @@ class SubOrder extends Model
             'shipping_subsidy_sen' => 'integer',
             'tax_sen' => 'integer',
             'total_sen' => 'integer',
+            'refunded_sen' => 'integer',
             'commission_rate' => 'decimal:2',
             'commission_sen' => 'integer',
             'shipped_at' => 'datetime',
