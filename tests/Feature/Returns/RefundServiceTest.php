@@ -6,10 +6,13 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\SubOrderStatus;
 use App\Enums\TaxClass;
+use App\Enums\VoucherScope;
+use App\Enums\VoucherType;
 use App\Models\Address;
 use App\Models\Product;
 use App\Models\SubOrder;
 use App\Models\User;
+use App\Models\Voucher;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\OrderService;
@@ -104,6 +107,93 @@ test('a full refund for a registered seller reverses the tax too (nets to zero)'
     app(RefundService::class)->refund($subOrder, $subOrder->total_sen, ActorType::Admin, null, 'IP88-RFND-3', markRefunded: true);
 
     expect($store->availableBalanceSen())->toBe(0); // tax included in the reversal
+});
+
+test('a repeated full refund is idempotent — it never refunds or reverses twice', function () {
+    $subOrder = refundCompletedSubOrder();
+    $store = $subOrder->store;
+
+    // Two identical full-refund calls (admin double-click / racing callback).
+    app(RefundService::class)->refund($subOrder->fresh(), $subOrder->total_sen, ActorType::Admin, null, 'IP88-DUP', markRefunded: true);
+    app(RefundService::class)->refund($subOrder->fresh(), $subOrder->total_sen, ActorType::Admin, null, 'IP88-DUP', markRefunded: true);
+
+    expect($subOrder->fresh()->order->payment->refunded_sen)->toBe(20500) // once — not 41000
+        ->and($subOrder->fresh()->refunded_sen)->toBe(20500)
+        ->and($store->ledgerEntries()->where('type', LedgerEntryType::Adjustment)->count())->toBe(1)
+        ->and($store->availableBalanceSen())->toBe(0); // reversed once, not driven negative
+});
+
+test('a partial refund never flips the sub-order to terminal Refunded, even with markRefunded set', function () {
+    $subOrder = refundCompletedSubOrder(); // total_sen = 20500, currently Returned
+
+    // The admin Returns flow passes markRefunded:true with a line-item (partial) amount.
+    app(RefundService::class)->refund($subOrder->fresh(), 10000, ActorType::Admin, null, 'IP88-PART', markRefunded: true);
+
+    expect($subOrder->fresh()->status)->toBe(SubOrderStatus::Returned) // NOT terminally Refunded
+        ->and($subOrder->fresh()->refunded_sen)->toBe(10000)
+        ->and($subOrder->fresh()->order->payment->refunded_sen)->toBe(10000);
+
+    // The remaining balance is still refundable (not trapped in a terminal state).
+    app(RefundService::class)->refund($subOrder->fresh(), 10500, ActorType::Admin, null, 'IP88-PART2', markRefunded: true);
+
+    expect($subOrder->fresh()->status)->toBe(SubOrderStatus::Refunded) // now genuinely full
+        ->and($subOrder->fresh()->refunded_sen)->toBe(20500)
+        ->and($subOrder->fresh()->order->payment->refunded_sen)->toBe(20500);
+});
+
+test('refunding every sub-order of a voucher order never returns more cash than was charged', function () {
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor', 'country' => 'MY']);
+
+    $makeProduct = function () {
+        $product = Product::factory()->create(['cod_enabled' => true, 'tax_class' => TaxClass::Exempt]);
+        $product->store->update([
+            'sst_registered' => false,
+            'commission_rate' => 5.00,
+            'shipping_mode' => 'flat',
+            'shipping_flat_fee_sen' => 0,
+            'free_shipping_over_sen' => null,
+        ]);
+        $product->variants->first()->update(['price_sen' => 10000, 'sale_price_sen' => null, 'stock' => 10]);
+
+        return $product;
+    };
+
+    // Two stores → two sub-orders, each total 10000 (Σ = 20000).
+    $p1 = $makeProduct();
+    $p2 = $makeProduct();
+    app(CartService::class)->addItem($buyer, $p1->variants->first(), 1);
+    app(CartService::class)->addItem($buyer, $p2->variants->first(), 1);
+
+    // A 25% platform voucher lowers grand_total to 15000 — below Σ sub-order totals.
+    Voucher::create([
+        'scope' => VoucherScope::Platform, 'store_id' => null, 'code' => 'PLAT25',
+        'type' => VoucherType::Percent, 'percent' => 25, 'value_sen' => 0, 'min_spend_sen' => 0,
+        'quota' => null, 'per_user_limit' => 5, 'used_count' => 0,
+        'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'is_active' => true,
+    ]);
+
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Ipay88, 'PLAT25');
+    $order->forceFill(['payment_status' => PaymentStatus::Paid, 'paid_at' => now()])->save();
+
+    expect($order->grand_total_sen)->toBe(15000); // 20000 − 5000 platform discount
+
+    // Complete both sub-orders (books the seller ledger), then fully refund each.
+    $status = app(SubOrderStatusService::class);
+    foreach ($order->subOrders as $subOrder) {
+        $status->transition($subOrder->fresh(), SubOrderStatus::Confirmed, ActorType::System);
+        $status->transition($subOrder->fresh(), SubOrderStatus::Processing, ActorType::Seller);
+        $status->transition($subOrder->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
+        app(OrderService::class)->markDelivered($subOrder->fresh(), ActorType::System);
+        app(OrderService::class)->confirmReceived($subOrder->fresh(), $buyer->id);
+        app(RefundService::class)->refund($subOrder->fresh(), (int) $subOrder->fresh()->total_sen, ActorType::Admin, null, 'RF-'.$subOrder->id, markRefunded: true);
+    }
+
+    // The buyer is refunded exactly what they paid — never the (larger) sum of
+    // the sub-order totals, which would refund the platform's voucher subsidy.
+    expect($order->fresh()->payment->refunded_sen)->toBe(15000)
+        ->and($order->fresh()->payment->refunded_sen)->toBeLessThanOrEqual($order->fresh()->grand_total_sen);
 });
 
 test('a refund before completion writes no ledger adjustment but tracks the payment', function () {
