@@ -237,3 +237,104 @@
     background-size: 200% 100%;
     animation: hb-shimmer 1.5s ease-in-out infinite;
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   Night Souk — /welcome landing page (structure + static skin, T1)
+   Everything below is CSS-only motion for the hero's decorative layers,
+   the category marquee and the "lantern card" hover. All of it is scoped
+   inside `@media (prefers-reduced-motion: no-preference)` in addition to
+   the sitewide kill-switch above (`@layer base`'s reduced-motion rule) —
+   belt and suspenders, matching the `.motion-reveal` convention already
+   used on this page. Transform-based animation only ever lands on the
+   decorative elements themselves (star field, lanterns, marquee track),
+   never on a `[data-land]` section root or a `data-plx` wrapper — a later
+   task drives those wrappers from JS and must never fight a CSS transform
+   for the same element.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Layer 1 — tiled star field, three dot sizes at staggered offsets. */
+.souk-stars {
+    background-image:
+        radial-gradient(1.6px 1.6px at 20px 30px, rgba(250, 247, 240, 0.9), transparent 100%),
+        radial-gradient(1px 1px at 120px 80px, rgba(250, 247, 240, 0.65), transparent 100%),
+        radial-gradient(2px 2px at 60px 150px, rgba(250, 247, 240, 0.55), transparent 100%),
+        radial-gradient(1px 1px at 200px 40px, rgba(250, 247, 240, 0.8), transparent 100%),
+        radial-gradient(1.4px 1.4px at 170px 195px, rgba(250, 247, 240, 0.5), transparent 100%),
+        radial-gradient(1px 1px at 260px 110px, rgba(250, 247, 240, 0.7), transparent 100%);
+    background-repeat: repeat;
+    background-size: 280px 280px;
+}
+
+/* Foreground vignette — darkens the top edge and blends the base into the
+   marquee bar below it. No `data-plx`: this layer never moves. */
+.souk-vignette {
+    background:
+        radial-gradient(ellipse 120% 60% at 50% 100%, color-mix(in srgb, var(--color-emerald-night) 65%, transparent) 0%, transparent 70%),
+        linear-gradient(to bottom, color-mix(in srgb, var(--color-emerald-night) 55%, transparent) 0%, transparent 22%, transparent 78%, var(--color-emerald-night) 100%);
+}
+
+/* Layer 3 — brass lanterns. Warm glow is always on; the bob keyframe is
+   reduced-motion gated so a still lantern still reads as a lantern. */
+.souk-lantern svg {
+    filter:
+        drop-shadow(0 0 8px color-mix(in srgb, var(--color-brass) 65%, transparent))
+        drop-shadow(0 0 20px color-mix(in srgb, var(--color-brass) 35%, transparent));
+}
+@keyframes souk-lantern-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .souk-lantern {
+        animation-name: souk-lantern-bob;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        /* duration/delay set per-lantern via inline style in the blade partial */
+    }
+}
+
+/* Gentle bounce on the hero's scroll cue. */
+@keyframes souk-scrollcue-bounce {
+    0%, 100% { transform: translateY(0); opacity: 0.55; }
+    50% { transform: translateY(6px); opacity: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .souk-scrollcue svg {
+        animation: souk-scrollcue-bounce 1.8s ease-in-out infinite;
+    }
+}
+
+/* Category marquee — two duplicate tracks laid side by side in one flex
+   row; animating the row to translateX(-50%) lands the duplicate exactly
+   where the original started, so the loop is seamless. Reduced motion (or
+   the media query simply not matching) leaves the row at translateX(0),
+   which combined with the viewport's `overflow-hidden` reads as one
+   static, clipped line of names — never a scrolling one. */
+@keyframes souk-marquee-scroll {
+    to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .souk-marquee-track {
+        animation: souk-marquee-scroll 32s linear infinite;
+        will-change: transform;
+    }
+    .souk-marquee:hover .souk-marquee-track {
+        animation-play-state: paused;
+    }
+}
+
+/* Category "lantern cards" — subtle brass glow border on hover. Hover-gated
+   so touch devices never get a stuck glow after a tap. */
+.lantern-card {
+    transition: border-color var(--dur-standard) var(--ease-standard),
+                box-shadow var(--dur-standard) var(--ease-standard),
+                transform var(--dur-standard) var(--ease-standard);
+}
+@media (hover: hover) {
+    .lantern-card:hover {
+        border-color: color-mix(in srgb, var(--color-brass) 55%, transparent);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brass) 25%, transparent),
+                    0 12px 30px -14px color-mix(in srgb, var(--color-brass) 45%, transparent);
+        transform: translateY(-2px);
+    }
+}

@@ -15,7 +15,7 @@ use Livewire\Component;
  * Guest-accessible at /welcome — distinct from the shopping home page ('/'),
  * which assumes intent to browse rather than to be persuaded.
  */
-#[Layout('layouts.storefront')]
+#[Layout('layouts.landing')]
 class Landing extends Component
 {
     public function render()
