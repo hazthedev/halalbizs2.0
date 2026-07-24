@@ -80,7 +80,7 @@
             {{ __('Halal-first, always open') }}
         </p>
 
-        <h1 class="mt-6 font-display text-[clamp(3rem,8vw,6rem)] font-bold leading-[1.05] tracking-tight">
+        <h1 class="souk-shine mt-6 font-display text-[clamp(3rem,8vw,6rem)] font-bold leading-[1.05] tracking-tight">
             @foreach ($heroWords as $word)
                 <span class="inline-block" data-motion="word">{{ $word }}</span>
             @endforeach
