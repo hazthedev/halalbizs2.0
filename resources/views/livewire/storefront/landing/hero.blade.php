@@ -43,17 +43,21 @@
 
     {{-- Layer 3 — bobbing brass lanterns --}}
     <div aria-hidden="true" data-plx="0.6" class="absolute inset-0 pointer-events-none">
-        {{-- The three mid-field lanterns overlap the headline/subcopy once the
-             text column widens relative to the viewport (seen live at 375/768)
-             — below lg only the two top edge lanterns stay. --}}
+        {{-- Positions are utility classes, not inline styles, so responsive
+             variants can override them (inline style would always win). The
+             mid-field lanterns overlap the headline/subcopy once the text
+             column widens relative to the viewport (seen live at 375/768) —
+             below lg the two big ones RELOCATE to flank the scroll cue at the
+             hero's base instead of hiding (hiding left mobile with almost no
+             visible motion, Haze 2026-07-24); only the smallest is lg-only. --}}
         @foreach ([
-            ['top' => '16%', 'left' => '10%', 'w' => 'w-7', 'delay' => '0s', 'dur' => '4.6s', 'edge' => true],
-            ['top' => '10%', 'left' => '68%', 'w' => 'w-6', 'delay' => '.9s', 'dur' => '5.3s', 'edge' => true],
-            ['top' => '28%', 'left' => '44%', 'w' => 'w-9', 'delay' => '1.6s', 'dur' => '4.9s', 'edge' => false],
-            ['top' => '36%', 'left' => '85%', 'w' => 'w-6', 'delay' => '.4s', 'dur' => '5.7s', 'edge' => false],
-            ['top' => '40%', 'left' => '22%', 'w' => 'w-5', 'delay' => '2.1s', 'dur' => '4.3s', 'edge' => false],
+            ['pos' => 'top-[16%] left-[10%]', 'w' => 'w-7', 'delay' => '0s', 'dur' => '4.6s'],
+            ['pos' => 'top-[10%] left-[68%]', 'w' => 'w-6', 'delay' => '.9s', 'dur' => '5.3s'],
+            ['pos' => 'top-[28%] left-[44%] max-lg:top-[68%] max-lg:left-[8%]', 'w' => 'w-9', 'delay' => '1.6s', 'dur' => '4.9s'],
+            ['pos' => 'top-[36%] left-[85%] max-lg:top-[64%] max-lg:left-[82%]', 'w' => 'w-6', 'delay' => '.4s', 'dur' => '5.7s'],
+            ['pos' => 'top-[40%] left-[22%] hidden lg:inline-block', 'w' => 'w-5', 'delay' => '2.1s', 'dur' => '4.3s'],
         ] as $lantern)
-            <span class="souk-lantern absolute {{ $lantern['w'] }} {{ $lantern['edge'] ? '' : 'hidden lg:inline-block' }}" style="top: {{ $lantern['top'] }}; left: {{ $lantern['left'] }}; animation-delay: {{ $lantern['delay'] }}; animation-duration: {{ $lantern['dur'] }};">
+            <span class="souk-lantern absolute {{ $lantern['w'] }} {{ $lantern['pos'] }}" style="animation-delay: {{ $lantern['delay'] }}; animation-duration: {{ $lantern['dur'] }};">
                 <svg viewBox="0 0 40 64" class="w-full">
                     <path d="M20 2 L26 10 H14 Z" fill="var(--color-brass)" />
                     <rect x="10" y="10" width="20" height="6" rx="2" fill="var(--color-brass)" />
