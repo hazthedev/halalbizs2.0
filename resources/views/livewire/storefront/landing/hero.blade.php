@@ -43,14 +43,17 @@
 
     {{-- Layer 3 — bobbing brass lanterns --}}
     <div aria-hidden="true" data-plx="0.6" class="absolute inset-0 pointer-events-none">
+        {{-- The three mid-field lanterns overlap the headline/subcopy once the
+             text column widens relative to the viewport (seen live at 375/768)
+             — below lg only the two top edge lanterns stay. --}}
         @foreach ([
-            ['top' => '16%', 'left' => '10%', 'w' => 'w-7', 'delay' => '0s', 'dur' => '4.6s'],
-            ['top' => '10%', 'left' => '68%', 'w' => 'w-6', 'delay' => '.9s', 'dur' => '5.3s'],
-            ['top' => '28%', 'left' => '44%', 'w' => 'w-9', 'delay' => '1.6s', 'dur' => '4.9s'],
-            ['top' => '36%', 'left' => '85%', 'w' => 'w-6', 'delay' => '.4s', 'dur' => '5.7s'],
-            ['top' => '40%', 'left' => '22%', 'w' => 'w-5', 'delay' => '2.1s', 'dur' => '4.3s'],
+            ['top' => '16%', 'left' => '10%', 'w' => 'w-7', 'delay' => '0s', 'dur' => '4.6s', 'edge' => true],
+            ['top' => '10%', 'left' => '68%', 'w' => 'w-6', 'delay' => '.9s', 'dur' => '5.3s', 'edge' => true],
+            ['top' => '28%', 'left' => '44%', 'w' => 'w-9', 'delay' => '1.6s', 'dur' => '4.9s', 'edge' => false],
+            ['top' => '36%', 'left' => '85%', 'w' => 'w-6', 'delay' => '.4s', 'dur' => '5.7s', 'edge' => false],
+            ['top' => '40%', 'left' => '22%', 'w' => 'w-5', 'delay' => '2.1s', 'dur' => '4.3s', 'edge' => false],
         ] as $lantern)
-            <span class="souk-lantern absolute {{ $lantern['w'] }}" style="top: {{ $lantern['top'] }}; left: {{ $lantern['left'] }}; animation-delay: {{ $lantern['delay'] }}; animation-duration: {{ $lantern['dur'] }};">
+            <span class="souk-lantern absolute {{ $lantern['w'] }} {{ $lantern['edge'] ? '' : 'hidden lg:inline-block' }}" style="top: {{ $lantern['top'] }}; left: {{ $lantern['left'] }}; animation-delay: {{ $lantern['delay'] }}; animation-duration: {{ $lantern['dur'] }};">
                 <svg viewBox="0 0 40 64" class="w-full">
                     <path d="M20 2 L26 10 H14 Z" fill="var(--color-brass)" />
                     <rect x="10" y="10" width="20" height="6" rx="2" fill="var(--color-brass)" />
