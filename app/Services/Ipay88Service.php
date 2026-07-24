@@ -36,11 +36,18 @@ class Ipay88Service implements PaymentGateway
     /**
      * No merchant code configured → run the built-in payment SIMULATOR instead
      * of hitting the real gateway, so a preview can complete online-payment
-     * checkouts end-to-end. Production MUST set a merchant code (false then).
+     * checkouts end-to-end.
+     *
+     * The simulator is a FREE-settlement path, so it is fail-closed: only local
+     * dev enables it implicitly; every other environment must opt in explicitly
+     * via IPAY88_ALLOW_MOCK. This prevents a real production boot with an
+     * unconfigured merchant code from marking orders paid with no gateway.
+     * Production MUST set a merchant code (isMock() is false then regardless).
      */
     public function isMock(): bool
     {
-        return blank($this->settings->merchant_code);
+        return blank($this->settings->merchant_code)
+            && (app()->environment('local') || (bool) config('services.ipay88.allow_mock'));
     }
 
     public function entryUrl(): string
