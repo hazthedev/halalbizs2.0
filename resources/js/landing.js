@@ -5,13 +5,21 @@ import { animate, createTimeline, createScope, onScroll, stagger, svg, cubicBezi
  * page (see the @push('scripts') in
  * resources/views/livewire/storefront/landing.blade.php).
  * Everything here is progressive enhancement over server-rendered, already-
- * visible markup: reduced motion (or anime.js failing to load) leaves the
- * page exactly as Blade rendered it. Every tween below only ever *adds* its
- * hidden/offset starting value at the moment it is created ([from, to]
- * keyframes) — if this script never executes at all (blocked, errors before
- * that point), the elements are simply never touched and stay at their
- * normal, visible, server-rendered state. Nothing hides behind a CSS class
- * that requires JS to lift.
+ * visible markup: every tween below only ever *adds* its hidden/offset
+ * starting value at the moment it is created ([from, to] keyframes) — if
+ * this script never executes at all (blocked, errors before that point), the
+ * elements are simply never touched and stay at their normal, visible,
+ * server-rendered state. Nothing hides behind a CSS class that requires JS
+ * to lift.
+ *
+ * prefers-reduced-motion is REDUCE, not remove (2026-07-24; second "no
+ * animation" report from a Windows machine with Accessibility → Animation
+ * effects switched off): scroll-linked parallax, the SVG draw, and the
+ * count-ups are dropped entirely — that class of motion is what the setting
+ * exists for — while the entrance and section reveals fall back to short
+ * opacity-only crossfades (no translate/scale), which vestibular-safety
+ * guidance permits. A reduced-motion visitor still sees the page respond;
+ * a no-JS visitor still sees everything, statically.
  */
 
 const prefersReducedMotion = () =>
@@ -66,6 +74,7 @@ function formatCount(n) {
 }
 
 let scope = null;
+let REDUCED = false; // set per-init from prefers-reduced-motion
 
 function cleanup() {
     // A Scope tracks every animation/timeline/scroll-observer created while
@@ -84,9 +93,12 @@ function heroEntrance(hero) {
     const subcopy = hero.querySelector('[data-motion="subcopy"]');
     const ctaRow = hero.querySelector('[data-motion="cta-row"]');
 
+    // Reduced motion: same choreography, opacity-only and quicker — the
+    // rises/overshoot go, the crossfade sequencing stays.
+    const dur = REDUCED ? DUR_STD : DUR_REVEAL;
     const tl = createTimeline({ defaults: { ease: ENTER_EASE } });
     if (eyebrow) {
-        tl.add(eyebrow, { opacity: [0, 1], translateY: [26, 0], duration: DUR_REVEAL }, 0);
+        tl.add(eyebrow, { opacity: [0, 1], ...(REDUCED ? {} : { translateY: [26, 0] }), duration: dur }, 0);
     }
     if (words.length) {
         // Slight overshoot on the headline only — `outBack` with a modest
@@ -94,17 +106,16 @@ function heroEntrance(hero) {
         // reads with a touch more character than the rest of the hero.
         tl.add(words, {
             opacity: [0, 1],
-            translateY: [34, 0],
-            duration: DUR_REVEAL,
-            ease: 'outBack(1.2)',
-            delay: stagger(70),
+            ...(REDUCED ? { ease: STD_EASE } : { translateY: [34, 0], ease: 'outBack(1.2)' }),
+            duration: dur,
+            delay: stagger(REDUCED ? 40 : 70),
         }, 90);
     }
     if (subcopy) {
-        tl.add(subcopy, { opacity: [0, 1], translateY: [28, 0], duration: DUR_REVEAL }, 320);
+        tl.add(subcopy, { opacity: [0, 1], ...(REDUCED ? {} : { translateY: [28, 0] }), duration: dur }, 320);
     }
     if (ctaRow) {
-        tl.add(ctaRow, { opacity: [0, 1], translateY: [26, 0], scale: [0.97, 1], duration: DUR_REVEAL }, 480);
+        tl.add(ctaRow, { opacity: [0, 1], ...(REDUCED ? {} : { translateY: [26, 0], scale: [0.97, 1] }), duration: dur }, 480);
     }
 }
 
@@ -129,6 +140,7 @@ const HERO_TRAVEL_VH = 0.6; // ≈60vh of lag across the hero's scroll-out
 const AMBIENT_TRAVEL_PX = 260; // subtle drift for categories/seller layers
 
 function parallax() {
+    if (REDUCED) return; // scroll-linked motion is exactly what the setting opts out of
     document.querySelectorAll('[data-plx]').forEach((el) => {
         const speed = parseFloat(el.dataset.plx);
         if (!Number.isFinite(speed)) return;
@@ -168,11 +180,10 @@ function sectionReveal(landKey, { staggerMs = 100 } = {}) {
         onEnter: () => {
             animate(items, {
                 opacity: [0, 1],
-                translateY: [48, 0],
-                scale: [0.97, 1],
-                duration: Math.round(DUR_REVEAL * 1.35),
+                ...(REDUCED ? {} : { translateY: [48, 0], scale: [0.97, 1] }),
+                duration: REDUCED ? DUR_STD : Math.round(DUR_REVEAL * 1.35),
                 ease: ENTER_EASE,
-                delay: stagger(staggerMs),
+                delay: stagger(REDUCED ? Math.min(staggerMs, 60) : staggerMs),
             });
         },
     });
@@ -190,6 +201,7 @@ function sectionReveals() {
 
 /** Draws #how-path in sync with scroll progress through the "how" section. */
 function drawHowPath() {
+    if (REDUCED) return; // path stays fully drawn, as server-rendered
     const section = document.querySelector('[data-land="how"]');
     if (!section) return;
     const path = section.querySelector('#how-path');
@@ -205,6 +217,7 @@ function drawHowPath() {
 
 /** Stat count-ups — ends exactly on the server-rendered value/formatting. */
 function countUps() {
+    if (REDUCED) return; // server already rendered the exact final numbers
     const stats = document.querySelector('[data-land="stats"]');
     if (!stats) return;
     const nodes = stats.querySelectorAll('[data-countup]');
@@ -247,7 +260,7 @@ function init() {
     cleanup();
 
     if (!document.querySelector('[data-land]')) return; // not the landing page
-    if (prefersReducedMotion()) return; // everything stays exactly as rendered
+    REDUCED = prefersReducedMotion(); // reduce, not remove — see header comment
 
     loadHouseTokens();
 
