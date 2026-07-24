@@ -1,15 +1,17 @@
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { CustomEase } from 'gsap/CustomEase';
-
-gsap.registerPlugin(ScrollTrigger, CustomEase);
+import { animate, createTimeline, createScope, onScroll, stagger, svg, cubicBezier } from 'animejs';
 
 /**
- * Landing page (/welcome) motion layer — GSAP only, loaded on this one page
- * (see the @push('scripts') in resources/views/livewire/storefront/landing.blade.php).
- * Everything here is progressive enhancement over server-rendered, already-visible
- * markup: reduced motion (or GSAP failing to load) leaves the page exactly as
- * Blade rendered it, nothing hides behind a CSS class that requires JS to lift.
+ * Landing page (/welcome) motion layer — anime.js v4 only, loaded on this one
+ * page (see the @push('scripts') in
+ * resources/views/livewire/storefront/landing.blade.php).
+ * Everything here is progressive enhancement over server-rendered, already-
+ * visible markup: reduced motion (or anime.js failing to load) leaves the
+ * page exactly as Blade rendered it. Every tween below only ever *adds* its
+ * hidden/offset starting value at the moment it is created ([from, to]
+ * keyframes) — if this script never executes at all (blocked, errors before
+ * that point), the elements are simply never touched and stay at their
+ * normal, visible, server-rendered state. Nothing hides behind a CSS class
+ * that requires JS to lift.
  */
 
 const prefersReducedMotion = () =>
@@ -19,12 +21,15 @@ const prefersReducedMotion = () =>
 // Read straight off resources/css/app.css's @theme custom properties instead
 // of hard-coding a second set of curves/durations, so this stays one motion
 // system with the CSS-driven `.reveal` / `.motion-reveal` utilities used
-// everywhere else on the site. Falls back to close built-in equivalents if a
-// token is ever renamed/removed.
-let ENTER_EASE = 'power2.out';
-let STD_EASE = 'power1.out';
-let DUR_REVEAL = 0.55;
-let DUR_STD = 0.3;
+// everywhere else on the site. anime.js v4 removed the `"cubicBezier(...)"`
+// ease STRING syntax (it warns and falls back to linear) — the house bezier
+// curves have to be built with the imported `cubicBezier()` function instead
+// and passed as an actual easing function. Falls back to close built-in
+// named eases if a token is ever renamed/removed.
+let ENTER_EASE = 'outQuint';
+let STD_EASE = 'outQuad';
+let DUR_REVEAL = 550; // ms — anime.js v4 durations are milliseconds, not seconds
+let DUR_STD = 300; // ms
 let tokensLoaded = false;
 
 function loadHouseTokens() {
@@ -32,28 +37,25 @@ function loadHouseTokens() {
     tokensLoaded = true;
 
     const css = getComputedStyle(document.documentElement);
-    const seconds = (name, fallback) => {
+    const millis = (name, fallback) => {
         const n = parseFloat(css.getPropertyValue(name));
-        return Number.isFinite(n) ? n / 1000 : fallback;
+        return Number.isFinite(n) ? n : fallback;
     };
-    const bezier = (name, fallback) => {
+    const bezierNums = (name, fallback) => {
         const raw = css.getPropertyValue(name).trim();
         const match = raw.match(/cubic-bezier\(([^)]+)\)/);
-        return match ? match[1].replace(/\s+/g, '') : fallback;
+        const source = match ? match[1] : fallback;
+        const nums = source.split(',').map((n) => parseFloat(n));
+        return nums.length === 4 && nums.every(Number.isFinite) ? nums : null;
     };
 
-    DUR_REVEAL = seconds('--dur-reveal', 0.55);
-    DUR_STD = seconds('--dur-standard', 0.3);
+    DUR_REVEAL = millis('--dur-reveal', 550);
+    DUR_STD = millis('--dur-standard', 300);
 
-    try {
-        CustomEase.create('hb-ease-out-soft', bezier('--ease-out-soft', '.22,1,.36,1'));
-        CustomEase.create('hb-ease-standard', bezier('--ease-standard', '.4,0,.2,1'));
-        ENTER_EASE = 'hb-ease-out-soft';
-        STD_EASE = 'hb-ease-standard';
-    } catch {
-        // Keep the power2.out/power1.out fallbacks above — close enough visually,
-        // and never worth breaking the page over.
-    }
+    const outSoft = bezierNums('--ease-out-soft', '.22,1,.36,1');
+    const standard = bezierNums('--ease-standard', '.4,0,.2,1');
+    ENTER_EASE = outSoft ? cubicBezier(...outSoft) : 'outQuint';
+    STD_EASE = standard ? cubicBezier(...standard) : 'outQuad';
 }
 
 // Mirrors PHP's number_format($n) with its default args (0 decimals, ','
@@ -63,73 +65,142 @@ function formatCount(n) {
     return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-let ctx = null;
+let scope = null;
 
 function cleanup() {
-    // gsap.context() tracks every tween/timeline/ScrollTrigger created inside
-    // it; revert() kills them all and strips any inline styles GSAP applied,
-    // so wrappers return to their normal stylesheet-computed state. Nothing
-    // is left "held" for a position:fixed descendant to get trapped by.
-    ctx?.revert();
-    ctx = null;
+    // A Scope tracks every animation/timeline/scroll-observer created while
+    // it is `.current` (see createScope().add(fn) below); revert() kills them
+    // all and restores the DOM properties they touched to their pre-tween
+    // values. Nothing is left "held" for a position:fixed descendant to get
+    // trapped by, and re-running init() never accumulates duplicate
+    // scroll observers.
+    scope?.revert();
+    scope = null;
 }
 
 function heroEntrance(hero) {
-    const mark = hero.querySelector('[data-motion="ornament"]');
     const eyebrow = hero.querySelector('[data-motion="eyebrow"]');
+    const words = hero.querySelectorAll('[data-motion="word"]');
     const subcopy = hero.querySelector('[data-motion="subcopy"]');
     const ctaRow = hero.querySelector('[data-motion="cta-row"]');
 
-    // Headline stays on the pure-CSS `.reveal` utility (T1's contract) — it is
-    // never referenced here, so the page stays readable with zero JS. Everything
-    // below is a `.from()` tween: GSAP only ever *adds* the hidden starting
-    // state at the instant it runs, so if the script never executes at all
-    // (blocked, errors before this point), these elements are simply never
-    // touched and stay at their normal, visible, server-rendered state.
-    // "Louder" pass (Haze 2026-07-14): larger travel + wider stagger gaps so the
-    // choreography reads clearly; same ease family, so it stays Souk-calm.
-    const tl = gsap.timeline({ defaults: { ease: ENTER_EASE, clearProps: 'all' } });
-    if (mark) tl.from(mark, { opacity: 0, scale: 0.35, rotate: -45, duration: DUR_STD * 1.6 }, 0);
-    if (eyebrow) tl.from(eyebrow, { opacity: 0, y: 26, duration: DUR_REVEAL * 1.3 }, 0.08);
-    if (subcopy) tl.from(subcopy, { opacity: 0, y: 30, duration: DUR_REVEAL * 1.3 }, 0.24);
-    if (ctaRow) tl.from(ctaRow, { opacity: 0, y: 30, scale: 0.97, duration: DUR_REVEAL * 1.3 }, 0.42);
+    const tl = createTimeline({ defaults: { ease: ENTER_EASE } });
+    if (eyebrow) {
+        tl.add(eyebrow, { opacity: [0, 1], translateY: [26, 0], duration: DUR_REVEAL }, 0);
+    }
+    if (words.length) {
+        // Slight overshoot on the headline only — `outBack` with a modest
+        // magnitude, not the house's soft ease — so the word-by-word rise
+        // reads with a touch more character than the rest of the hero.
+        tl.add(words, {
+            opacity: [0, 1],
+            translateY: [34, 0],
+            duration: DUR_REVEAL,
+            ease: 'outBack(1.2)',
+            delay: stagger(70),
+        }, 90);
+    }
+    if (subcopy) {
+        tl.add(subcopy, { opacity: [0, 1], translateY: [28, 0], duration: DUR_REVEAL }, 320);
+    }
+    if (ctaRow) {
+        tl.add(ctaRow, { opacity: [0, 1], translateY: [26, 0], scale: [0.97, 1], duration: DUR_REVEAL }, 480);
+    }
+}
+
+// ── Parallax ──
+// Every [data-plx] element gets an *additional* scroll-linked translateY on
+// top of its normal document-flow scrolling — never on the [data-land]
+// section root, so this can never fight a CSS transform already on the
+// wrapper (see app.css's Night Souk header comment). `onScroll({ sync: true
+// })` scrubs the tween's progress directly to the element's own scroll
+// position (default enter/leave thresholds already span its whole journey
+// through the viewport, top edge appearing to bottom edge disappearing —
+// exactly what a depth layer needs), so no separate ScrollTrigger-style
+// wiring is required.
+//
+// Speed < 1 (background: hero stars/skyline) should lag behind normal
+// scroll, speed > 1 (foreground: seller cards) should race slightly ahead.
+// `(1 - speed) * travel` gives a positive (lagging/"stays put") offset for
+// speed < 1 and a negative (rushing) one for speed > 1, scaled generously
+// for the full-bleed hero layers and subtly for the smaller in-flow/decor
+// elements elsewhere.
+const HERO_TRAVEL_VH = 0.6; // ≈60vh of lag across the hero's scroll-out
+const AMBIENT_TRAVEL_PX = 260; // subtle drift for categories/seller layers
+
+function parallax() {
+    document.querySelectorAll('[data-plx]').forEach((el) => {
+        const speed = parseFloat(el.dataset.plx);
+        if (!Number.isFinite(speed)) return;
+
+        const inHero = !!el.closest('[data-land="hero"]');
+        const travel = inHero
+            ? (1 - speed) * window.innerHeight * HERO_TRAVEL_VH
+            : (1 - speed) * AMBIENT_TRAVEL_PX;
+
+        animate(el, {
+            translateY: [0, travel],
+            ease: 'linear',
+            autoplay: onScroll({ sync: true }),
+        });
+    });
 }
 
 /**
- * Scroll-triggered reveal for one section. `itemsSelector` is scoped inside
- * `sectionSelector`; pass null to animate the section-selector match itself
- * (used for single-block bands like seller-cta/footer-cta).
+ * Scroll-triggered reveal for one section's `data-motion="item"` children.
+ * Uses a plain (non-autoplay-linked) scroll observer whose `onEnter` fires
+ * the reveal once — with `repeat: false` the observer stops re-processing
+ * after it fires, so scrolling back up and down never replays it, and
+ * (unlike linking the animation to the observer's own play/pause sync) the
+ * entrance always plays to completion instead of risking a pause mid-tween
+ * if the user scrolls past quickly.
  */
-function scrollReveal(sectionSelector, itemsSelector, stagger = 0.08) {
-    const section = document.querySelector(sectionSelector);
+function sectionReveal(landKey, { staggerMs = 100 } = {}) {
+    const section = document.querySelector(`[data-land="${landKey}"]`);
     if (!section) return;
-    const targets = itemsSelector ? section.querySelectorAll(itemsSelector) : [section];
-    if (!targets.length) return;
+    const items = section.querySelectorAll('[data-motion="item"]');
+    if (!items.length) return;
 
-    gsap.from(targets, {
-        opacity: 0,
-        y: 48,
-        scale: 0.97,
-        duration: DUR_REVEAL * 1.35,
-        ease: ENTER_EASE,
-        stagger,
-        clearProps: 'all',
-        scrollTrigger: {
-            trigger: section,
-            start: 'top 78%',
-            once: true,
+    onScroll({
+        target: section,
+        enter: '78% top',
+        repeat: false,
+        onEnter: () => {
+            animate(items, {
+                opacity: [0, 1],
+                translateY: [48, 0],
+                scale: [0.97, 1],
+                duration: Math.round(DUR_REVEAL * 1.35),
+                ease: ENTER_EASE,
+                delay: stagger(staggerMs),
+            });
         },
     });
 }
 
-function scrollReveals() {
-    scrollReveal('[data-land="trust"]', '[data-motion="item"]', 0.14);
-    scrollReveal('[data-land="categories"]', '[data-motion="item"]', 0.08);
+function sectionReveals() {
+    sectionReveal('trust', { staggerMs: 140 });
+    sectionReveal('categories', { staggerMs: 80 });
     // "Sequential" — a longer stagger reads as one-step-after-another rather
     // than a grid popping in together.
-    scrollReveal('[data-land="how"]', '[data-motion="item"]', 0.24);
-    scrollReveal('[data-land="seller"] > div', null);
-    scrollReveal('[data-land="footer-cta"] > div', null);
+    sectionReveal('how', { staggerMs: 240 });
+    sectionReveal('seller', { staggerMs: 80 });
+    sectionReveal('footer-cta', { staggerMs: 80 });
+}
+
+/** Draws #how-path in sync with scroll progress through the "how" section. */
+function drawHowPath() {
+    const section = document.querySelector('[data-land="how"]');
+    if (!section) return;
+    const path = section.querySelector('#how-path');
+    if (!path) return;
+
+    const [drawable] = svg.createDrawable(path);
+    animate(drawable, {
+        draw: '0 1',
+        ease: 'linear',
+        autoplay: onScroll({ target: section, sync: true }),
+    });
 }
 
 /** Stat count-ups — ends exactly on the server-rendered value/formatting. */
@@ -139,10 +210,10 @@ function countUps() {
     const nodes = stats.querySelectorAll('[data-countup]');
     if (!nodes.length) return;
 
-    ScrollTrigger.create({
-        trigger: stats,
-        start: 'top 85%',
-        once: true,
+    onScroll({
+        target: stats,
+        enter: '85% top',
+        repeat: false,
         onEnter: () => {
             nodes.forEach((el) => {
                 const target = parseInt(el.getAttribute('data-target'), 10) || 0;
@@ -151,9 +222,9 @@ function countUps() {
                     return;
                 }
                 const proxy = { val: 0 };
-                gsap.to(proxy, {
+                animate(proxy, {
                     val: target,
-                    duration: 2,
+                    duration: 2000,
                     ease: STD_EASE,
                     onUpdate: () => {
                         el.textContent = formatCount(proxy.val);
@@ -169,39 +240,10 @@ function countUps() {
     });
 }
 
-/**
- * Subtle parallax on the hero/footer-cta girih ornament. T1's DOM has no
- * separate ornament layer — the `surface-girih` pattern is a background-image
- * on the section root itself — so rather than adding structural markup outside
- * this task's declared surface (data-attrs + script loading only), the girih
- * tile is nudged via `backgroundPositionY`, never `transform`. That keeps the
- * house's hard rule intact by construction: this can never leave a transform
- * on a section wrapper, because it doesn't use transform at all. Tiled
- * background + scrub means it shifts seamlessly with no edge artifacts.
- */
-function parallax() {
-    ['hero', 'footer-cta'].forEach((key) => {
-        const el = document.querySelector(`[data-land="${key}"]`);
-        if (!el) return;
-        if (getComputedStyle(el).backgroundImage === 'none') return;
-
-        gsap.to(el, {
-            backgroundPositionY: '+=64',
-            ease: 'none',
-            scrollTrigger: {
-                trigger: el,
-                start: 'top bottom',
-                end: 'bottom top',
-                scrub: 0.6,
-            },
-        });
-    });
-}
-
 function init() {
     // Always tear down first: wire:navigate can land back on /welcome after
     // visiting other pages, and this module (loaded once, live for the whole
-    // SPA-style session) must not accumulate duplicate ScrollTriggers.
+    // SPA-style session) must not accumulate duplicate scroll observers.
     cleanup();
 
     if (!document.querySelector('[data-land]')) return; // not the landing page
@@ -209,16 +251,14 @@ function init() {
 
     loadHouseTokens();
 
-    ctx = gsap.context(() => {
+    scope = createScope().add(() => {
         const hero = document.querySelector('[data-land="hero"]');
         if (hero) heroEntrance(hero);
-        scrollReveals();
-        countUps();
         parallax();
+        sectionReveals();
+        drawHowPath();
+        countUps();
     });
-
-    // Re-measure trigger positions against the freshly (re)morphed DOM.
-    ScrollTrigger.refresh();
 }
 
 document.addEventListener('livewire:navigated', init);

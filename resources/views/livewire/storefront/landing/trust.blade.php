@@ -23,9 +23,9 @@
             <span class="flex size-11 items-center justify-center rounded-full bg-brass-tint text-brass">
                 <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 4.556-3.196 8.372-7.494 9.319a1 1 0 0 1-.512 0C8.696 20.372 5.5 16.556 5.5 12V7.087c0-.859.564-1.622 1.397-1.789 1.462-.29 3.126-.822 4.51-1.61a2.75 2.75 0 0 1 2.186 0c1.384.788 3.048 1.32 4.51 1.61.833.167 1.397.93 1.397 1.789V12Z"/></svg>
             </span>
-            <h3 class="mt-4 font-display text-lg font-semibold text-ink">{{ __('Buyer protection') }}</h3>
+            <h3 class="mt-4 font-display text-lg font-semibold text-ink">{{ __('Your money, held safely') }}</h3>
             <p class="mt-2 text-sm leading-relaxed text-ink-soft">
-                {{ __('Secure checkout, order tracking and a support team you can actually reach if something goes wrong.') }}
+                {{ __('Your money is held safely until delivery — the seller only gets paid once your order actually arrives.') }}
             </p>
         </div>
 

@@ -1,5 +1,5 @@
 <div>
-    @include('livewire.storefront.landing.hero')
+    @include('livewire.storefront.landing.hero', ['categories' => $categories])
     @include('livewire.storefront.landing.trust')
     @include('livewire.storefront.landing.categories', ['categories' => $categories])
     @include('livewire.storefront.landing.how-it-works')
