@@ -11,7 +11,7 @@ use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.storefront')]
+#[Layout('layouts.landing', ['variant' => 'light'])]
 class Register extends Component
 {
     public string $name = '';
