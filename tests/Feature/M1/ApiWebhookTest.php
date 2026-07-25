@@ -66,6 +66,20 @@ test('an order.paid webhook fires a signed POST to subscribers', function () {
         && $request->header('X-Webhook-Signature')[0] === hash_hmac('sha256', $request->body(), $secret));
 });
 
+test('a duplicate order.paid event delivers each subscriber only once', function () {
+    Http::fake();
+    WebhookSubscription::create(['url' => 'https://hooks.test/paid', 'secret' => 's', 'events' => ['order.paid'], 'is_active' => true]);
+
+    $order = webhookOrder();
+
+    // OrderPaid has several emitters (iPay88 job, COD mark-delivered) and a
+    // duplicate gateway callback can replay it — it must not double-deliver.
+    OrderPaid::dispatch($order->fresh());
+    OrderPaid::dispatch($order->fresh());
+
+    Http::assertSentCount(1); // deduped on (subscription, order.paid:<order_no>)
+});
+
 test('a sub_order.shipped webhook fires only for the subscribed store', function () {
     Http::fake();
     $order = webhookOrder();
