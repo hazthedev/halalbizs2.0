@@ -78,6 +78,43 @@ test('a platform discount, a free-shipping voucher and a shop voucher all stack'
         ->and($freeShip->usages()->sum('discount_sen'))->toBe(1200); // total waived shipping
 });
 
+test('stacked item vouchers over 100% never discount shipping or tax', function () {
+    [$buyer, $address] = stackBuyer();
+
+    // Single store, shipping 3,000 so a bleed past the items would be visible
+    // (and the pre-cap total stays positive rather than tripping the ≤0 floor).
+    $product = Product::factory()->create(['cod_enabled' => true]);
+    $product->store->update(['shipping_mode' => 'flat', 'shipping_flat_fee_sen' => 3000, 'free_shipping_over_sen' => null]);
+    $product->variants->first()->update(['price_sen' => 10000, 'sale_price_sen' => null, 'stock' => 10]);
+
+    // 60% platform + 60% shop = 120% of the 10,000 items subtotal.
+    Voucher::create([
+        'scope' => VoucherScope::Platform, 'code' => 'PLAT60', 'type' => VoucherType::Percent, 'percent' => 60,
+        'quota' => 5, 'per_user_limit' => 1, 'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'is_active' => true,
+    ]);
+    Voucher::create([
+        'scope' => VoucherScope::Shop, 'store_id' => $product->store_id, 'code' => 'SHOP60', 'type' => VoucherType::Percent, 'percent' => 60,
+        'quota' => 5, 'per_user_limit' => 1, 'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'is_active' => true,
+    ]);
+
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod, 'PLAT60', 'SHOP60');
+    $sub = $order->subOrders->first();
+
+    // Item vouchers only discount items — the buyer still pays shipping + tax.
+    expect($order->shipping_total_sen)->toBe(3000)
+        ->and($order->grand_total_sen)->toBeGreaterThanOrEqual($order->shipping_total_sen + $order->tax_total_sen);
+
+    // The COMBINED item discount is capped at the items subtotal (not 120%).
+    expect($order->discount_total_sen + (int) $sub->shop_discount_sen)->toBeLessThanOrEqual($order->subtotal_sen);
+
+    // The seller-funded shop voucher is honoured in full; the platform yields.
+    expect((int) $sub->shop_discount_sen)->toBe(6000)      // 60% of 10,000
+        ->and($order->discount_total_sen)->toBe(4000)      // capped: 10,000 − 6,000
+        ->and($order->grand_total_sen)->toBe(3000);        // shipping only
+});
+
 test('a non-free-shipping voucher is rejected from the free-shipping slot', function () {
     [$buyer, $address] = stackBuyer();
     $product = Product::factory()->create(['cod_enabled' => true]);
