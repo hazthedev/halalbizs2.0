@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\SubOrderStatus;
 use App\Models\FlashSaleItem;
+use App\Models\OrderItem;
 use App\Models\ProductVariant;
+use App\Models\User;
 use Illuminate\Support\Collection;
 
 /**
@@ -41,6 +44,21 @@ class FlashSaleService
     public function liveItemFor(int $variantId): ?FlashSaleItem
     {
         return $this->liveItemsFor([$variantId])->get($variantId);
+    }
+
+    /**
+     * Qty this buyer has already bought at this deal's promo price, across all
+     * their orders — cancelled sub-orders (whose allocation was released) don't
+     * count. Lets checkout enforce per_buyer_limit CUMULATIVELY, not per-order.
+     */
+    public function buyerPurchasedQty(FlashSaleItem $item, User $buyer): int
+    {
+        return (int) OrderItem::query()
+            ->where('flash_sale_item_id', $item->id)
+            ->whereHas('subOrder', fn ($q) => $q
+                ->where('status', '!=', SubOrderStatus::Cancelled)
+                ->whereHas('order', fn ($o) => $o->where('user_id', $buyer->id)))
+            ->sum('qty');
     }
 
     /** Promo price when a deal is live with allocation left, else the normal price. */

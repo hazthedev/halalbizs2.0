@@ -114,9 +114,15 @@ class OrderService
 
     private function restock(SubOrder $subOrder): void
     {
-        foreach ($subOrder->items()->with('variant')->get() as $item) {
+        foreach ($subOrder->items()->with(['variant', 'flashSaleItem'])->get() as $item) {
             if ($item->variant !== null) {
                 app(StockService::class)->apply($item->variant, $item->qty, StockMovementType::Restock, $subOrder->sub_order_no);
+            }
+
+            // Release any flash-sale allocation this line consumed, so a cancelled
+            // or expired-unpaid order doesn't permanently burn the deal's stock.
+            if ($item->flashSaleItem !== null) {
+                $item->flashSaleItem->decrement('sold_qty', min($item->qty, (int) $item->flashSaleItem->sold_qty));
             }
         }
     }
