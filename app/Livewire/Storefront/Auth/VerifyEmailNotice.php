@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.storefront')]
+#[Layout('layouts.landing', ['variant' => 'light'])]
 class VerifyEmailNotice extends Component
 {
     public ?string $status = null;

@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.storefront')]
+#[Layout('layouts.landing', ['variant' => 'light'])]
 class ForgotPassword extends Component
 {
     public string $email = '';
