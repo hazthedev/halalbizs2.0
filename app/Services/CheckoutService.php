@@ -194,8 +194,14 @@ class CheckoutService
                         // the normal price (and no allocation is consumed).
                         $line->groupMembership = null;
                         $flashItem = $flashItems->get($line->variant->id);
+                        // per_buyer_limit is CUMULATIVE across the buyer's orders,
+                        // not per-order — otherwise splitting into N orders repeats
+                        // the promo indefinitely.
+                        $priorFlashQty = $flashItem !== null
+                            ? $this->flash->buyerPurchasedQty($flashItem, $buyer)
+                            : 0;
                         $useFlash = $flashItem !== null
-                            && $line->qty <= $flashItem->per_buyer_limit
+                            && ($priorFlashQty + $line->qty) <= $flashItem->per_buyer_limit
                             && $flashItem->remaining() >= $line->qty;
                         $line->flashItem = $useFlash ? $flashItem : null;
                         $line->unitPriceSen = $useFlash ? $flashItem->promo_price_sen : $line->variant->effectivePriceSen();
@@ -420,6 +426,7 @@ class CheckoutService
                         'product_id' => $variant->product_id,
                         'product_variant_id' => $variant->id,
                         'group_buy_id' => $line->groupMembership?->team->group_buy_id,
+                        'flash_sale_item_id' => $line->flashItem?->id,
                         'product_name' => $variant->product->getTranslation('name', app()->getLocale())
                             ?: $variant->product->getTranslation('name', 'en'),
                         'variant_label' => $variant->options_label,
