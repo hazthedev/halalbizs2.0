@@ -19,6 +19,16 @@ class StockService
     {
         $before = (int) $variant->stock;
 
+        // Oversell floor (defense-in-depth): the caller is expected to hold the
+        // variant row lock and check availability first (CheckoutService does).
+        // Any other caller that decrements past the balance fails loudly here
+        // rather than silently driving stock negative — stock is never < 0.
+        if ($qtyDelta < 0 && $before + $qtyDelta < 0) {
+            throw new \RuntimeException(
+                "Stock underflow for variant {$variant->id}: have {$before}, cannot apply {$qtyDelta}."
+            );
+        }
+
         if ($qtyDelta >= 0) {
             $variant->increment('stock', $qtyDelta);
         } else {
