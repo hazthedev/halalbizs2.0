@@ -26,7 +26,7 @@ class DispatchOrderWebhooks
             'grand_total_sen' => (int) $order->grand_total_sen,
             'payment_method' => $order->payment_method?->value,
             'paid_at' => $order->paid_at?->toIso8601String(),
-        ]);
+        ], dedupeKey: "order.paid:{$order->order_no}");
     }
 
     public function onSubOrderStatusChanged(SubOrderStatusChanged $event): void
@@ -39,6 +39,6 @@ class DispatchOrderWebhooks
             'status' => $event->to->value,
             'total_sen' => (int) $subOrder->total_sen,
             'tracking_no' => $subOrder->awb_no ?? $subOrder->tracking_no,
-        ], $subOrder->store_id);
+        ], $subOrder->store_id, "sub_order.{$event->to->value}:{$subOrder->sub_order_no}");
     }
 }
