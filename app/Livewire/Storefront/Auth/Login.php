@@ -7,6 +7,7 @@ use App\Services\CartService;
 use App\Services\DeviceGuard;
 use App\Services\OtpService;
 use App\Services\Turnstile;
+use App\Support\PostLoginRedirect;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -95,7 +96,9 @@ class Login extends Component
         // Unseen device? Record it and alert (silent on the first ever login).
         app(DeviceGuard::class)->record($user, request());
 
-        $this->redirectIntended(route('home'), navigate: true);
+        // Role-aware: a stale intended URL must not walk an admin into the
+        // seller application (or any section they can't enter).
+        $this->redirect(PostLoginRedirect::url($user), navigate: true);
     }
 
     private function throttleKey(): string
