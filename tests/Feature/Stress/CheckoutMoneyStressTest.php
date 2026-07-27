@@ -16,7 +16,6 @@ use App\Models\User;
 use App\Models\Voucher;
 use App\Services\CheckoutService;
 use App\Services\CoinService;
-use App\Services\LedgerService;
 use App\Services\OrderService;
 use Spatie\Permission\Models\Role;
 
@@ -263,24 +262,13 @@ test('H5: flash sold_qty must be released when a sub-order is cancelled', functi
 // Documented here with the actual numbers: gross 10000 @ 10% = 1000, whereas a
 // net-of-shop-discount basis (net 4000) would charge only 400.
 // ---------------------------------------------------------------------------
-test('H6: commission is charged on GROSS items_subtotal, ignoring shop discount', function () {
-    [$buyer, $address] = stressBuyer();
-    $store = stressStore(flatFeeSen: 0, commissionRate: 10.0);
-    $variant = stressVariant($store, priceSen: 10000);
-    stressShopPercent('SHOP60', 60, $store);
-
-    $order = app(CheckoutService::class)->place(
-        $buyer, $address, PaymentMethod::Ipay88, null, 'SHOP60', [], null, 0, stressLine($variant)
-    );
-
-    $subOrder = $order->subOrders->first();
-
-    // Guard: the shop voucher actually landed on the sub-order.
-    expect($subOrder->shop_discount_sen)->toBe(6000)
-        ->and($subOrder->items_subtotal_sen)->toBe(10000);
-
-    app(LedgerService::class)->recordCompletion($subOrder);
-
-    // DOCUMENTED: commission on GROSS (1000), not net-of-discount (which is 400).
-    expect($subOrder->fresh()->commission_sen)->toBe(1000);
-});
+// H6 is RESOLVED and removed. It was a design flag, not a verdict — it recorded
+// that commission was charged on the gross items_subtotal and noted a net basis
+// would charge 400 instead of 1000. Haze's call (2026-07-27) made the basis a
+// panel setting with both options, defaulting to NET, so a single hard-coded
+// expectation is no longer the truth.
+//
+// Its replacement is tests/Feature/Ledger/CommissionBasisTest.php, which pins
+// both bases, proves the two are genuinely different, and — the thing H6 could
+// not see — proves that a flash sale and a shop voucher of the same value now
+// cost the seller the same fee under either basis. They did not before.

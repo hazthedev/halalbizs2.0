@@ -17,7 +17,7 @@ class OrderItem extends Model
 
     protected $fillable = [
         'sub_order_id', 'product_id', 'product_variant_id', 'group_buy_id', 'flash_sale_item_id',
-        'product_name', 'variant_label', 'unit_price_sen', 'qty', 'line_total_sen',
+        'product_name', 'variant_label', 'unit_price_sen', 'list_price_sen', 'qty', 'line_total_sen',
         'tax_sen', 'tax_rate_bp',
     ];
 
@@ -25,6 +25,7 @@ class OrderItem extends Model
     {
         return [
             'unit_price_sen' => 'integer',
+            'list_price_sen' => 'integer',
             'qty' => 'integer',
             'line_total_sen' => 'integer',
             'tax_sen' => 'integer',

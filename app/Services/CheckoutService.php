@@ -163,6 +163,17 @@ class CheckoutService
                 $weightGrams = 0;
 
                 foreach ($storeLines as $line) {
+                    // Shelf price BEFORE any campaign price (flash / group-buy /
+                    // forced subscription price) — snapshotted per line so a GROSS
+                    // commission basis has something to charge on. unit_price_sen
+                    // is already net of whichever campaign applied, so without this
+                    // the pre-campaign price is simply not recoverable later.
+                    //
+                    // A standing sale_price counts as the shelf price, not a
+                    // discount: effectivePriceSen() is what this line would have
+                    // sold at today with no campaign attached.
+                    $line->listPriceSen = $line->variant->effectivePriceSen();
+
                     // Programmatic forced price (M2.8 subscription) wins outright —
                     // no flash/group-buy stacking on an automated replenishment.
                     if (($line->forcedPriceSen ?? null) !== null) {
@@ -431,6 +442,7 @@ class CheckoutService
                             ?: $variant->product->getTranslation('name', 'en'),
                         'variant_label' => $variant->options_label,
                         'unit_price_sen' => $unitPrice,
+                        'list_price_sen' => $line->listPriceSen,
                         'qty' => $line->qty,
                         'line_total_sen' => $unitPrice * $line->qty,
                         'tax_sen' => $line->taxSen,
