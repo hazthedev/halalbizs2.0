@@ -113,24 +113,24 @@
                             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
                         </button>
                         <div x-show="open" x-cloak x-on:click.outside="open = false" x-transition.origin.top.right.duration.150ms
-                             class="absolute right-0 top-12 w-56 rounded-[var(--radius-card)] border border-line bg-surface py-1 shadow-pop">
-                            <div class="border-b border-line px-4 py-2.5">
+                             class="absolute right-0 top-12 w-56 rounded-[var(--radius-card)] border border-line bg-surface py-2 shadow-pop">
+                            <div class="border-b border-line px-5 py-3">
                                 <p class="truncate text-sm font-semibold">{{ auth()->user()->name }}</p>
                                 <p class="truncate text-xs text-ink-soft">{{ auth()->user()->email }}</p>
                             </div>
-                            <a href="{{ route('account.dashboard') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('My account') }}</a>
-                            <a href="{{ route('account.orders') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('My orders') }}</a>
-                            <a href="{{ route('account.messages') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('Messages') }}</a>
-                            <a href="{{ route('account.wishlist') }}" wire:navigate class="block px-4 py-2 text-sm hover:bg-paper">{{ __('Wishlist') }}</a>
+                            <a href="{{ route('account.dashboard') }}" wire:navigate class="block px-5 py-2.5 text-sm hover:bg-paper">{{ __('My account') }}</a>
+                            <a href="{{ route('account.orders') }}" wire:navigate class="block px-5 py-2.5 text-sm hover:bg-paper">{{ __('My orders') }}</a>
+                            <a href="{{ route('account.messages') }}" wire:navigate class="block px-5 py-2.5 text-sm hover:bg-paper">{{ __('Messages') }}</a>
+                            <a href="{{ route('account.wishlist') }}" wire:navigate class="block px-5 py-2.5 text-sm hover:bg-paper">{{ __('Wishlist') }}</a>
                             @if (auth()->user()->store?->isApproved())
-                                <a href="{{ route('seller.dashboard') }}" class="block px-4 py-2 text-sm hover:bg-paper">{{ __('Seller centre') }}</a>
+                                <a href="{{ route('seller.dashboard') }}" class="block px-5 py-2.5 text-sm hover:bg-paper">{{ __('Seller centre') }}</a>
                             @endif
                             @role('admin')
-                                <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm hover:bg-paper">{{ __('Admin panel') }}</a>
+                                <a href="{{ route('admin.dashboard') }}" class="block px-5 py-2.5 text-sm hover:bg-paper">{{ __('Admin panel') }}</a>
                             @endrole
                             <form method="POST" action="{{ route('logout') }}" class="border-t border-line">
                                 @csrf
-                                <button type="submit" class="block w-full px-4 py-2 text-left text-sm text-ink-soft hover:bg-paper">{{ __('Log out') }}</button>
+                                <button type="submit" class="block w-full px-5 py-2.5 text-left text-sm text-ink-soft hover:bg-paper">{{ __('Log out') }}</button>
                             </form>
                         </div>
                     </div>
@@ -145,6 +145,12 @@
     @unless ($bareChrome)
         <nav class="border-b border-line bg-paper" aria-label="{{ __('Categories') }}">
             <div class="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-2">
+                {{-- The marketing landing lives at /welcome; '/' stays the shop.
+                     This is its always-visible entry so guests can find it. --}}
+                <a href="{{ route('landing') }}" wire:navigate
+                   class="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold text-brass-deep hover:bg-brass-tint/50">
+                    <x-ui.star-mark :size="14" class="text-brass" />{{ __('Discover') }}
+                </a>
                 @if (config('live.enabled', true))
                     <a href="{{ route('live.index') }}" wire:navigate
                        class="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold text-danger hover:bg-danger/5">
@@ -180,6 +186,7 @@
             <div class="motion-reveal" x-bind:class="shown && 'revealed'" style="animation-delay: 60ms">
                 <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-brass-tint/70">{{ __('About') }}</p>
                 <ul class="mt-3 space-y-2 text-sm">
+                    <li><a href="{{ route('landing') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Discover HalalBizs') }}</a></li>
                     <li><a href="{{ route('page.show', 'about') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('About us') }}</a></li>
                     <li><a href="{{ route('page.show', 'terms') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Terms & conditions') }}</a></li>
                     <li><a href="{{ route('page.show', 'privacy') }}" wire:navigate class="text-paper/80 hover:text-paper">{{ __('Privacy policy') }}</a></li>
@@ -200,7 +207,7 @@
                     @csrf
                     <input type="email" name="email" required placeholder="{{ __('Your email') }}"
                            class="h-10 w-full rounded-[var(--radius-control)] border-0 bg-surface px-3 text-sm text-ink placeholder:text-ink-faint">
-                    <button type="submit" class="h-10 shrink-0 rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep">{{ __('Subscribe') }}</button>
+                    <button type="submit" class="h-10 shrink-0 rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-semibold text-white hover:bg-emerald-deep">{{ __('Subscribe') }}</button>
                 </form>
                 @if (session('newsletter.status'))
                     <p class="mt-2 text-[13px] text-paper/80">{{ session('newsletter.status') }}</p>
@@ -212,12 +219,12 @@
         </div>
     </footer>
 
-    {{-- Toasts (ink surface, bottom-right desktop / bottom-center mobile) --}}
-    <div class="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4 sm:items-end" aria-live="polite">
+    {{-- Toasts (ink surface, always top-right) --}}
+    <div class="pointer-events-none fixed inset-x-0 top-4 z-50 flex flex-col items-end gap-2 px-4" aria-live="polite">
         <template x-for="toast in $store.toasts.items" :key="toast.id">
-            <div x-transition:enter="transition duration-150 ease-out" x-transition:enter-start="translate-y-2 opacity-0"
+            <div x-transition:enter="transition duration-150 ease-out" x-transition:enter-start="-translate-y-2 opacity-0"
                  x-transition:leave="transition duration-100 ease-in" x-transition:leave-end="opacity-0"
-                 class="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-[var(--radius-card)] border border-brass/20 bg-ink px-4 py-3 text-sm text-paper shadow-pop">
+                 class="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-[var(--radius-card)] border border-brass/20 bg-ink px-5 py-4 text-sm text-paper shadow-pop">
                 <svg x-show="toast.type === 'success'" class="size-4 shrink-0 text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                 <svg x-show="toast.type === 'error'" class="size-4 shrink-0 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                 <span x-text="toast.message" class="flex-1"></span>
