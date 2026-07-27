@@ -65,7 +65,7 @@
     <div class="mt-6 flex items-start gap-8">
         {{-- Desktop sidebar filters (sticky) --}}
         <aside class="hidden w-60 shrink-0 lg:block" aria-label="{{ __('Filters') }}">
-            <div class="sticky top-20 max-h-[calc(100vh-6rem)] space-y-6 overflow-y-auto pb-4 pr-1">
+            <div class="sticky top-20 max-h-[calc(100vh-6rem)] space-y-6 overflow-y-auto py-1 pb-4 pl-1 pr-2">
                 @include('livewire.storefront.listing.filters', ['idPrefix' => 'desktop'])
             </div>
         </aside>
@@ -121,7 +121,7 @@
                         @endif
                     </x-ui.card>
                 @else
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
                         @foreach ($products as $product)
                             <div wire:key="product-{{ $product->id }}">
                                 <x-product-card
@@ -135,7 +135,7 @@
                 @endif
 
                 {{-- Skeleton cards for the incoming page (no layout shift on existing cards) --}}
-                <div wire:loading.grid wire:target="loadMore" class="mt-3 hidden grid-cols-2 gap-3 sm:mt-4 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
+                <div wire:loading.grid wire:target="loadMore" class="mt-3 hidden grid-cols-2 gap-3 sm:mt-4 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
                     @for ($i = 0; $i < 6; $i++)
                         <div class="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
                             <x-ui.skeleton class="aspect-square w-full rounded-none" />

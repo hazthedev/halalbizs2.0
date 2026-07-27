@@ -142,7 +142,7 @@
                             <a href="{{ route('search') }}" wire:navigate class="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-ink-soft transition-colors hover:text-ink">{{ __('View all') }}</a>
                         </div>
                     @endif
-                    <div class="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mt-6">
+                    <div class="no-scrollbar -mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mt-6">
                         @foreach ($data as $product)
                             <div class="motion-reveal w-40 shrink-0 snap-start sm:w-48" wire:key="carousel-{{ $section->id }}-{{ $product->id }}"
                                  x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'"
@@ -165,7 +165,7 @@
                             <a href="{{ route('search') }}" wire:navigate class="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-ink-soft transition-colors hover:text-ink">{{ __('View all') }}</a>
                         </div>
                     @endif
-                    <div class="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
+                    <div class="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
                         @foreach ($data as $product)
                             <div class="motion-reveal" wire:key="grid-{{ $section->id }}-{{ $product->id }}"
                                  x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'"
@@ -188,7 +188,7 @@
                                 <x-ui.section-heading :title="$title" class="motion-reveal"
                                                       x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'" />
                             @endif
-                            <div class="-mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mt-6">
+                            <div class="no-scrollbar -mx-4 mt-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mt-6">
                                 @foreach ($data as $product)
                                     <div class="motion-reveal w-40 shrink-0 snap-start sm:w-48" wire:key="recent-{{ $product->id }}"
                                          x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'"

@@ -21,7 +21,7 @@
                     </select>
                 </label>
                 <button type="button" wire:click="subscribe" wire:loading.attr="disabled" wire:target="subscribe"
-                        class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-emerald bg-emerald-tint px-4 text-sm font-semibold text-emerald transition-colors hover:bg-emerald hover:text-white disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
+                        class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-emerald bg-emerald-tint px-6 text-sm font-semibold text-emerald transition-colors hover:bg-emerald hover:text-white disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
                     {{ __('Subscribe') }}
                 </button>
             </div>

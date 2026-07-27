@@ -96,10 +96,22 @@ document.addEventListener('alpine:init', () => {
             if (payload.labels) opts.labels = payload.labels;
             // Money charts pass `money: true` and ringgit-valued series; format
             // the axis + tooltip as RM (PHP can't ship JS formatter functions).
+            // On a horizontal bar the VALUE axis is X — formatting Y there would
+            // money-format the category names ("RM 0" per label).
+            const horizontal = !!(opts.plotOptions?.bar?.horizontal);
             if (payload.money) {
                 const rm = (v) => 'RM ' + Math.round(Number(v) || 0).toLocaleString('en-MY');
-                opts.yaxis = deepMerge(opts.yaxis ?? {}, { labels: { formatter: rm } });
+                if (horizontal) {
+                    opts.xaxis = deepMerge(opts.xaxis ?? {}, { labels: { formatter: rm } });
+                } else {
+                    opts.yaxis = deepMerge(opts.yaxis ?? {}, { labels: { formatter: rm } });
+                }
                 opts.tooltip = deepMerge(opts.tooltip ?? {}, { y: { formatter: rm } });
+            } else if (horizontal) {
+                // Count-valued horizontal bars: hide Apex's fractional ticks so the
+                // value axis doesn't read 0 1 1 2 2 3 3.
+                const int = (v) => (Number.isInteger(Number(v)) ? Number(v).toLocaleString() : '');
+                opts.xaxis = deepMerge(opts.xaxis ?? {}, { labels: { formatter: int } });
             }
             this.chart = new window.ApexCharts(this.$refs.canvas, opts);
             this.chart.render();
