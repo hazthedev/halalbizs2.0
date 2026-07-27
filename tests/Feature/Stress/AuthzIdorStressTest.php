@@ -155,12 +155,7 @@ test('#2 FINDING: a products-only admin must be BLOCKED from finance routes', fu
     // an admin without finance.manage cannot reach the finance section.
     $this->actingAs($admin)->get(route('admin.finance.commission'))->assertForbidden();
     $this->actingAs($admin)->get(route('admin.finance.payouts'))->assertForbidden();
-})->skip(
-    'OPEN BUG #1 — RoleSeeder.php:30 grants the admin ROLE all 8 permissions, so the '.
-    'per-section can: gates are inert and a products-only admin reaches finance (200, not 403). '.
-    'Blocked on a design call: superadmin by primary-email vs an is_superadmin flag. '.
-    'Un-skip with the fix — the grant must live in RoleSeeder to survive the deploy re-seed.'
-);
+});
 
 test('#2 observation: a scoped admin CAN reach its own section + the ungated dashboard/notifications', function () {
     $admin = User::factory()->create(['two_factor_method' => 'email']);

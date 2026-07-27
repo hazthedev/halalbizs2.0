@@ -21,7 +21,7 @@ function catalogAdmin(): User
     (new RoleSeeder)->run();
 
     $admin = User::factory()->create(['two_factor_method' => 'email']); // admins need 2FA (EnsureAdmin)
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     return $admin;
 }

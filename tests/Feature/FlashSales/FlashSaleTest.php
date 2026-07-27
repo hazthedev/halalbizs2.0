@@ -157,7 +157,7 @@ test('the storefront flash-sale page lists live deals with promo prices', functi
 
 test('an admin can create a flash sale and add a deal line', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    makeAdmin($admin);
     $variant = flashProduct(10000);
 
     Livewire\Livewire::actingAs($admin)

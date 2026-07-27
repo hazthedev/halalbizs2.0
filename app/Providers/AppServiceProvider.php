@@ -35,6 +35,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -75,6 +76,14 @@ class AppServiceProvider extends ServiceProvider
         // Public API rate limit (docs/10): 60 req/min per IP. Auth login already
         // self-throttles in the Login component (5 attempts).
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
+
+        // Superadmin bypass (bug #1). The `admin` role carries NO permissions —
+        // it only gets you past EnsureAdmin — so every admin section is gated on
+        // its own per-person grant. A superadmin sits above that and passes any
+        // check, which is what keeps Staff itself reachable after the role was
+        // emptied. Returning null (not false) for everyone else is deliberate:
+        // it means "no opinion", so the normal permission resolution continues.
+        Gate::before(fn ($user) => $user->is_superadmin ? true : null);
 
         // /up readiness probe (docs/10): the built-in health route dispatches
         // DiagnosingHealth — fail it if the database is unreachable.

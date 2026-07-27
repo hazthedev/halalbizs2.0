@@ -16,7 +16,7 @@ function financeAdmin(): User
     test()->seed(RoleSeeder::class);
 
     $user = User::factory()->create(['two_factor_method' => 'email']); // admins need 2FA (EnsureAdmin)
-    $user->assignRole('admin');
+    makeAdmin($user);
 
     return $user;
 }

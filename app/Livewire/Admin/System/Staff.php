@@ -117,6 +117,41 @@ class Staff extends Component
         $this->cancelEdit();
     }
 
+    /**
+     * Promote/demote a superadmin. A superadmin passes every permission check
+     * (Gate::before), so only a superadmin may hand that out — otherwise any
+     * admin who reached this screen could grant themselves everything, which is
+     * the hole this whole change closes.
+     */
+    public function toggleSuperadmin(int $userId): void
+    {
+        if (! auth()->user()->is_superadmin) {
+            $this->dispatch('toast', message: __('Only a superadmin can change superadmin access.'), type: 'error');
+
+            return;
+        }
+
+        $user = User::role('admin')->findOrFail($userId);
+
+        if ($user->is_superadmin) {
+            // Never leave the platform with nobody able to grant permissions:
+            // the last superadmin cannot be demoted, not even by themselves.
+            if (User::where('is_superadmin', true)->count() <= 1) {
+                $this->dispatch('toast', message: __('There must always be at least one superadmin.'), type: 'error');
+
+                return;
+            }
+
+            $user->forceFill(['is_superadmin' => false])->save();
+            $this->dispatch('toast', message: __('Superadmin access removed for :name', ['name' => $user->name]));
+
+            return;
+        }
+
+        $user->forceFill(['is_superadmin' => true])->save();
+        $this->dispatch('toast', message: __(':name is now a superadmin.', ['name' => $user->name]));
+    }
+
     public function removeAdmin(int $userId): void
     {
         // Never let an admin lock themselves out.
@@ -127,8 +162,18 @@ class Staff extends Component
         }
 
         $user = User::role('admin')->findOrFail($userId);
+
+        // Removing the last superadmin's admin role is the same lockout by
+        // another door — block it at this end too.
+        if ($user->is_superadmin && User::where('is_superadmin', true)->count() <= 1) {
+            $this->dispatch('toast', message: __('There must always be at least one superadmin.'), type: 'error');
+
+            return;
+        }
+
         $user->removeRole('admin');
         $user->syncPermissions([]);
+        $user->forceFill(['is_superadmin' => false])->save();
 
         if ($this->editingId === $userId) {
             $this->cancelEdit();

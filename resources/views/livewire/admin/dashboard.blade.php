@@ -17,8 +17,11 @@
         </x-slot:actions>
     </x-ui.section-heading>
 
-    {{-- Stat row --}}
-    <div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
+    {{-- Stat row. The three revenue tiles are platform finance, so they follow
+         finance.manage — the dashboard route itself stays open to every admin
+         (it is their landing page), but the money on it does not. --}}
+    <div class="grid grid-cols-2 gap-3 @can('finance.manage') lg:grid-cols-5 @else lg:grid-cols-2 @endcan">
+        @can('finance.manage')
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('GMV (paid)') }}</p>
             <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">@money($gmvSen)</p>
@@ -36,6 +39,7 @@
             <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">@money($boostRevenueSen)</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Paid placements') }}</p>
         </x-ui.card>
+        @endcan
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Orders today') }}</p>
             <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">{{ number_format($ordersToday) }}</p>
@@ -101,7 +105,9 @@
         </div>
     </div>
 
-    {{-- GMV trend (interactive area) — emerald = money --}}
+    {{-- GMV trend (interactive area) — emerald = money. Same rule as the
+         revenue tiles: platform takings are finance.manage only. --}}
+    @can('finance.manage')
     <x-ui.card class="p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
             <h2 class="text-sm font-semibold">{{ __('GMV — last 30 days') }}</h2>
@@ -113,6 +119,7 @@
                         :height="280" aria-label="{{ __('Daily paid GMV over the selected period') }}" />
         </div>
     </x-ui.card>
+    @endcan
 
     {{-- New buyers over time (interactive line) --}}
     <x-ui.card class="p-4">
@@ -168,7 +175,8 @@
         </x-ui.card>
     </div>
 
-    {{-- Top stores by completed GMV --}}
+    {{-- Top stores by completed GMV — per-seller takings, finance.manage only. --}}
+    @can('finance.manage')
     <x-ui.card>
         <div class="border-b border-line px-4 py-3">
             <h2 class="text-sm font-semibold">{{ __('Top stores by GMV') }}</h2>
@@ -206,4 +214,5 @@
             </table>
         @endif
     </x-ui.card>
+    @endcan
 </div>

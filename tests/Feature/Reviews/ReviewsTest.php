@@ -73,7 +73,7 @@ function reviewsAdmin(): User
     (new RoleSeeder)->run();
 
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     return $admin;
 }

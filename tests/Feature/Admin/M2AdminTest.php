@@ -32,7 +32,7 @@ beforeEach(function () {
 function m2Admin(): User
 {
     $admin = User::factory()->create(['two_factor_method' => 'email']); // EnsureAdmin requires 2FA
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     return $admin;
 }

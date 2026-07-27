@@ -25,5 +25,13 @@ class AdminUserSeeder extends Seeder
         }
 
         $admin->syncRoles(['admin']);
+
+        // The primary admin is the superadmin, so a fresh install always has
+        // exactly one account that can reach the Staff screen and grant the
+        // section permissions to everyone else. Without this the emptied `admin`
+        // role would leave nobody able to hand out permissions at all.
+        if (! $admin->is_superadmin) {
+            $admin->forceFill(['is_superadmin' => true])->save();
+        }
     }
 }
