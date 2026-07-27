@@ -28,7 +28,7 @@ beforeEach(fn () => $this->seed(RoleSeeder::class));
 function notifAdmin(): User
 {
     $user = User::factory()->create();
-    $user->assignRole('admin');
+    makeAdmin($user);
 
     return $user;
 }

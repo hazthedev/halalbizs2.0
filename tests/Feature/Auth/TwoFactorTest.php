@@ -232,7 +232,7 @@ test('disabling 2FA requires the current password', function () {
 
 test('admins without 2FA are redirected to the profile security section', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     $response = $this->actingAs($admin)->get('/admin');
 
@@ -244,7 +244,7 @@ test('admins without 2FA are redirected to the profile security section', functi
 
 test('admins with 2FA reach the admin panel', function () {
     $admin = User::factory()->create(['two_factor_method' => 'email']);
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     $this->actingAs($admin)->get('/admin')->assertOk();
 });

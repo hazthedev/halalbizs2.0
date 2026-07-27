@@ -333,7 +333,7 @@ test('admin finance boosts lists every boost and sums revenue, cancelled include
     $this->seed(RoleSeeder::class);
 
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     $seller = boostsSeller();
     boostsMake(boostsLiveProduct($seller->store), ['amount_sen' => 1000]);

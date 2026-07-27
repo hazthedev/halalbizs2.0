@@ -94,7 +94,7 @@ test('renaming a category writes a /c/ redirect and renames stay deduplicated', 
 test('search insights lists zero-result and trending terms with the 14d count line', function () {
     $this->seed(RoleSeeder::class);
     $admin = User::factory()->create(['two_factor_method' => 'email']); // admins need 2FA (EnsureAdmin)
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     SearchLog::create(['term' => 'unicorn floss', 'results_count' => 0]);
     SearchLog::create(['term' => 'unicorn floss', 'results_count' => 0]);

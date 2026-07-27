@@ -142,7 +142,7 @@ test('admin rejection releases the earmark back to the available balance', funct
     expect($store->availableBalanceSen())->toBe(4500);
 
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     Livewire::actingAs($admin)
         ->test(Payouts::class)
@@ -166,7 +166,7 @@ test('mark paid leaves the ledger untouched — the request-time debit already s
     $payout = app(LedgerService::class)->requestPayout($store, 15000);
 
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     Livewire::actingAs($admin)
         ->test(Payouts::class)

@@ -46,7 +46,7 @@ test('a seller can export their earnings ledger as CSV', function () {
 
 test('the admin take-rate is commission as a share of completed GMV', function () {
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    makeAdmin($admin);
 
     SubOrder::factory()->status(SubOrderStatus::Completed)->create([
         'total_sen' => 10000, 'commission_sen' => 500, 'completed_at' => now(),

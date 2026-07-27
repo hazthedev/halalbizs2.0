@@ -72,17 +72,34 @@
                                 @if ($admin->id === auth()->id())
                                     <x-ui.badge variant="neutral" class="ml-1">{{ __('You') }}</x-ui.badge>
                                 @endif
+                                @if ($admin->is_superadmin)
+                                    <x-ui.badge variant="premium" class="ml-1">{{ __('Superadmin') }}</x-ui.badge>
+                                @endif
                             </p>
                             <p class="truncate text-[12px] text-ink-soft">{{ $admin->email }}</p>
                         </div>
 
                         <div class="hidden flex-wrap gap-1 md:flex">
-                            @forelse ($admin->getDirectPermissions() as $permission)
-                                <x-ui.badge variant="neutral"><span class="font-mono normal-case tracking-normal">{{ $permission->name }}</span></x-ui.badge>
-                            @empty
-                                <span class="text-[12px] text-ink-faint">{{ __('No direct permissions') }}</span>
-                            @endforelse
+                            @if ($admin->is_superadmin)
+                                <span class="text-[12px] text-ink-soft">{{ __('Full access — every section') }}</span>
+                            @else
+                                @forelse ($admin->getDirectPermissions() as $permission)
+                                    <x-ui.badge variant="neutral"><span class="font-mono normal-case tracking-normal">{{ $permission->name }}</span></x-ui.badge>
+                                @empty
+                                    <span class="text-[12px] text-ink-faint">{{ __('No direct permissions') }}</span>
+                                @endforelse
+                            @endif
                         </div>
+
+                        @if (auth()->user()->is_superadmin)
+                            <button type="button" wire:click="toggleSuperadmin({{ $admin->id }})"
+                                    wire:confirm="{{ $admin->is_superadmin
+                                        ? __('Remove superadmin from :name? They keep only their ticked permissions.', ['name' => $admin->name])
+                                        : __('Make :name a superadmin? They will have full access to every admin section.', ['name' => $admin->name]) }}"
+                                    class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                {{ $admin->is_superadmin ? __('Remove superadmin') : __('Make superadmin') }}
+                            </button>
+                        @endif
 
                         <button type="button" wire:click="{{ $editingId === $admin->id ? 'cancelEdit' : 'editPermissions('.$admin->id.')' }}"
                                 class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
