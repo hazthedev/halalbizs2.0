@@ -121,7 +121,7 @@
                         @endif
                     </x-ui.card>
                 @else
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
                         @foreach ($products as $product)
                             <div wire:key="product-{{ $product->id }}">
                                 <x-product-card
@@ -135,7 +135,7 @@
                 @endif
 
                 {{-- Skeleton cards for the incoming page (no layout shift on existing cards) --}}
-                <div wire:loading.grid wire:target="loadMore" class="mt-3 hidden grid-cols-2 gap-3 sm:mt-4 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
+                <div wire:loading.grid wire:target="loadMore" class="mt-3 hidden grid-cols-2 gap-3 sm:mt-4 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
                     @for ($i = 0; $i < 6; $i++)
                         <div class="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
                             <x-ui.skeleton class="aspect-square w-full rounded-none" />
