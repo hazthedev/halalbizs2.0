@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Storefront\Auth;
 
+use App\Enums\AuthContext;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\Turnstile;
@@ -27,6 +28,14 @@ class Register extends Component
     public bool $terms = false;
 
     public ?string $turnstileToken = null;
+
+    /** Which door this registration was reached through — reframes copy + next step. */
+    public string $context = '';
+
+    public function mount(string $context = 'storefront'): void
+    {
+        $this->context = AuthContext::fromValue($context)->value;
+    }
 
     public function register(): void
     {
@@ -62,11 +71,20 @@ class Register extends Component
 
         app(CartService::class)->mergeSessionCart($user);
 
+        // A seller-context signup is "make an account, then apply to sell" —
+        // park the application as the intended destination so email
+        // verification lands them there instead of the storefront.
+        if (AuthContext::fromValue($this->context) === AuthContext::Seller) {
+            session()->put('url.intended', route('seller.apply'));
+        }
+
         $this->redirectRoute('verification.notice', navigate: true);
     }
 
     public function render()
     {
-        return view('livewire.storefront.auth.register')->title(__('Create account'));
+        return view('livewire.storefront.auth.register', [
+            'ctx' => AuthContext::fromValue($this->context),
+        ])->title(__('Create account'));
     }
 }

@@ -403,5 +403,5 @@ test('non-admins get 403 on every catalog page and guests are sent to login', fu
 
     auth()->logout();
 
-    $this->get(route('admin.catalog.categories'))->assertRedirect(route('login'));
+    $this->get(route('admin.catalog.categories'))->assertRedirect(route('admin.login'));
 });

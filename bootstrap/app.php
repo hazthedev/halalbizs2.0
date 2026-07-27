@@ -57,6 +57,22 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller' => EnsureSeller::class,
             'admin' => EnsureAdmin::class,
         ]);
+
+        // The `auth` middleware bounces guests before a section guard runs, so
+        // send them to the branded door that matches the section they reached
+        // for. Keeps the /seller/login and /admin/login entrances consistent
+        // whether a guest arrives via a deep link or a section guard.
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('admin', 'admin/*')) {
+                return route('admin.login');
+            }
+
+            if ($request->is('seller', 'seller/*')) {
+                return route('seller.login');
+            }
+
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

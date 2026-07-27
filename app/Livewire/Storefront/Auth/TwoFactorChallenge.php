@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Storefront\Auth;
 
+use App\Enums\AuthContext;
 use App\Enums\TwoFactorMethod;
 use App\Models\User;
 use App\Services\CartService;
@@ -64,7 +65,8 @@ class TwoFactorChallenge extends Component
         RateLimiter::clear($throttleKey);
 
         $remember = (bool) session('two_factor:remember', false);
-        session()->forget(['two_factor:user_id', 'two_factor:remember']);
+        $context = AuthContext::fromValue(session('two_factor:context'));
+        session()->forget(['two_factor:user_id', 'two_factor:remember', 'two_factor:context']);
 
         Auth::loginUsingId($user->id, $remember);
         session()->regenerate();
@@ -76,7 +78,7 @@ class TwoFactorChallenge extends Component
 
         // Role-aware: a stale intended URL must not walk an admin into the
         // seller application (or any section they can't enter).
-        $this->redirect(PostLoginRedirect::url($user), navigate: true);
+        $this->redirect(PostLoginRedirect::url($user, $context), navigate: true);
     }
 
     private function attemptVerification(User $user): bool

@@ -1,6 +1,6 @@
 <div class="mx-auto w-full max-w-md px-4 py-12 sm:py-16">
     <x-ui.card class="p-6 sm:p-8">
-        <x-ui.section-heading as="h1" :title="__('Log in')" :subtitle="__('Welcome back — your cart is right where you left it.')" />
+        <x-ui.section-heading as="h1" :title="$ctx->loginTitle()" :subtitle="$ctx->loginSubtitle()" />
 
         @if (session('status'))
             <p class="mt-4 rounded-[var(--radius-control)] bg-emerald-tint px-3.5 py-2.5 text-[13px] text-emerald">{{ session('status') }}</p>
@@ -46,13 +46,27 @@
             </x-ui.button>
         </form>
 
-        <div class="mt-5">
-            <x-google-button />
-        </div>
+        {{-- Social sign-in is a buyer convenience; keep it off the staff/seller doors. --}}
+        @if ($ctx === \App\Enums\AuthContext::Storefront)
+            <div class="mt-5">
+                <x-google-button />
+            </div>
+        @endif
 
-        <p class="mt-6 border-t border-line pt-5 text-center text-sm text-ink-soft">
-            {{ __('New here?') }}
-            <a href="{{ route('register') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Create an account') }}</a>
-        </p>
+        @if ($ctx === \App\Enums\AuthContext::Seller)
+            <p class="mt-6 border-t border-line pt-5 text-center text-sm text-ink-soft">
+                {{ __('Want to sell on HalalBizs?') }}
+                <a href="{{ route('seller.register') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Open a shop') }}</a>
+            </p>
+        @elseif ($ctx === \App\Enums\AuthContext::Admin)
+            <p class="mt-6 border-t border-line pt-5 text-center text-[13px] text-ink-faint">
+                {{ __('Admin access is granted by an existing administrator.') }}
+            </p>
+        @else
+            <p class="mt-6 border-t border-line pt-5 text-center text-sm text-ink-soft">
+                {{ __('New here?') }}
+                <a href="{{ route('register') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Create an account') }}</a>
+            </p>
+        @endif
     </x-ui.card>
 </div>

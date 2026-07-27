@@ -26,7 +26,7 @@ function dashboardAdmin(): User
 }
 
 test('guests are redirected and non-admins get 403 on the dashboard', function () {
-    $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
+    $this->get(route('admin.dashboard'))->assertRedirect(route('admin.login'));
 
     $buyer = User::factory()->create();
     $buyer->assignRole('buyer');
