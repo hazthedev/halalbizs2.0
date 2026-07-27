@@ -15,14 +15,28 @@ class KnownDevice extends Model
         'user_id',
         'fingerprint',
         'label',
+        'trust_token_hash',
+        'trusted_until',
         'last_seen_at',
+    ];
+
+    protected $hidden = [
+        'trust_token_hash',
     ];
 
     protected function casts(): array
     {
         return [
+            'trusted_until' => 'datetime',
             'last_seen_at' => 'datetime',
         ];
+    }
+
+    public function trustIsLive(): bool
+    {
+        return $this->trust_token_hash !== null
+            && $this->trusted_until !== null
+            && $this->trusted_until->isFuture();
     }
 
     public function user(): BelongsTo

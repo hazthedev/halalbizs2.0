@@ -40,6 +40,14 @@
                 />
             @endif
 
+            @unless ($useRecoveryCode)
+                <label class="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm text-ink">
+                    <input type="checkbox" wire:model="trustDevice" class="size-4 rounded accent-emerald">
+                    {{ __('Trust this device for 30 days') }}
+                </label>
+                <p class="-mt-1 text-[12px] text-ink-faint">{{ __('Skip the code next time you log in from this browser. Don\'t use this on a shared computer.') }}</p>
+            @endunless
+
             <x-ui.button type="submit" class="w-full" wire:loading.attr="disabled">
                 <svg wire:loading wire:target="verify" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/></svg>
                 {{ __('Verify and log in') }}
