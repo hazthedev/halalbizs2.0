@@ -104,7 +104,8 @@
             </x-ui.card>
         @endif
 
-        {{-- Address list --}}
+        {{-- Address list (hidden while the add/edit form is open) --}}
+        @unless ($showForm)
         @forelse ($addresses as $address)
             <x-ui.card class="p-5" wire:key="address-{{ $address->id }}">
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -147,9 +148,8 @@
                 </div>
             </x-ui.card>
         @empty
-            @unless ($showForm)
-                <x-ui.empty-state :title="__('No addresses yet')" :message="__('Add a delivery address and checkout will fill itself in.')" />
-            @endunless
+            <x-ui.empty-state :title="__('No addresses yet')" :message="__('Add a delivery address and checkout will fill itself in.')" />
         @endforelse
+        @endunless
     </div>
 </x-account-shell>

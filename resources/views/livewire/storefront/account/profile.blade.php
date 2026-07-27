@@ -200,7 +200,11 @@
                     {{-- Authenticator (TOTP) setup --}}
                     @if ($totpSecret !== null)
                         <form wire:submit="confirmTotpSetup" class="mt-4 space-y-4 rounded-[var(--radius-card)] border border-line bg-paper p-4">
-                            <p class="text-[13px] text-ink-soft">{{ __('Add HalalBizs to your authenticator app (Google Authenticator, 1Password, Aegis…) by entering this secret, then confirm with the current code.') }}</p>
+                            <p class="text-[13px] text-ink-soft">{{ __('Scan this QR with your authenticator app (Google Authenticator, 1Password, Aegis…) — or enter the secret by hand — then confirm with the current code.') }}</p>
+
+                            <div wire:ignore x-data="qrCanvas(@js($otpauthUri))" class="flex justify-center rounded-[var(--radius-control)] border border-line bg-white p-3 sm:justify-start">
+                                <canvas x-ref="canvas" class="size-44" aria-label="{{ __('QR code for authenticator setup') }}"></canvas>
+                            </div>
 
                             <div>
                                 <span class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Secret key') }}</span>
