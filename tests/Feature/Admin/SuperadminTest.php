@@ -131,6 +131,54 @@ test('the last superadmin cannot have their admin role removed either', function
         ->and($other->fresh()->is_superadmin)->toBeTrue();
 });
 
+// ── Dashboard money is gated in the view, not the route ────────────────────
+
+test('the dashboard hides platform revenue from an admin without finance.manage', function () {
+    // The route stays open — it is every admin's landing page — so this gating
+    // is invisible to route-level tests, which is exactly why it gets its own.
+    //
+    // Asserts on the whole response body on purpose: the numbers reach the
+    // browser by THREE independent channels — rendered markup, the chart
+    // component's Livewire snapshot, and a dispatch() browser event — and
+    // gating only the markup leaves the other two wide open. Each of the
+    // strings below caught a different one of those during development.
+    $response = test()->actingAs(scopedAdmin(['products.moderate']))
+        ->get(route('admin.dashboard'))
+        ->assertOk();
+
+    $response->assertDontSee('GMV (paid)')          // tile AND chart series name (snapshot + dispatch)
+        ->assertDontSee('Commission revenue')
+        ->assertDontSee('Boost revenue')
+        ->assertDontSee('GMV — last 30 days', escape: false)
+        ->assertDontSee('Top stores by GMV')
+        ->assertDontSee('Payout requests')          // pending-queue tile leaks a finance count
+        ->assertDontSee('admin/finance/payouts')    // and the sidebar advertised the section
+        ->assertDontSee('admin/finance/commission')
+        // ...while the operational tiles every admin needs stay put.
+        ->assertSee('Orders today');
+});
+
+test('the sidebar only advertises sections the admin can actually open', function () {
+    $response = test()->actingAs(scopedAdmin(['products.moderate']))
+        ->get(route('admin.dashboard'))
+        ->assertOk();
+
+    $response->assertSee('admin/catalog/moderation')  // granted
+        ->assertDontSee('admin/system/staff')         // not granted
+        ->assertDontSee('admin/sellers/applications');
+});
+
+test('the dashboard shows platform revenue to finance.manage and to a superadmin', function () {
+    foreach ([scopedAdmin(['finance.manage']), superadmin()] as $user) {
+        test()->actingAs($user)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('GMV (paid)')
+            ->assertSee('Commission revenue')
+            ->assertSee('Top stores by GMV');
+    }
+});
+
 // ── The deploy hazard ──────────────────────────────────────────────────────
 
 test('re-running RoleSeeder keeps the role empty', function () {
