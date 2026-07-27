@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\CartService;
 use App\Services\DeviceGuard;
 use App\Services\OtpService;
+use App\Support\PostLoginRedirect;
 use App\Support\Totp;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -73,7 +74,9 @@ class TwoFactorChallenge extends Component
         // Unseen device? Record it and alert (silent on the first ever login).
         app(DeviceGuard::class)->record($user, request());
 
-        $this->redirectIntended(route('home'), navigate: true);
+        // Role-aware: a stale intended URL must not walk an admin into the
+        // seller application (or any section they can't enter).
+        $this->redirect(PostLoginRedirect::url($user), navigate: true);
     }
 
     private function attemptVerification(User $user): bool
