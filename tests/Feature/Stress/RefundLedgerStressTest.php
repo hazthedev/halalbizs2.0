@@ -9,6 +9,7 @@ use App\Enums\SubOrderStatus;
 use App\Exceptions\CheckoutException;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\Store;
 use App\Models\SubOrder;
 use App\Services\LedgerService;
@@ -155,24 +156,74 @@ test('H3: a partial refund must not flip the sub-order to terminal Refunded', fu
 
 /*
 |--------------------------------------------------------------------------
-| H4 — Ledger adjustment has no >= 0 floor
+| H4 — a negative balance is a DEBT, not a bug (resolved 2026-07-27)
 |--------------------------------------------------------------------------
-| adjustment() writes a signed entry with no lower bound, so a debit larger than
-| the available balance drives escrow negative.
+| The original H4 asserted `available >= 0` and called the missing floor a
+| finding. It was mislabelled. A negative balance is a designed, routine state
+| here: every COD completion writes +sale, -commission and -cod_offset, netting
+| to MINUS the commission, because the seller already collected the cash. A
+| COD-only seller lives permanently negative by design, and the seller Earnings
+| screen already renders it in red and explains it.
+|
+| A >= 0 floor would therefore be the actual bug — it would silently forgive
+| commission on every COD order, erasing the debt from the only place that
+| records it.
+|
+| What genuinely matters is that a store in debt cannot TAKE money out. These
+| tests assert that instead.
 */
-test('H4: a ledger adjustment must not drive available balance below zero', function () {
+test('H4: a store balance may legitimately go negative — that is a recorded debt', function () {
     $store = Store::factory()->approved()->create();
     $ledger = app(LedgerService::class);
 
-    $ledger->adjustment($store, 3000, 'seed small balance'); // available = 3000
-    $ledger->adjustment($store, -100000, 'oversized debit'); // no floor
+    $ledger->adjustment($store, 3000, 'seed small balance');
+    $ledger->adjustment($store, -100000, 'oversized clawback');
 
-    expect($ledger->availableBalanceSen($store))->toBeGreaterThanOrEqual(0);
-})->skip(
-    'OPEN (LOW) — adjustment() writes a signed entry with no lower bound, so an oversized '.
-    'debit drives escrow to -97000. Awaiting a call on whether a >= 0 floor is correct: an '.
-    'admin clawback may legitimately need to overdraw a store. Un-skip with the decision.'
-);
+    // The debt is recorded in full, not clamped away.
+    expect($ledger->availableBalanceSen($store))->toBe(-97000);
+});
+
+test('H4a: a store in debt cannot withdraw', function () {
+    $ledger = app(LedgerService::class);
+
+    // Guard: the SAME request succeeds for a solvent store, so the refusal below
+    // is the debt doing it — not the minimum-payout rule or some other gate.
+    $solvent = Store::factory()->approved()->create();
+    $ledger->adjustment($solvent, 20000, 'earned');
+    expect($ledger->requestPayout($solvent, 8000))->not->toBeNull();
+
+    $indebted = Store::factory()->approved()->create();
+    $ledger->adjustment($indebted, 20000, 'earned');
+    $ledger->adjustment($indebted, -100000, 'oversized clawback');
+
+    // SAFE invariant: no withdrawing money you owe.
+    expect(fn () => $ledger->requestPayout($indebted, 8000))->toThrow(CheckoutException::class);
+});
+
+test('H4b: a store in debt cannot spend on boosts either', function () {
+    $store = Store::factory()->approved()->create();
+    $product = Product::factory()->create(['store_id' => $store->id]);
+    $ledger = app(LedgerService::class);
+
+    $ledger->adjustment($store, 3000, 'seed small balance');
+    $ledger->adjustment($store, -100000, 'oversized clawback');
+
+    // Same invariant by the other door — boosts are paid from available earnings.
+    expect(fn () => $ledger->chargeBoost($store, 1000, $product))->toThrow(CheckoutException::class);
+});
+
+test('H4c: earning past zero restores the ability to withdraw — the debt self-heals', function () {
+    $store = Store::factory()->approved()->create();
+    $ledger = app(LedgerService::class);
+
+    $ledger->adjustment($store, -5000, 'commission owed on COD sales');
+    expect(fn () => $ledger->requestPayout($store, 8000))->toThrow(CheckoutException::class);
+
+    $ledger->adjustment($store, 25000, 'later online-payment sales');
+
+    expect($ledger->availableBalanceSen($store))->toBe(20000)
+        ->and($ledger->requestPayout($store, 8000))->not->toBeNull();
+});
 
 /*
 |--------------------------------------------------------------------------

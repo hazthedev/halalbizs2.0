@@ -13,7 +13,9 @@
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Available') }}</p>
             <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums {{ $availableSen < 0 ? 'text-danger' : 'text-ink' }}">@money($availableSen)</p>
             @if ($availableSen < 0)
-                <p class="mt-1 text-[12px] text-danger">{{ __('COD commission owed — future online-payment sales recover it.') }}</p>
+                {{-- Not only COD: a refund on an order you were already paid for
+                     lands here too, so the copy names both causes. --}}
+                <p class="mt-1 text-[12px] text-danger">{{ __('Amount owed — from COD commission or a refund on a paid-out order. Future sales recover it; payouts resume once your balance is positive.') }}</p>
             @endif
         </x-ui.card>
 

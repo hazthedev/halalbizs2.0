@@ -55,7 +55,7 @@ test('the earnings page shows the ledger balance, entries and signed amounts', f
         ->assertSee('-RM 10.00');         // debits signed −
 });
 
-test('a negative balance gets danger styling context — the COD explainer', function () {
+test('a negative balance gets danger styling and an explainer naming both causes', function () {
     $user = User::factory()->create();
     $user->assignRole('seller');
     $store = Store::factory()->approved()->create(['user_id' => $user->id]);
@@ -70,7 +70,11 @@ test('a negative balance gets danger styling context — the COD explainer', fun
     Livewire::actingAs($user)
         ->test(Earnings::class)
         ->assertSee('-RM 10.00')
-        ->assertSee('COD commission owed');
+        // A refund on an already-paid-out order lands here too, so the copy must
+        // not blame COD alone — and it must say how the seller gets out of it.
+        ->assertSee('Amount owed')
+        ->assertSee('refund on a paid-out order')
+        ->assertSee('payouts resume once your balance is positive');
 });
 
 test('requesting a payout via the UI earmarks the amount and shows it pending', function () {
