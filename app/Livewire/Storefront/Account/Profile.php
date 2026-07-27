@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -324,6 +325,19 @@ class Profile extends Component
     {
         $user = auth()->user();
 
+        // Abuse cap on top of OtpService's 1/minute throttle: verification
+        // delivery costs money/quota once a real WhatsApp gateway is live, so
+        // bound it per user (audit AL-M6, SMS/WhatsApp pumping).
+        $rlKey = 'phone-verify:'.$user->id;
+
+        if (RateLimiter::tooManyAttempts($rlKey, 5)) {
+            $this->addError('verify_phone', __('Too many attempts — try again in :minutes minutes.', [
+                'minutes' => (int) ceil(RateLimiter::availableIn($rlKey) / 60),
+            ]));
+
+            return;
+        }
+
         $digits = preg_replace('/[\s\-]/', '', trim($this->verify_phone)) ?? '';
 
         // Malaysian mobile: 01X-XXXXXXX(X), optionally +60-prefixed.
@@ -332,6 +346,8 @@ class Profile extends Component
 
             return;
         }
+
+        RateLimiter::hit($rlKey, 3600); // 5 sends per hour per user
 
         if (trim($this->verify_phone) !== $user->phone) {
             $user->forceFill([
@@ -351,7 +367,7 @@ class Profile extends Component
 
         $this->phoneOtpPending = true;
         $this->resetErrorBag(['verify_phone', 'phone_otp_code']);
-        $this->dispatch('toast', message: __('Code sent by SMS.'));
+        $this->dispatch('toast', message: __('Verification code sent on WhatsApp.'));
     }
 
     public function confirmPhoneCode(): void
@@ -364,7 +380,7 @@ class Profile extends Component
 
         if (! $otp->verify($user, OtpService::PURPOSE_PHONE_VERIFY, trim($this->phone_otp_code))) {
             $this->addError('phone_otp_code', $otp->hasActiveCode($user, OtpService::PURPOSE_PHONE_VERIFY)
-                ? __('That code isn\'t right — check the SMS and try again.')
+                ? __('That code isn\'t right — check WhatsApp and try again.')
                 : __('That code no longer works — request a new code and enter it within 10 minutes.'));
 
             return;

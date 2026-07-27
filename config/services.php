@@ -74,4 +74,17 @@ return [
         'redirect' => null,
     ],
 
+    // WhatsApp Cloud API — phone-verification OTP over WhatsApp (free tier)
+    // instead of paid SMS. Bound as the SmsSender only when token +
+    // phone_number_id are set; otherwise the app keeps logging (dev). Set these
+    // in the server .env after creating the WhatsApp number + an approved
+    // "authentication" template in Meta Business Manager. See AppServiceProvider.
+    'whatsapp' => [
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'template' => env('WHATSAPP_TEMPLATE', 'verification_code'),
+        'template_lang' => env('WHATSAPP_TEMPLATE_LANG', 'en'),
+        'version' => env('WHATSAPP_API_VERSION', 'v21.0'),
+    ],
+
 ];
