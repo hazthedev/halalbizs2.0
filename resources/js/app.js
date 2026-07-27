@@ -82,6 +82,19 @@ document.addEventListener('alpine:init', () => {
     // it ourselves (drives the motion-reveal scroll entrances).
     window.Alpine.plugin(intersect);
 
+    // TOTP setup QR (2FA screen). Dynamic import so the ~15KB qrcode chunk
+    // only loads on the profile page when a setup is actually open.
+    window.Alpine.data('qrCanvas', (text) => ({
+        async init() {
+            const { default: QRCode } = await import('qrcode');
+            QRCode.toCanvas(this.$refs.canvas, text, {
+                width: 176,
+                margin: 1,
+                color: { dark: '#1c1917', light: '#ffffff' },
+            });
+        },
+    }));
+
     /**
      * <x-ui.chart> driver. `payload` = { type, series, options }. When the
      * dashboard recomputes (period change) it dispatches `refreshEvent` with a

@@ -23,6 +23,7 @@
         "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
         "animejs": "^4.5.0",
         "apexcharts": "^5.15.0",
+        "qrcode": "^1.5.4",
         "swiper": "^12.2.0"
     }
 }
