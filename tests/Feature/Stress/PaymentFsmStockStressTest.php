@@ -18,6 +18,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\StockMovementType;
 use App\Enums\SubOrderStatus;
 use App\Events\OrderPaid;
+use App\Models\Affiliate;
 use App\Models\AffiliateReferral;
 use App\Models\CoinTransaction;
 use App\Models\EInvoiceDocument;
@@ -25,13 +26,13 @@ use App\Models\FlashSale;
 use App\Models\FlashSaleItem;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\StoreLedgerEntry;
 use App\Models\SubOrder;
 use App\Models\User;
 use App\Models\WebhookSubscription;
 use App\Services\AffiliateService;
-use App\Services\Ipay88Service;
 use App\Services\OrderService;
 use App\Services\StockService;
 use App\Services\SubOrderStatusService;
@@ -59,7 +60,7 @@ beforeEach(function () {
  * A Paid order + one Delivered sub-order (with a real line item) ready to be
  * driven to Completed. Optionally attaches an active affiliate to the order.
  *
- * @return array{0: Order, 1: SubOrder, 2: \App\Models\ProductVariant, 3: ?\App\Models\Affiliate}
+ * @return array{0: Order, 1: SubOrder, 2: ProductVariant, 3: ?Affiliate}
  */
 function stressDeliveredSubOrder(bool $withAffiliate = false): array
 {
@@ -228,18 +229,13 @@ test('H3b duplicate OrderPaid does not duplicate webhook deliveries', function (
 // ---------------------------------------------------------------------------
 // H4 — blank merchant_code leaves the free-order mock path live (reachability)
 // ---------------------------------------------------------------------------
-test('H4 blank merchant_code makes isMock() true (mock confirm path reachable)', function () {
-    $settings = app(Ipay88Settings::class);
-    $settings->merchant_code = ''; // as an unseeded production boot would leave it
-    $settings->save();
-
-    app()->forgetInstance(Ipay88Settings::class);
-    app()->forgetInstance(Ipay88Service::class);
-
-    // There is NO boot-time guard forbidding a blank merchant_code in production;
-    // isMock() true means the /mock-confirm route (a free settlement) is live.
-    expect(app(Ipay88Service::class)->isMock())->toBeTrue();
-});
+// H4 (mock free-settlement reachable on a blank merchant_code) is CLOSED by the
+// opt-in guard in this PR. It was a finding test — it asserted the hole EXISTS,
+// so it necessarily inverts once the hole is shut. Its durable replacement is
+// tests/Feature/Payments/MockPaymentGuardTest.php, which asserts the safe
+// invariant from three angles (fail-closed by default, reachable only via the
+// explicit IPAY88_ALLOW_MOCK opt-in, never reachable with a real merchant code).
+// Deleted rather than inverted so the invariant lives in exactly one place.
 
 // ---------------------------------------------------------------------------
 // H5 — StockService::apply must never drive stock below zero
