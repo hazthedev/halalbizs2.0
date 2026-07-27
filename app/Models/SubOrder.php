@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CommissionBasis;
 use App\Enums\SubOrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -42,6 +43,7 @@ class SubOrder extends Model
             'refunded_sen' => 'integer',
             'commission_rate' => 'decimal:2',
             'commission_sen' => 'integer',
+            'commission_basis' => CommissionBasis::class,
             'shipped_at' => 'datetime',
             'delivered_at' => 'datetime',
             'completed_at' => 'datetime',

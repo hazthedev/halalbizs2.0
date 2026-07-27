@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\CommissionBasis;
 use App\Enums\LedgerEntryStatus;
 use App\Enums\LedgerEntryType;
 use App\Enums\PaymentMethod;
@@ -12,6 +13,7 @@ use App\Models\Product;
 use App\Models\Store;
 use App\Models\StoreLedgerEntry;
 use App\Models\SubOrder;
+use App\Settings\CommissionSettings;
 use App\Settings\OrderSettings;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +26,10 @@ use Illuminate\Support\Facades\DB;
  */
 class LedgerService
 {
-    public function __construct(private OrderSettings $orderSettings) {}
+    public function __construct(
+        private OrderSettings $orderSettings,
+        private CommissionSettings $commissionSettings,
+    ) {}
 
     /**
      * Completion hook: +sale, −commission, and for COD −cod_offset (the
@@ -43,11 +48,20 @@ class LedgerService
             // pre-tax items subtotal only.
             $saleSen = $subOrder->items_subtotal_sen + $subOrder->shipping_fee_sen - $subOrder->shop_discount_sen + $subOrder->tax_sen;
 
-            // round(items_subtotal × rate%) with integer math: rate is decimal(5,2).
-            $rateBasisPoints = (int) round((float) $subOrder->commission_rate * 100); // e.g. 5.25% → 525
-            $commissionSen = intdiv($subOrder->items_subtotal_sen * $rateBasisPoints + 5000, 10000);
+            $basis = $this->commissionSettings->basis();
+            $baseSen = $this->commissionBaseSen($subOrder, $basis);
 
-            $subOrder->forceFill(['commission_sen' => $commissionSen])->save();
+            // round(base × rate%) with integer math: rate is decimal(5,2).
+            $rateBasisPoints = (int) round((float) $subOrder->commission_rate * 100); // e.g. 5.25% → 525
+            $commissionSen = intdiv($baseSen * $rateBasisPoints + 5000, 10000);
+
+            // Snapshot the basis alongside the rate — hard rule #5. The setting
+            // is flippable, so without this a historical commission cannot be
+            // explained after someone changes it.
+            $subOrder->forceFill([
+                'commission_sen' => $commissionSen,
+                'commission_basis' => $basis,
+            ])->save();
 
             $this->write($subOrder->store_id, LedgerEntryType::Sale, $saleSen, $subOrder->id,
                 __('Sale :no', ['no' => $subOrder->sub_order_no]));
@@ -64,6 +78,54 @@ class LedgerService
                 $item->product?->increment('sold_count', $item->qty);
             }
         });
+    }
+
+    /**
+     * What the rate is charged on, per the configurable basis (docs/09 §A).
+     *
+     * Only SELLER-funded discounts move this. Platform vouchers never do —
+     * `total_sen` does not subtract them, so the seller is paid in full and
+     * charging on the full price is right under either basis.
+     *
+     * - NET   → what the seller was actually paid for the goods:
+     *           items_subtotal (already net of any flash/group-buy price) minus
+     *           their own shop voucher.
+     * - GROSS → the shelf price the goods carried before ANY seller-funded
+     *           discount, from the per-line list_price_sen snapshot. Falls back
+     *           to items_subtotal for pre-snapshot orders, which is the closest
+     *           honest answer available for them.
+     *
+     * Note under GROSS: a deep shop voucher can make the commission exceed what
+     * the sale credits, pushing the seller's balance negative. That is inherent
+     * to "your discount is your own marketing spend", not a bug — it is the
+     * reason the basis is a deliberate choice rather than a default.
+     */
+    private function commissionBaseSen(SubOrder $subOrder, CommissionBasis $basis): int
+    {
+        if ($basis === CommissionBasis::Net) {
+            return max(0, $subOrder->items_subtotal_sen - $subOrder->shop_discount_sen);
+        }
+
+        $listTotalSen = 0;
+        $anySnapshot = false;
+
+        foreach ($subOrder->items as $item) {
+            if ($item->list_price_sen !== null) {
+                $anySnapshot = true;
+                $listTotalSen += $item->list_price_sen * $item->qty;
+
+                continue;
+            }
+
+            // Legacy line with no snapshot — the paid price is the best truth
+            // there is for it. Never invent a pre-campaign price.
+            $listTotalSen += $item->unit_price_sen * $item->qty;
+        }
+
+        // No items at all (defensive) → fall back rather than charge zero.
+        return $anySnapshot || $subOrder->items->isNotEmpty()
+            ? $listTotalSen
+            : $subOrder->items_subtotal_sen;
     }
 
     /**

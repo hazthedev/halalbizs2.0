@@ -25,6 +25,42 @@
             @enderror
         </x-ui.card>
 
+        {{-- What the rate is charged ON --}}
+        <x-ui.card class="p-4">
+            <h2 class="text-sm font-semibold">{{ __('Commission basis') }}</h2>
+            <p class="mt-1 text-[13px] text-ink-soft">
+                {{ __('What the rate is charged on. Only seller-funded discounts are affected — platform vouchers never reduce the base, because the platform absorbs those and the seller is paid in full.') }}
+            </p>
+
+            <form wire:submit="saveDiscountBasis" class="mt-3 space-y-3">
+                <fieldset class="space-y-2">
+                    <legend class="sr-only">{{ __('Commission basis') }}</legend>
+                    @foreach ($bases as $basis)
+                        <label class="flex cursor-pointer gap-2.5 rounded-[var(--radius-control)] border p-3 hover:bg-paper {{ $discountBasis === $basis->value ? 'border-emerald bg-emerald-tint' : 'border-line' }}">
+                            <input type="radio" wire:model.live="discountBasis" value="{{ $basis->value }}" name="discount-basis"
+                                   class="mt-0.5 size-4 shrink-0 border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                            <span class="min-w-0">
+                                <span class="block text-[13px] font-semibold text-ink">{{ $basis->label() }}</span>
+                                <span class="mt-0.5 block text-[12px] text-ink-soft">{{ $basis->description() }}</span>
+                            </span>
+                        </label>
+                    @endforeach
+                </fieldset>
+
+                <p class="text-[12px] text-ink-faint">
+                    {{ __('Applies to orders completed from now on. Settled commissions are snapshotted with the basis that produced them and never change.') }}
+                </p>
+
+                <button type="submit" wire:loading.attr="disabled"
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                    {{ __('Save basis') }}
+                </button>
+            </form>
+            @error('discountBasis')
+                <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
+            @enderror
+        </x-ui.card>
+
         {{-- Effective-rate tester (docs/08 §F — living documentation) --}}
         <x-ui.card class="p-4">
             <h2 class="text-sm font-semibold">{{ __('Effective-rate tester') }}</h2>

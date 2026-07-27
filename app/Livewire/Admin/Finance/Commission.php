@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Admin\Finance;
 
+use App\Enums\CommissionBasis;
 use App\Models\Category;
 use App\Models\Store;
 use App\Services\CommissionResolver;
 use App\Settings\CommissionSettings;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -21,6 +23,9 @@ class Commission extends Component
 {
     public string $globalRate = '';
 
+    /** A CommissionBasis value — what the rate is charged ON. */
+    public string $discountBasis = '';
+
     public string $testerStoreId = '';
 
     public string $testerCategoryId = '';
@@ -28,6 +33,27 @@ class Commission extends Component
     public function mount(CommissionSettings $settings): void
     {
         $this->globalRate = self::formatRate($settings->global_rate);
+        $this->discountBasis = $settings->basis()->value;
+    }
+
+    /**
+     * Change what the rate is charged on. Applies to sub-orders completed from
+     * now on — commission_sen and commission_basis are stamped once at
+     * completion and never recomputed, so nothing already settled moves.
+     */
+    public function saveDiscountBasis(): void
+    {
+        $this->validate(
+            ['discountBasis' => ['required', Rule::enum(CommissionBasis::class)]],
+            [],
+            ['discountBasis' => __('commission basis')],
+        );
+
+        $settings = app(CommissionSettings::class);
+        $settings->discount_basis = $this->discountBasis;
+        $settings->save();
+
+        $this->dispatch('toast', message: __('Commission basis saved — applies to orders completed from now on.'));
     }
 
     public function saveGlobalRate(): void
@@ -57,6 +83,7 @@ class Commission extends Component
                 ->sortBy(fn (Category $category) => $this->categoryChainLabel($category))
                 ->mapWithKeys(fn (Category $category) => [$category->id => $this->categoryChainLabel($category)]),
             'tester' => $this->testerResult(),
+            'bases' => CommissionBasis::cases(),
         ])->title(__('Commission'));
     }
 
