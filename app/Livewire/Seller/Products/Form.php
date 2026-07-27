@@ -15,6 +15,7 @@ use App\Models\ProductOption;
 use App\Models\ProductVariant;
 use App\Services\ListingCopyService;
 use App\Settings\ModerationSettings;
+use App\Support\HtmlSanitizer;
 use App\Support\RinggitInput;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -469,20 +470,28 @@ class Form extends Component
 
     private function applyTranslations(Product $product): void
     {
-        $sanitize = fn (string $html): string => strip_tags($html, '<p><br><ul><ol><li><strong><em>');
+        // Descriptions may carry a small allow-list of formatting tags with
+        // every attribute stripped (C2, security audit) — strip_tags() alone
+        // dropped disallowed TAGS but preserved event-handler ATTRIBUTES on
+        // the ones it kept, so `<em onmouseover="...">` used to survive.
+        $sanitizeDescription = fn (string $html): string => HtmlSanitizer::clean($html);
+
+        // Names are plain text — no markup is ever legitimate here, and this
+        // is what feeds the JSON-LD block on the PDP (defence in depth for C1).
+        $sanitizeName = fn (string $text): string => trim(strip_tags($text));
 
         // en is ALWAYS written (fallback locale); ms only when filled.
-        $product->setTranslation('name', 'en', trim($this->name['en']));
-        $product->setTranslation('description', 'en', $sanitize(trim($this->description['en'] ?? '')));
+        $product->setTranslation('name', 'en', $sanitizeName($this->name['en']));
+        $product->setTranslation('description', 'en', $sanitizeDescription(trim($this->description['en'] ?? '')));
 
         if (trim($this->name['ms'] ?? '') !== '') {
-            $product->setTranslation('name', 'ms', trim($this->name['ms']));
+            $product->setTranslation('name', 'ms', $sanitizeName($this->name['ms']));
         } else {
             $product->forgetTranslation('name', 'ms');
         }
 
         if (trim($this->description['ms'] ?? '') !== '') {
-            $product->setTranslation('description', 'ms', $sanitize(trim($this->description['ms'])));
+            $product->setTranslation('description', 'ms', $sanitizeDescription(trim($this->description['ms'])));
         } else {
             $product->forgetTranslation('description', 'ms');
         }

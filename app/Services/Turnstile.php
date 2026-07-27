@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Http;
 /**
  * Cloudflare Turnstile server-side verification. When no keys are
  * configured (local/dev), the check passes so forms keep working.
+ *
+ * That passthrough is FAIL-CLOSED outside local/testing: an unconfigured
+ * production boot must not silently wave every registration/login through
+ * with zero bot friction. Same opt-in shape as Ipay88Service::isMock()
+ * (IPAY88_ALLOW_MOCK) — confined to a raw env() read here rather than a
+ * new services.php config key, which sits outside this fix's file surface.
  */
 class Turnstile
 {
@@ -18,7 +24,8 @@ class Turnstile
     public function verify(?string $token, ?string $ip = null): bool
     {
         if (! $this->settings->turnstileEnabled()) {
-            return true;
+            return app()->environment('local', 'testing')
+                || (bool) env('TURNSTILE_ALLOW_UNCONFIGURED', false);
         }
 
         if ($token === null || $token === '') {

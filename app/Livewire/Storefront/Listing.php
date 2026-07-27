@@ -34,6 +34,13 @@ class Listing extends Component
 
     public const PER_PAGE = 24;
 
+    /**
+     * Hard ceiling on $perPage (AL-M5): loadMore()/facet toggles legitimately
+     * grow it, so it can't be #[Locked] — but it's fully client-mutable via
+     * $wire.set, so clamp wherever it feeds a query.
+     */
+    public const MAX_PER_PAGE = self::PER_PAGE * 10;
+
     /** Paid placements pinned above the organic results (page 1). */
     public const SPONSORED_SLOTS = 4;
 
@@ -161,12 +168,14 @@ class Listing extends Component
             $query->whereNotIn('products.id', $sponsored->modelKeys());
         }
 
+        $perPage = $this->clampedPerPage();
+
         return view('livewire.storefront.listing', [
             'isSearch' => $this->isSearch(),
             'smartAvailable' => $this->isSearch() && $this->hasSearchTerm() && app(VectorSearchService::class)->enabled(),
-            'products' => $sponsored->concat($query->take($this->perPage)->get()),
+            'products' => $sponsored->concat($query->take($perPage)->get()),
             'total' => $total,
-            'hasMore' => ($total - $sponsored->count()) > $this->perPage,
+            'hasMore' => ($total - $sponsored->count()) > $perPage,
             'effectiveSort' => $this->effectiveSort(),
             'breadcrumbs' => $this->breadcrumbs(),
             'children' => $this->rootCategory?->children()->where('is_active', true)->get() ?? collect(),
@@ -176,6 +185,12 @@ class Listing extends Component
             'facetAttributes' => $this->facetAttributes(),
             'selectedAttrs' => array_map('intval', $this->attrs),
         ])->title($this->pageTitle());
+    }
+
+    /** $perPage clamped to a sane ceiling (AL-M5), whatever the client set it to. */
+    private function clampedPerPage(): int
+    {
+        return max(0, min($this->perPage, self::MAX_PER_PAGE));
     }
 
     private function isSearch(): bool

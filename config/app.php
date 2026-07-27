@@ -54,8 +54,13 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
-    // Base domain for per-store subdomains ({store-slug}.<base>).
-    'store_subdomain_base' => env('STORE_SUBDOMAIN_BASE', 'halalbizs2.0.test'),
+    // Base domain for per-store subdomains ({store-slug}.<base>). Falls back
+    // to the app URL's own host (never a hardcoded dev hostname) so an
+    // unset STORE_SUBDOMAIN_BASE on the server doesn't freeze the wildcard
+    // route to `.test` via route:cache (AL-C10). Locally APP_URL is
+    // http://halalbizs2.0.test, so this still resolves to the dev domain
+    // without STORE_SUBDOMAIN_BASE needing to be set.
+    'store_subdomain_base' => env('STORE_SUBDOMAIN_BASE') ?: parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST),
 
     // Emit per-store subdomain links only when wildcard DNS + cert exist
     // (production). Off → store links use the /s/{slug} path (works anywhere).

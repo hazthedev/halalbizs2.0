@@ -21,7 +21,13 @@ class SetDisplayCurrency
             $currency = $this->settings->base_currency;
         }
 
-        session(['display_currency' => $currency]);
+        // Only write when it actually changed (mirrors SetLocale) — an
+        // unconditional write here creates a `sessions` row + Set-Cookie on
+        // every guest/bot hit under the database session driver, defeating
+        // full-page CDN caching (AL-C14).
+        if (session('display_currency') !== $currency) {
+            session(['display_currency' => $currency]);
+        }
 
         return $next($request);
     }

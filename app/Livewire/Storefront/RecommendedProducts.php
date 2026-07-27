@@ -7,6 +7,7 @@ use App\Services\RecommendationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -27,6 +28,12 @@ class RecommendedProducts extends Component
 
     public ?int $excludeProductId = null; // the PDP's own product
 
+    /**
+     * Never mutated by any component method (no "load more" here, unlike the
+     * other listing components) — genuinely fixed server-side config, so it's
+     * locked rather than merely clamped (AL-M5).
+     */
+    #[Locked]
     public int $limit = 12;
 
     /** Guest viewed-product ids, hydrated from localStorage. */

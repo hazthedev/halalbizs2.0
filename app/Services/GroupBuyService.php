@@ -100,6 +100,14 @@ class GroupBuyService
             ->where('group_buy_members.status', GroupBuyMemberStatus::Joined)
             ->where('group_buy_teams.status', GroupBuyTeamStatus::Unlocked)
             ->where('group_buys.status', GroupBuyStatus::Active)
+            // AL-M3: mirror GroupBuy::scopeLive() — Active alone doesn't mean
+            // the campaign window is still open, and nothing flips the status
+            // column when a deal's ends_at passes (group-buy:expire only
+            // expires TEAMS). Without this, an already-unlocked team member
+            // could keep checking out at group_price_sen forever after the
+            // deal closes.
+            ->where('group_buys.starts_at', '<=', now())
+            ->where('group_buys.ends_at', '>=', now())
             ->whereIn('group_buys.product_variant_id', $variantIds)
             ->orderByDesc('group_buys.id')
             ->lockForUpdate()

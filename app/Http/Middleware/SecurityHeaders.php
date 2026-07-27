@@ -35,12 +35,19 @@ class SecurityHeaders
             $scripts = implode(' ', $scriptHosts);
             $frames = implode(' ', $frameHosts);
 
+            // The iPay88 bridge (resources/views/payments/bridge.blade.php)
+            // auto-submits a POST form to the gateway's hosted-page entry URL
+            // (Ipay88Service::entryUrl) — sandbox and production hosts both
+            // need to stay in form-action or the payment bridge breaks.
+            $formActions = "'self' https://sandbox.ipay88.com.my https://payment.ipay88.com.my";
+
             $response->headers->set(
                 'Content-Security-Policy',
                 "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' {$scripts}; "
                 ."style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; "
                 ."media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; "
-                ."frame-src {$frames}; object-src 'none'; base-uri 'self'"
+                ."frame-src {$frames}; frame-ancestors 'self'; form-action {$formActions}; "
+                ."object-src 'none'; base-uri 'self'"
             );
         }
 

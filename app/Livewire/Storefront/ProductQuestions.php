@@ -17,6 +17,13 @@ use Livewire\Component;
 #[Lazy]
 class ProductQuestions extends Component
 {
+    /**
+     * Hard ceiling on $limit (AL-M5): loadMore() legitimately increments it,
+     * so it can't be #[Locked] — but it's fully client-mutable via
+     * $wire.set, so clamp wherever it feeds a query.
+     */
+    private const MAX_LIMIT = 50;
+
     public Product $product;
 
     public string $question = '';
@@ -80,11 +87,18 @@ class ProductQuestions extends Component
     public function render()
     {
         $base = $this->product->questions()->visible();
+        $limit = $this->clampedLimit();
 
         return view('livewire.storefront.product-questions', [
-            'questions' => (clone $base)->with(['user', 'answerer'])->latest('id')->take($this->limit)->get(),
+            'questions' => (clone $base)->with(['user', 'answerer'])->latest('id')->take($limit)->get(),
             'totalCount' => (clone $base)->count(),
-            'hasMore' => (clone $base)->count() > $this->limit,
+            'hasMore' => (clone $base)->count() > $limit,
         ]);
+    }
+
+    /** $limit clamped to a sane ceiling (AL-M5), whatever the client set it to. */
+    private function clampedLimit(): int
+    {
+        return max(0, min($this->limit, self::MAX_LIMIT));
     }
 }

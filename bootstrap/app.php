@@ -34,8 +34,21 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SetLocale::class,
             SetDisplayCurrency::class,
-            SecurityHeaders::class,
         ]);
+
+        // SecurityHeaders is registered on the application's GLOBAL
+        // middleware stack (not the 'web' group) so it wraps the WHOLE HTTP
+        // kernel pipeline, including $router->dispatch() itself — that's the
+        // only way to also catch a completely UNMATCHED URI, whose
+        // NotFoundHttpException is thrown by route-matching before any 'web'
+        // group middleware (even one prepended to that group) ever runs.
+        // Laravel renders an exception at the pipe wrapping the throw site
+        // and returns outward, so only middleware OUTER than the throw sees
+        // the response — appended (inner) middleware never does. Without
+        // this, 404s (unmatched URIs, and route-model binding misses thrown
+        // in SubstituteBindings), 419s (thrown in ValidateCsrfToken) all
+        // shipped with no CSP, X-Frame-Options, nosniff or HSTS (AL-C2).
+        $middleware->prepend(SecurityHeaders::class);
 
         // 301s old slugs — queries only on 404s (docs/09 §F). PREPENDED so it
         // sits outside SubstituteBindings: binding misses render their 404
@@ -44,6 +57,31 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(prepend: [
             HandleUrlRedirects::class,
         ]);
+
+        // Reverse-proxy trust (AL-C4): AppServiceProvider forces the https
+        // scheme for URL generation on the assumption that a TLS-terminating
+        // proxy (cPanel/LiteSpeed) sits in front of this app, but nothing
+        // told Laravel to trust the X-Forwarded-* headers that carry that
+        // fact — so $request->secure() was false in prod (the HSTS branch in
+        // SecurityHeaders never fired) and the `api` rate limiter keyed on
+        // $request->ip() saw the proxy's address instead of the real client.
+        //
+        // ⚠ NEEDS VERIFICATION ON THE PRODUCTION HOST — the exact
+        // cPanel/LiteSpeed topology (whether the app port is ever reachable
+        // directly, bypassing the proxy/CDN) is unknown from here. `at: '*'`
+        // trusts whichever host makes the TCP connection to PHP-FPM, which is
+        // correct ONLY if that connection always originates from the
+        // LiteSpeed/CDN edge. NARROW THIS to the real proxy/CDN CIDR
+        // block(s) once that topology is confirmed — trusting '*' when the
+        // app is directly reachable lets any caller spoof their IP via
+        // X-Forwarded-For.
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO,
+        );
 
         // Gateway callbacks are signature-gated, not CSRF-gated (docs/10:
         // never exempt anything else).

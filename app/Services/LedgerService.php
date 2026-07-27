@@ -16,6 +16,7 @@ use App\Models\SubOrder;
 use App\Settings\CommissionSettings;
 use App\Settings\OrderSettings;
 use App\Support\Money;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -63,11 +64,26 @@ class LedgerService
                 'commission_basis' => $basis,
             ])->save();
 
-            $this->write($subOrder->store_id, LedgerEntryType::Sale, $saleSen, $subOrder->id,
-                __('Sale :no', ['no' => $subOrder->sub_order_no]));
+            // H2 DB-level backstop: Sale/Commission are once-per-sub-order
+            // settlement entries, so they carry a unique `settlement_key`
+            // ("sale:{id}" / "commission:{id}") — NULL (unconstrained) for every
+            // repeatable type (adjustment/payout/cod_offset). The exists() guard
+            // above is not itself race-proof (two concurrent completions can both
+            // pass it before either writes), so a lost race here surfaces as a
+            // unique-constraint violation, which must be a clean no-op, not a 500.
+            try {
+                $this->write($subOrder->store_id, LedgerEntryType::Sale, $saleSen, $subOrder->id,
+                    __('Sale :no', ['no' => $subOrder->sub_order_no]), "sale:{$subOrder->id}");
 
-            $this->write($subOrder->store_id, LedgerEntryType::Commission, -$commissionSen, $subOrder->id,
-                __('Commission :rate% on :no', ['rate' => $subOrder->commission_rate, 'no' => $subOrder->sub_order_no]));
+                $this->write($subOrder->store_id, LedgerEntryType::Commission, -$commissionSen, $subOrder->id,
+                    __('Commission :rate% on :no', ['rate' => $subOrder->commission_rate, 'no' => $subOrder->sub_order_no]), "commission:{$subOrder->id}");
+            } catch (QueryException $e) {
+                if ($this->isUniqueViolation($e)) {
+                    return; // another completion already booked this sub-order — no-op
+                }
+
+                throw $e;
+            }
 
             if ($subOrder->order->payment_method === PaymentMethod::Cod) {
                 $this->write($subOrder->store_id, LedgerEntryType::CodOffset, -$saleSen, $subOrder->id,
@@ -78,6 +94,14 @@ class LedgerService
                 $item->product?->increment('sold_count', $item->qty);
             }
         });
+    }
+
+    private function isUniqueViolation(QueryException $e): bool
+    {
+        // PDO normalizes both MySQL's duplicate-key error and SQLite's UNIQUE
+        // constraint failure to SQLSTATE 23000 (integrity constraint violation).
+        return $e->getCode() === '23000'
+            || str_contains(strtolower($e->getMessage()), 'unique');
     }
 
     /**
@@ -226,16 +250,20 @@ class LedgerService
         });
     }
 
-    private function write(int $storeId, LedgerEntryType $type, int $amountSen, ?int $subOrderId, string $description): void
+    private function write(int $storeId, LedgerEntryType $type, int $amountSen, ?int $subOrderId, string $description, ?string $settlementKey = null): void
     {
-        StoreLedgerEntry::create([
+        // forceFill: `settlement_key` is a new column (H2 backstop) not yet in
+        // StoreLedgerEntry::$fillable — out of this fix's declared file surface,
+        // so bypass mass-assignment here rather than edit the model.
+        (new StoreLedgerEntry)->forceFill([
             'store_id' => $storeId,
             'sub_order_id' => $subOrderId,
             'type' => $type,
             'amount_sen' => $amountSen,
             'status' => LedgerEntryStatus::Available,
             'description' => $description,
+            'settlement_key' => $settlementKey,
             'created_at' => now(),
-        ]);
+        ])->save();
     }
 }

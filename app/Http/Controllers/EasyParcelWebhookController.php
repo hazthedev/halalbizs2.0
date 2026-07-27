@@ -21,7 +21,16 @@ class EasyParcelWebhookController extends Controller
     {
         $token = (string) config('shipping.easyparcel.webhook_token');
 
-        if ($token === '' || ! hash_equals($token, (string) $request->input('token'))) {
+        // Header first, POST body as a fallback — NEVER the query string
+        // (AL-C15): $request->input() also reads query params, so a
+        // `?token=` on the configured webhook URL would land verbatim in
+        // web-server/CDN access logs and Referer headers. If EasyParcel is
+        // currently configured with a `?token=` URL, switch it to send
+        // `X-EasyParcel-Token` (or keep the token in the POST body) — this
+        // gate no longer accepts it from the query string.
+        $provided = (string) ($request->header('X-EasyParcel-Token') ?: $request->post('token', ''));
+
+        if ($token === '' || ! hash_equals($token, $provided)) {
             abort(401);
         }
 

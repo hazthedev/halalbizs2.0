@@ -90,6 +90,18 @@ class Staff extends Component
 
     public function editPermissions(int $userId): void
     {
+        // No self-service permission grants: a settings.manage-only admin
+        // (the least-privileged person who can even reach this screen)
+        // must not be able to sync finance.manage etc. onto their own
+        // account. Superadmin status (the intended escalation path) is
+        // handled separately by toggleSuperadmin(), which already checks
+        // is_superadmin — this mirrors that rigour for direct permissions.
+        if ($userId === auth()->id()) {
+            $this->dispatch('toast', message: __('You can\'t change your own permissions.'), type: 'error');
+
+            return;
+        }
+
         $user = User::role('admin')->findOrFail($userId);
 
         $this->resetErrorBag();
@@ -105,6 +117,15 @@ class Staff extends Component
 
     public function savePermissions(): void
     {
+        // Defense in depth: editPermissions() already refuses to point
+        // editingId at the caller's own id, but never trust that alone.
+        if ($this->editingId === auth()->id()) {
+            $this->dispatch('toast', message: __('You can\'t change your own permissions.'), type: 'error');
+            $this->cancelEdit();
+
+            return;
+        }
+
         $this->validate([
             'editPermissions' => ['array'],
             'editPermissions.*' => ['string', 'in:'.implode(',', RoleSeeder::ADMIN_PERMISSIONS)],

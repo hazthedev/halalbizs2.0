@@ -211,7 +211,42 @@ test('placing a COD order creates it, empties the cart, and redirects to success
     expect($order->payment_method)->toBe(PaymentMethod::Cod)
         ->and($order->subtotal_sen)->toBe(20000)
         ->and($order->grand_total_sen)->toBe(20500)
-        ->and($buyer->cart->items()->count())->toBe(0);
+        ->and($buyer->cart->items()->count())->toBe(0)
+        // AL-L2: the note actually reaches the sub-order now.
+        ->and($order->subOrders->first()->buyer_note)->toBe('Leave at the guardhouse');
+});
+
+test('AL-L2: an over-length seller note is rejected server-side and no order is placed', function () {
+    [$buyer] = checkoutPageBuyer();
+    $product = checkoutPageProduct(10000);
+
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+
+    Livewire::actingAs($buyer)
+        ->test(Checkout::class)
+        ->set('sellerNotes.'.$product->store_id, str_repeat('x', 501)) // client maxlength="500" is UX only
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertHasErrors(['sellerNotes.'.$product->store_id => 'max']);
+
+    expect(Order::count())->toBe(0);
+});
+
+test('AL-L2: a note keyed to a store outside this checkout is dropped, not trusted', function () {
+    [$buyer] = checkoutPageBuyer();
+    $product = checkoutPageProduct(10000);
+    $otherStoreId = $product->store_id + 999999;
+
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+
+    Livewire::actingAs($buyer)
+        ->test(Checkout::class)
+        ->set('sellerNotes.'.$otherStoreId, 'Not actually in this cart')
+        ->set('paymentMethod', 'cod')
+        ->call('placeOrder')
+        ->assertRedirect(route('checkout.success', ['order' => Order::first()->order_no]));
+
+    expect(Order::first()->subOrders->first()->buyer_note)->toBeNull();
 });
 
 test('an iPay88 order redirects to the payment bridge', function () {

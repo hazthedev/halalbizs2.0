@@ -17,6 +17,14 @@ use Livewire\Component;
 #[Lazy]
 class ProductReviews extends Component
 {
+    /**
+     * Hard ceiling on reviewsLimit (AL-M5): the property is legitimately
+     * incremented by loadMoreReviews(), so it can't be #[Locked] — but it is
+     * fully client-mutable via $wire.set, and feeds a `with(['user','media',
+     * 'orderItem'])` eager load, so it must be clamped everywhere it's used.
+     */
+    private const MAX_REVIEWS_LIMIT = 50;
+
     public Product $product;
 
     /** Reviews tab filter: all | photos | 1–5 (docs/09 §C). */
@@ -54,21 +62,28 @@ class ProductReviews extends Component
             return;
         }
 
-        $review = $this->product->reviews()->visible()->find($reviewId);
-
-        if ($review === null) {
-            return;
-        }
-
         $userId = auth()->id();
 
-        if ($review->helpfuls()->where('user_id', $userId)->exists()) {
-            $review->helpfuls()->detach($userId);
-            $review->decrement('helpful_count');
-        } else {
-            $review->helpfuls()->attach($userId);
-            $review->increment('helpful_count');
-        }
+        // Locked + derived-count (AL-L3): the pivot toggle and helpful_count
+        // update happen under a row lock in one transaction, and the count is
+        // always recomputed from the pivot rather than incremented/decremented,
+        // so a double-click (repeat attach) is a clean no-op instead of drift,
+        // and a concurrent toggle can't throw on the pivot's unique index.
+        DB::transaction(function () use ($reviewId, $userId) {
+            $review = $this->product->reviews()->visible()->lockForUpdate()->find($reviewId);
+
+            if ($review === null) {
+                return;
+            }
+
+            if ($review->helpfuls()->where('user_id', $userId)->exists()) {
+                $review->helpfuls()->detach($userId);
+            } else {
+                $review->helpfuls()->syncWithoutDetaching([$userId]);
+            }
+
+            $review->update(['helpful_count' => $review->helpfuls()->count()]);
+        });
     }
 
     public function placeholder(): View
@@ -80,7 +95,7 @@ class ProductReviews extends Component
     {
         return view('livewire.storefront.product-reviews', [
             'reviews' => $this->visibleReviews(),
-            'hasMoreReviews' => $this->filteredReviewsQuery()->count() > $this->reviewsLimit,
+            'hasMoreReviews' => $this->filteredReviewsQuery()->count() > $this->clampedReviewsLimit(),
             'reviewDistribution' => $this->reviewDistribution(),
             'votedReviewIds' => auth()->check()
                 ? DB::table('review_helpfuls')->where('user_id', auth()->id())->pluck('review_id')->all()
@@ -95,8 +110,14 @@ class ProductReviews extends Component
             ->with(['user', 'media', 'orderItem'])
             ->latest()
             ->latest('id')
-            ->take($this->reviewsLimit)
+            ->take($this->clampedReviewsLimit())
             ->get();
+    }
+
+    /** reviewsLimit clamped to a sane ceiling (AL-M5), whatever the client set it to. */
+    private function clampedReviewsLimit(): int
+    {
+        return max(0, min($this->reviewsLimit, self::MAX_REVIEWS_LIMIT));
     }
 
     private function filteredReviewsQuery()

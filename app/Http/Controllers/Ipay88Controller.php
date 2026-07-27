@@ -7,6 +7,7 @@ use App\Jobs\ConfirmIpay88PaymentJob;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Ipay88Service;
+use App\Settings\Ipay88Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -101,8 +102,16 @@ class Ipay88Controller extends Controller
     /**
      * ResponseURL (§D2) — browser redirect, UX ONLY. Never fulfils.
      */
-    public function response(Request $request, Ipay88Service $ipay88)
+    public function response(Request $request, Ipay88Service $ipay88, Ipay88Settings $settings)
     {
+        // AL-C13: with a blank merchant_key the signature check below is
+        // fully reproducible by an unauthenticated caller (it's the only
+        // secret in the hash). Inert this surface exactly when that check is
+        // meaningless, rather than leave it open to a forged signature.
+        // Doesn't touch the mock/simulator path — that's mockConfirm(),
+        // gated separately by Ipay88Service::isMock(), which never posts here.
+        abort_if(blank($settings->merchant_key), 404);
+
         $payload = $request->post();
         $payment = Payment::where('ref_no', $payload['RefNo'] ?? '')->latest('id')->first();
 
@@ -131,8 +140,11 @@ class Ipay88Controller extends Controller
      * BackendURL (§D3) — server-to-server, the ONLY fulfilment trigger
      * (after requery). Must answer plain RECEIVEOK. Idempotent.
      */
-    public function backend(Request $request, Ipay88Service $ipay88)
+    public function backend(Request $request, Ipay88Service $ipay88, Ipay88Settings $settings)
     {
+        // AL-C13: see response() above — same blank-merchant_key gate.
+        abort_if(blank($settings->merchant_key), 404);
+
         $payload = $request->post();
         $refNo = (string) ($payload['RefNo'] ?? '');
 

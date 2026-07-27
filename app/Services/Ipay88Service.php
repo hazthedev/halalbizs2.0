@@ -123,7 +123,8 @@ class Ipay88Service implements PaymentGateway
      */
     public function requery(string $refNo, int $amountSen): string
     {
-        $response = Http::asForm()->post($this->requeryUrl(), [
+        // M3: fail fast rather than hang a queue worker on a stalled gateway.
+        $response = Http::asForm()->timeout(10)->post($this->requeryUrl(), [
             'MerchantCode' => $this->settings->merchant_code,
             'RefNo' => $refNo,
             'Amount' => self::formatAmount($amountSen),

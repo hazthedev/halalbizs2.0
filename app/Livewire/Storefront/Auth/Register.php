@@ -8,6 +8,7 @@ use App\Services\CartService;
 use App\Services\Turnstile;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -39,6 +40,16 @@ class Register extends Component
 
     public function register(): void
     {
+        $key = $this->throttleKey();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $this->addError('email', __('Too many registration attempts from this connection. Try again in :minutes minute(s).', [
+                'minutes' => (int) ceil(RateLimiter::availableIn($key) / 60),
+            ]));
+
+            return;
+        }
+
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
@@ -48,6 +59,11 @@ class Register extends Component
         ], [
             'terms.accepted' => __('Please agree to the terms and privacy policy to create an account.'),
         ]);
+
+        // Counts every attempt that clears validation — the thing this
+        // guards against (unbounded account creation / verification-email
+        // spend) happens whether or not the Turnstile check below passes.
+        RateLimiter::hit($key, 3600);
 
         if (! app(Turnstile::class)->verify($this->turnstileToken, request()->ip())) {
             $this->addError('turnstileToken', __('We couldn\'t verify you\'re human — refresh the page and try again.'));
@@ -79,6 +95,11 @@ class Register extends Component
         }
 
         $this->redirectRoute('verification.notice', navigate: true);
+    }
+
+    private function throttleKey(): string
+    {
+        return 'register:'.request()->ip();
     }
 
     public function render()

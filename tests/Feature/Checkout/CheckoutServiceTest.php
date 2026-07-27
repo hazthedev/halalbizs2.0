@@ -203,6 +203,88 @@ test('quota-1 voucher: second redemption fails, used_count stays at 1', function
         ->and(Order::count())->toBe(1);
 });
 
+/*
+|--------------------------------------------------------------------------
+| AL-M4 (audit 2026-07-27) — checkout idempotency
+|--------------------------------------------------------------------------
+| CheckoutService previously read the cart lines UNLOCKED before taking
+| lockForUpdate on the variants, and had no notion of "this cart was already
+| turned into an order" — so two concurrent placeOrder submits for the same
+| cart could both pass the stock check and produce two orders. True
+| parallelism isn't available in the test runner, so the race is simulated
+| the way it actually resolves: the "losing" concurrent caller reaches the
+| checkout transaction only AFTER the winner has already committed and
+| cleared the cart — which is exactly the state produced by calling place()
+| twice back-to-back on the same buyer/cart. The fix locks the cart row
+| FIRST (before variants/flash/group-buy/vouchers/wallet) and stamps which
+| order the cart was last turned into, so this second call detects that and
+| returns the FIRST order rather than creating (and stock-decrementing) a
+| second one.
+*/
+test('AL-M4: a duplicate submit for the same cart returns the already-placed order, not a second one', function () {
+    [$buyer, $address] = checkoutBuyer();
+    $product = Product::factory()->create(['cod_enabled' => true]);
+    $product->variants->first()->update(['price_sen' => 1000, 'sale_price_sen' => null, 'stock' => 5]);
+    cartWith($buyer, $product, 1);
+
+    $orderA = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+    $orderB = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    expect($orderB->id)->toBe($orderA->id)
+        ->and(Order::count())->toBe(1)
+        ->and($product->variants->first()->fresh()->stock)->toBe(4); // decremented once, not twice
+});
+
+test('AL-M4: a genuinely new cart selection after a prior order still checks out normally', function () {
+    [$buyer, $address] = checkoutBuyer();
+    $productA = Product::factory()->create(['cod_enabled' => true]);
+    $productA->variants->first()->update(['price_sen' => 1000, 'sale_price_sen' => null, 'stock' => 5]);
+    cartWith($buyer, $productA, 1);
+
+    $orderA = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    // Buyer adds something new and checks out again — the idempotency guard
+    // must not swallow this into returning the stale first order.
+    $productB = Product::factory()->create(['cod_enabled' => true]);
+    $productB->variants->first()->update(['price_sen' => 2000, 'sale_price_sen' => null, 'stock' => 5]);
+    cartWith($buyer, $productB, 1);
+
+    $orderB = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    expect($orderB->id)->not->toBe($orderA->id)
+        ->and(Order::count())->toBe(2);
+});
+
+/*
+|--------------------------------------------------------------------------
+| AL-L2 (audit 2026-07-27) — buyer checkout note persistence
+|--------------------------------------------------------------------------
+| CheckoutService::place() accepted $sellerNotes but its transaction closure
+| never captured it in `use (...)`, so the buyer-facing note silently
+| evaporated. It now lands on the matching sub-order's buyer_note column.
+*/
+test('AL-L2: the per-store checkout note is persisted onto its sub-order', function () {
+    [$buyer, $address] = checkoutBuyer();
+
+    $productA = Product::factory()->create(['cod_enabled' => true]);
+    $productB = Product::factory()->create(['cod_enabled' => true]); // different store
+    $productA->variants->first()->update(['price_sen' => 1000, 'sale_price_sen' => null, 'stock' => 5]);
+    $productB->variants->first()->update(['price_sen' => 1000, 'sale_price_sen' => null, 'stock' => 5]);
+    cartWith($buyer, $productA, 1);
+    cartWith($buyer, $productB, 1);
+
+    $order = app(CheckoutService::class)->place(
+        $buyer, $address, PaymentMethod::Cod, null, null,
+        [$productA->store_id => 'Please gift-wrap this one', $productB->store_id => ''],
+    );
+
+    $subA = $order->subOrders->firstWhere('store_id', $productA->store_id);
+    $subB = $order->subOrders->firstWhere('store_id', $productB->store_id);
+
+    expect($subA->buyer_note)->toBe('Please gift-wrap this one')
+        ->and($subB->buyer_note)->toBeNull();
+});
+
 test('COD cap and disabled products are rejected', function () {
     [$buyer, $address] = checkoutBuyer();
 

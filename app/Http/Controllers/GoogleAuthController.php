@@ -41,8 +41,22 @@ class GoogleAuthController extends Controller
                 ->with('status', __('Google sign-in didn\'t complete — try again or log in with your password.'));
         }
 
-        $user = User::query()->where('google_id', $googleUser->getId())->first()
-            ?? User::query()->where('email', $googleUser->getEmail())->first();
+        $user = User::query()->where('google_id', $googleUser->getId())->first();
+
+        // No google_id match yet — fall back to an email match, but ONLY when
+        // Google itself vouches the address is verified. Without that check,
+        // anyone who registers an unverified Google account on someone else's
+        // email address silently takes over that existing HalalBizs account.
+        if ($user === null && ($googleUser->user['email_verified'] ?? false) === true) {
+            $user = User::query()->where('email', $googleUser->getEmail())->first();
+        } elseif ($user === null) {
+            $existing = User::query()->where('email', $googleUser->getEmail())->first();
+
+            if ($existing !== null) {
+                return redirect()->route('login')
+                    ->with('status', __('That email is already registered — log in with your password, then link Google from your account settings.'));
+            }
+        }
 
         if ($user === null) {
             $user = User::create([

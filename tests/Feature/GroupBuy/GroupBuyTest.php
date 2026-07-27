@@ -135,6 +135,32 @@ test('a forming (not-yet-unlocked) team does not change the checkout price', fun
         ->and($item->group_buy_id)->toBeNull();
 });
 
+test('AL-M3: an unlocked membership no longer prices at the group price once the campaign window has ended', function () {
+    [$buyer, $address] = gbBuyer();
+    $deal = gbDeal(6000, 2);
+
+    $svc = app(GroupBuyService::class);
+    $team = $svc->startTeam($buyer, $deal);
+    $svc->joinTeam(User::factory()->create(), $team);
+    expect($team->fresh()->status)->toBe(GroupBuyTeamStatus::Unlocked);
+
+    // The deal's campaign window closes — nothing flips group_buys.status
+    // (group-buy:expire only expires TEAMS), so status alone still reads
+    // Active. Only starts_at/ends_at say the deal is over.
+    $deal->update(['ends_at' => now()->subMinute()]);
+
+    app(CartService::class)->addItem($buyer, $deal->variant, 1);
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    $item = $order->subOrders->first()->items->first();
+    expect($item->unit_price_sen)->toBe(10_000) // normal price, group price refused
+        ->and($item->group_buy_id)->toBeNull();
+
+    // The membership is untouched — still redeemable if the deal were live again.
+    $member = GroupBuyMember::where('group_buy_team_id', $team->id)->where('user_id', $buyer->id)->first();
+    expect($member->status)->toBe(GroupBuyMemberStatus::Joined);
+});
+
 test('a redeemed membership is not applied twice', function () {
     [$buyer, $address] = gbBuyer();
     $deal = gbDeal(6000, 2);
