@@ -20,9 +20,11 @@ function enableGoogle(): void
     $settings->save();
 }
 
-function mockGoogleUser(string $id = 'google-123', string $email = 'aisha@example.com', string $name = 'Aisha binti Ali'): void
+function mockGoogleUser(string $id = 'google-123', string $email = 'aisha@example.com', string $name = 'Aisha binti Ali', bool $emailVerified = true): void
 {
-    $socialiteUser = (new SocialiteUser)->map([
+    $socialiteUser = (new SocialiteUser)->setRaw([
+        'email_verified' => $emailVerified,
+    ])->map([
         'id' => $id,
         'email' => $email,
         'name' => $name,
@@ -86,6 +88,21 @@ test('google callback links an existing account by email', function () {
         ->and($user->fresh()->google_id)->toBe('google-123');
 
     $this->assertAuthenticatedAs($user);
+});
+
+test('an unverified google email cannot link to an existing account', function () {
+    enableGoogle();
+
+    $user = User::factory()->create(['email' => 'aisha@example.com']);
+    $user->assignRole('buyer');
+
+    mockGoogleUser(emailVerified: false);
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake')
+        ->assertRedirect(route('login'));
+
+    $this->assertGuest();
+    expect($user->fresh()->google_id)->toBeNull();
 });
 
 test('google users with 2FA still face the challenge', function () {

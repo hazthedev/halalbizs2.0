@@ -26,6 +26,9 @@ class SendWebhookJob implements ShouldQueue
         return [10, 30, 120, 600];
     }
 
+    /** Set once at dispatch and serialized with the job, so it survives retries. */
+    public string $fallbackDeliveryId;
+
     /** @param  array<string, mixed>  $payload */
     public function __construct(
         public int $subscriptionId,
@@ -35,6 +38,7 @@ class SendWebhookJob implements ShouldQueue
         public array $payload,
         public ?string $idempotencyKey = null,
     ) {
+        $this->fallbackDeliveryId = (string) Str::uuid();
         $this->onQueue('webhooks');
     }
 
@@ -64,9 +68,11 @@ class SendWebhookJob implements ShouldQueue
         $response = Http::withHeaders([
             'X-Webhook-Event' => $this->event,
             'X-Webhook-Signature' => $signature,
-            // A per-delivery id, always present (independent of the logical
-            // dedupe key) so receivers can always dedupe their own retries.
-            'X-Webhook-Id' => (string) Str::uuid(),
+            // Stable across OUR queue retries (a fresh uuid per attempt would
+            // make every retry look like a new event to the receiver); the
+            // logical dedupe key when we have one, else one id per job
+            // instance via the queued constructor property.
+            'X-Webhook-Id' => $this->idempotencyKey ?? $this->fallbackDeliveryId,
         ])->timeout(10)->withBody($body, 'application/json')->post($this->url);
 
         // Non-2xx throws, so the queue's tries/backoff actually retries it —

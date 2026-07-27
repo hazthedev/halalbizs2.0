@@ -24,7 +24,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->name('seller.')
                 ->group(base_path('routes/seller.php'));
 
-            Route::middleware(['web', 'auth', EnsureAdmin::class])
+            // 'verified' mirrors the seller group (AL-C5): EnsureAdmin checks
+            // role + 2FA but not email ownership, and email-method 2FA would
+            // otherwise deliver codes to an unproven address. Staff invites
+            // markEmailAsVerified() on create; pre-existing admin rows are
+            // backfilled by the 2026_07_27_000010 migration.
+            Route::middleware(['web', 'auth', 'verified', EnsureAdmin::class])
                 ->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
