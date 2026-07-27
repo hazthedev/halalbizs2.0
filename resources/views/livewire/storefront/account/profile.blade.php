@@ -307,7 +307,7 @@
                 @if ($phoneOtpPending)
                     <form wire:submit="confirmPhoneCode" class="mt-4 flex flex-wrap items-end gap-3 rounded-[var(--radius-card)] border border-line bg-paper p-4">
                         <x-ui.input
-                            :label="__('Code from the SMS')"
+                            :label="__('Code from the WhatsApp message')"
                             name="phone_otp_code"
                             inputmode="numeric"
                             maxlength="6"
