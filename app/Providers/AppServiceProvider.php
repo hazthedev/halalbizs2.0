@@ -28,6 +28,7 @@ use App\Services\Search\LocalHashEmbedder;
 use App\Services\Search\RemoteEmbedder;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
+use App\Services\Sms\WhatsAppSender;
 use App\Support\Money;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Events\DiagnosingHealth;
@@ -44,8 +45,19 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Local/dev SMS stub — swap for a real gateway driver at cutover.
-        $this->app->bind(SmsSender::class, LogSmsSender::class);
+        // Phone-verification delivery. WhatsApp (Cloud API, free tier) once its
+        // token + phone-number id are configured; the log stub otherwise, so a
+        // preview/dev without Meta credentials still works. Same graceful
+        // cutover shape as mail (log→SMTP) and iPay88 (mock→live).
+        $this->app->bind(SmsSender::class, function ($app) {
+            $wa = config('services.whatsapp');
+
+            $driver = filled($wa['token']) && filled($wa['phone_number_id'])
+                ? WhatsAppSender::class
+                : LogSmsSender::class;
+
+            return $app->make($driver);
+        });
 
         // E-invoicing provider, selected by config. Defaults to the no-op
         // NullProvider until LHDN MyInvois credentials + cert are supplied.
