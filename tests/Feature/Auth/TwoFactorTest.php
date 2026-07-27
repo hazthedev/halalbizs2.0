@@ -3,6 +3,7 @@
 use App\Enums\TwoFactorMethod;
 use App\Livewire\Storefront\Account\Profile;
 use App\Livewire\Storefront\Auth\Login;
+use App\Livewire\Storefront\Auth\Register;
 use App\Livewire\Storefront\Auth\TwoFactorChallenge;
 use App\Models\User;
 use App\Notifications\TwoFactorCodeNotification;
@@ -119,6 +120,49 @@ test('TOTP 2FA: a code computed with the same RFC 6238 algorithm logs in', funct
         ->assertRedirect(route('home'));
 
     $this->assertAuthenticatedAs($user);
+});
+
+test('a TOTP code accepted once is rejected on replay', function () {
+    $totp = new Totp;
+    $secret = $totp->generateSecret();
+
+    $user = User::factory()->create([
+        'two_factor_method' => 'totp',
+        'two_factor_secret' => $secret,
+    ]);
+
+    Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'password')
+        ->call('login')
+        ->assertRedirect(route('two-factor.challenge'));
+
+    $code = $totp->code($secret);
+
+    Livewire::test(TwoFactorChallenge::class)
+        ->set('code', $code)
+        ->call('verify')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('home'));
+
+    $this->assertAuthenticatedAs($user);
+
+    // Same user, fresh challenge, same code — still inside the ±1 period
+    // TOTP window, so Totp::verify() alone would happily accept it again.
+    auth()->logout();
+
+    Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'password')
+        ->call('login')
+        ->assertRedirect(route('two-factor.challenge'));
+
+    Livewire::test(TwoFactorChallenge::class)
+        ->set('code', $code)
+        ->call('verify')
+        ->assertHasErrors(['code']);
+
+    $this->assertGuest();
 });
 
 test('a recovery code works exactly once', function () {
@@ -247,4 +291,35 @@ test('admins with 2FA reach the admin panel', function () {
     makeAdmin($admin);
 
     $this->actingAs($admin)->get('/admin')->assertOk();
+});
+
+test('registration is rate limited after the threshold', function () {
+    Notification::fake();
+
+    foreach (range(1, 5) as $i) {
+        Livewire::test(Register::class)
+            ->set('name', 'Rate Limit Test')
+            ->set('email', "rate-limit-{$i}@example.com")
+            ->set('password', 'password123')
+            ->set('password_confirmation', 'password123')
+            ->set('terms', true)
+            ->call('register')
+            ->assertHasNoErrors();
+
+        auth()->logout(); // register() logs the new user in
+    }
+
+    // A 6th attempt from the same IP is blocked before it ever touches
+    // validation or creates a row — this is what bounds unbounded account
+    // creation now that Turnstile is dormant without configured keys.
+    Livewire::test(Register::class)
+        ->set('name', 'One Too Many')
+        ->set('email', 'rate-limit-6@example.com')
+        ->set('password', 'password123')
+        ->set('password_confirmation', 'password123')
+        ->set('terms', true)
+        ->call('register')
+        ->assertHasErrors(['email']);
+
+    expect(User::where('email', 'rate-limit-6@example.com')->exists())->toBeFalse();
 });

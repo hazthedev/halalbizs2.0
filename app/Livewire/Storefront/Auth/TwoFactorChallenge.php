@@ -12,6 +12,7 @@ use App\Services\OtpService;
 use App\Support\PostLoginRedirect;
 use App\Support\Totp;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -114,6 +115,18 @@ class TwoFactorChallenge extends Component
                 return false;
             }
 
+            // Totp::verify() checks a ±1 period window but has no memory of
+            // its own — the same 6-digit code would otherwise work again for
+            // as long as it stays inside that window (replay). There is no
+            // 2FA DB column for this (outside this fix's surface), so the
+            // memo lives in cache keyed by user + code, TTL'd comfortably
+            // past the verification window.
+            if (! $this->rememberTotpCodeUnused($user->id, $this->code)) {
+                $this->addError('code', __('That code has already been used — wait for your authenticator app to show a new one.'));
+
+                return false;
+            }
+
             return true;
         }
 
@@ -176,6 +189,24 @@ class TwoFactorChallenge extends Component
         $this->useRecoveryCode = ! $this->useRecoveryCode;
         $this->reset('code', 'recovery_code');
         $this->resetErrorBag();
+    }
+
+    /**
+     * True the first time this exact code is seen for this user; false (and
+     * memoized either way is a no-op) on replay. TTL of 120s comfortably
+     * covers Totp::verify()'s ±1 period (30s) window plus clock drift.
+     */
+    private function rememberTotpCodeUnused(int $userId, string $code): bool
+    {
+        $key = 'totp-used:'.$userId.':'.preg_replace('/\s+/', '', $code);
+
+        if (Cache::has($key)) {
+            return false;
+        }
+
+        Cache::put($key, true, 120);
+
+        return true;
     }
 
     private function pendingUser(): ?User

@@ -248,3 +248,64 @@ test('H5: payout guards hold — min threshold, over-available, one-open', funct
     // a second request while one is open is blocked
     expect(fn () => $ledger->requestPayout($store, 6000))->toThrow(CheckoutException::class);
 });
+
+/*
+|--------------------------------------------------------------------------
+| H1 (audit 2026-07-27) — refund cap TOCTOU under true concurrency
+|--------------------------------------------------------------------------
+| RefundService previously read $alreadyRefunded / the cap BEFORE opening its
+| DB::transaction and never locked the sub-order row. Two concurrent refunds
+| (admin double-click, or a manual refund racing an automated return-refund)
+| both loading the row while refunded_sen is still 0 would both pass the cap
+| and both increment — over-refunding real cash. True parallelism isn't
+| available in the test runner, so the race is simulated the way TOCTOU
+| actually manifests: two SEPARATELY loaded model instances, both read BEFORE
+| either refund call runs, then issued sequentially. If the cap were still
+| read from the caller's in-memory copy (old behaviour) both would see
+| refunded_sen=0 and both would clear a 15000 refund on a 20000 total. The fix
+| re-fetches + locks the row FIRST INSIDE the transaction, so the second call
+| recomputes the cap from what's actually in the database, not from the stale
+| $staleB instance passed in.
+*/
+test('H1 race: cumulative refunds cannot exceed the sub-order total when the cap is recomputed under the lock', function () {
+    $order = stressOrder(grandTotalSen: 20000, subtotalSen: 20000);
+    $payment = stressPayment($order);
+    $subOrder = stressBookedSubOrder($order, totalSen: 20000);
+
+    // Both "processes" load the row before either refund has run — the exact
+    // TOCTOU shape: neither has seen the other's write yet.
+    $staleA = SubOrder::find($subOrder->id);
+    $staleB = SubOrder::find($subOrder->id);
+
+    $refund = app(RefundService::class);
+    $refund->refund($staleA, 15000, ActorType::Admin, 1); // seller-refundable left after this = 5000
+    $refund->refund($staleB, 15000, ActorType::Admin, 1); // stale instance still "thinks" 15000 is refundable
+
+    $subOrder->refresh();
+    $payment->refresh();
+
+    // SAFE invariant: never more than the sub-order's own total, no matter how
+    // stale the caller's in-memory view of refunded_sen was.
+    expect((int) $subOrder->refunded_sen)->toBe(20000)
+        ->and((int) $payment->refunded_sen)->toBeLessThanOrEqual(20000);
+});
+
+test('H1: a refund call with nothing left to refund is a clean no-op', function () {
+    $order = stressOrder(grandTotalSen: 20000, subtotalSen: 20000);
+    $payment = stressPayment($order);
+    $subOrder = stressBookedSubOrder($order, totalSen: 20000);
+    $store = $subOrder->store;
+
+    $refund = app(RefundService::class);
+    $refund->refund($subOrder->fresh(), 20000, ActorType::Admin, 1); // fully refunds
+
+    $adjustmentCountBefore = $store->ledgerEntries()->where('type', LedgerEntryType::Adjustment)->count();
+
+    // Nothing left to refund — must be a genuine no-op, not another reversal.
+    $refund->refund($subOrder->fresh(), 5000, ActorType::Admin, 1);
+
+    $payment->refresh();
+
+    expect((int) $payment->refunded_sen)->toBe(20000)
+        ->and($store->ledgerEntries()->where('type', LedgerEntryType::Adjustment)->count())->toBe($adjustmentCountBefore);
+});

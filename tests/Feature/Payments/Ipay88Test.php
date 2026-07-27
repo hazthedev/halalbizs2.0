@@ -5,11 +5,15 @@ use App\Enums\GatewayPaymentStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\SubOrderStatus;
+use App\Events\OrderPaid;
+use App\Jobs\ConfirmIpay88PaymentJob;
+use App\Jobs\SendWebhookJob;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\WebhookSubscription;
 use App\Notifications\OrderExpiredNotification;
 use App\Services\CartService;
 use App\Services\CheckoutService;
@@ -17,6 +21,7 @@ use App\Services\Ipay88Service;
 use App\Services\SubOrderStatusService;
 use App\Settings\Ipay88Settings;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 
@@ -155,6 +160,73 @@ test('requery mismatch leaves the payment pending for admin review', function ()
     expect($payment->fresh()->status)->toBe(GatewayPaymentStatus::Pending)
         ->and($payment->fresh()->requery_result)->toBe('Record not found')
         ->and($order->fresh()->payment_status)->toBe(PaymentStatus::Pending);
+});
+
+// ── M2/M3/M4/M5 hardening ───────────────────────────────────────────────────
+
+test('two near-simultaneous confirm callbacks do not double-fulfil (M2 row lock)', function () {
+    $order = placeIpay88Order();
+    $payment = $order->payment;
+
+    $requeryCalls = 0;
+
+    // The FIRST confirm job's requery HTTP call is used as the trigger point
+    // to run a SECOND confirm job to completion — simulating iPay88 retrying
+    // the BackendURL callback so two jobs race each other. Without the M2
+    // row lock, the first job (which already read the payment as Pending
+    // before the race) blindly re-fulfils and re-dispatches OrderPaid after
+    // the second job has already committed.
+    Http::fake(function () use (&$requeryCalls, $payment) {
+        $requeryCalls++;
+
+        if ($requeryCalls === 1) {
+            ConfirmIpay88PaymentJob::dispatchSync($payment->fresh(), backendPayload($payment));
+        }
+
+        return Http::response('00');
+    });
+
+    Event::fake([OrderPaid::class]);
+
+    ConfirmIpay88PaymentJob::dispatchSync($payment->fresh(), backendPayload($payment));
+
+    Event::assertDispatchedTimes(OrderPaid::class, 1);
+    expect($payment->fresh()->status)->toBe(GatewayPaymentStatus::Success)
+        ->and($order->fresh()->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($order->fresh()->subOrders->first()->status)->toBe(SubOrderStatus::Confirmed)
+        ->and($order->fresh()->subOrders->first()->statusHistories()->count())->toBe(2); // initial + confirmed once
+});
+
+test('the confirm job has a retry policy and the requery call times out (M3)', function () {
+    $job = new ConfirmIpay88PaymentJob(new Payment);
+
+    expect($job->tries)->toBeGreaterThan(1)
+        ->and($job->backoff())->not->toBeEmpty()
+        ->and(method_exists($job, 'failed'))->toBeTrue();
+});
+
+test('a webhook to a private/link-local/metadata URL is refused (M5 SSRF guard)', function () {
+    Http::fake(); // must never be reached for any of these
+
+    expect(WebhookSubscription::isUrlSafe('https://169.254.169.254/latest/meta-data/'))->toBeFalse()
+        ->and(WebhookSubscription::isUrlSafe('https://127.0.0.1/admin'))->toBeFalse()
+        ->and(WebhookSubscription::isUrlSafe('https://localhost/admin'))->toBeFalse()
+        ->and(WebhookSubscription::isUrlSafe('https://10.0.0.5/internal'))->toBeFalse()
+        // A private IP stays refused even over plain http (the testing-env
+        // http allowance only relaxes the SCHEME check, never the host check).
+        ->and(WebhookSubscription::isUrlSafe('http://169.254.169.254/x'))->toBeFalse()
+        ->and(WebhookSubscription::isUrlSafe('https://8.8.8.8/x'))->toBeTrue();
+
+    $subscription = WebhookSubscription::create([
+        'url' => 'https://169.254.169.254/latest/meta-data/iam/security-credentials/',
+        'secret' => 'shh',
+        'events' => ['order.paid'],
+        'is_active' => true,
+    ]);
+
+    SendWebhookJob::dispatchSync($subscription->id, $subscription->url, $subscription->secret, 'order.paid', ['x' => 1], 'order.paid:TEST');
+
+    Http::assertNothingSent();
 });
 
 test('bridge page renders the auto-submit form with a valid signature', function () {

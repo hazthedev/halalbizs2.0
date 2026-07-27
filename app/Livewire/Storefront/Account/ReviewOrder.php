@@ -8,6 +8,7 @@ use App\Models\Review;
 use App\Models\SubOrder;
 use App\Services\Turnstile;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -140,7 +141,7 @@ class ReviewOrder extends Component
 
         foreach ($this->photos[$orderItemId] ?? [] as $photo) {
             $review->addMedia($photo->getRealPath())
-                ->usingFileName($photo->getClientOriginalName())
+                ->usingFileName(self::safeUploadName($photo))
                 ->toMediaCollection('photos');
         }
 
@@ -179,5 +180,20 @@ class ReviewOrder extends Component
             ->whereIn('order_item_id', $this->subOrder->items()->select('id'))
             ->whereNotNull('seller_rating')
             ->exists();
+    }
+
+    /**
+     * Stored filename with a SERVER-DETECTED extension (AL-M2, security
+     * audit). Media-library only blocks PHP-family extensions, not e.g.
+     * .html/.htm, and MEDIA_DISK defaults to the public disk — trusting the
+     * client's filename would let an image-content polyglot uploaded as
+     * "x.html" be served back as text/html from the app's own origin.
+     */
+    private static function safeUploadName(TemporaryUploadedFile $photo): string
+    {
+        $extension = $photo->guessExtension() ?: $photo->getClientOriginalExtension() ?: 'bin';
+        $base = Str::slug(pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME));
+
+        return ($base !== '' ? $base : 'photo').'.'.$extension;
     }
 }

@@ -33,10 +33,13 @@ use App\Models\SubOrder;
 use App\Models\User;
 use App\Models\WebhookSubscription;
 use App\Services\AffiliateService;
+use App\Services\LedgerService;
 use App\Services\OrderService;
 use App\Services\StockService;
 use App\Services\SubOrderStatusService;
 use App\Settings\Ipay88Settings;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\Models\Role;
@@ -315,4 +318,74 @@ test('H6 cancel releases flash-sale sold_qty (not only variant stock)', function
 
     // SAFE invariant: the flash allocation this order held must be released too.
     expect((int) $flashItem->fresh()->sold_qty)->toBe(0);
+});
+
+// ---------------------------------------------------------------------------
+// H7 (audit 2026-07-27) — transition() TOCTOU: confirmReceived racing the
+// auto-complete cron must not double-book the ledger.
+// ---------------------------------------------------------------------------
+// SubOrderStatusService::transition() previously read $subOrder->status,
+// checked canTransition(), then saved — with no row lock and no re-read. The
+// buyer's confirmReceived() can race the hourly cron: both load the sub-order
+// while it is still `delivered`. True parallelism isn't available here, so the
+// race is simulated the way it actually manifests: two SEPARATELY loaded
+// model instances (both still see `delivered`), transitioned sequentially.
+// The fix locks + re-reads the CURRENT status inside the transaction; the
+// second call finds the row already `Completed` and no-ops instead of
+// re-applying the transition and re-firing SubOrderStatusChanged.
+test('H7 a second transition() to Completed from a stale delivered instance does not double-book the ledger', function () {
+    [, $subOrder] = stressDeliveredSubOrder();
+    $status = app(SubOrderStatusService::class);
+
+    // Both "processes" load the row while it is still `delivered` — neither
+    // has seen the other's write yet.
+    $staleA = SubOrder::find($subOrder->id);
+    $staleB = SubOrder::find($subOrder->id);
+
+    $status->transition($staleA, SubOrderStatus::Completed, ActorType::Buyer, 1); // e.g. confirmReceived()
+    $status->transition($staleB, SubOrderStatus::Completed, ActorType::System);   // e.g. the auto-complete cron, racing in stale
+
+    $subOrder->refresh();
+
+    // SAFE invariant: exactly one Sale/Commission pair, not two — AND the race
+    // was actually caught at the status layer (one history row), not merely
+    // masked by LedgerService's own sequential exists() guard. Without the
+    // transition() lock+no-op fix, the second call still re-saves the status
+    // and unconditionally appends a second order_status_histories row even
+    // though the ledger's own idempotency check happens to swallow the
+    // duplicate booking in a non-concurrent test run.
+    expect(StoreLedgerEntry::where('sub_order_id', $subOrder->id)->where('type', LedgerEntryType::Sale)->count())->toBe(1)
+        ->and(StoreLedgerEntry::where('sub_order_id', $subOrder->id)->where('type', LedgerEntryType::Commission)->count())->toBe(1)
+        ->and($subOrder->status)->toBe(SubOrderStatus::Completed)
+        ->and($subOrder->statusHistories()->where('to_status', SubOrderStatus::Completed->value)->count())->toBe(1);
+});
+
+// ---------------------------------------------------------------------------
+// H7 backstop — the settlement_key unique constraint actually holds at the DB
+// layer, independent of the application-level lock above.
+// ---------------------------------------------------------------------------
+test('H7 backstop: settlement_key uniqueness rejects a second direct recordCompletion and a raw duplicate insert', function () {
+    [, $subOrder] = stressDeliveredSubOrder();
+    $ledger = app(LedgerService::class);
+
+    // Two direct calls (bypassing the FSM lock entirely) simulate a caller
+    // that reaches recordCompletion() outside transition() — the DB-level
+    // backstop must still hold, gracefully (no exception bubbling up).
+    $ledger->recordCompletion($subOrder->fresh());
+    $ledger->recordCompletion($subOrder->fresh());
+
+    expect(StoreLedgerEntry::where('sub_order_id', $subOrder->id)->where('type', LedgerEntryType::Sale)->count())->toBe(1)
+        ->and(StoreLedgerEntry::where('sub_order_id', $subOrder->id)->where('type', LedgerEntryType::Commission)->count())->toBe(1);
+
+    // And the raw uniqueness constraint itself: a duplicate settlement_key can
+    // never land in the table, even via a fresh, unrelated insert attempt.
+    expect(fn () => DB::table('store_ledger_entries')->insert([
+        'store_id' => $subOrder->store_id,
+        'sub_order_id' => $subOrder->id,
+        'type' => 'sale',
+        'amount_sen' => 1,
+        'status' => 'available',
+        'settlement_key' => "sale:{$subOrder->id}",
+        'created_at' => now(),
+    ]))->toThrow(QueryException::class);
 });

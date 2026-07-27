@@ -13,6 +13,7 @@ use App\Services\OrderService;
 use App\Services\SubOrderStatusService;
 use App\Settings\OrderSettings;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -135,7 +136,7 @@ class OrderDetail extends Component
 
             foreach (array_slice($this->returnPhotos, 0, ReturnRequest::MAX_PHOTOS) as $photo) {
                 $request->addMedia($photo->getRealPath())
-                    ->usingFileName('return-'.$photo->getClientOriginalName())
+                    ->usingFileName('return-'.self::safeUploadName($photo))
                     ->toMediaCollection('photos');
             }
 
@@ -210,5 +211,20 @@ class OrderDetail extends Component
             'items.product.media', 'statusHistories', 'store', 'order.payment',
             'returnRequest.reason', 'returnRequest.media',
         ]);
+    }
+
+    /**
+     * Stored filename with a SERVER-DETECTED extension (AL-M2, security
+     * audit). Media-library only blocks PHP-family extensions, not e.g.
+     * .html/.htm, and MEDIA_DISK defaults to the public disk — trusting the
+     * client's filename would let an image-content polyglot uploaded as
+     * "x.html" be served back as text/html from the app's own origin.
+     */
+    private static function safeUploadName(TemporaryUploadedFile $photo): string
+    {
+        $extension = $photo->guessExtension() ?: $photo->getClientOriginalExtension() ?: 'bin';
+        $base = Str::slug(pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME));
+
+        return ($base !== '' ? $base : 'photo').'.'.$extension;
     }
 }

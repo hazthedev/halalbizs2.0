@@ -13,6 +13,7 @@ use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
 use App\Exceptions\CheckoutException;
 use App\Models\Address;
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\ProductVariant;
@@ -23,6 +24,7 @@ use App\Settings\CodSettings;
 use App\Settings\OrderSettings;
 use App\Support\CoinRedemptionResult;
 use App\Support\Money;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -74,7 +76,44 @@ class CheckoutService
         int $coinsToRedeem = 0,
         ?array $explicitLines = null,
     ): Order {
-        return DB::transaction(function () use ($buyer, $address, $method, $platformCode, $shopCode, $shippingCode, $coinsToRedeem, $explicitLines) {
+        return DB::transaction(function () use ($buyer, $address, $method, $platformCode, $shopCode, $shippingCode, $sellerNotes, $coinsToRedeem, $explicitLines) {
+            // 0. AL-M4 idempotency guard (cart-based checkout only — an
+            //    explicit-lines/subscription order never touches a cart).
+            //    Canonical lock order, extended: cart → variants → flash →
+            //    group-buy → vouchers → wallet. The cart lock is taken FIRST,
+            //    before the lines are even read, and it is a resource type no
+            //    other step in this transaction ever locks — a strict prefix
+            //    of the existing chain, so it can never introduce a deadlock
+            //    cycle against variants/flash/group-buy/vouchers/wallet.
+            //
+            //    Locking here (instead of reading $buyer->cart unlocked) also
+            //    closes the original TOCTOU: a concurrent duplicate submit for
+            //    the SAME cart now blocks on this lock until the first
+            //    submission commits, then sees its own lines already cleared
+            //    and — if that happened very recently — returns the order the
+            //    winner just placed instead of racing the stock check again.
+            $cart = $explicitLines === null
+                ? Cart::where('user_id', $buyer->id)->lockForUpdate()->first()
+                : null;
+
+            if ($cart !== null) {
+                // checkout_locked_at isn't cast to a Carbon instance on the
+                // Cart model (App\Models\Cart is outside this task's declared
+                // surface) — parse the raw DB value explicitly instead.
+                $isRecentDuplicate = $cart->checkout_lock_order_id !== null
+                    && $cart->checkout_locked_at !== null
+                    && Carbon::parse($cart->checkout_locked_at)->gt(now()->subMinute())
+                    && $cart->items()->where('selected', true)->doesntExist();
+
+                if ($isRecentDuplicate) {
+                    $duplicate = Order::find($cart->checkout_lock_order_id);
+
+                    if ($duplicate !== null) {
+                        return $duplicate->fresh(['subOrders.items', 'payment']);
+                    }
+                }
+            }
+
             // 1. Source the lines: an explicit set (subscriptions) or the selected
             //    cart (normal checkout). Synthetic items mirror cart-item fields.
             $items = $explicitLines !== null
@@ -83,7 +122,7 @@ class CheckoutService
                     'qty' => (int) $line['qty'],
                     'forced_price_sen' => isset($line['price_sen']) ? (int) $line['price_sen'] : null,
                 ])
-                : ($buyer->cart?->items()->where('selected', true)->get() ?? collect());
+                : ($cart?->items()->where('selected', true)->get() ?? collect());
 
             if ($items->isEmpty()) {
                 throw new CheckoutException(__('Your cart has no selected items.'));
@@ -309,8 +348,33 @@ class CheckoutService
                 max(0, $subtotalSen - $shopDiscountTotalSen),
             );
 
-            foreach ([$platformDiscount, $shopDiscount, $shippingDiscount] as $discount) {
-                $discount?->voucher->increment('used_count');
+            // AL-L1: the same voucher ROW can fill two slots at once — e.g. a
+            // shop free-shipping code entered as both $shopCode and
+            // $shippingCode, which VoucherService::lookup() resolves to the
+            // same row under either scope (no buyer gain, since the waiver
+            // loop above already skips an already-zeroed fee, but quota +
+            // per_user_limit accounting must never count one applied voucher
+            // twice). Consume each distinct voucher id at most once: the
+            // first slot (platform, then shop, then shipping) to reference a
+            // given id is its owner; a later slot pointing at the same row is
+            // skipped entirely — no extra used_count increment, no extra
+            // voucher_usages row.
+            $consumedVoucherIds = [];
+            $slotOwnsVoucher = [];
+
+            foreach (['platform' => $platformDiscount, 'shop' => $shopDiscount, 'shipping' => $shippingDiscount] as $slot => $discount) {
+                if ($discount === null) {
+                    $slotOwnsVoucher[$slot] = false;
+
+                    continue;
+                }
+
+                $slotOwnsVoucher[$slot] = ! in_array($discount->voucher->id, $consumedVoucherIds, true);
+
+                if ($slotOwnsVoucher[$slot]) {
+                    $consumedVoucherIds[] = $discount->voucher->id;
+                    $discount->voucher->increment('used_count');
+                }
             }
 
             // Coins (M2.1): the LAST link in the canonical lock order
@@ -362,8 +426,10 @@ class CheckoutService
             ])->save();
 
             // Platform usage → order_id. For free shipping the "discount" is
-            // the shipping it waived.
-            if ($platformDiscount !== null) {
+            // the shipping it waived. Gated on $slotOwnsVoucher (AL-L1) — a
+            // slot whose voucher id was already consumed by an earlier slot
+            // writes no usage row of its own.
+            if ($platformDiscount !== null && $slotOwnsVoucher['platform']) {
                 $platformDiscount->voucher->usages()->create([
                     'user_id' => $buyer->id,
                     'order_id' => $order->id,
@@ -373,7 +439,7 @@ class CheckoutService
             }
 
             // Free-shipping slot usage → order level (the waived shipping is the "discount").
-            if ($shippingDiscount !== null) {
+            if ($shippingDiscount !== null && $slotOwnsVoucher['shipping']) {
                 $shippingDiscount->voucher->usages()->create([
                     'user_id' => $buyer->id,
                     'order_id' => $order->id,
@@ -419,7 +485,7 @@ class CheckoutService
                 ]);
 
                 // Shop usage → sub_order_id, written once the sub-order exists.
-                if ($shopDiscount !== null && (int) $shopDiscount->voucher->store_id === (int) $storeId) {
+                if ($shopDiscount !== null && $slotOwnsVoucher['shop'] && (int) $shopDiscount->voucher->store_id === (int) $storeId) {
                     $shopDiscount->voucher->usages()->create([
                         'user_id' => $buyer->id,
                         'order_id' => $order->id,
@@ -427,6 +493,16 @@ class CheckoutService
                         'discount_sen' => $shopDiscountSen + $waivedSen['shop'],
                         'created_at' => now(),
                     ]);
+                }
+
+                // AL-L2: the buyer's per-store checkout note, if provided —
+                // persisted via forceFill (not create()'s mass assignment) so
+                // this doesn't require SubOrder::$fillable, which is outside
+                // this task's declared surface.
+                $buyerNote = trim((string) ($sellerNotes[$storeId] ?? ''));
+
+                if ($buyerNote !== '') {
+                    $subOrder->forceFill(['buyer_note' => $buyerNote])->save();
                 }
 
                 foreach ($data['lines'] as $line) {
@@ -474,9 +550,16 @@ class CheckoutService
             ]);
 
             // 9. Purchased cart lines leave the cart (cart checkout only — an
-            //    explicit-lines order never touches the buyer's cart).
-            if ($explicitLines === null) {
-                $buyer->cart?->items()->where('selected', true)->delete();
+            //    explicit-lines order never touches the buyer's cart). Stamp
+            //    the idempotency marker (AL-M4) in the same breath, still
+            //    inside this transaction and still under the cart lock taken
+            //    in step 0.
+            if ($cart !== null) {
+                $cart->items()->where('selected', true)->delete();
+                $cart->forceFill([
+                    'checkout_lock_order_id' => $order->id,
+                    'checkout_locked_at' => now(),
+                ])->save();
             }
 
             return $order->fresh(['subOrders.items', 'payment']);

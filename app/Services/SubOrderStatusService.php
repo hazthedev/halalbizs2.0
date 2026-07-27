@@ -7,6 +7,7 @@ use App\Enums\SubOrderStatus;
 use App\Events\SubOrderStatusChanged;
 use App\Models\SubOrder;
 use App\Settings\OrderSettings;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 /**
@@ -43,24 +44,51 @@ class SubOrderStatusService
         ?int $actorId = null,
         ?string $note = null,
     ): SubOrder {
-        $from = $subOrder->status;
+        return DB::transaction(function () use ($subOrder, $to, $actorType, $actorId, $note) {
+            // H2/M1 fix: re-fetch and lock the row FIRST, and validate/act on
+            // THIS freshly-read status — never the caller's possibly-stale
+            // in-memory copy. The buyer's confirmReceived() can race the hourly
+            // auto-complete cron: both load the sub-order while it is still
+            // `delivered`, so without a lock+re-read both would pass
+            // canTransition() and both fire SubOrderStatusChanged, double-booking
+            // the ledger. Under the lock, a racing duplicate call lands here
+            // AFTER the first has already committed, so it sees the sub-order
+            // already at `$to` and no-ops instead of re-applying — it is not
+            // "illegal" (which still throws below), it is "already done".
+            $locked = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->first();
 
-        if (! $this->canTransition($subOrder, $to)) {
-            throw new InvalidArgumentException(
-                "Invalid sub-order transition [{$from->value} → {$to->value}] on {$subOrder->sub_order_no}."
-            );
-        }
+            $from = $locked->status;
 
-        $subOrder->forceFill(array_merge(
-            ['status' => $to],
-            $this->timestampsFor($subOrder, $to),
-        ))->save();
+            if ($from === $to) {
+                return $locked;
+            }
 
-        $this->writeHistory($subOrder, $from, $to, $actorType, $actorId, $note);
+            if (! $this->canTransition($locked, $to)) {
+                throw new InvalidArgumentException(
+                    "Invalid sub-order transition [{$from->value} → {$to->value}] on {$locked->sub_order_no}."
+                );
+            }
 
-        SubOrderStatusChanged::dispatch($subOrder, $from, $to, $actorType);
+            // H3/M1 fix: status save + history write + event dispatch are one
+            // atomic unit. A throwing SYNCHRONOUS listener (RecordLedgerOnCompletion)
+            // now rolls the status change back too, instead of stranding the
+            // sub-order at a Completed status with the sale/commission
+            // permanently unbooked and un-rerunnable. Laravel nests this via a
+            // SAVEPOINT when a caller (OrderService::cancel/markDelivered,
+            // RefundService) already wraps the call in DB::transaction, so
+            // there is no double-commit — an inner failure rolls back only to
+            // the savepoint and rethrows, which unwinds the outer transaction too.
+            $locked->forceFill(array_merge(
+                ['status' => $to],
+                $this->timestampsFor($locked, $to),
+            ))->save();
 
-        return $subOrder;
+            $this->writeHistory($locked, $from, $to, $actorType, $actorId, $note);
+
+            SubOrderStatusChanged::dispatch($locked, $from, $to, $actorType);
+
+            return $locked;
+        });
     }
 
     /**

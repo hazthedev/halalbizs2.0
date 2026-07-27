@@ -152,6 +152,24 @@ class Checkout extends Component
             return;
         }
 
+        // AL-L2: server-side guard on the buyer-note array — the client-side
+        // maxlength="500" on the textarea is UX only. Length is enforced here;
+        // keys are additionally restricted to stores actually in THIS
+        // checkout (a stray/forged key for an unrelated store is dropped
+        // rather than trusted, since it would otherwise skip validation
+        // entirely with no matching sub-order to land on anyway).
+        $this->validate([
+            'sellerNotes' => ['array'],
+            'sellerNotes.*' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $validStoreIds = $this->selectedGroups()->keys()->map(fn ($id) => (string) $id)->all();
+
+        $sellerNotes = collect($this->sellerNotes)
+            ->only($validStoreIds)
+            ->map(fn ($note) => trim((string) $note))
+            ->all();
+
         try {
             $order = $checkout->place(
                 auth()->user(),
@@ -159,7 +177,7 @@ class Checkout extends Component
                 PaymentMethod::tryFrom($this->paymentMethod) ?? PaymentMethod::Ipay88,
                 $this->appliedPlatformCode,
                 $this->appliedShopCode,
-                array_map(fn ($note) => trim((string) $note), $this->sellerNotes),
+                $sellerNotes,
                 $this->appliedShippingCode,
                 $this->requestedCoins(),
             );

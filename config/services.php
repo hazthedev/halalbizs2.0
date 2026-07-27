@@ -27,6 +27,16 @@ return [
         'allow_mock' => env('IPAY88_ALLOW_MOCK', false),
     ],
 
+    // Cloudflare Turnstile keys live in SecuritySettings (admin panel). This
+    // only gates the UNCONFIGURED passthrough: local/testing always pass, but
+    // any other environment with no keys must opt in explicitly or every
+    // register/login form fails closed (AL-C7). Must be read via config (not a
+    // raw env() call in app code) — under `config:cache` the .env file is
+    // never loaded, so env() there would silently return null in production.
+    'turnstile' => [
+        'allow_unconfigured' => (bool) env('TURNSTILE_ALLOW_UNCONFIGURED', false),
+    ],
+
     // Stripe — international cards/wallets (M1.9). Flagged for go-live approval.
     'stripe' => [
         'secret' => env('STRIPE_SECRET'),

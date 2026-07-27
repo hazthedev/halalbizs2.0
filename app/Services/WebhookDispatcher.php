@@ -12,28 +12,30 @@ class WebhookDispatcher
     /**
      * @param  array<string, mixed>  $payload
      * @param  string|null  $dedupeKey  A stable key for this LOGICAL event (e.g.
-     *                                   "order.paid:MP2606…"). When given, each
-     *                                   subscription is delivered at most once for
-     *                                   that key — a re-fired event is a no-op.
+     *                                  "order.paid:MP2606…"). When given, each
+     *                                  subscription is delivered at most once for
+     *                                  that key — a re-fired event is a no-op.
      */
     public function dispatch(string $event, array $payload, ?int $storeId = null, ?string $dedupeKey = null): void
     {
         foreach (WebhookSubscription::listeningFor($event, $storeId) as $subscription) {
-            // Atomic claim on the unique (subscription, key) index — 0 rows
-            // inserted means this event was already delivered to this subscriber.
+            // M4: dedupe is checked here but claimed ONLY on a successful
+            // delivery (SendWebhookJob::handle()). Claiming here, before the
+            // job even ran, meant a fully-failed delivery (seller endpoint
+            // down for all retries) left the row in place forever and the
+            // event was silently lost with no way to ever redeliver it.
             if ($dedupeKey !== null) {
-                $claimed = WebhookDelivery::query()->insertOrIgnore([
-                    'webhook_subscription_id' => $subscription->id,
-                    'dedupe_key' => $dedupeKey,
-                    'created_at' => now(),
-                ]);
+                $alreadyDelivered = WebhookDelivery::query()
+                    ->where('webhook_subscription_id', $subscription->id)
+                    ->where('dedupe_key', $dedupeKey)
+                    ->exists();
 
-                if ($claimed === 0) {
+                if ($alreadyDelivered) {
                     continue;
                 }
             }
 
-            SendWebhookJob::dispatch($subscription->url, $subscription->secret, $event, $payload, $dedupeKey);
+            SendWebhookJob::dispatch($subscription->id, $subscription->url, $subscription->secret, $event, $payload, $dedupeKey);
         }
     }
 }

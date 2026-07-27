@@ -115,6 +115,37 @@ test('stacked item vouchers over 100% never discount shipping or tax', function 
         ->and($order->grand_total_sen)->toBe(3000);        // shipping only
 });
 
+test('AL-L1: the same shop free-shipping code in both the shop and shipping slots burns quota exactly once', function () {
+    [$buyer, $address] = stackBuyer();
+
+    $product = Product::factory()->create(['cod_enabled' => true]);
+    $product->store->update(['shipping_mode' => 'flat', 'shipping_flat_fee_sen' => 700, 'free_shipping_over_sen' => null]);
+    $product->variants->first()->update(['price_sen' => 10000, 'sale_price_sen' => null, 'stock' => 10]);
+
+    // A shop-scope free-shipping voucher: Checkout.php has no #[Locked] on
+    // appliedShopCode/appliedShippingCode, so a buyer (or a scripted client)
+    // can set the SAME code into both slots. $shopCode validates it under
+    // scope=Shop; $shippingCode validates with scope=null, and
+    // VoucherService::lookup() resolves the identical row either way.
+    $voucher = Voucher::create([
+        'scope' => VoucherScope::Shop, 'store_id' => $product->store_id, 'code' => 'DUPSHIP', 'type' => VoucherType::FreeShipping,
+        'quota' => 5, 'per_user_limit' => 1, 'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'is_active' => true,
+    ]);
+
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+
+    $order = app(CheckoutService::class)->place(
+        $buyer, $address, PaymentMethod::Cod, null, 'DUPSHIP', [], 'DUPSHIP',
+    );
+
+    // Buyer gain is bounded either way (shipping is only waived once — the
+    // fee-waiver loop already skips an already-zeroed fee) — what must not
+    // double-count is the QUOTA / per-user-limit accounting.
+    expect($order->shipping_total_sen)->toBe(0)
+        ->and($voucher->fresh()->used_count)->toBe(1)
+        ->and($voucher->usages()->count())->toBe(1);
+});
+
 test('a non-free-shipping voucher is rejected from the free-shipping slot', function () {
     [$buyer, $address] = stackBuyer();
     $product = Product::factory()->create(['cod_enabled' => true]);

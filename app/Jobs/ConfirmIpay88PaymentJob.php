@@ -22,6 +22,19 @@ class ConfirmIpay88PaymentJob implements ShouldQueue
 {
     use Queueable;
 
+    /**
+     * M3: iPay88 retries the BackendURL callback, and a transient requery
+     * network error must recover on its own rather than strand the payment
+     * in Pending awaiting manual review. failed() logs loudly once every
+     * attempt is exhausted.
+     */
+    public int $tries = 5;
+
+    public function backoff(): array
+    {
+        return [10, 30, 120, 600];
+    }
+
     public function __construct(
         public Payment $payment,
         public array $callbackPayload = [],
@@ -31,30 +44,41 @@ class ConfirmIpay88PaymentJob implements ShouldQueue
 
     public function handle(Ipay88Service $ipay88, SubOrderStatusService $statusService): void
     {
-        $payment = $this->payment->fresh();
-
-        if ($payment->status === GatewayPaymentStatus::Success) {
-            return; // idempotent — already confirmed
-        }
+        // The requery HTTP round-trip happens OUTSIDE the row lock below —
+        // holding a row lock across a network call would stall any concurrent
+        // callback for the whole request timeout instead of just no-op'ing.
+        $refNo = $this->payment->ref_no;
+        $amountSen = $this->payment->amount_sen;
 
         // Mock/simulator mode (no merchant code configured): skip the real
         // requery and treat as settled, so preview checkouts can complete.
         $requeryResult = $ipay88->isMock()
             ? '00'
-            : $ipay88->requery($payment->ref_no, $payment->amount_sen);
+            : $ipay88->requery($refNo, $amountSen);
 
-        if ($requeryResult !== '00') {
-            $payment->update(['requery_result' => $requeryResult]);
-            Log::error('iPay88 requery mismatch — payment left pending for admin review.', [
-                'payment_id' => $payment->id,
-                'ref_no' => $payment->ref_no,
-                'requery_result' => $requeryResult,
-            ]);
+        // M2: re-check status AND apply the outcome inside one locked
+        // transaction. iPay88 retries the BackendURL callback, so two
+        // near-simultaneous callbacks can each have passed the pre-requery
+        // check before either commits — the lock + re-read here makes the
+        // second one a clean no-op instead of a duplicate fulfilment.
+        $order = DB::transaction(function () use ($requeryResult, $statusService) {
+            $payment = Payment::whereKey($this->payment->id)->lockForUpdate()->first();
 
-            return;
-        }
+            if ($payment->status === GatewayPaymentStatus::Success) {
+                return null; // idempotent — already confirmed by a concurrent callback
+            }
 
-        DB::transaction(function () use ($payment, $statusService) {
+            if ($requeryResult !== '00') {
+                $payment->update(['requery_result' => $requeryResult]);
+                Log::error('iPay88 requery mismatch — payment left pending for admin review.', [
+                    'payment_id' => $payment->id,
+                    'ref_no' => $payment->ref_no,
+                    'requery_result' => $requeryResult,
+                ]);
+
+                return null;
+            }
+
             $payment->update([
                 'status' => GatewayPaymentStatus::Success,
                 'requery_result' => '00',
@@ -79,9 +103,24 @@ class ConfirmIpay88PaymentJob implements ShouldQueue
                     $statusService->transition($subOrder, SubOrderStatus::Confirmed, ActorType::System);
                 }
             }
+
+            return $order;
         });
 
-        // After commit: trigger e-invoicing (and any other post-payment work).
-        OrderPaid::dispatch($payment->order->fresh());
+        // After commit: trigger e-invoicing (and any other post-payment
+        // work) only for the callback that actually performed the fulfilment.
+        if ($order !== null) {
+            OrderPaid::dispatch($order->fresh());
+        }
+    }
+
+    /** M3: every retry is exhausted — the buyer paid, but this needs a human now. */
+    public function failed(?\Throwable $exception): void
+    {
+        Log::error('ConfirmIpay88PaymentJob permanently failed after all retries — payment needs manual admin review.', [
+            'payment_id' => $this->payment->id,
+            'ref_no' => $this->payment->ref_no,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

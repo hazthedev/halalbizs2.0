@@ -167,9 +167,16 @@ return [
     | to the server if the browser has a HTTPS connection. This will keep
     | the cookie from being sent to you when it can't be done securely.
     |
+    | AL-C11: SESSION_SECURE_COOKIE previously defaulted to null (false) with
+    | no production guidance and HSTS also not shipping — nothing forced the
+    | auth cookie off plaintext HTTP. Default is now environment-aware
+    | instead of hardcoded true (which would break local http Herd dev):
+    | true unless APP_ENV is local/testing, still overridable via the env var
+    | (e.g. force it off if the production host somehow isn't HTTPS).
+    |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env('SESSION_SECURE_COOKIE', ! in_array(env('APP_ENV', 'production'), ['local', 'testing'], true)),
 
     /*
     |--------------------------------------------------------------------------

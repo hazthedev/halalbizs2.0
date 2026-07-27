@@ -15,6 +15,7 @@ use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\VoucherService;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Database\QueryException;
 use Livewire\Livewire;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
@@ -396,4 +397,36 @@ test('the picker shows an unmet minimum as how far away you are', function () {
         ->set('voucherPanelOpen', true)
         ->assertSee('BIGMIN')
         ->assertSee('Add RM 50.00 more to use this voucher.');
+});
+
+/*
+|--------------------------------------------------------------------------
+| M7 (audit 2026-07-27) — platform-voucher code uniqueness
+|--------------------------------------------------------------------------
+| vouchers.unique(['store_id', 'code']) never dedupes platform vouchers
+| because store_id is NULL for them and SQL treats NULLs as distinct — two
+| platform vouchers could share a code and VoucherService::lookup() (which
+| fetches candidates and picks first()) would resolve whichever one it felt
+| like. The migration backs a generated `platform_code` column (non-null
+| only when scope='platform') with a real unique index, on both SQLite and
+| MySQL, so a second platform voucher with an existing code now fails at
+| the DB layer instead of silently coexisting.
+*/
+test('a second platform voucher cannot reuse an existing platform code', function () {
+    voucherTestVoucher(['code' => 'DUPCODE']);
+
+    expect(fn () => voucherTestVoucher(['code' => 'DUPCODE']))
+        ->toThrow(QueryException::class);
+
+    expect(Voucher::where('code', 'DUPCODE')->count())->toBe(1);
+});
+
+test('a shop voucher may still reuse a code already used by a platform voucher', function () {
+    voucherTestVoucher(['code' => 'SHARED']);
+    $store = Store::factory()->approved()->create();
+
+    $shopVoucher = voucherTestVoucher(['scope' => VoucherScope::Shop, 'store_id' => $store->id, 'code' => 'SHARED']);
+
+    expect($shopVoucher->id)->not->toBeNull()
+        ->and(Voucher::where('code', 'SHARED')->count())->toBe(2);
 });

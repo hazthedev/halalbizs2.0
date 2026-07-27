@@ -33,6 +33,7 @@ class AdminAlertObserver
             $this->alertAdmins(
                 __('New seller application — :store', ['store' => $model->name]),
                 route('admin.sellers.applications'),
+                'sellers.manage',
             );
         }
 
@@ -43,6 +44,7 @@ class AdminAlertObserver
                     'amount' => Money::format($model->amount_sen),
                 ]),
                 route('admin.finance.payouts'),
+                'finance.manage',
             );
         }
     }
@@ -58,6 +60,7 @@ class AdminAlertObserver
                     'no' => $model->subOrder?->sub_order_no ?? "#{$model->id}",
                 ]),
                 route('admin.orders.returns'),
+                'orders.manage',
             );
         }
 
@@ -67,15 +70,30 @@ class AdminAlertObserver
             $this->alertAdmins(
                 __('iPay88 signature mismatch — :ref', ['ref' => $model->ref_no ?? "payment #{$model->id}"]),
                 route('admin.payments.index'),
+                // admin.payments.index sits in the orders.manage route group
+                // (routes/admin.php), not finance.manage — gate on the
+                // permission the route actually requires.
+                'orders.manage',
             );
         }
     }
 
-    private function alertAdmins(string $message, string $url): void
+    /**
+     * Notify only admins who hold the permission the linked admin route
+     * actually requires — an alert body carries the payload (e.g. the
+     * payout ringgit amount), so a CMS-only admin must not read it in
+     * their bell just because they carry the bare `admin` role. A
+     * superadmin has no direct permissions but passes every check via
+     * Gate::before, so $user->can() still lets them through.
+     */
+    private function alertAdmins(string $message, string $url, string $permission): void
     {
         // whereHas (not User::role()) — the role scope throws when the
         // 'admin' role hasn't been seeded yet (fresh installs, tests).
-        $admins = User::whereHas('roles', fn ($query) => $query->where('name', 'admin'))->get();
+        $admins = User::whereHas('roles', fn ($query) => $query->where('name', 'admin'))
+            ->get()
+            ->filter(fn (User $user) => $user->can($permission))
+            ->values();
 
         if ($admins->isNotEmpty()) {
             Notification::send($admins, new AdminAlertNotification($message, $url));

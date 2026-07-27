@@ -19,16 +19,20 @@ use Illuminate\Support\Facades\Route;
 
 // ===== Store subdomains ({slug}.halalbizs2.0.test) =====
 // Registered FIRST: the plain '/' route below has no host constraint and
-// would otherwise swallow subdomain requests.
-Route::domain('{store:slug}.'.config('app.store_subdomain_base'))->group(function () {
-    Route::get('/', Storefront\StorePage::class)->name('store.subdomain');
-});
+// would otherwise swallow subdomain requests. Skipped entirely when no base
+// domain can be resolved (AL-C10) — registering `Route::domain('{store:slug}.')`
+// with an empty base would be a broken/ambiguous host constraint.
+if (config('app.store_subdomain_base')) {
+    Route::domain('{store:slug}.'.config('app.store_subdomain_base'))->group(function () {
+        Route::get('/', Storefront\StorePage::class)->name('store.subdomain');
+    });
+}
 
 // ===== Storefront =====
 Route::get('/', Storefront\Home::class)->name('home');
 Route::get('/c/{category:slug}', Storefront\Listing::class)->name('category.show');
-Route::get('/search', Storefront\Listing::class)->name('search');
-Route::get('/search/visual', Storefront\VisualSearch::class)->name('search.visual');
+Route::get('/search', Storefront\Listing::class)->middleware('throttle:60,1')->name('search');
+Route::get('/search/visual', Storefront\VisualSearch::class)->middleware('throttle:10,1')->name('search.visual');
 Route::get('/p/{product:slug}', Storefront\ProductDetail::class)->name('product.show');
 Route::get('/s/{store:slug}', Storefront\StorePage::class)->name('store.show');
 Route::get('/cart', Storefront\CartPage::class)->name('cart');
@@ -40,9 +44,9 @@ Route::get('/page/{slug}', Storefront\StaticPage::class)->name('page.show');
 Route::get('/welcome', Storefront\Landing::class)->name('landing');
 
 // ===== Preferences & newsletter =====
-Route::post('/preferences/locale', [PreferenceController::class, 'locale'])->name('preferences.locale');
-Route::post('/preferences/currency', [PreferenceController::class, 'currency'])->name('preferences.currency');
-Route::post('/newsletter', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::post('/preferences/locale', [PreferenceController::class, 'locale'])->middleware('throttle:30,1')->name('preferences.locale');
+Route::post('/preferences/currency', [PreferenceController::class, 'currency'])->middleware('throttle:30,1')->name('preferences.currency');
+Route::post('/newsletter', [NewsletterController::class, 'subscribe'])->middleware('throttle:10,1')->name('newsletter.subscribe');
 
 // ===== Auth =====
 Route::middleware('guest')->group(function () {
@@ -108,7 +112,7 @@ Route::post('/payments/ipay88/backend', [Ipay88Controller::class, 'backend'])->n
 Route::post('/shipping/easyparcel/tracking', [EasyParcelWebhookController::class, 'tracking'])->name('shipping.easyparcel.tracking');
 
 // ===== Affiliate share links (M2.5) =====
-Route::get('/r/{code}', [AffiliateReferralController::class, 'refer'])->name('affiliate.refer');
+Route::get('/r/{code}', [AffiliateReferralController::class, 'refer'])->middleware('throttle:60,1')->name('affiliate.refer');
 
 // ===== Help center =====
 Route::get('/help', Storefront\Help\Index::class)->name('help.index');

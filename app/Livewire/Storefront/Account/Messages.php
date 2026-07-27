@@ -138,7 +138,26 @@ class Messages extends Component
     public function render()
     {
         return view('livewire.storefront.account.messages', [
-            'contextProduct' => $this->contextProductId !== null ? Product::with('media')->find($this->contextProductId) : null,
+            'contextProduct' => $this->scopedContextProduct(),
         ])->title(__('Messages'));
+    }
+
+    /**
+     * The context chip's product, scoped the same way send() scopes it
+     * (AL-L4): a live product belonging to the active conversation's store.
+     * $contextProductId is client-mutable, so an unscoped find() here would
+     * render any product's name/image — including unpublished ones.
+     */
+    private function scopedContextProduct(): ?Product
+    {
+        if ($this->contextProductId === null || $this->activeConversation === null) {
+            return null;
+        }
+
+        return Product::query()
+            ->live()
+            ->where('store_id', $this->activeConversation->store_id)
+            ->with('media')
+            ->find($this->contextProductId);
     }
 }

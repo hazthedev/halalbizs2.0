@@ -39,23 +39,32 @@ class RefundService
         ?string $reference = null,
         bool $markRefunded = true,
     ): void {
-        $total = (int) $subOrder->total_sen;
+        DB::transaction(function () use ($subOrder, $amountSen, $actor, $actorId, $reference, $markRefunded) {
+            // H1 fix: re-fetch the sub-order under lockForUpdate FIRST, and
+            // recompute the cap from THIS locked row. Two concurrent refunds
+            // (admin double-click, or a manual refund racing an automated one)
+            // must not both read refunded_sen=0, both pass the cap, and both
+            // refund/increment — the previous code read the cap before the
+            // transaction even opened, so neither refund ever saw the other's
+            // write. Every subsequent read below uses this locked instance.
+            $subOrder = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->first();
 
-        // Idempotency + partial cap: this sub-order can only ever refund up to its
-        // own total, cumulatively. A repeated (or racing) call with nothing left
-        // to refund is a no-op — the previous code re-ran the whole reversal every
-        // call and drove refunded_sen past what was charged.
-        $alreadyRefunded = (int) $subOrder->refunded_sen;
-        $sellerRefundable = max(0, $total - $alreadyRefunded);
-        $amountSen = max(0, min($amountSen, $sellerRefundable));
+            $total = (int) $subOrder->total_sen;
 
-        if ($amountSen <= 0) {
-            return;
-        }
+            // Idempotency + partial cap: this sub-order can only ever refund up to
+            // its own total, cumulatively. A repeated (or racing) call with nothing
+            // left to refund is a no-op — the previous code re-ran the whole
+            // reversal every call and drove refunded_sen past what was charged.
+            $alreadyRefunded = (int) $subOrder->refunded_sen;
+            $sellerRefundable = max(0, $total - $alreadyRefunded);
+            $amountSen = max(0, min($amountSen, $sellerRefundable));
 
-        $online = $subOrder->order->payment_method === PaymentMethod::Ipay88;
+            if ($amountSen <= 0) {
+                return;
+            }
 
-        DB::transaction(function () use ($subOrder, $amountSen, $actor, $actorId, $reference, $markRefunded, $online, $total, $alreadyRefunded) {
+            $online = $subOrder->order->payment_method === PaymentMethod::Ipay88;
+
             // 1. Ledger reversal — only once the sale was booked (completed). The
             //    seller was credited the full sub-order total, so this side reverses
             //    the sub-order amount (per-sub-order), commission scaled in exact
