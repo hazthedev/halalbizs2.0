@@ -285,10 +285,21 @@ class Profile extends Component
             'logout_others_password.current_password' => __('That doesn\'t match your current password — try again.'),
         ]);
 
+        $user = auth()->user();
+
         Auth::logoutOtherDevices($this->logout_others_password);
 
+        // Deleting the other session ROWS is not enough on its own: a device
+        // that logged in with "Keep me logged in" carries a remember-me cookie
+        // and would silently re-authenticate from it on its next request. Cycle
+        // the remember token so EVERY existing remember cookie (all devices) is
+        // dead. This device stays logged in through its own active session; its
+        // now-stale remember cookie only matters after that session expires, at
+        // which point a fresh login is the safer outcome anyway.
+        $user->forceFill(['remember_token' => Str::random(60)])->save();
+
         DB::table(config('session.table', 'sessions'))
-            ->where('user_id', auth()->id())
+            ->where('user_id', $user->id)
             ->where('id', '!=', session()->getId())
             ->delete();
 
