@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Storefront\Auth;
 
+use App\Enums\AuthContext;
 use App\Enums\TwoFactorMethod;
 use App\Services\CartService;
 use App\Services\DeviceGuard;
@@ -24,6 +25,14 @@ class Login extends Component
     public bool $remember = false;
 
     public ?string $turnstileToken = null;
+
+    /** Which door this login was reached through — reframes copy + landing only. */
+    public string $context = '';
+
+    public function mount(string $context = 'storefront'): void
+    {
+        $this->context = AuthContext::fromValue($context)->value;
+    }
 
     public function login(): void
     {
@@ -78,6 +87,9 @@ class Login extends Component
             session()->put([
                 'two_factor:user_id' => $user->id,
                 'two_factor:remember' => $this->remember,
+                // Carry the entry context across the challenge redirect so the
+                // landing after 2FA matches the door they came through.
+                'two_factor:context' => $this->context,
             ]);
 
             if ($user->two_factor_method === TwoFactorMethod::Email) {
@@ -98,7 +110,7 @@ class Login extends Component
 
         // Role-aware: a stale intended URL must not walk an admin into the
         // seller application (or any section they can't enter).
-        $this->redirect(PostLoginRedirect::url($user), navigate: true);
+        $this->redirect(PostLoginRedirect::url($user, AuthContext::fromValue($this->context)), navigate: true);
     }
 
     private function throttleKey(): string
@@ -108,6 +120,8 @@ class Login extends Component
 
     public function render()
     {
-        return view('livewire.storefront.auth.login')->title(__('Log in'));
+        return view('livewire.storefront.auth.login', [
+            'ctx' => AuthContext::fromValue($this->context),
+        ])->title(AuthContext::fromValue($this->context)->loginTitle());
     }
 }

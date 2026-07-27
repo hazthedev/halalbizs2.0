@@ -28,7 +28,7 @@ function sellersAdmin(): User
 }
 
 test('guests are redirected and non-admins get 403 on admin seller routes', function () {
-    $this->get(route('admin.sellers.applications'))->assertRedirect(route('login'));
+    $this->get(route('admin.sellers.applications'))->assertRedirect(route('admin.login'));
 
     $buyer = User::factory()->create();
     $buyer->assignRole('buyer');
@@ -146,7 +146,7 @@ test('KYC documents live on the private disk and only an admin can download them
     $url = route('admin.sellers.documents.show', $doc);
 
     // Guest → login; buyer → 403; admin (sellers.manage) → streams the file.
-    $this->get($url)->assertRedirect(route('login'));
+    $this->get($url)->assertRedirect(route('admin.login'));
 
     $buyer = User::factory()->create();
     $buyer->assignRole('buyer');

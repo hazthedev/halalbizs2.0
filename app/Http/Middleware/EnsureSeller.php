@@ -17,7 +17,7 @@ class EnsureSeller
         $user = $request->user();
 
         if ($user === null) {
-            return redirect()->guest(route('login'));
+            return redirect()->guest(route('seller.login'));
         }
 
         $store = $user->store;

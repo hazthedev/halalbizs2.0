@@ -22,7 +22,7 @@ function buyersAdmin(): User
 }
 
 test('guests are redirected and non-admins get 403 on the buyers screens', function () {
-    $this->get(route('admin.buyers.index'))->assertRedirect(route('login'));
+    $this->get(route('admin.buyers.index'))->assertRedirect(route('admin.login'));
 
     $buyer = User::factory()->create();
     $buyer->assignRole('buyer');

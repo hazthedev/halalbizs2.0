@@ -1,6 +1,8 @@
 <div class="mx-auto w-full max-w-md px-4 py-12 sm:py-16">
     <x-ui.card class="p-6 sm:p-8">
-        <x-ui.section-heading as="h1" :title="__('Create account')" :subtitle="__('A few details and you\'re ready to shop.')" />
+        <x-ui.section-heading as="h1"
+            :title="$ctx === \App\Enums\AuthContext::Seller ? __('Open your shop') : __('Create account')"
+            :subtitle="$ctx === \App\Enums\AuthContext::Seller ? __('Create your account first — then tell us about your shop.') : __('A few details and you\'re ready to shop.')" />
 
         <form wire:submit="register" class="mt-6 space-y-4">
             <x-ui.input
@@ -77,13 +79,15 @@
             </x-ui.button>
         </form>
 
-        <div class="mt-5">
-            <x-google-button />
-        </div>
+        @if ($ctx === \App\Enums\AuthContext::Storefront)
+            <div class="mt-5">
+                <x-google-button />
+            </div>
+        @endif
 
         <p class="mt-6 border-t border-line pt-5 text-center text-sm text-ink-soft">
             {{ __('Already have an account?') }}
-            <a href="{{ route('login') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Log in') }}</a>
+            <a href="{{ $ctx === \App\Enums\AuthContext::Seller ? route('seller.login') : route('login') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Log in') }}</a>
         </p>
     </x-ui.card>
 </div>

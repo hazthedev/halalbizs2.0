@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Enums\AuthContext;
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -20,8 +21,15 @@ use Illuminate\Support\Str;
  */
 class PostLoginRedirect
 {
-    /** Resolve the post-auth destination, consuming `url.intended`. */
-    public static function url(User $user): string
+    /**
+     * Resolve the post-auth destination, consuming `url.intended`.
+     *
+     * $context is the door the user came through (a /seller/login vs /admin/login
+     * vs plain /login). It only influences the fallback when no legitimate
+     * intended URL survived — and only when the user actually holds that hat, so
+     * it can never grant a landing a role check wouldn't.
+     */
+    public static function url(User $user, ?AuthContext $context = null): string
     {
         $intended = session()->pull('url.intended');
 
@@ -29,7 +37,27 @@ class PostLoginRedirect
             return $intended;
         }
 
+        if ($context !== null && ($contextHome = self::contextHome($user, $context)) !== null) {
+            return $contextHome;
+        }
+
         return self::home($user);
+    }
+
+    /** The context's preferred landing, but only if this user may enter it. */
+    private static function contextHome(User $user, AuthContext $context): ?string
+    {
+        $route = $context->homeRoute();
+
+        if ($route === null) {
+            return null;
+        }
+
+        // Reuse the same gate as an intended URL into that section — a buyer who
+        // opened /seller/login still can't be dropped into the Seller Centre.
+        return self::mayVisit($user, '/'.$context->value)
+            ? route($route)
+            : null;
     }
 
     /**

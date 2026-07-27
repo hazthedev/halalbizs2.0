@@ -13,7 +13,7 @@ class EnsureAdmin
         $user = $request->user();
 
         if ($user === null) {
-            return redirect()->guest(route('login'));
+            return redirect()->guest(route('admin.login'));
         }
 
         abort_unless($user->hasRole('admin'), 403);

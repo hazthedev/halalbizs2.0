@@ -50,6 +50,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', Storefront\Auth\Register::class)->name('register');
     Route::get('/forgot-password', Storefront\Auth\ForgotPassword::class)->name('password.request');
     Route::get('/reset-password/{token}', Storefront\Auth\ResetPassword::class)->name('password.reset');
+
+    // Branded entrances. Same components; `context` only reframes copy + landing
+    // (App\Enums\AuthContext) and grants no privilege. Admin is login-only by
+    // design — accounts are minted in Staff & roles, never self-registered.
+    Route::get('/seller/login', Storefront\Auth\Login::class)->defaults('context', 'seller')->name('seller.login');
+    Route::get('/seller/register', Storefront\Auth\Register::class)->defaults('context', 'seller')->name('seller.register');
+    Route::get('/admin/login', Storefront\Auth\Login::class)->defaults('context', 'admin')->name('admin.login');
 });
 
 Route::middleware('auth')->group(function () {
@@ -58,7 +65,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/verify-email/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
 
-        return redirect()->route('home');
+        // Honour a parked destination (e.g. a seller signup heading to the
+        // application) before falling back to the storefront.
+        return redirect()->intended(route('home'));
     })->middleware('signed')->name('verification.verify');
 
     Route::post('/logout', function (Request $request) {
