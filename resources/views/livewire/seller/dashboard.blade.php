@@ -84,7 +84,10 @@
         <dl class="flex flex-wrap items-center gap-x-6 gap-y-1 text-[13px]">
             <div class="flex items-baseline gap-1.5">
                 <dt class="text-ink-soft">{{ __('Available balance') }}</dt>
-                <dd class="font-mono font-semibold tabular-nums text-emerald">@money($earnings['available'])</dd>
+                {{-- A negative balance is an amount OWED (COD commission, or a
+                     refund on an order already paid out). Emerald is the money
+                     colour, so showing a debt in it reads as earnings. --}}
+                <dd class="font-mono font-semibold tabular-nums {{ $earnings['available'] < 0 ? 'text-danger' : 'text-emerald' }}">@money($earnings['available'])</dd>
             </div>
             <div class="flex items-baseline gap-1.5">
                 <dt class="text-ink-soft">{{ __('Gross (period)') }}</dt>
