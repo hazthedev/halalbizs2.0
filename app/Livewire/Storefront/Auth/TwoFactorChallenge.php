@@ -18,7 +18,7 @@ use Livewire\Component;
  * the session ('two_factor:user_id') and stays a guest until the code
  * (email / TOTP / recovery) checks out.
  */
-#[Layout('layouts.storefront')]
+#[Layout('layouts.landing', ['variant' => 'light'])]
 class TwoFactorChallenge extends Component
 {
     public string $code = '';

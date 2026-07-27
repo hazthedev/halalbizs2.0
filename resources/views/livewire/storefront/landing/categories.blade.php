@@ -25,7 +25,7 @@
                 @foreach ($categories as $category)
                     @php $categoryName = $category->getTranslation('name', app()->getLocale()); @endphp
                     <a href="{{ route('category.show', $category->slug) }}" wire:navigate data-motion="item"
-                       class="lantern-card group flex w-[calc(50%-0.5rem)] flex-col items-center gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-center shadow-soft sm:w-44">
+                       class="lantern-card spot-card group flex w-[calc(50%-0.5rem)] flex-col items-center gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-center shadow-soft sm:w-44">
                         <span class="flex size-11 items-center justify-center rounded-full bg-brass-tint text-brass">
                             <x-ui.star-mark :size="22" />
                         </span>

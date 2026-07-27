@@ -61,6 +61,18 @@ test('cancelling a sub-order writes a Restock movement back to the original bala
         ->and($variant->fresh()->stock)->toBe(10);
 });
 
+test('a decrement larger than the balance throws and leaves stock untouched (oversell floor)', function () {
+    $product = Product::factory()->create();
+    $variant = $product->variants->first();
+    $variant->update(['stock' => 1]);
+
+    expect(fn () => app(App\Services\StockService::class)->apply($variant, -5, StockMovementType::Sale, 'oversell'))
+        ->toThrow(RuntimeException::class);
+
+    expect($variant->fresh()->stock)->toBe(1) // never went negative
+        ->and(StockMovement::where('product_variant_id', $variant->id)->count())->toBe(0); // no movement written
+});
+
 test('the low-stock scope respects per-variant thresholds and the default', function () {
     $product = Product::factory()->create();
     $variant = $product->variants->first();

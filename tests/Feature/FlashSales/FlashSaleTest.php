@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ActorType;
 use App\Enums\PaymentMethod;
 use App\Livewire\Admin\Content\FlashSales;
 use App\Models\Address;
@@ -11,6 +12,7 @@ use App\Models\User;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\FlashSaleService;
+use App\Services\OrderService;
 use Database\Seeders\RoleSeeder;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
@@ -83,6 +85,48 @@ test('a line over the per-buyer limit pays the normal price and consumes no allo
 
     expect($order->subOrders->first()->items->first()->unit_price_sen)->toBe(10000)
         ->and($item->fresh()->sold_qty)->toBe(0);
+});
+
+test('the per-buyer limit is cumulative across orders, not per order', function () {
+    [$buyer, $address] = flashBuyer();
+    $variant = flashProduct(10000);
+    $item = liveFlash($variant, 6000, 10, perBuyer: 1); // limit 1 per buyer, plenty of allocation
+
+    // Order 1: qty 1 → promo, consumes the buyer's single allowance.
+    app(CartService::class)->addItem($buyer, $variant, 1);
+    $o1 = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+    expect($o1->subOrders->first()->items->first()->unit_price_sen)->toBe(6000);
+
+    // Order 2 (a second, separate order): the buyer is already at their limit →
+    // normal price, no further allocation consumed.
+    app(CartService::class)->addItem($buyer, $variant, 1);
+    $o2 = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    expect($o2->subOrders->first()->items->first()->unit_price_sen)->toBe(10000)
+        ->and($item->fresh()->sold_qty)->toBe(1); // only order 1 consumed allocation
+});
+
+test('cancelling an order releases its flash allocation (and frees the buyer limit)', function () {
+    [$buyer, $address] = flashBuyer();
+    $variant = flashProduct(10000);
+    $item = liveFlash($variant, 6000, 10, perBuyer: 5);
+
+    app(CartService::class)->addItem($buyer, $variant, 2);
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+    $subOrder = $order->subOrders->first();
+
+    expect($item->fresh()->sold_qty)->toBe(2);
+
+    app(OrderService::class)->cancel($subOrder, ActorType::System);
+
+    expect($item->fresh()->sold_qty)->toBe(0); // allocation released, not permanently burned
+
+    // The cancelled purchase no longer counts against the per-buyer limit — the
+    // buyer can claim the deal again at the promo price.
+    app(CartService::class)->addItem($buyer, $variant, 1);
+    $again = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+    expect($again->subOrders->first()->items->first()->unit_price_sen)->toBe(6000)
+        ->and($item->fresh()->sold_qty)->toBe(1);
 });
 
 test('an ended flash sale does not apply', function () {

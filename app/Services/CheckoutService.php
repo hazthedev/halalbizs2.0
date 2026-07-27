@@ -194,8 +194,14 @@ class CheckoutService
                         // the normal price (and no allocation is consumed).
                         $line->groupMembership = null;
                         $flashItem = $flashItems->get($line->variant->id);
+                        // per_buyer_limit is CUMULATIVE across the buyer's orders,
+                        // not per-order — otherwise splitting into N orders repeats
+                        // the promo indefinitely.
+                        $priorFlashQty = $flashItem !== null
+                            ? $this->flash->buyerPurchasedQty($flashItem, $buyer)
+                            : 0;
                         $useFlash = $flashItem !== null
-                            && $line->qty <= $flashItem->per_buyer_limit
+                            && ($priorFlashQty + $line->qty) <= $flashItem->per_buyer_limit
                             && $flashItem->remaining() >= $line->qty;
                         $line->flashItem = $useFlash ? $flashItem : null;
                         $line->unitPriceSen = $useFlash ? $flashItem->promo_price_sen : $line->variant->effectivePriceSen();
@@ -278,8 +284,19 @@ class CheckoutService
 
             // Platform share lives at order level (discount_total_sen); the
             // shop discount lands on its sub-order's shop_discount_sen below.
-            $discountTotalSen = min($platformDiscount?->totalDiscountSen ?? 0, $subtotalSen);
             $shopDiscountTotalSen = $shopDiscount?->totalDiscountSen ?? 0;
+
+            // The COMBINED item discount can never exceed the items subtotal —
+            // each voucher is only capped to its OWN basis, so a stacked
+            // platform% + shop% could otherwise spill past 100% of the
+            // merchandise and start discounting shipping + tax (money the buyer
+            // still owes). The seller-funded shop voucher (already capped to its
+            // store) is honoured in full; the platform share yields to the room
+            // that leaves.
+            $discountTotalSen = min(
+                $platformDiscount?->totalDiscountSen ?? 0,
+                max(0, $subtotalSen - $shopDiscountTotalSen),
+            );
 
             foreach ([$platformDiscount, $shopDiscount, $shippingDiscount] as $discount) {
                 $discount?->voucher->increment('used_count');
@@ -409,6 +426,7 @@ class CheckoutService
                         'product_id' => $variant->product_id,
                         'product_variant_id' => $variant->id,
                         'group_buy_id' => $line->groupMembership?->team->group_buy_id,
+                        'flash_sale_item_id' => $line->flashItem?->id,
                         'product_name' => $variant->product->getTranslation('name', app()->getLocale())
                             ?: $variant->product->getTranslation('name', 'en'),
                         'variant_label' => $variant->options_label,

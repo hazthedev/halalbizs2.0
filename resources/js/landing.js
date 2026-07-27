@@ -112,7 +112,13 @@ function heroEntrance(hero) {
         }, 90);
     }
     if (subcopy) {
-        tl.add(subcopy, { opacity: [0, 1], ...(REDUCED ? {} : { translateY: [28, 0] }), duration: dur }, 320);
+        // Blur-in (React Bits "Blur Text", ported): sharpens as it rises.
+        // Filter is dropped under reduced motion along with the rise.
+        tl.add(subcopy, {
+            opacity: [0, 1],
+            ...(REDUCED ? {} : { translateY: [28, 0], filter: ['blur(8px)', 'blur(0px)'] }),
+            duration: dur,
+        }, 320);
     }
     if (ctaRow) {
         tl.add(ctaRow, { opacity: [0, 1], ...(REDUCED ? {} : { translateY: [26, 0], scale: [0.97, 1] }), duration: dur }, 480);
@@ -273,6 +279,20 @@ function init() {
         countUps();
     });
 }
+
+// ── Spotlight cards ──
+// Feeds --spot-x/--spot-y to .spot-card elements (see app.css) from ONE
+// delegated listener installed at module load: no per-init teardown needed
+// (scope.revert() only tracks anime objects), negligible cost on non-landing
+// pages (the closest() check fails immediately), and it works regardless of
+// reduced motion — pointer-following glow is input feedback, not animation.
+document.addEventListener('pointermove', (e) => {
+    const card = e.target.closest?.('.spot-card');
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--spot-x', `${e.clientX - r.left}px`);
+    card.style.setProperty('--spot-y', `${e.clientY - r.top}px`);
+});
 
 document.addEventListener('livewire:navigated', init);
 init();

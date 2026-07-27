@@ -338,3 +338,57 @@
         transform: translateY(-2px);
     }
 }
+
+/* Headline brass glint (React Bits "Shiny Text", ported to pure CSS) — a
+   slow sheen band sweeps the hero H1 every ~9s, then rests with the
+   highlight parked OFF the text so the loop restart is invisible and the
+   resting render is identical to plain paper text. Applied only under
+   no-preference: with reduced motion (or clip-to-text unsupported) the
+   class does nothing and the H1 stays ordinary paper-colored text. */
+@media (prefers-reduced-motion: no-preference) {
+    @supports (-webkit-background-clip: text) or (background-clip: text) {
+        .souk-shine {
+            background-image: linear-gradient(105deg,
+                var(--color-paper) 42%,
+                color-mix(in srgb, var(--color-brass) 65%, var(--color-paper)) 50%,
+                var(--color-paper) 58%);
+            background-size: 300% 100%;
+            background-position: 150% 0;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: souk-shine-sweep 9s ease-in-out 2.4s infinite;
+        }
+        @keyframes souk-shine-sweep {
+            0% { background-position: 150% 0; }
+            22% { background-position: -50% 0; }
+            100% { background-position: -50% 0; }
+        }
+    }
+}
+
+/* Spotlight cards (React Bits "Spotlight Card", ported) — a warm brass glow
+   follows the pointer inside trust/category cards; landing.js feeds
+   --spot-x/--spot-y from one delegated pointermove listener. Input-driven
+   hover feedback (opacity transition only), so it is not reduced-motion
+   gated — but it IS hover-gated so touch devices never see it. */
+.spot-card {
+    position: relative;
+    overflow: hidden;
+}
+@media (hover: hover) {
+    .spot-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(240px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+            color-mix(in srgb, var(--color-brass) 20%, transparent),
+            transparent 70%);
+        opacity: 0;
+        transition: opacity var(--dur-standard) var(--ease-standard);
+    }
+    .spot-card:hover::after {
+        opacity: 1;
+    }
+}

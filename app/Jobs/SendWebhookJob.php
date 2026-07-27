@@ -22,6 +22,7 @@ class SendWebhookJob implements ShouldQueue
         public string $secret,
         public string $event,
         public array $payload,
+        public ?string $idempotencyKey = null,
     ) {
         $this->onQueue('webhooks');
     }
@@ -31,9 +32,11 @@ class SendWebhookJob implements ShouldQueue
         $body = json_encode(['event' => $this->event, 'data' => $this->payload], JSON_UNESCAPED_SLASHES);
         $signature = hash_hmac('sha256', $body, $this->secret);
 
-        Http::withHeaders([
+        Http::withHeaders(array_filter([
             'X-Webhook-Event' => $this->event,
             'X-Webhook-Signature' => $signature,
-        ])->withBody($body, 'application/json')->post($this->url);
+            // Lets receivers dedup independently even across our retries.
+            'X-Webhook-Id' => $this->idempotencyKey,
+        ]))->withBody($body, 'application/json')->post($this->url);
     }
 }

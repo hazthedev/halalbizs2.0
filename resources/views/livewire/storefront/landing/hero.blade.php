@@ -80,9 +80,15 @@
             {{ __('Halal-first, always open') }}
         </p>
 
+        {{-- .souk-shine sits on each WORD, not the h1: clip-to-text on the
+             parent does not paint through the transformed inline-block spans
+             (anime's transform residue puts them on their own layer — live
+             bite 2026-07-25, headline rendered invisible). An element's own
+             clipped background always paints its own glyphs. The per-word
+             delay makes the glint travel across the line. --}}
         <h1 class="mt-6 font-display text-[clamp(3rem,8vw,6rem)] font-bold leading-[1.05] tracking-tight">
             @foreach ($heroWords as $word)
-                <span class="inline-block" data-motion="word">{{ $word }}</span>
+                <span class="souk-shine inline-block" data-motion="word" style="animation-delay: {{ 2.4 + $loop->index * 0.15 }}s">{{ $word }}</span>
             @endforeach
         </h1>
 
