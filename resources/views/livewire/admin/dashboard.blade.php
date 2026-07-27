@@ -24,30 +24,30 @@
         @can('finance.manage')
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('GMV (paid)') }}</p>
-            <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">@money($gmvSen)</p>
+            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">@money($gmvSen)</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ $this->periods()[$period] }}</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Commission revenue') }}</p>
-            <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">
+            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">
                 @if ($commissionKnown) @money($commissionSen) @else — @endif
             </p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Completed sub-orders') }} · {{ __('Take-rate') }} {{ number_format($takeRateBp / 100, 2) }}%</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Boost revenue') }}</p>
-            <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">@money($boostRevenueSen)</p>
+            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">@money($boostRevenueSen)</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Paid placements') }}</p>
         </x-ui.card>
         @endcan
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Orders today') }}</p>
-            <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">{{ number_format($ordersToday) }}</p>
+            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">{{ number_format($ordersToday) }}</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Placed since midnight') }}</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('New buyers today') }}</p>
-            <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums">{{ number_format($newBuyersToday) }}</p>
+            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">{{ number_format($newBuyersToday) }}</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Registrations since midnight') }}</p>
         </x-ui.card>
     </div>

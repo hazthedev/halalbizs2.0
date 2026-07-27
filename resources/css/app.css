@@ -103,6 +103,14 @@
     font-feature-settings: 'tnum';
 }
 
+/* hide scrollbars on swipe rails (content still scrolls) */
+@utility no-scrollbar {
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
 /* ── Islamic geometric ornament ──
    Rub-el-Hizb (interlaced-square / khatam) tilings as low-opacity fields.
    Inner attrs single-quoted, '#' → %23 so the data URI is valid CSS. */

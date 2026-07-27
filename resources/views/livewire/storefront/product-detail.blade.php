@@ -3,7 +3,7 @@
     $images = $product->getMedia('images');
     $video = $product->getFirstMedia('videos');
     $variantImage = $variant?->getFirstMediaUrl('image') ?: null;
-    $mainImage = $variantImage ?: $images->first()?->getUrl('card');
+    $mainImage = $variantImage ?: $images->first()?->getAvailableUrl(['card']);
     $canBuy = $variant !== null && $variant->stock > 0;
     $store = $product->store;
 @endphp
@@ -22,7 +22,7 @@
                     @if ($video)
                         <video x-show="showVideo" x-cloak controls preload="none"
                                src="{{ $video->getUrl() }}"
-                               poster="{{ $images->first()?->getUrl('card') }}"
+                               poster="{{ $images->first()?->getAvailableUrl(['card']) }}"
                                aria-label="{{ __('Video of :name', ['name' => $name]) }}"
                                class="size-full object-cover"></video>
                     @endif
@@ -45,7 +45,7 @@
                                     class="relative size-16 shrink-0 overflow-hidden rounded-[var(--radius-control)] border bg-paper"
                                     aria-label="{{ __('Play video of :name', ['name' => $name]) }}">
                                 @if ($images->isNotEmpty())
-                                    <img src="{{ $images->first()->getUrl('thumb') }}" alt="" aria-hidden="true" class="size-full object-cover" loading="lazy">
+                                    <img src="{{ $images->first()->getAvailableUrl(['thumb']) }}" alt="" aria-hidden="true" class="size-full object-cover" loading="lazy">
                                 @endif
                                 <span class="absolute inset-0 flex items-center justify-center bg-ink/40">
                                     <svg class="size-6 text-paper" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72c0 .79.87 1.27 1.54.84l10.06-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14Z"/></svg>
@@ -54,11 +54,11 @@
                         @endif
                         @foreach ($images as $media)
                             <button type="button"
-                                    x-on:click="activeImage = @js($media->getUrl('card')); showVideo = false"
-                                    x-bind:class="! showVideo && activeImage === @js($media->getUrl('card')) ? 'border-emerald' : 'border-line hover:border-line-strong'"
+                                    x-on:click="activeImage = @js($media->getAvailableUrl(['card'])); showVideo = false"
+                                    x-bind:class="! showVideo && activeImage === @js($media->getAvailableUrl(['card'])) ? 'border-emerald' : 'border-line hover:border-line-strong'"
                                     class="size-16 shrink-0 overflow-hidden rounded-[var(--radius-control)] border bg-paper"
                                     aria-label="{{ __('View image :number of :name', ['number' => $loop->iteration, 'name' => $name]) }}">
-                                <img src="{{ $media->getUrl('thumb') }}" alt="{{ $name }}" class="size-full object-cover" loading="lazy">
+                                <img src="{{ $media->getAvailableUrl(['thumb']) }}" alt="{{ $name }}" class="size-full object-cover" loading="lazy">
                             </button>
                         @endforeach
                     </div>
@@ -121,7 +121,7 @@
                                                 wire:click="selectValue({{ $option->id }}, {{ $value->id }})"
                                                 @disabled(! $available)
                                                 aria-pressed="{{ $selected ? 'true' : 'false' }}"
-                                                class="min-h-11 rounded-full border px-4 text-sm font-medium hb-press disabled:cursor-not-allowed disabled:opacity-40 {{ $selected ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink hover:border-ink' }}">
+                                                class="inline-flex min-h-11 min-w-14 items-center justify-center rounded-[var(--radius-control)] border px-4 text-sm font-medium hb-press disabled:cursor-not-allowed disabled:opacity-40 {{ $selected ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong bg-surface text-ink hover:border-ink' }}">
                                             {{ $value->value }}
                                         </button>
                                     @endforeach

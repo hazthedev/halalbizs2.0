@@ -200,6 +200,16 @@
                 <x-ui.card class="p-4 sm:p-5">
                     <h3 class="font-display text-lg font-semibold">{{ __('Order status') }}</h3>
                     <ol class="mt-4">
+                        {{-- Seeded/legacy orders may carry no history rows — show the current status instead of an empty card --}}
+                        @if ($histories->isEmpty() && $futureStatuses === [])
+                            <li class="relative flex gap-3">
+                                <span class="relative mt-1.5 size-[11px] shrink-0 rounded-full bg-emerald ring-2 ring-emerald-tint" aria-hidden="true"></span>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-ink">{{ $subOrder->status->label() }}</p>
+                                    <p class="mt-0.5 text-xs text-ink-soft">{{ __('Step-by-step history is not available for this order.') }}</p>
+                                </div>
+                            </li>
+                        @endif
                         @foreach ($histories as $history)
                             @php($isCurrent = $loop->last)
                             <li class="ot-row relative flex gap-3 pb-6 last:pb-0" style="--i: {{ $loop->index }}" wire:key="history-{{ $history->id }}">
