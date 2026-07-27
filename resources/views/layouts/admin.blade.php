@@ -89,6 +89,36 @@
                             ['admin.system.audit', __('Audit log'), 'admin.system.audit'],
                         ],
                     ];
+
+                    // Show a link only if the viewer could actually open it. The
+                    // permission is read off the ROUTE's own can: middleware
+                    // rather than repeated here — a second list would drift, and
+                    // a nav that advertises sections you get 403'd out of both
+                    // looks broken and enumerates the panel.
+                    $maySee = function (string $routeName): bool {
+                        $route = Illuminate\Support\Facades\Route::getRoutes()->getByName($routeName);
+
+                        if ($route === null) {
+                            return false;
+                        }
+
+                        foreach ($route->gatherMiddleware() as $middleware) {
+                            if (is_string($middleware) && str_starts_with($middleware, 'can:')) {
+                                return auth()->user()?->can(substr($middleware, 4)) ?? false;
+                            }
+                        }
+
+                        return true; // ungated by design (dashboard, notifications)
+                    };
+
+                    // Drop empty groups so no heading is left hanging over nothing.
+                    $groups = array_filter(
+                        array_map(
+                            fn (array $links) => array_values(array_filter($links, fn (array $l) => $maySee($l[0]))),
+                            $groups,
+                        ),
+                        fn (array $links) => $links !== [],
+                    );
                 @endphp
 
                 @foreach ($groups as $heading => $links)
@@ -98,12 +128,10 @@
                         @endif
                         <div class="space-y-0.5">
                             @foreach ($links as [$routeName, $label, $activePattern])
-                                @if (Illuminate\Support\Facades\Route::has($routeName))
-                                    <a href="{{ route($routeName) }}" wire:navigate
-                                       class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs($activePattern) ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
-                                        {{ $label }}
-                                    </a>
-                                @endif
+                                <a href="{{ route($routeName) }}" wire:navigate
+                                   class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs($activePattern) ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                                    {{ $label }}
+                                </a>
                             @endforeach
                         </div>
                     </div>

@@ -99,6 +99,16 @@ class Dashboard extends Component
     {
         $start = $this->periodStart();
 
+        // Platform takings follow finance.manage. The dashboard ROUTE stays open
+        // to every admin — it is their landing page — so this is gated here at
+        // the data layer rather than only in the blade.
+        //
+        // Gating it in the view alone is not enough: the chart payload becomes
+        // part of this component's Livewire snapshot, which is serialised into
+        // the page whether or not the markup that consumes it renders. Hiding a
+        // chart does not stop its numbers reaching the browser.
+        $canSeeFinance = auth()->user()?->can('finance.manage') ?? false;
+
         // GMV — paid orders only (the platform's honest number).
         $gmvSen = (int) Order::query()
             ->where('payment_status', PaymentStatus::Paid)
@@ -139,19 +149,20 @@ class Dashboard extends Component
         $takeRateBp = $completedGmvSen > 0 ? intdiv($commissionSen * 10000, $completedGmvSen) : 0;
 
         return view('livewire.admin.dashboard', [
-            'gmvSen' => $gmvSen,
-            'commissionKnown' => $commissionKnown,
-            'commissionSen' => $commissionSen,
-            'takeRateBp' => $takeRateBp,
-            'boostRevenueSen' => $boostRevenueSen,
+            'canSeeFinance' => $canSeeFinance,
+            'gmvSen' => $canSeeFinance ? $gmvSen : 0,
+            'commissionKnown' => $canSeeFinance && $commissionKnown,
+            'commissionSen' => $canSeeFinance ? $commissionSen : 0,
+            'takeRateBp' => $canSeeFinance ? $takeRateBp : 0,
+            'boostRevenueSen' => $canSeeFinance ? $boostRevenueSen : 0,
             'ordersToday' => $ordersToday,
             'newBuyersToday' => $newBuyersToday,
             'queues' => $this->queues(),
-            'gmvChart' => $this->gmvChartPayload(),
+            'gmvChart' => $canSeeFinance ? $this->gmvChartPayload() : ['series' => [], 'categories' => []],
             'statusChart' => $this->statusChartPayload(),
             'categoriesChart' => $this->categoriesChartPayload(),
             'buyersChart' => $this->buyersChartPayload(),
-            'topStores' => $topStores,
+            'topStores' => $canSeeFinance ? $topStores : collect(),
             'm2' => $this->m2Metrics(),
         ])->title(__('Dashboard'));
     }
@@ -183,7 +194,15 @@ class Dashboard extends Component
      */
     private function dispatchCharts(): void
     {
-        $this->dispatch('admin-gmv', $this->gmvChartPayload());
+        // The GMV series is platform takings, so it follows finance.manage here
+        // too. This is a SEPARATE delivery channel from the rendered chart —
+        // dispatch() puts the payload on the wire whether or not the markup
+        // that would consume it exists, so gating the blade alone would still
+        // hand the numbers to anyone reading the response.
+        if (auth()->user()?->can('finance.manage')) {
+            $this->dispatch('admin-gmv', $this->gmvChartPayload());
+        }
+
         $this->dispatch('admin-status', $this->statusChartPayload());
         $this->dispatch('admin-categories', $this->categoriesChartPayload());
         $this->dispatch('admin-buyers', $this->buyersChartPayload());
@@ -398,31 +417,45 @@ class Dashboard extends Component
         ];
     }
 
-    /** @return list<array{label: string, count: int, url: ?string}> */
+    /**
+     * Pending-work tiles. Each carries the permission that owns its section, so
+     * an admin is never shown a count for — or a link into — a section they
+     * would be 403'd out of. The tile is built only when they may see it, so
+     * the underlying count query does not run either.
+     *
+     * @return list<array{label: string, count: int, url: ?string}>
+     */
     private function queues(): array
     {
-        return [
-            [
+        $user = auth()->user();
+
+        $candidates = [
+            ['permission' => 'sellers.manage', 'build' => fn () => [
                 'label' => __('Seller applications'),
                 'count' => Store::query()->where('status', StoreStatus::Pending)->count(),
                 'url' => Route::has('admin.sellers.applications') ? route('admin.sellers.applications') : null,
-            ],
-            [
+            ]],
+            ['permission' => 'products.moderate', 'build' => fn () => [
                 'label' => __('Products pending review'),
                 'count' => Product::query()->where('status', ProductStatus::PendingReview)->count(),
                 'url' => Route::has('admin.catalog.moderation') ? route('admin.catalog.moderation') : null,
-            ],
-            [
+            ]],
+            ['permission' => 'finance.manage', 'build' => fn () => [
                 'label' => __('Payout requests'),
                 'count' => Payout::query()->where('status', PayoutStatus::Requested)->count(),
                 'url' => Route::has('admin.finance.payouts') ? route('admin.finance.payouts') : null,
-            ],
-            [
+            ]],
+            ['permission' => 'orders.manage', 'build' => fn () => [
                 // Returns engine arrives with M8 — placeholder card.
                 'label' => __('Return escalations'),
                 'count' => 0,
                 'url' => null,
-            ],
+            ]],
         ];
+
+        return array_values(array_map(
+            fn (array $c) => ($c['build'])(),
+            array_filter($candidates, fn (array $c) => $user?->can($c['permission']) ?? false),
+        ));
     }
 }
