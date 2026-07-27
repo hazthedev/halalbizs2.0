@@ -5,7 +5,6 @@ use App\Enums\CoinTransactionType;
 use App\Enums\PaymentMethod;
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
-use App\Exceptions\CheckoutException;
 use App\Models\Address;
 use App\Models\FlashSale;
 use App\Models\FlashSaleItem;

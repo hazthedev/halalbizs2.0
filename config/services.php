@@ -18,6 +18,13 @@ return [
     // iPay88 optional refund endpoint (M0.4 automated refund).
     'ipay88' => [
         'refund_url' => env('IPAY88_REFUND_URL'),
+
+        // Explicit opt-in for the built-in payment SIMULATOR when no merchant
+        // code is set. Local dev enables the mock automatically; any other
+        // environment (incl. a preview that declares APP_ENV=production) must set
+        // IPAY88_ALLOW_MOCK=true to use it — so a real production boot with an
+        // unconfigured merchant code can NEVER hand out free "paid" orders.
+        'allow_mock' => env('IPAY88_ALLOW_MOCK', false),
     ],
 
     // Stripe — international cards/wallets (M1.9). Flagged for go-live approval.
