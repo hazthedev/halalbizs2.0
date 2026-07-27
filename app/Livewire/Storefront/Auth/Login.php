@@ -6,6 +6,7 @@ use App\Enums\AuthContext;
 use App\Enums\TwoFactorMethod;
 use App\Services\CartService;
 use App\Services\DeviceGuard;
+use App\Services\DeviceTrust;
 use App\Services\OtpService;
 use App\Services\Turnstile;
 use App\Support\PostLoginRedirect;
@@ -80,8 +81,10 @@ class Login extends Component
         RateLimiter::clear($key);
 
         // 2FA gate: password alone doesn't log you in. Park the attempt in
-        // the session and finish on the challenge screen.
-        if ($user->hasTwoFactor()) {
+        // the session and finish on the challenge screen — UNLESS this exact
+        // device was trusted within the last 30 days, in which case the code
+        // step is skipped (the password + the proven device stand in for it).
+        if ($user->hasTwoFactor() && ! app(DeviceTrust::class)->isTrusted($user, request())) {
             Auth::logout();
 
             session()->put([

@@ -7,6 +7,7 @@ use App\Enums\TwoFactorMethod;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\DeviceGuard;
+use App\Services\DeviceTrust;
 use App\Services\OtpService;
 use App\Support\PostLoginRedirect;
 use App\Support\Totp;
@@ -28,6 +29,9 @@ class TwoFactorChallenge extends Component
     public bool $useRecoveryCode = false;
 
     public string $recovery_code = '';
+
+    /** "Trust this device for 30 days" — skip the code next time on this device. */
+    public bool $trustDevice = false;
 
     public function mount(): void
     {
@@ -75,6 +79,12 @@ class TwoFactorChallenge extends Component
 
         // Unseen device? Record it and alert (silent on the first ever login).
         app(DeviceGuard::class)->record($user, request());
+
+        // If they asked, trust this device so the next login on it skips the
+        // code. Runs after DeviceGuard::record so it reuses that same row.
+        if ($this->trustDevice) {
+            app(DeviceTrust::class)->remember($user, request());
+        }
 
         // Role-aware: a stale intended URL must not walk an admin into the
         // seller application (or any section they can't enter).

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Storefront\Auth;
 
+use App\Services\DeviceTrust;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -48,6 +49,10 @@ class ResetPassword extends Component
                     'password' => $this->password,
                     'remember_token' => Str::random(60),
                 ])->save();
+
+                // A reset means the old password may be compromised — drop every
+                // trusted device so 2FA is required again everywhere.
+                app(DeviceTrust::class)->forgetAll($user);
 
                 event(new PasswordReset($user));
             }
