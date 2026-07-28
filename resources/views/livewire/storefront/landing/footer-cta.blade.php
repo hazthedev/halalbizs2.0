@@ -9,7 +9,7 @@
             {{ __('Masuk, tengok dulu.') }}
         </h2>
         <p class="mt-4 text-base leading-relaxed text-paper/80">
-            {{ __('Come in, take a look first — the souk is open, day or night, and there is always something worth finding.') }}
+            {{ __('Come in, take a look first. The souk is open day or night, and there is always something worth finding.') }}
         </p>
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
             <x-ui.button variant="brass" :href="route('home')">

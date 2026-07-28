@@ -13,6 +13,16 @@
             __('Groceries & Pantry'), __('Fashion & Apparel'), __('Beauty & Personal Care'), __('Home & Living'),
             __('Health & Wellness'), __('Baby & Kids'), __('Books & Stationery'), __('Electronics & Gadgets'),
         ]);
+
+    // A short track is a VISIBLE track: the loop renders the list twice for a
+    // seamless wrap, so with only 3 live categories both copies fit on one
+    // 1440 screen and the reader sees "Fashion ... Fashion" and reads it as a
+    // bug (live 2026-07-28). Pad the base list to at least 8 entries first,
+    // so one wrap is always wider than the viewport.
+    $minMarqueeItems = 8;
+    while ($marqueeNames->count() < $minMarqueeItems && $marqueeNames->isNotEmpty()) {
+        $marqueeNames = $marqueeNames->concat($marqueeNames->all());
+    }
 @endphp
 
 {{-- ===== Hero — "the souk never closes" =====
@@ -50,12 +60,18 @@
              below lg the two big ones RELOCATE to flank the scroll cue at the
              hero's base instead of hiding (hiding left mobile with almost no
              visible motion, Haze 2026-07-24); only the smallest is lg-only. --}}
+        {{-- Positions keep the lanterns OUT of the text column at every width
+             (2026-07-28): the centred content is max-w-4xl, so at lg the
+             lanterns live in the outer margins (under ~14% / over ~80%), and
+             below lg they all drop into the empty band between the CTAs and
+             the marquee. Previously one sat at left-[44%] and landed on the
+             headline at desktop, and two crossed the eyebrow pill at 390. --}}
         @foreach ([
-            ['pos' => 'top-[16%] left-[10%]', 'w' => 'w-7', 'delay' => '0s', 'dur' => '4.6s'],
-            ['pos' => 'top-[10%] left-[68%]', 'w' => 'w-6', 'delay' => '.9s', 'dur' => '5.3s'],
-            ['pos' => 'top-[28%] left-[44%] max-lg:top-[68%] max-lg:left-[8%]', 'w' => 'w-9', 'delay' => '1.6s', 'dur' => '4.9s'],
-            ['pos' => 'top-[36%] left-[85%] max-lg:top-[64%] max-lg:left-[82%]', 'w' => 'w-6', 'delay' => '.4s', 'dur' => '5.7s'],
-            ['pos' => 'top-[40%] left-[22%] hidden lg:inline-block', 'w' => 'w-5', 'delay' => '2.1s', 'dur' => '4.3s'],
+            ['pos' => 'top-[18%] left-[6%] max-lg:top-[72%] max-lg:left-[8%]', 'w' => 'w-7', 'delay' => '0s', 'dur' => '4.6s'],
+            ['pos' => 'top-[12%] left-[88%] max-lg:top-[69%] max-lg:left-[79%]', 'w' => 'w-6', 'delay' => '.9s', 'dur' => '5.3s'],
+            ['pos' => 'top-[47%] left-[12%] max-lg:top-[84%] max-lg:left-[26%]', 'w' => 'w-9', 'delay' => '1.6s', 'dur' => '4.9s'],
+            ['pos' => 'top-[34%] left-[81%] max-lg:top-[85%] max-lg:left-[62%]', 'w' => 'w-6', 'delay' => '.4s', 'dur' => '5.7s'],
+            ['pos' => 'top-[63%] left-[91%] hidden lg:inline-block', 'w' => 'w-5', 'delay' => '2.1s', 'dur' => '4.3s'],
         ] as $lantern)
             <span class="souk-lantern absolute {{ $lantern['w'] }} {{ $lantern['pos'] }}" style="animation-delay: {{ $lantern['delay'] }}; animation-duration: {{ $lantern['dur'] }};">
                 <svg viewBox="0 0 40 64" class="w-full">
@@ -93,7 +109,7 @@
         </h1>
 
         <p data-motion="subcopy" class="mt-6 max-w-xl text-base leading-relaxed text-paper/80 sm:text-lg">
-            {{ __('Thousands of halal-certified products from verified Malaysian sellers, day or night — or open your own stall and reach buyers who shop with intention.') }}
+            {{ __('Thousands of halal-certified products from verified Malaysian sellers, day or night. Or open your own stall and reach buyers who shop with intention.') }}
         </p>
 
         <div data-motion="cta-row" class="mt-9 flex flex-wrap items-center justify-center gap-3">
@@ -105,10 +121,10 @@
             </x-ui.button>
         </div>
 
-        <div class="souk-scrollcue mt-14 flex flex-col items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-paper/50" aria-hidden="true">
-            <span>{{ __('Scroll') }}</span>
-            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m0 0-6-6m6 6 6-6"/></svg>
-        </div>
+        {{-- The "Scroll" cue that used to sit here is gone: a visitor looking
+             at an unscrolled hero already knows what scrolling is, and the
+             label was the only uppercase micro-tell left on the page. The
+             marquee below is the affordance now. --}}
     </div>
 
     {{-- Category marquee — bookends the hero. Two identical tracks side by

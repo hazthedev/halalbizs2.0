@@ -1,42 +1,47 @@
-{{-- ===== Trust band — halal curation, buyer protection, local sellers =====
-     Brass carries the ornament here (icon roundels), never the action — the
-     cards themselves have no CTA, so nothing here needed emerald. --}}
-<section data-land="trust" class="mx-auto max-w-7xl px-4 py-14 sm:py-20">
-    <x-ui.section-heading
-        as="h2"
-        :title="__('Why shop HalalBizs')"
-        :subtitle="__('Every store on the platform is reviewed before it goes live.')"
-    />
+{{-- ===== Trust — asymmetric editorial split =====
+     Was three identical icon-roundel cards, which is the stock marketing row
+     and made this the first of four consecutive 3-across sections. Now a
+     5/7 split: the claim carries the left column, the proofs are a divided
+     list on the right. No card boxes — a hairline between rows groups them
+     just as well and costs no elevation this hierarchy needs.
+     Brass stays ornament (the marks); nothing here is actionable, so
+     nothing here is emerald. --}}
+<section data-land="trust" class="mx-auto max-w-7xl px-4 py-20 sm:py-24 lg:py-28">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-16">
 
-    <div class="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-3 sm:gap-6">
-        <div data-motion="item" class="spot-card rounded-[var(--radius-card)] border border-line bg-surface p-6 shadow-soft hb-lift">
-            <span class="flex size-11 items-center justify-center rounded-full bg-brass-tint text-brass">
-                <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-            </span>
-            <h3 class="mt-4 font-display text-lg font-semibold text-ink">{{ __('Halal-first curation') }}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-ink-soft">
-                {{ __('Listings are reviewed for halal status before they ever reach the shelf, so you never have to guess.') }}
+        <div class="lg:col-span-5">
+            <h2 class="font-display text-3xl font-bold leading-[1.15] tracking-tight text-ink sm:text-4xl">
+                {{ __('Every store is reviewed before it opens.') }}
+            </h2>
+            <p class="mt-5 max-w-md text-base leading-relaxed text-ink-soft">
+                {{ __('Halal-first is the entry requirement here, not a filter you switch on afterwards.') }}
             </p>
         </div>
 
-        <div data-motion="item" class="spot-card rounded-[var(--radius-card)] border border-line bg-surface p-6 shadow-soft hb-lift">
-            <span class="flex size-11 items-center justify-center rounded-full bg-brass-tint text-brass">
-                <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 4.556-3.196 8.372-7.494 9.319a1 1 0 0 1-.512 0C8.696 20.372 5.5 16.556 5.5 12V7.087c0-.859.564-1.622 1.397-1.789 1.462-.29 3.126-.822 4.51-1.61a2.75 2.75 0 0 1 2.186 0c1.384.788 3.048 1.32 4.51 1.61.833.167 1.397.93 1.397 1.789V12Z"/></svg>
-            </span>
-            <h3 class="mt-4 font-display text-lg font-semibold text-ink">{{ __('Your money, held safely') }}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-ink-soft">
-                {{ __('Your money is held safely until delivery — the seller only gets paid once your order actually arrives.') }}
-            </p>
-        </div>
+        <ul class="divide-y divide-line lg:col-span-7">
+            @foreach ([
+                [
+                    'title' => __('Halal-first curation'),
+                    'body' => __('Listings are reviewed for halal status before they ever reach the shelf, so you never have to guess.'),
+                ],
+                [
+                    'title' => __('Your money, held safely'),
+                    'body' => __('We hold your payment until delivery. The seller is only paid once your order actually arrives.'),
+                ],
+                [
+                    'title' => __('Local Malaysian sellers'),
+                    'body' => __('Every store is run by a Malaysian seller, so each ringgit you spend supports a small business here.'),
+                ],
+            ] as $proof)
+                <li data-motion="item" class="flex gap-5 py-6 first:pt-0 last:pb-0 sm:gap-6 sm:py-7">
+                    <x-ui.star-mark :size="20" class="mt-1 shrink-0 text-brass" />
+                    <div>
+                        <h3 class="font-display text-lg font-semibold text-ink">{{ $proof['title'] }}</h3>
+                        <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-soft">{{ $proof['body'] }}</p>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
 
-        <div data-motion="item" class="spot-card rounded-[var(--radius-card)] border border-line bg-surface p-6 shadow-soft hb-lift">
-            <span class="flex size-11 items-center justify-center rounded-full bg-brass-tint text-brass">
-                <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-            </span>
-            <h3 class="mt-4 font-display text-lg font-semibold text-ink">{{ __('Local Malaysian sellers') }}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-ink-soft">
-                {{ __('Every store is run by a Malaysian seller — support small business with every ringgit you spend.') }}
-            </p>
-        </div>
     </div>
 </section>

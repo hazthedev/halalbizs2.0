@@ -1,11 +1,20 @@
 {{-- ===== Seller CTA band — pitch to open a stall, benefits only =====
-     No fee/commission numbers — those live in the seller onboarding flow,
-     not a marketing page. Right column is a purely decorative stack of 3
-     mini "product card" shapes (CSS, not real data) — each in its own
-     `data-plx` layer for a later depth pass, hidden below `sm` so nothing
-     here can ever cause horizontal overflow on small screens. --}}
-<section data-land="seller" class="border-y border-brass/20 bg-brass-tint/40 px-4 py-14 sm:py-20">
-    <div class="mx-auto grid max-w-7xl gap-10 sm:grid-cols-2 sm:items-center sm:gap-12">
+     No fee/commission numbers: those live in the seller onboarding flow, not
+     a marketing page.
+
+     The right column WAS three mini "product card" shapes built from styled
+     divs — a fake product UI, which is the most recognisable AI-build tell
+     there is, and it was pretending to show data the page does not have.
+     Replaced with an actual stall front drawn in the hero's own language:
+     the souk arch (same curve family as the hero skyline), the zellij field,
+     and one hanging lantern reusing the hero's lantern geometry. It claims
+     to be nothing other than ornament.
+
+     Kept: the `data-plx` layers (landing.js gives them depth on scroll) and
+     `hidden sm:block`, so this can never cause horizontal overflow on a
+     phone. --}}
+<section data-land="seller" class="border-y border-brass/20 bg-brass-tint/40 px-4 py-20 sm:py-24 lg:py-28">
+    <div class="mx-auto grid max-w-7xl gap-10 sm:grid-cols-2 sm:items-center sm:gap-14">
         <div data-motion="item">
             <p class="inline-flex items-center gap-2 rounded-full border border-brass/40 bg-surface px-3.5 py-1.5 text-[13px] font-semibold text-brass-deep">
                 <x-ui.star-mark :size="16" class="text-brass" />
@@ -18,18 +27,16 @@
                 {{ __('Join a marketplace built for halal-conscious shoppers who are already looking for what you sell. Set up your stall in minutes, run it from one dashboard.') }}
             </p>
             <ul class="mt-6 space-y-2.5 text-sm text-ink">
-                <li class="flex items-start gap-2.5">
-                    <span aria-hidden="true" class="mt-1 size-1.5 shrink-0 rounded-full bg-brass"></span>
-                    {{ __('Get discovered by buyers already searching for halal-certified products.') }}
-                </li>
-                <li class="flex items-start gap-2.5">
-                    <span aria-hidden="true" class="mt-1 size-1.5 shrink-0 rounded-full bg-brass"></span>
-                    {{ __('Run your shop from one seller dashboard — products, orders, payouts.') }}
-                </li>
-                <li class="flex items-start gap-2.5">
-                    <span aria-hidden="true" class="mt-1 size-1.5 shrink-0 rounded-full bg-brass"></span>
-                    {{ __('Sell with confidence — every stall goes through halal-first review before launch.') }}
-                </li>
+                @foreach ([
+                    __('Get discovered by buyers already searching for halal-certified products.'),
+                    __('Run one dashboard for products, orders and payouts.'),
+                    __('Sell with confidence. Every stall goes through halal-first review before launch.'),
+                ] as $benefit)
+                    <li class="flex items-start gap-2.5">
+                        <span aria-hidden="true" class="mt-1 size-1.5 shrink-0 rounded-full bg-brass"></span>
+                        {{ $benefit }}
+                    </li>
+                @endforeach
             </ul>
             <div class="mt-7">
                 <x-ui.button variant="primary" :href="route('seller.apply')">
@@ -38,27 +45,48 @@
             </div>
         </div>
 
-        <div class="relative hidden h-72 w-full max-w-sm sm:mx-auto sm:block" aria-hidden="true">
-            <div data-plx="0.85" class="pointer-events-none absolute inset-0">
-                <div class="absolute left-2 top-10 w-40 -rotate-6 rounded-[var(--radius-card)] border border-line bg-surface p-3 shadow-card">
-                    <div class="aspect-square w-full rounded-lg bg-emerald-tint"></div>
-                    <div class="mt-2 h-2 w-3/4 rounded bg-line"></div>
-                    <div class="mt-1.5 h-2 w-1/2 rounded bg-line"></div>
-                </div>
+        {{-- The stall front. Decorative only. --}}
+        <div class="relative hidden h-80 w-full max-w-sm sm:mx-auto sm:block" aria-hidden="true">
+            <div data-plx="0.9" class="pointer-events-none absolute inset-0">
+                <svg viewBox="0 0 320 320" class="h-full w-full overflow-visible">
+                    <defs>
+                        {{-- Same rub-el-hizb motif as the `surface-girih`
+                             utility, as an SVG pattern so it can be clipped
+                             to the arch instead of tiling a whole element. --}}
+                        <pattern id="stall-girih" width="46" height="46" patternUnits="userSpaceOnUse">
+                            <g fill="none" stroke="#F4EFE6" stroke-opacity="0.10" stroke-width="1">
+                                <rect x="14" y="14" width="18" height="18" />
+                                <rect x="14" y="14" width="18" height="18" transform="rotate(45 23 23)" />
+                            </g>
+                        </pattern>
+                        <clipPath id="stall-arch">
+                            <path d="M46,306 L46,148 Q160,26 274,148 L274,306 Z" />
+                        </clipPath>
+                    </defs>
+
+                    <path d="M46,306 L46,148 Q160,26 274,148 L274,306 Z" fill="var(--color-emerald-night)" />
+                    <g clip-path="url(#stall-arch)">
+                        <rect x="0" y="0" width="320" height="320" fill="url(#stall-girih)" />
+                    </g>
+                    <path d="M46,306 L46,148 Q160,26 274,148 L274,306" fill="none"
+                          stroke="var(--color-brass)" stroke-width="2.5" stroke-linecap="round" opacity="0.75" />
+                    {{-- Counter line, so the arch reads as a stall rather than a doorway. --}}
+                    <line x1="30" y1="306" x2="290" y2="306" stroke="var(--color-brass)" stroke-width="3" stroke-linecap="round" />
+                </svg>
             </div>
-            <div data-plx="1" class="pointer-events-none absolute inset-0">
-                <div class="absolute left-1/2 top-4 w-44 -translate-x-1/2 rotate-2 rounded-[var(--radius-card)] border border-brass/30 bg-surface p-3 shadow-pop">
-                    <div class="aspect-square w-full rounded-lg bg-brass-tint"></div>
-                    <div class="mt-2 h-2 w-2/3 rounded bg-line"></div>
-                    <div class="mt-1.5 h-2 w-1/3 rounded bg-line"></div>
-                </div>
-            </div>
+
+            {{-- Hanging lantern, same geometry as the hero's. --}}
             <div data-plx="1.15" class="pointer-events-none absolute inset-0">
-                <div class="absolute right-2 top-16 w-36 rotate-[10deg] rounded-[var(--radius-card)] border border-line bg-surface p-3 shadow-card">
-                    <div class="aspect-square w-full rounded-lg bg-emerald-tint"></div>
-                    <div class="mt-2 h-2 w-3/5 rounded bg-line"></div>
-                    <div class="mt-1.5 h-2 w-2/5 rounded bg-line"></div>
-                </div>
+                <span class="souk-lantern absolute left-1/2 top-[26%] w-8 -translate-x-1/2">
+                    <svg viewBox="0 0 40 64" class="w-full">
+                        <path d="M20 2 L26 10 H14 Z" fill="var(--color-brass)" />
+                        <rect x="10" y="10" width="20" height="6" rx="2" fill="var(--color-brass)" />
+                        <path d="M8 18 Q20 12 32 18 L30 46 Q20 54 10 46 Z" fill="var(--color-brass)" />
+                        <rect x="17" y="48" width="6" height="4" fill="var(--color-brass)" />
+                        <path d="M18 52 L22 52 L20 60 Z" fill="var(--color-brass)" />
+                        <circle cx="20" cy="32" r="4" fill="var(--color-brass-tint)" />
+                    </svg>
+                </span>
             </div>
         </div>
     </div>
