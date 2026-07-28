@@ -1,0 +1,344 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   HalalBizs mail theme — "Souk" palette, ported for email.
+
+   Selected by config/mail.php `markdown.theme`. Laravel inlines this file
+   into every markdown mail at send time.
+
+   ⚠ These hex values are a COPY of the tokens in resources/css/app.css.
+   Email clients do not support CSS custom properties, so they cannot be
+   referenced — if the brand palette changes there, change it here too.
+   Source tokens: ink #1A1714 · ink-soft #5C544B · ink-faint #8E867A
+   paper #FAF7F0 · surface #FFFDF8 · line #E7E1D5 · emerald #047857
+   emerald-deep #065F46 · emerald-night #03392B · emerald-tint #E7F1EB
+   brass #A8772E · brass-tint #F3EAD6 · danger #BE123C
+
+   ⚠ Do NOT rename this file back to default.css — a future
+   `vendor:publish --tag=laravel-mail --force` would overwrite it silently.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Base */
+
+body,
+body *:not(html):not(style):not(br):not(tr):not(code) {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    position: relative;
+}
+
+body {
+    -webkit-text-size-adjust: none;
+    background-color: #FAF7F0;
+    color: #5C544B;
+    height: 100%;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+    width: 100% !important;
+}
+
+p,
+ul,
+ol,
+blockquote {
+    line-height: 1.4;
+    text-align: start;
+}
+
+a {
+    color: #047857;
+}
+
+a img {
+    border: none;
+}
+
+/* Typography */
+
+h1 {
+    color: #1A1714;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-top: 0;
+    text-align: start;
+}
+
+/* ⚠ h2 is the ONE-TIME CODE display, not a generic subheading.
+   `TwoFactorCodeNotification` emits `->line('## '.$code)`, and markdown turns
+   `##` into h2 — today that notification is the only thing in the app that
+   produces an h2 in an email, so this rule is tuned for a 6-digit code:
+   large, spaced, and hard to misread. Sizeable but still sane if someone
+   later writes a real `##` heading. If codes ever need to differ from
+   headings, give the notification its own markdown view rather than
+   splitting this rule. */
+h2 {
+    color: #03392B;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-top: 0;
+    text-align: start;
+}
+
+h3 {
+    color: #1A1714;
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 0;
+    text-align: left;
+}
+
+p {
+    color: #5C544B;
+    font-size: 16px;
+    line-height: 1.6em;
+    margin-top: 0;
+    text-align: left;
+}
+
+p.sub {
+    font-size: 12px;
+}
+
+img {
+    max-width: 100%;
+}
+
+/* Layout */
+
+.wrapper {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    background-color: #FAF7F0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.content {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* Header — the souk-night band. The star tile is a background IMAGE, so the
+   emerald-night background-color must carry the band on its own when a
+   client blocks images (Outlook desktop always does). */
+
+.header {
+    background-color: #03392B;
+    padding: 0;
+    text-align: center;
+}
+
+.header a {
+    color: #FAF7F0;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+}
+
+/* Logo */
+
+.logo {
+    height: 56px;
+    max-height: 56px;
+    width: 56px;
+}
+
+/* Body */
+
+.body {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    background-color: #FAF7F0;
+    border-bottom: 1px solid #FAF7F0;
+    border-top: 1px solid #FAF7F0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.inner-body {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 570px;
+    background-color: #FFFDF8;
+    border-color: #E7E1D5;
+    border-radius: 14px;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: 0 1px 2px 0 rgba(26, 23, 20, 0.05);
+    margin: 0 auto;
+    padding: 0;
+    width: 570px;
+}
+
+.inner-body a {
+    word-break: break-all;
+}
+
+/* Subcopy */
+
+.subcopy {
+    border-top: 1px solid #E7E1D5;
+    margin-top: 25px;
+    padding-top: 25px;
+}
+
+.subcopy p {
+    color: #8E867A;
+    font-size: 13px;
+}
+
+/* Footer */
+
+.footer {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 570px;
+    margin: 0 auto;
+    padding: 0;
+    text-align: center;
+    width: 570px;
+}
+
+.footer p {
+    color: #8E867A;
+    font-size: 12px;
+    line-height: 1.6em;
+    text-align: center;
+}
+
+.footer a {
+    color: #8E867A;
+    text-decoration: underline;
+}
+
+/* Tables */
+
+.table table {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    margin: 30px auto;
+    width: 100%;
+}
+
+.table th {
+    border-bottom: 1px solid #E7E1D5;
+    color: #8E867A;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    margin: 0;
+    padding-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.table td {
+    border-bottom: 1px solid #F1ECE1;
+    color: #1A1714;
+    font-size: 15px;
+    line-height: 18px;
+    margin: 0;
+    padding: 12px 0;
+}
+
+.content-cell {
+    max-width: 100vw;
+    padding: 32px;
+}
+
+/* Buttons — emerald is the house action colour. The fat borders are
+   Laravel's padding trick (Outlook ignores padding on an <a>); they must
+   match the background exactly or the button shows a rim. */
+
+.action {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    margin: 30px auto;
+    padding: 0;
+    text-align: center;
+    width: 100%;
+    float: unset;
+}
+
+.button {
+    -webkit-text-size-adjust: none;
+    border-radius: 10px;
+    color: #FFFDF8;
+    display: inline-block;
+    font-weight: 600;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.button-blue,
+.button-primary {
+    background-color: #047857;
+    border-bottom: 10px solid #047857;
+    border-left: 20px solid #047857;
+    border-right: 20px solid #047857;
+    border-top: 10px solid #047857;
+}
+
+.button-green,
+.button-success {
+    background-color: #065F46;
+    border-bottom: 10px solid #065F46;
+    border-left: 20px solid #065F46;
+    border-right: 20px solid #065F46;
+    border-top: 10px solid #065F46;
+}
+
+.button-red,
+.button-error {
+    background-color: #BE123C;
+    border-bottom: 10px solid #BE123C;
+    border-left: 20px solid #BE123C;
+    border-right: 20px solid #BE123C;
+    border-top: 10px solid #BE123C;
+}
+
+/* Panels — brass rule on a brass tint, the same "note" treatment the app
+   uses for callouts. */
+
+.panel {
+    border-left: #A8772E solid 4px;
+    border-radius: 0 8px 8px 0;
+    margin: 21px 0;
+    overflow: hidden;
+}
+
+.panel-content {
+    background-color: #F3EAD6;
+    color: #1A1714;
+    padding: 16px;
+}
+
+.panel-content p {
+    color: #1A1714;
+}
+
+.panel-item {
+    padding: 0;
+}
+
+.panel-item p:last-of-type {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* Utilities */
+
+.break-all {
+    word-break: break-all;
+}

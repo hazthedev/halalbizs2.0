@@ -115,4 +115,24 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Markdown Mail Theme
+    |--------------------------------------------------------------------------
+    |
+    | Every notification in this app renders through the markdown mail views,
+    | so this one theme styles all of them. It is named (not "default") so a
+    | future `vendor:publish --tag=laravel-mail --force` cannot silently
+    | overwrite the brand palette.
+    |
+    */
+
+    'markdown' => [
+        'theme' => 'halalbizs',
+
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+    ],
+
 ];
