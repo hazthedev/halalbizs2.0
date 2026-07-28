@@ -24,6 +24,8 @@ class TwoFactorCodeNotification extends Notification
         return (new MailMessage)
             ->subject(__('Your login code'))
             ->line(__('Your HalalBizs login code is:'))
+            // `##` becomes an h2, which the mail theme styles as the code
+            // display (large + letter-spaced). Keep the level if you edit this.
             ->line('## '.$this->code)
             ->line(__('It expires in 10 minutes. If you didn\'t try to log in, change your password now.'));
     }
