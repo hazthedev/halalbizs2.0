@@ -44,25 +44,40 @@
             @foreach ($tiles as $tile)
                 @php
                     $patterned = $loop->index % 3 === 2;
-                    $tileClass = 'group relative flex min-h-40 flex-col justify-between overflow-hidden rounded-[var(--radius-card)] border p-5 shadow-soft sm:min-h-48 '
+                    // Content sits at the BOTTOM with an oversized watermark
+                    // mark bleeding off the top-right corner. First pass put a
+                    // small mark at the top and the label at the bottom with
+                    // `justify-between`, and the gap between them just read as
+                    // an empty box at both 1440 and 390 (screenshots, not
+                    // markup, said so).
+                    $tileClass = 'group relative flex min-h-36 flex-col justify-end overflow-hidden rounded-[var(--radius-card)] border p-5 shadow-soft sm:min-h-40 '
                         .($patterned
                             ? 'surface-zellij border-brass/25 bg-brass-tint/40'
                             : 'border-line bg-surface');
                 @endphp
 
-                @if ($tile['href'])
-                    <a href="{{ $tile['href'] }}" wire:navigate data-motion="item" class="{{ $tileClass }} spot-card hb-lift">
-                        <x-ui.star-mark :size="26" class="text-brass transition-transform duration-[var(--dur-standard)] ease-[var(--ease-out-soft)] group-hover:scale-110" />
-                        <span class="mt-6 font-display text-lg font-semibold leading-snug text-ink transition-colors group-hover:text-emerald">
+                @php
+                    $tag = $tile['href'] ? 'a' : 'div';
+                    $interactive = (bool) $tile['href'];
+                @endphp
+
+                <{{ $tag }}
+                    @if ($interactive) href="{{ $tile['href'] }}" wire:navigate @endif
+                    data-motion="item"
+                    class="{{ $tileClass }}{{ $interactive ? ' spot-card hb-lift' : '' }}">
+
+                    {{-- Oversized mark, cropped by the tile. Ornament, so it is
+                         aria-hidden and never the thing being read. --}}
+                    <x-ui.star-mark :size="96"
+                        class="pointer-events-none absolute -right-6 -top-6 text-brass/15 transition-transform duration-[var(--dur-standard)] ease-[var(--ease-out-soft)] {{ $interactive ? 'group-hover:scale-110' : '' }}" />
+
+                    <span class="relative flex items-center gap-2.5">
+                        <x-ui.star-mark :size="18" class="shrink-0 text-brass" />
+                        <span class="font-display text-lg font-semibold leading-snug text-ink {{ $interactive ? 'transition-colors group-hover:text-emerald' : '' }}">
                             {{ $tile['name'] }}
                         </span>
-                    </a>
-                @else
-                    <div data-motion="item" class="{{ $tileClass }}">
-                        <x-ui.star-mark :size="26" class="text-brass" />
-                        <span class="mt-6 font-display text-lg font-semibold leading-snug text-ink">{{ $tile['name'] }}</span>
-                    </div>
-                @endif
+                    </span>
+                </{{ $tag }}>
             @endforeach
         </div>
     </div>

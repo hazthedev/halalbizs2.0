@@ -28,9 +28,14 @@
     --color-emerald-night: #03392B;
     --color-emerald-tint: #E7F1EB;
 
-    /* brass = premium & ornament */
+    /* brass = premium & ornament.
+       ⚠ Split by ROLE, not shade: --color-brass is the ORNAMENT brass (marks,
+       rules, numerals, borders). It is NOT safe as a fill behind white text —
+       white on #A8772E is 3.93:1, under AA. Fills start at -deep (5.61:1) and
+       hover to -darker (7.70:1). See x-ui.button's brass variant. */
     --color-brass: #A8772E;
     --color-brass-deep: #8A5F22;
+    --color-brass-darker: #6F4C1B;
     --color-brass-tint: #F3EAD6;
 
     /* semantic (used sparingly) */
