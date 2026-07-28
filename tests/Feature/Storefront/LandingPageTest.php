@@ -11,7 +11,9 @@ it('lets a guest view the landing page with the core buyer + seller pitch', func
         ->assertSeeLivewire(Landing::class)
         ->assertSee('Shop Now')
         ->assertSee('Start Selling')
-        ->assertSee('Why shop HalalBizs')
+        // The trust band's heading changed with the 2026-07-28 redesign
+        // ("Why shop HalalBizs" was a label; this is the actual claim).
+        ->assertSee('Every store is reviewed before it opens.')
         ->assertSee('How buying works')
         ->assertSee('Open your stall in the souk');
 });
