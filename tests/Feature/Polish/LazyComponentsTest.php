@@ -58,7 +58,7 @@ test('the lazy RelatedProducts child renders sibling products after load', funct
     ]);
 
     Livewire::test(RelatedProducts::class, ['product' => $product])
-        ->assertSee('Related products')
+        ->assertSee('Verified alongside it')  // renamed 2026-07-30 to the reference's wording
         ->assertSee('Related Pandan Cake');
 });
 

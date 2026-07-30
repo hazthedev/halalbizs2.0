@@ -85,16 +85,29 @@ echo "→ seed idempotent reference data"
 if [ "$APP_ENV" != "production" ]; then
     "$PHP_BIN" artisan db:seed --class=DemoReviewsSeeder --force || echo "  ! demo reviews seed reported errors — continuing"
 
-    # The halal catalogue: 19 seller accounts, 166 SKUs, packshots committed
-    # under database/seeders/data/packshots, then the certificate records the
-    # register screen reads. Both are idempotent (catalogue keyed on the slug
-    # the model itself generates, certificates on the number), so they are safe
-    # to re-run on every deploy. Order matters: certificates are built FROM the
-    # seeded products.
+else
+    echo "→ skip demo data (production)"
+fi
+
+# DEMO CATALOGUE — opt-in by its OWN flag, not by APP_ENV.
+# The preview runs APP_ENV=production (correctly — it should behave like prod),
+# so the demo branch above is skipped there and the catalogue never arrived.
+# Rather than mislabel the environment to smuggle inventory in, this is gated on
+# an explicit flag: absent means no demo inventory, which keeps real production
+# safe by default and makes enabling it a deliberate act.
+#
+# Set SEED_DEMO_CATALOGUE=true in the server .env to populate 19 seller accounts,
+# 166 SKUs with committed packshots, and the certificate records the register
+# reads. Both seeders are idempotent (the catalogue keys on the slug the model
+# generates for itself, certificates on the number), so re-running on every
+# deploy is safe. Order matters: certificates are built FROM the seeded products.
+SEED_DEMO_CATALOGUE="$(read_env SEED_DEMO_CATALOGUE)"
+if [ "$SEED_DEMO_CATALOGUE" = "true" ]; then
+    echo "→ seed demo catalogue (SEED_DEMO_CATALOGUE=true)"
     "$PHP_BIN" artisan db:seed --class=HalalCatalogueSeeder --force || echo "  ! catalogue seed reported errors — continuing"
     "$PHP_BIN" artisan db:seed --class=HalalCertificateSeeder --force || echo "  ! certificate seed reported errors — continuing"
 else
-    echo "→ skip demo data (production)"
+    echo "→ skip demo catalogue (set SEED_DEMO_CATALOGUE=true to enable)"
 fi
 
 echo "→ clear caches"
