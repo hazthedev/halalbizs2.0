@@ -5,7 +5,7 @@
     @php($expired = $team->status === \App\Enums\GroupBuyTeamStatus::Expired || (! $unlocked && $team->expires_at->isPast()))
 
     <div class="overflow-hidden rounded-[var(--radius-card)] border border-brass/30 bg-surface shadow-card">
-        <div class="surface-girih flex items-center gap-2 border-b border-brass/25 bg-emerald-night px-5 py-3 text-on-dark">
+        <div class="flex items-center gap-2 border-b border-emerald-edge bg-emerald-night px-5 py-3 text-on-dark">
             <x-ui.star-mark :size="18" class="text-brass" />
             <h1 class="font-display text-lg font-medium">{{ __('Group buy') }}</h1>
         </div>

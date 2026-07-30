@@ -32,7 +32,7 @@
                                     <button type="button"
                                             wire:click="review({{ $application->id }})"
                                             aria-expanded="{{ $reviewing === $application->id ? 'true' : 'false' }}"
-                                            class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ $reviewing === $application->id ? __('Close') : __('Review') }}
                                     </button>
                                 </div>
@@ -47,7 +47,7 @@
 
                                         {{-- Application details --}}
                                         <x-ui.card class="p-4">
-                                            <h3 class="text-sm font-semibold">{{ __('Application') }}</h3>
+                                            <h3 class="text-sm font-medium">{{ __('Application') }}</h3>
                                             <dl class="mt-2 space-y-1.5 text-[13px]">
                                                 <div class="flex justify-between gap-3">
                                                     <dt class="text-ink-soft">{{ __('Owner') }}</dt>
@@ -75,7 +75,7 @@
 
                                         {{-- Bank details --}}
                                         <x-ui.card class="p-4">
-                                            <h3 class="text-sm font-semibold">{{ __('Bank details') }}</h3>
+                                            <h3 class="text-sm font-medium">{{ __('Bank details') }}</h3>
                                             <dl class="mt-2 space-y-1.5 text-[13px]">
                                                 @forelse ($reviewingStore->bank_details ?? [] as $key => $value)
                                                     <div class="flex justify-between gap-3">
@@ -90,14 +90,14 @@
 
                                         {{-- Documents --}}
                                         <div>
-                                            <h3 class="mb-2 text-sm font-semibold">{{ __('Documents') }}</h3>
+                                            <h3 class="mb-2 text-sm font-medium">{{ __('Documents') }}</h3>
                                             @include('livewire.admin.sellers.partials.documents', ['documents' => $reviewingStore->documents])
                                         </div>
                                     </div>
 
                                     {{-- Decision --}}
                                     <x-ui.card class="mt-4 p-4">
-                                        <h3 class="text-sm font-semibold">{{ __('Decision') }}</h3>
+                                        <h3 class="text-sm font-medium">{{ __('Decision') }}</h3>
                                         <div class="mt-2">
                                             <label for="rejection-reason-{{ $application->id }}" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Rejection reason (required to reject — emailed to the applicant)') }}</label>
                                             <textarea id="rejection-reason-{{ $application->id }}"

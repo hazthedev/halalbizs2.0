@@ -10,7 +10,7 @@
     @vite('resources/css/app.css')
 </head>
 <body class="flex min-h-screen flex-col bg-paper text-ink antialiased">
-    <header class="surface-girih border-b border-brass/25 bg-emerald-night">
+    <header class="border-b border-emerald-edge bg-emerald-night">
         <div class="mx-auto flex h-16 max-w-7xl items-center px-4">
             <a href="{{ url('/') }}" class="flex items-center gap-2 font-display text-xl font-medium text-on-dark">
                 <x-ui.star-mark :size="22" class="text-brass" />
@@ -21,7 +21,7 @@
 
     <main class="flex flex-1 items-center justify-center px-4 py-16">
         <div class="w-full max-w-md text-center">
-            <div class="surface-zellij mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-brass/25 bg-brass-tint/50 text-brass">
+            <div class="surface-zellij mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-emerald-edge bg-brass-tint/50 text-brass">
                 <x-ui.star-mark :size="30" />
             </div>
             <p class="font-display text-7xl font-extrabold leading-none tracking-tight" aria-hidden="true">@yield('code')</p>
@@ -31,7 +31,7 @@
         </div>
     </main>
 
-    <footer class="surface-girih border-t border-brass/25 bg-emerald-night">
+    <footer class="border-t border-emerald-edge bg-emerald-night">
         <p class="mx-auto max-w-7xl px-4 py-4 text-xs text-on-dark/64">© {{ now()->year }} HalalBizs. {{ __('All rights reserved.') }}</p>
     </footer>
 </body>

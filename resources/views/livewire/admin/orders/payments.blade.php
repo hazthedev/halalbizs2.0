@@ -70,14 +70,14 @@
                                 </a>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $payment->gateway->label() }}</td>
-                            <td class="px-3 py-2 text-right font-mono font-semibold tabular-nums whitespace-nowrap">@money($payment->amount_sen)</td>
+                            <td class="px-3 py-2 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($payment->amount_sen)</td>
                             <td class="px-3 py-2"><x-ui.badge :variant="$pillVariant">{{ $payment->status->label() }}</x-ui.badge></td>
                             <td class="px-3 py-2 whitespace-nowrap font-mono text-ink-soft">{{ $payment->ipay88_trans_id ?? '—' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 @if ($payment->signature_valid === true)
-                                    <span class="font-semibold text-emerald" title="{{ __('Signature verified') }}">✓</span>
+                                    <span class="font-medium text-emerald" title="{{ __('Signature verified') }}">✓</span>
                                 @elseif ($payment->signature_valid === false)
-                                    <span class="font-semibold text-danger">✗ {{ __('Mismatch') }}</span>
+                                    <span class="font-medium text-danger">✗ {{ __('Mismatch') }}</span>
                                 @else
                                     <span class="text-ink-faint">—</span>
                                 @endif
@@ -91,7 +91,7 @@
                                     @if ($canRequery)
                                         <button type="button" wire:click="requery({{ $payment->id }})"
                                                 wire:loading.attr="disabled" wire:target="requery({{ $payment->id }})"
-                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald">
+                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald">
                                             <span wire:loading.remove wire:target="requery({{ $payment->id }})">{{ __('Requery') }}</span>
                                             <span wire:loading wire:target="requery({{ $payment->id }})">{{ __('Requerying…') }}</span>
                                         </button>

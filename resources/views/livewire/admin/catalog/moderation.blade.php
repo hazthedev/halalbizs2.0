@@ -15,12 +15,12 @@
             <span class="text-[13px] font-medium text-ink">{{ trans_choice('{1}:count selected|[2,*]:count selected', count($selected), ['count' => count($selected)]) }}</span>
             <x-ui.button wire:click="bulkApprove" wire:loading.attr="disabled">{{ __('Approve selected') }}</x-ui.button>
             <button type="button" wire:click="startBulkReject"
-                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Reject selected') }}
             </button>
             <button type="button" wire:click="bulkBan"
                     wire:confirm="{{ __('Ban the selected products? They disappear from the storefront and the sellers are notified.') }}"
-                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-semibold text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Ban selected') }}
             </button>
         </div>
@@ -60,7 +60,7 @@
                             </td>
                             <td class="px-3 py-2 text-ink-soft">{{ $product->store?->name }}</td>
                             <td class="px-3 py-2 text-ink-soft">{{ $product->category?->getTranslation('name', 'en') }}</td>
-                            <td class="px-3 py-2 text-right font-semibold tabular-nums whitespace-nowrap">
+                            <td class="px-3 py-2 text-right font-medium tabular-nums whitespace-nowrap">
                                 @if ($product->variants->isNotEmpty())
                                     @money($product->minPriceSen())@if ($product->maxPriceSen() !== $product->minPriceSen()) – @money($product->maxPriceSen())@endif
                                 @else
@@ -72,12 +72,12 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
                                     <button type="button" wire:click="approve({{ $product->id }})" wire:loading.attr="disabled"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-semibold text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Approve') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Approve') }}</button>
                                     <button type="button" wire:click="startReject({{ $product->id }})"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Reject') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Reject') }}</button>
                                     <button type="button" wire:click="ban({{ $product->id }})"
                                             wire:confirm="{{ __('Ban ":name"? It disappears from the storefront and the seller is notified.', ['name' => $product->getTranslation('name', 'en')]) }}"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Ban') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Ban') }}</button>
                                 </div>
                             </td>
                         </tr>
@@ -117,7 +117,7 @@
                                 </td>
                                 <td class="px-3 py-2 text-ink-soft">{{ $product->store?->name }}</td>
                                 <td class="px-3 py-2 text-ink-soft">{{ $product->category?->getTranslation('name', 'en') }}</td>
-                                <td class="px-3 py-2 text-right font-semibold tabular-nums whitespace-nowrap">
+                                <td class="px-3 py-2 text-right font-medium tabular-nums whitespace-nowrap">
                                     @if ($product->variants->isNotEmpty())
                                         @money($product->minPriceSen())@if ($product->maxPriceSen() !== $product->minPriceSen()) – @money($product->maxPriceSen())@endif
                                     @else
@@ -136,11 +136,11 @@
 
     {{-- Reject modal --}}
     @if ($rejectOpen)
-        <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:p-8" wire:click.self="cancelReject">
+        <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-emerald-night/40 p-4 sm:p-8" wire:click.self="cancelReject">
             <x-ui.card class="w-full max-w-lg shadow-pop">
                 <form wire:submit="confirmReject">
                     <div class="border-b border-line px-5 py-4">
-                        <h2 class="font-display text-lg font-semibold">
+                        <h2 class="font-display text-lg font-medium">
                             {{ trans_choice('{1}Reject product|[2,*]Reject :count products', count($rejectIds), ['count' => count($rejectIds)]) }}
                         </h2>
                     </div>
@@ -153,9 +153,9 @@
                         <p class="text-[13px] text-ink-faint">{{ __('The product moves back to drafts and the seller gets this reason by email and in-app.') }}</p>
                     </div>
                     <div class="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
-                        <button type="button" wire:click="cancelReject" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
+                        <button type="button" wire:click="cancelReject" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
                         <button type="submit" wire:loading.attr="disabled"
-                                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-danger px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
+                                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-danger px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
                             {{ __('Reject and notify') }}
                         </button>
                     </div>

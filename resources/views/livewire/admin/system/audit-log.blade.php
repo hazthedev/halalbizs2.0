@@ -27,7 +27,7 @@
             </div>
             @if ($subjectType !== '' || $dateFrom !== '' || $dateTo !== '')
                 <button type="button" wire:click="clearFilters"
-                        class="inline-flex min-h-11 items-center rounded-lg px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Clear filters') }}
                 </button>
             @endif
@@ -74,7 +74,7 @@
                             <td class="px-3 py-2 text-right">
                                 @if ($hasDiff)
                                     <button type="button" x-on:click="open = ! open" x-bind:aria-expanded="open ? 'true' : 'false'"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         <span x-text="open ? @js(__('Hide')) : @js(__('Diff'))">{{ __('Diff') }}</span>
                                     </button>
                                 @else
@@ -88,7 +88,7 @@
                                     <ul class="space-y-1 font-mono text-[12px]">
                                         @foreach (array_unique([...array_keys($old), ...array_keys($new)]) as $key)
                                             <li wire:key="diff-{{ $activity->id }}-{{ $key }}">
-                                                <span class="font-semibold text-ink">{{ $key }}:</span>
+                                                <span class="font-medium text-ink">{{ $key }}:</span>
                                                 <span class="text-ink-soft">{{ $format($old[$key] ?? null) }}</span>
                                                 <span aria-hidden="true">→</span>
                                                 <span class="sr-only">{{ __('changed to') }}</span>

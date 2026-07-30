@@ -43,9 +43,9 @@
                                 <a href="{{ route('admin.sellers.stores.show', $store) }}" wire:navigate
                                    class="inline-flex min-h-11 items-center gap-2.5 font-medium text-ink underline-offset-2 hover:text-emerald hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     @if ($logoUrl !== '')
-                                        <img src="{{ $logoUrl }}" alt="" class="size-8 shrink-0 rounded-lg border border-line bg-paper object-cover">
+                                        <img src="{{ $logoUrl }}" alt="" class="size-8 shrink-0 rounded-[var(--radius-control)] border border-line bg-paper object-cover">
                                     @else
-                                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg border border-line bg-paper text-[11px] font-semibold text-ink-faint" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($store->name, 0, 1)) }}</span>
+                                        <span class="flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-line bg-paper text-[11px] font-medium text-ink-faint" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($store->name, 0, 1)) }}</span>
                                     @endif
                                     <span class="line-clamp-1 max-w-52">{{ $store->name }}</span>
                                 </a>

@@ -15,7 +15,7 @@
         {{-- ===== Trending (last 7 days, with results) ===== --}}
         <x-ui.card class="overflow-x-auto">
             <div class="border-b border-line px-4 py-3">
-                <h2 class="text-sm font-semibold">{{ __('Trending — last 7 days') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Trending — last 7 days') }}</h2>
                 <p class="text-[12px] text-ink-soft">{{ __('What buyers are finding. Top 20 terms with results.') }}</p>
             </div>
 
@@ -46,7 +46,7 @@
         {{-- ===== Zero-result (last 30 days) ===== --}}
         <x-ui.card class="overflow-x-auto">
             <div class="border-b border-line px-4 py-3">
-                <h2 class="text-sm font-semibold">{{ __('Zero-result — last 30 days') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Zero-result — last 30 days') }}</h2>
                 <p class="text-[12px] text-ink-soft">{{ __('Buyers searched these and found nothing — consider creating a category or sourcing a product that matches.') }}</p>
             </div>
 

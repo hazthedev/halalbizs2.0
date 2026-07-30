@@ -16,7 +16,7 @@
             {{ __('Orders') }}
         </a>
         <div class="mt-1 flex flex-wrap items-center gap-3">
-            <h1 class="font-mono text-xl font-semibold text-ink">{{ $subOrder->sub_order_no }}</h1>
+            <h1 class="font-mono text-xl font-medium text-ink">{{ $subOrder->sub_order_no }}</h1>
             <x-order-status-pill :status="$subOrder->status" />
         </div>
         <p class="mt-1 text-[13px] text-ink-soft">
@@ -35,7 +35,7 @@
             {{-- Items (snapshots are sacred — read-only by design, never live product data) --}}
             <x-ui.card class="overflow-x-auto">
                 <div class="border-b border-line px-4 py-3">
-                    <h2 class="text-sm font-semibold">{{ __('Items') }}</h2>
+                    <h2 class="text-sm font-medium">{{ __('Items') }}</h2>
                 </div>
                 <table class="w-full min-w-[520px] text-[13px]">
                     <thead>
@@ -53,9 +53,9 @@
                                     <div class="flex items-center gap-3">
                                         @if ($url = $item->product?->getFirstMediaUrl('images', 'thumb'))
                                             <img src="{{ $url }}" alt="{{ trim($item->product_name.' '.($item->variant_label ?? '')) }}"
-                                                 class="size-10 shrink-0 rounded-lg border border-line bg-paper object-contain">
+                                                 class="size-10 shrink-0 rounded-[var(--radius-control)] border border-line bg-paper object-contain">
                                         @else
-                                            <span class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-line bg-paper text-ink-faint">
+                                            <span class="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-line bg-paper text-ink-faint">
                                                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z"/></svg>
                                             </span>
                                         @endif
@@ -69,7 +69,7 @@
                                 </td>
                                 <td class="px-4 py-2.5 text-right font-mono tabular-nums whitespace-nowrap">@money($item->unit_price_sen)</td>
                                 <td class="px-4 py-2.5 text-right tabular-nums">{{ $item->qty }}</td>
-                                <td class="px-4 py-2.5 text-right font-mono font-semibold tabular-nums whitespace-nowrap">@money($item->line_total_sen)</td>
+                                <td class="px-4 py-2.5 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($item->line_total_sen)</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -78,7 +78,7 @@
 
             {{-- Status timeline --}}
             <x-ui.card class="p-4">
-                <h2 class="text-sm font-semibold">{{ __('Timeline') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Timeline') }}</h2>
                 <ol class="mt-3 space-y-3">
                     @foreach ($subOrder->statusHistories as $history)
                         <li class="flex gap-3" wire:key="history-{{ $history->id }}">
@@ -108,7 +108,7 @@
 
             {{-- Admin powers (docs/08 §E) --}}
             <x-ui.card class="space-y-3 p-4">
-                <h2 class="text-sm font-semibold">{{ __('Admin actions') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Admin actions') }}</h2>
 
                 @if ($canForceCancel)
                     <div class="space-y-2">
@@ -121,7 +121,7 @@
                         @enderror
                         <button type="button" wire:click="forceCancel" wire:loading.attr="disabled"
                                 wire:confirm="{{ __('Force-cancel this sub-order? Items return to stock and the buyer is notified — this cannot be undone.') }}"
-                                class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-semibold text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                                class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-medium text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                             {{ __('Force cancel') }}
                         </button>
                     </div>
@@ -139,7 +139,7 @@
                         <p class="text-[12px] text-ink-soft">{{ __('Process the refund in the iPay88 merchant portal first, then record its reference here.') }}</p>
                         <button type="button" wire:click="markRefunded" wire:loading.attr="disabled"
                                 wire:confirm="{{ __('Mark this sub-order refunded? The order payment status flips to refunded — this cannot be undone.') }}"
-                                class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-semibold text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                                class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-medium text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                             {{ __('Mark refunded') }}
                         </button>
                     </div>
@@ -161,7 +161,7 @@
 
             {{-- Payment --}}
             <x-ui.card class="p-4">
-                <h2 class="text-sm font-semibold">{{ __('Payment') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Payment') }}</h2>
                 <dl class="mt-2 space-y-1.5 text-[13px]">
                     <div class="flex items-center justify-between gap-3">
                         <dt class="text-ink-soft">{{ __('Method') }}</dt>
@@ -196,7 +196,7 @@
 
             {{-- Address (order snapshot — sacred) --}}
             <x-ui.card class="p-4">
-                <h2 class="text-sm font-semibold">{{ __('Ship to') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Ship to') }}</h2>
                 <div class="mt-2 space-y-0.5 text-[13px]">
                     <p class="font-medium text-ink">{{ $address['recipient_name'] ?? '—' }}</p>
                     @if (! empty($address['phone']))
@@ -213,7 +213,7 @@
 
             {{-- Totals --}}
             <x-ui.card class="p-4">
-                <h2 class="text-sm font-semibold">{{ __('Totals') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Totals') }}</h2>
                 <dl class="mt-3 space-y-1.5 text-[13px]">
                     <div class="flex items-center justify-between gap-3">
                         <dt class="text-ink-soft">{{ __('Items subtotal') }}</dt>
@@ -230,8 +230,8 @@
                         </div>
                     @endif
                     <div class="flex items-center justify-between gap-3 border-t border-line pt-1.5">
-                        <dt class="font-semibold text-ink">{{ __('Total') }}</dt>
-                        <dd class="font-mono font-semibold tabular-nums">@money($subOrder->total_sen)</dd>
+                        <dt class="font-medium text-ink">{{ __('Total') }}</dt>
+                        <dd class="font-mono font-medium tabular-nums">@money($subOrder->total_sen)</dd>
                     </div>
                 </dl>
                 <p class="mt-3 border-t border-line pt-2 text-[12px] text-ink-soft">

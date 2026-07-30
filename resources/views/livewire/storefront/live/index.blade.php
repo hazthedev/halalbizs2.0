@@ -12,7 +12,7 @@
             @foreach ($liveNow as $session)
                 <a href="{{ route('live.room', $session->slug) }}" wire:navigate
                    class="group overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-card">
-                    <div class="surface-girih relative flex aspect-video items-center justify-center bg-emerald-night">
+                    <div class="relative flex aspect-video items-center justify-center bg-emerald-night">
                         <span class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-danger px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.06em] text-white">
                             <span class="size-1.5 animate-pulse rounded-full bg-white"></span>{{ __('Live') }}
                         </span>

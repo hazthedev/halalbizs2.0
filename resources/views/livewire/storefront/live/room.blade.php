@@ -17,7 +17,7 @@
     <div class="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         {{-- Stage --}}
         <div>
-            <div class="surface-girih relative flex aspect-video items-center justify-center overflow-hidden rounded-[var(--radius-card)] border border-brass/25 bg-emerald-night">
+            <div class="relative flex aspect-video items-center justify-center overflow-hidden rounded-[var(--radius-card)] border border-emerald-edge bg-emerald-night">
                 @if ($embedUrl)
                     <iframe src="{{ $embedUrl }}" class="absolute inset-0 size-full" frameborder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen

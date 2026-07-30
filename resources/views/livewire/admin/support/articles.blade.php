@@ -15,7 +15,7 @@
     @if ($showForm)
         <x-ui.card class="p-4">
             <form wire:submit="save" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">
+                <h2 class="font-display text-lg font-medium">
                     {{ $editingId !== null ? __('Edit article') : __('New article') }}
                 </h2>
 
@@ -40,13 +40,13 @@
                         <button type="button" role="tab" x-on:click="tab = 'en'"
                                 x-bind:aria-selected="tab === 'en' ? 'true' : 'false'"
                                 x-bind:class="tab === 'en' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
-                                class="min-h-11 border-b-2 px-3 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="min-h-11 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('English') }}
                         </button>
                         <button type="button" role="tab" x-on:click="tab = 'ms'"
                                 x-bind:aria-selected="tab === 'ms' ? 'true' : 'false'"
                                 x-bind:class="tab === 'ms' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
-                                class="min-h-11 border-b-2 px-3 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="min-h-11 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Bahasa Melayu') }}
                         </button>
                     </div>
@@ -119,7 +119,7 @@
                                 <button type="button" role="switch" aria-checked="{{ $article->is_active ? 'true' : 'false' }}"
                                         wire:click="toggleActive({{ $article->id }})"
                                         aria-label="{{ __('Toggle :title', ['title' => $article->getTranslation('title', 'en')]) }}"
-                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $article->is_active ? 'bg-emerald' : 'bg-line-strong' }}">
                                         <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $article->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                     </span>
@@ -128,10 +128,10 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
                                     <button type="button" wire:click="edit({{ $article->id }})"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
                                     <button type="button" wire:click="delete({{ $article->id }})"
                                             wire:confirm="{{ __('Delete this article? This cannot be undone.') }}"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
                                 </div>
                             </td>
                         </tr>

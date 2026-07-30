@@ -1,26 +1,26 @@
 <div class="mx-auto max-w-5xl px-4 py-6">
-    <h1 class="font-display text-2xl font-bold text-ink">{{ __('Flash sales') }}</h1>
+    <h1 class="font-display text-2xl font-medium text-ink">{{ __('Flash sales') }}</h1>
 
     {{-- Create a sale --}}
-    <form wire:submit="createSale" class="mt-4 grid gap-3 rounded-xl border border-line bg-surface p-4 shadow-soft sm:grid-cols-4">
+    <form wire:submit="createSale" class="mt-4 grid gap-3 rounded-[var(--radius-panel)] border border-line bg-surface p-4 shadow-soft sm:grid-cols-4">
         <div class="sm:col-span-2">
             <label class="block text-[13px] font-medium text-ink">{{ __('Title') }}</label>
             <input type="text" wire:model="title" placeholder="11.11 Mega Sale"
-                   class="mt-1 min-h-11 w-full rounded-lg border border-line-strong px-3 text-sm">
+                   class="mt-1 min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong px-3 text-sm">
             @error('title')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
         </div>
         <div>
             <label class="block text-[13px] font-medium text-ink">{{ __('Starts') }}</label>
-            <input type="datetime-local" wire:model="startsAt" class="mt-1 min-h-11 w-full rounded-lg border border-line-strong px-3 text-sm">
+            <input type="datetime-local" wire:model="startsAt" class="mt-1 min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong px-3 text-sm">
             @error('startsAt')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
         </div>
         <div>
             <label class="block text-[13px] font-medium text-ink">{{ __('Ends') }}</label>
-            <input type="datetime-local" wire:model="endsAt" class="mt-1 min-h-11 w-full rounded-lg border border-line-strong px-3 text-sm">
+            <input type="datetime-local" wire:model="endsAt" class="mt-1 min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong px-3 text-sm">
             @error('endsAt')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
         </div>
         <div class="sm:col-span-4">
-            <button type="submit" class="inline-flex min-h-11 items-center rounded-lg bg-emerald px-4 text-sm font-semibold text-white">
+            <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white">
                 {{ __('Create flash sale') }}
             </button>
         </div>
@@ -29,10 +29,10 @@
     {{-- Existing sales --}}
     <div class="mt-6 space-y-4">
         @forelse ($sales as $sale)
-            <div class="rounded-xl border border-line bg-surface p-4 shadow-soft">
+            <div class="rounded-[var(--radius-panel)] border border-line bg-surface p-4 shadow-soft">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                        <h2 class="font-semibold text-ink">{{ $sale->title }}
+                        <h2 class="font-medium text-ink">{{ $sale->title }}
                             <span class="ml-2 rounded-full px-2 py-0.5 text-[12px] {{ $sale->isLive() ? 'bg-emerald-tint text-emerald' : 'bg-canvas-deep text-ink-soft' }}">
                                 {{ $sale->isLive() ? __('Live') : ($sale->is_active ? __('Scheduled') : __('Off')) }}
                             </span>
@@ -40,24 +40,24 @@
                         <p class="text-[13px] text-ink-soft">{{ $sale->starts_at->format('d M H:i') }} → {{ $sale->ends_at->format('d M H:i') }}</p>
                     </div>
                     <div class="flex gap-2">
-                        <button wire:click="openAddItem({{ $sale->id }})" class="rounded-lg border border-line-strong px-3 py-1.5 text-[13px] font-medium">{{ __('Add deal') }}</button>
-                        <button wire:click="toggleActive({{ $sale->id }})" class="rounded-lg border border-line-strong px-3 py-1.5 text-[13px] font-medium">{{ $sale->is_active ? __('Disable') : __('Enable') }}</button>
-                        <button wire:click="deleteSale({{ $sale->id }})" wire:confirm="{{ __('Remove this flash sale?') }}" class="rounded-lg border border-danger/40 px-3 py-1.5 text-[13px] font-medium text-danger">{{ __('Delete') }}</button>
+                        <button wire:click="openAddItem({{ $sale->id }})" class="rounded-[var(--radius-control)] border border-line-strong px-3 py-1.5 text-[13px] font-medium">{{ __('Add deal') }}</button>
+                        <button wire:click="toggleActive({{ $sale->id }})" class="rounded-[var(--radius-control)] border border-line-strong px-3 py-1.5 text-[13px] font-medium">{{ $sale->is_active ? __('Disable') : __('Enable') }}</button>
+                        <button wire:click="deleteSale({{ $sale->id }})" wire:confirm="{{ __('Remove this flash sale?') }}" class="rounded-[var(--radius-control)] border border-danger/40 px-3 py-1.5 text-[13px] font-medium text-danger">{{ __('Delete') }}</button>
                     </div>
                 </div>
 
                 @if ($addingToSaleId === $sale->id)
-                    <form wire:submit="addItem" class="mt-3 grid gap-2 rounded-lg bg-canvas p-3 sm:grid-cols-5">
-                        <select wire:model="itemVariantId" class="min-h-11 rounded-lg border border-line-strong px-2 text-sm sm:col-span-2">
+                    <form wire:submit="addItem" class="mt-3 grid gap-2 rounded-[var(--radius-control)] bg-canvas p-3 sm:grid-cols-5">
+                        <select wire:model="itemVariantId" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong px-2 text-sm sm:col-span-2">
                             <option value="">{{ __('Pick a variant') }}</option>
                             @foreach ($variantPick as $v)
                                 <option value="{{ $v->id }}">#{{ $v->id }} · {{ Str::limit($v->product?->getTranslation('name', 'en'), 30) }} {{ $v->options_label }}</option>
                             @endforeach
                         </select>
-                        <input type="text" wire:model="itemPromo" placeholder="{{ __('Promo RM') }}" class="min-h-11 rounded-lg border border-line-strong px-2 text-sm">
-                        <input type="number" wire:model="itemAllocated" min="1" placeholder="{{ __('Qty') }}" class="min-h-11 rounded-lg border border-line-strong px-2 text-sm">
-                        <input type="number" wire:model="itemPerBuyer" min="1" placeholder="{{ __('Per buyer') }}" class="min-h-11 rounded-lg border border-line-strong px-2 text-sm">
-                        <button type="submit" class="min-h-11 rounded-lg bg-emerald px-3 text-sm font-semibold text-white sm:col-span-5">{{ __('Add deal') }}</button>
+                        <input type="text" wire:model="itemPromo" placeholder="{{ __('Promo RM') }}" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong px-2 text-sm">
+                        <input type="number" wire:model="itemAllocated" min="1" placeholder="{{ __('Qty') }}" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong px-2 text-sm">
+                        <input type="number" wire:model="itemPerBuyer" min="1" placeholder="{{ __('Per buyer') }}" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong px-2 text-sm">
+                        <button type="submit" class="min-h-11 rounded-[var(--radius-control)] bg-emerald px-3 text-sm font-medium text-white sm:col-span-5">{{ __('Add deal') }}</button>
                         @error('itemVariantId')<p class="text-[13px] text-danger sm:col-span-5">{{ $message }}</p>@enderror
                     </form>
                 @endif

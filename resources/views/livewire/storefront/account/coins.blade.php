@@ -1,7 +1,7 @@
 <div>
     <x-account-shell active="coins" :title="__('My Coins')">
         {{-- Balance — brass coin ornament, neutral money figure --}}
-        <div class="surface-girih relative overflow-hidden rounded-[var(--radius-card)] border border-brass/25 bg-emerald-night p-6 text-on-dark shadow-card">
+        <div class="relative overflow-hidden rounded-[var(--radius-card)] border border-emerald-edge bg-emerald-night p-6 text-on-dark shadow-card">
             <div class="relative flex items-center gap-4">
                 <span class="flex size-14 shrink-0 items-center justify-center rounded-full bg-brass/15 text-brass">
                     <x-ui.star-mark :size="30" />

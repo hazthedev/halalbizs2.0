@@ -9,7 +9,7 @@
                         wire:click="setPeriod('{{ $key }}')"
                         wire:key="period-{{ $key }}"
                         aria-pressed="{{ $period === $key ? 'true' : 'false' }}"
-                        class="min-h-10 rounded-md px-3 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $period === $key ? 'bg-ink text-paper' : 'text-ink-soft hover:text-ink' }}">
+                        class="min-h-10 rounded-md px-3 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $period === $key ? 'bg-emerald-night text-on-dark' : 'text-ink-soft hover:text-ink' }}">
                     {{ $label }}
                 </button>
             @endforeach
@@ -24,30 +24,30 @@
         @can('finance.manage')
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('GMV (paid)') }}</p>
-            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">@money($gmvSen)</p>
+            <p class="mt-1 font-mono text-[20px] font-medium leading-tight tabular-nums whitespace-nowrap">@money($gmvSen)</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ $this->periods()[$period] }}</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Commission revenue') }}</p>
-            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">
+            <p class="mt-1 font-mono text-[20px] font-medium leading-tight tabular-nums whitespace-nowrap">
                 @if ($commissionKnown) @money($commissionSen) @else — @endif
             </p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Completed sub-orders') }} · {{ __('Take-rate') }} {{ number_format($takeRateBp / 100, 2) }}%</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Boost revenue') }}</p>
-            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">@money($boostRevenueSen)</p>
+            <p class="mt-1 font-mono text-[20px] font-medium leading-tight tabular-nums whitespace-nowrap">@money($boostRevenueSen)</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Paid placements') }}</p>
         </x-ui.card>
         @endcan
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Orders today') }}</p>
-            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">{{ number_format($ordersToday) }}</p>
+            <p class="mt-1 font-mono text-[20px] font-medium leading-tight tabular-nums whitespace-nowrap">{{ number_format($ordersToday) }}</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Placed since midnight') }}</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('New buyers today') }}</p>
-            <p class="mt-1 font-display text-[24px] font-bold leading-tight tabular-nums whitespace-nowrap">{{ number_format($newBuyersToday) }}</p>
+            <p class="mt-1 font-mono text-[20px] font-medium leading-tight tabular-nums whitespace-nowrap">{{ number_format($newBuyersToday) }}</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Registrations since midnight') }}</p>
         </x-ui.card>
     </div>
@@ -56,27 +56,27 @@
     <div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Coins in circulation') }}</p>
-            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ number_format($m2['coin_circulation']) }}</p>
+            <p class="mt-1 font-mono text-[22px] font-medium leading-tight tabular-nums">{{ number_format($m2['coin_circulation']) }}</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Loyalty Coins') }}</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Active subscriptions') }}</p>
-            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ number_format($m2['active_subscriptions']) }}</p>
+            <p class="mt-1 font-mono text-[22px] font-medium leading-tight tabular-nums">{{ number_format($m2['active_subscriptions']) }}</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Subscribe & save') }}</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Affiliate referrals') }}</p>
-            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ number_format($m2['affiliate_referrals']) }}</p>
+            <p class="mt-1 font-mono text-[22px] font-medium leading-tight tabular-nums">{{ number_format($m2['affiliate_referrals']) }}</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Confirmed commissions') }}</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Live now') }}</p>
-            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ number_format($m2['live_now']) }}</p>
+            <p class="mt-1 font-mono text-[22px] font-medium leading-tight tabular-nums">{{ number_format($m2['live_now']) }}</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Streaming sessions') }}</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Group-buy unlock rate') }}</p>
-            <p class="mt-1 font-display text-[22px] font-bold leading-tight tabular-nums">{{ $m2['group_unlock_rate_pct'] }}%</p>
+            <p class="mt-1 font-mono text-[22px] font-medium leading-tight tabular-nums">{{ $m2['group_unlock_rate_pct'] }}%</p>
             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Teams that unlocked') }}</p>
         </x-ui.card>
     </div>
@@ -93,12 +93,12 @@
                             {{ $queue['label'] }}
                             <svg class="size-3.5 text-ink-faint group-hover:text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
                         </p>
-                        <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums {{ $queue['count'] > 0 ? 'text-warn' : 'text-ink' }}">{{ number_format($queue['count']) }}</p>
+                        <p class="mt-1 font-mono text-[28px] font-medium leading-tight tabular-nums {{ $queue['count'] > 0 ? 'text-warn' : 'text-ink' }}">{{ number_format($queue['count']) }}</p>
                     </a>
                 @else
                     <x-ui.card class="p-4" wire:key="queue-{{ $loop->index }}">
                         <p class="text-[13px] font-medium text-ink-soft">{{ $queue['label'] }}</p>
-                        <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums text-ink-faint">{{ number_format($queue['count']) }}</p>
+                        <p class="mt-1 font-mono text-[28px] font-medium leading-tight tabular-nums text-ink-faint">{{ number_format($queue['count']) }}</p>
                     </x-ui.card>
                 @endif
             @endforeach
@@ -110,7 +110,7 @@
     @can('finance.manage')
     <x-ui.card class="p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 class="text-sm font-semibold">{{ __('GMV — last 30 days') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('GMV — last 30 days') }}</h2>
             <p class="text-[13px] text-ink-soft">{{ __('Paid orders, daily') }}</p>
         </div>
 
@@ -124,7 +124,7 @@
     {{-- New buyers over time (interactive line) --}}
     <x-ui.card class="p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 class="text-sm font-semibold">{{ __('New buyers over time') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('New buyers over time') }}</h2>
             <p class="text-[13px] text-ink-soft">{{ __('Registrations, daily') }}</p>
         </div>
 
@@ -138,12 +138,12 @@
 
         {{-- Orders by status (donut) --}}
         <x-ui.card class="p-4">
-            <h2 class="text-sm font-semibold">{{ __('Orders by status') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Orders by status') }}</h2>
 
             @if ($statusChart['series'] === [])
                 <div class="flex items-center justify-center py-12 text-center" style="min-height: 280px">
                     <div>
-                        <p class="font-display text-lg font-semibold">{{ __('No orders yet') }}</p>
+                        <p class="font-display text-lg font-medium">{{ __('No orders yet') }}</p>
                         <p class="mt-1 text-sm text-ink-soft">{{ __('Sub-orders appear here as buyers check out.') }}</p>
                     </div>
                 </div>
@@ -157,12 +157,12 @@
 
         {{-- Top categories by completed GMV (horizontal bar) --}}
         <x-ui.card class="p-4">
-            <h2 class="text-sm font-semibold">{{ __('Top categories by GMV') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Top categories by GMV') }}</h2>
 
             @if ($categoriesChart['labels'] === [])
                 <div class="flex items-center justify-center py-12 text-center" style="min-height: 280px">
                     <div>
-                        <p class="font-display text-lg font-semibold">{{ __('No completed orders yet') }}</p>
+                        <p class="font-display text-lg font-medium">{{ __('No completed orders yet') }}</p>
                         <p class="mt-1 text-sm text-ink-soft">{{ __('Categories rank here once their orders complete.') }}</p>
                     </div>
                 </div>
@@ -179,7 +179,7 @@
     @can('finance.manage')
     <x-ui.card>
         <div class="border-b border-line px-4 py-3">
-            <h2 class="text-sm font-semibold">{{ __('Top stores by GMV') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Top stores by GMV') }}</h2>
         </div>
 
         @if ($topStores->isEmpty())
@@ -207,7 +207,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 text-right tabular-nums text-ink-soft">{{ number_format((int) $row->completed_count) }}</td>
-                            <td class="px-4 py-2 text-right font-mono font-semibold tabular-nums whitespace-nowrap">@money((int) $row->gmv_sen)</td>
+                            <td class="px-4 py-2 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money((int) $row->gmv_sen)</td>
                         </tr>
                     @endforeach
                 </tbody>

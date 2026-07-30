@@ -15,7 +15,7 @@
     @if ($showForm)
         <x-ui.card class="p-4">
             <form wire:submit="save" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">
+                <h2 class="font-display text-lg font-medium">
                     {{ $editingId !== null ? __('Edit page') : __('New page') }}
                 </h2>
 
@@ -34,13 +34,13 @@
                         <button type="button" role="tab" x-on:click="tab = 'en'"
                                 x-bind:aria-selected="tab === 'en' ? 'true' : 'false'"
                                 x-bind:class="tab === 'en' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
-                                class="min-h-11 border-b-2 px-3 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="min-h-11 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('English') }}
                         </button>
                         <button type="button" role="tab" x-on:click="tab = 'ms'"
                                 x-bind:aria-selected="tab === 'ms' ? 'true' : 'false'"
                                 x-bind:class="tab === 'ms' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
-                                class="min-h-11 border-b-2 px-3 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="min-h-11 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Bahasa Melayu') }}
                         </button>
                     </div>
@@ -121,7 +121,7 @@
                                 <button type="button" role="switch" aria-checked="{{ $page->is_active ? 'true' : 'false' }}"
                                         wire:click="toggleActive({{ $page->id }})" @disabled($isLockedActive)
                                         aria-label="{{ __('Toggle :title', ['title' => $page->getTranslation('title', 'en')]) }}"
-                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
+                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
                                     <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $page->is_active ? 'bg-emerald' : 'bg-line-strong' }}">
                                         <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $page->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                     </span>
@@ -131,11 +131,11 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
                                     <button type="button" wire:click="edit({{ $page->id }})"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
                                     @unless ($isSystem)
                                         <button type="button" wire:click="delete({{ $page->id }})"
                                                 wire:confirm="{{ __('Delete this page? This cannot be undone.') }}"
-                                                class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
+                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
                                     @endunless
                                 </div>
                             </td>

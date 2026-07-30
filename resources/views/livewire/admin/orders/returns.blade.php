@@ -11,11 +11,11 @@
                 wire:click="$set('tab', '{{ $key }}')"
                 wire:key="tab-{{ $key }}"
                 aria-current="{{ $tab === $key ? 'page' : 'false' }}"
-                class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $key ? 'border-ink font-semibold text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}"
+                class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $key ? 'border-ink font-medium text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}"
             >
                 {{ $label }}
                 @if ($counts[$key] > 0)
-                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-emerald">{{ $counts[$key] }}</span>
+                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-emerald">{{ $counts[$key] }}</span>
                 @endif
             </button>
         @endforeach
@@ -26,7 +26,7 @@
         @php($resolvingOnline = $resolving->subOrder->order->payment_method === \App\Enums\PaymentMethod::Ipay88)
         <x-ui.card class="space-y-3 p-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="text-sm font-semibold">
+                <h2 class="text-sm font-medium">
                     {{ __('Resolve return on') }}
                     <span class="font-mono">{{ $resolving->subOrder->sub_order_no }}</span>
                 </h2>
@@ -52,7 +52,7 @@
                 @endif
                 <div class="flex gap-2">
                     <dt class="shrink-0 text-ink-soft">{{ __('Refund amount') }}:</dt>
-                    <dd class="font-mono font-semibold tabular-nums">@money($resolving->subOrder->total_sen)</dd>
+                    <dd class="font-mono font-medium tabular-nums">@money($resolving->subOrder->total_sen)</dd>
                 </div>
             </dl>
 
@@ -87,18 +87,18 @@
             <div class="flex flex-wrap gap-2">
                 <button type="button" wire:click="refundBuyer" wire:loading.attr="disabled"
                         wire:confirm="{{ __('Refund the buyer? This closes the return and adjusts the seller ledger — it cannot be undone.') }}"
-                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                     {{ __('Refund buyer') }}
                 </button>
                 @if ($resolving->subOrder->status === \App\Enums\SubOrderStatus::ReturnRequested)
                     <button type="button" wire:click="sideWithSeller({{ $resolving->id }})" wire:loading.attr="disabled"
                             wire:confirm="{{ __('Side with the seller? The return is rejected and the order goes back to its previous status.') }}"
-                            class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-semibold text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                            class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-medium text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                         {{ __('Side with seller') }}
                     </button>
                 @endif
                 <button type="button" wire:click="closeResolve"
-                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] px-4 text-sm font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] px-4 text-sm font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Close') }}
                 </button>
             </div>
@@ -146,7 +146,7 @@
                                 <div class="flex justify-end">
                                     @if (in_array($request->status, [\App\Enums\ReturnStatus::Accepted, \App\Enums\ReturnStatus::Disputed, \App\Enums\ReturnStatus::Escalated], true))
                                         <button type="button" wire:click="openResolve({{ $request->id }})"
-                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                                             {{ __('Resolve') }}
                                         </button>
                                     @else

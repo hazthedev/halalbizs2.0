@@ -24,7 +24,7 @@
         <x-ui.card class="p-4">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <h2 class="font-display text-lg font-semibold">{{ $selected->subject }}</h2>
+                    <h2 class="font-display text-lg font-medium">{{ $selected->subject }}</h2>
                     <p class="mt-1 text-[13px] text-ink-soft">
                         <span class="font-mono">#{{ $selected->id }}</span>
                         · {{ $selected->user->name }} ({{ $selected->user->email }})
@@ -44,7 +44,7 @@
                     <div wire:key="reply-{{ $ticketReply->id }}"
                          class="rounded-[var(--radius-card)] border border-line p-3 {{ $ticketReply->isFromSupport() ? 'bg-surface' : 'bg-paper' }}">
                         <div class="flex items-baseline justify-between gap-3">
-                            <p class="text-[13px] font-semibold {{ $ticketReply->isFromSupport() ? 'text-emerald' : 'text-ink' }}">
+                            <p class="text-[13px] font-medium {{ $ticketReply->isFromSupport() ? 'text-emerald' : 'text-ink' }}">
                                 {{ $ticketReply->isFromSupport() ? __('Support') : __('Buyer') }}
                             </p>
                             <p class="text-xs text-ink-faint">{{ $ticketReply->created_at?->diffForHumans() }}</p>
@@ -90,9 +90,9 @@
             @foreach (TicketStatus::cases() as $status)
                 <button type="button" role="tab" wire:click="setTab('{{ $status->value }}')"
                         aria-selected="{{ $tab === $status->value ? 'true' : 'false' }}"
-                        class="flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $status->value ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink' }}">
+                        class="flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $status->value ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink' }}">
                     {{ $status->label() }}
-                    <span class="rounded-full bg-emerald-tint px-2 py-0.5 text-[11px] font-bold text-emerald">{{ $counts[$status->value] }}</span>
+                    <span class="rounded-full bg-emerald-tint px-2 py-0.5 text-[11px] font-medium text-emerald">{{ $counts[$status->value] }}</span>
                 </button>
             @endforeach
         </div>
@@ -136,16 +136,16 @@
                                 <td class="px-3 py-2">
                                     <div class="flex items-center justify-end gap-1">
                                         <button type="button" wire:click="togglePriority({{ $ticket->id }})"
-                                                class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                             {{ $ticket->priority === TicketPriority::Urgent ? __('Normal') : __('Urgent') }}
                                         </button>
                                         @if ($ticket->isClosed())
                                             <button type="button" wire:click="reopen({{ $ticket->id }})"
-                                                    class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Reopen') }}</button>
+                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Reopen') }}</button>
                                         @else
                                             <button type="button" wire:click="close({{ $ticket->id }})"
                                                     wire:confirm="{{ __('Close this ticket? The buyer can no longer reply.') }}"
-                                                    class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Close') }}</button>
+                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Close') }}</button>
                                         @endif
                                     </div>
                                 </td>

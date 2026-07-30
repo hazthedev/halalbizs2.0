@@ -9,19 +9,19 @@
             <ul class="divide-y divide-line">
                 <li class="flex items-center gap-3 px-4 py-2">
                     <div class="flex-1">
-                        <p class="text-[13px] font-semibold text-ink">{{ __('English') }} <span class="font-mono text-[12px] text-ink-faint">en</span></p>
+                        <p class="text-[13px] font-medium text-ink">{{ __('English') }} <span class="font-mono text-[12px] text-ink-faint">en</span></p>
                         <p class="text-[12px] text-ink-soft">{{ __('Fallback locale — every translation falls back to English.') }}</p>
                     </div>
                     <x-ui.badge variant="verified">{{ __('Always on') }}</x-ui.badge>
                 </li>
                 <li class="flex items-center gap-3 px-4 py-2">
                     <div class="flex-1">
-                        <p class="text-[13px] font-semibold text-ink">{{ __('Bahasa Melayu') }} <span class="font-mono text-[12px] text-ink-faint">ms</span></p>
+                        <p class="text-[13px] font-medium text-ink">{{ __('Bahasa Melayu') }} <span class="font-mono text-[12px] text-ink-faint">ms</span></p>
                         <p class="text-[12px] text-ink-soft">{{ __('Buyers can switch to BM when enabled.') }}</p>
                     </div>
                     <button type="button" role="switch" aria-checked="{{ $msEnabled ? 'true' : 'false' }}"
                             wire:click="toggleMs" aria-label="{{ __('Toggle Bahasa Melayu') }}"
-                            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $msEnabled ? 'bg-emerald' : 'bg-line-strong' }}">
                             <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $msEnabled ? 'translate-x-6' : 'translate-x-1' }}"></span>
                         </span>
@@ -29,7 +29,7 @@
                 </li>
                 <li class="flex items-center gap-3 px-4 py-2 opacity-50">
                     <div class="flex-1">
-                        <p class="text-[13px] font-semibold text-ink">{{ __('Chinese (Simplified)') }} <span class="font-mono text-[12px] text-ink-faint">zh</span></p>
+                        <p class="text-[13px] font-medium text-ink">{{ __('Chinese (Simplified)') }} <span class="font-mono text-[12px] text-ink-faint">zh</span></p>
                         <p class="text-[12px] text-ink-soft">{{ __('Coming later — not available yet.') }}</p>
                     </div>
                     <x-ui.badge variant="neutral">{{ __('Coming later') }}</x-ui.badge>
@@ -60,12 +60,12 @@
                                 <div class="flex items-center gap-0.5">
                                     <button type="button" wire:click="moveCurrency({{ $currency->id }}, -1)" @disabled($loop->first)
                                             aria-label="{{ __('Move :code up', ['code' => $currency->code]) }}"
-                                            class="inline-flex size-11 items-center justify-center rounded-lg text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
                                     </button>
                                     <button type="button" wire:click="moveCurrency({{ $currency->id }}, 1)" @disabled($loop->last)
                                             aria-label="{{ __('Move :code down', ['code' => $currency->code]) }}"
-                                            class="inline-flex size-11 items-center justify-center rounded-lg text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
                                     </button>
                                 </div>
@@ -82,7 +82,7 @@
                                 <button type="button" role="switch" aria-checked="{{ $currency->is_active ? 'true' : 'false' }}"
                                         wire:click="toggleCurrency({{ $currency->id }})" @disabled($currency->is_base)
                                         aria-label="{{ __('Toggle :code', ['code' => $currency->code]) }}"
-                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
+                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
                                     <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $currency->is_active ? 'bg-emerald' : 'bg-line-strong' }}">
                                         <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $currency->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                     </span>
@@ -156,14 +156,14 @@
                                         @error('marginInput.'.$code)<p class="mt-1 max-w-32 text-[12px] text-danger">{{ $message }}</p>@enderror
                                     </div>
                                     <button type="button" wire:click="updateRate('{{ $code }}')" wire:loading.attr="disabled"
-                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ __('Save rate') }}
                                     </button>
                                 </div>
                             </td>
                             <td class="px-3 py-2 text-right">
                                 <button type="button" wire:click="toggleHistory('{{ $code }}')"
-                                        class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     {{ $historyFor === $code ? __('Hide') : __('History') }}
                                 </button>
                             </td>
@@ -171,7 +171,7 @@
                         @if ($historyFor === $code)
                             <tr class="border-b border-line bg-paper last:border-b-0" wire:key="history-{{ $code }}">
                                 <td colspan="7" class="px-4 py-3">
-                                    <p class="mb-2 text-[12px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Last 10 rates — :code', ['code' => $code]) }}</p>
+                                    <p class="mb-2 text-[12px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Last 10 rates — :code', ['code' => $code]) }}</p>
                                     @if ($history->isEmpty())
                                         <p class="text-[13px] text-ink-soft">{{ __('No rates recorded yet.') }}</p>
                                     @else
