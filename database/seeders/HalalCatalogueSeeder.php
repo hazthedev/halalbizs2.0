@@ -31,13 +31,12 @@ use Illuminate\Support\Str;
  */
 class HalalCatalogueSeeder extends Seeder
 {
-    /** Where the two packshot sets live. Neither is inside the repo: the
-     *  reference set ships with the design concept, the generated set is written
-     *  by the Codex batch. */
-    private const IMAGE_ROOTS = [
-        'reference' => 'Downloads/Halal Bizs E-commerce Revamp/assets/products',
-        'generated' => 'Downloads/halalbizs-packshots',
-    ];
+    /** Packshots live IN THE REPO, under seeders/data/packshots.
+     *  They used to be read from a folder in $HOME, which worked locally and
+     *  would have seeded the preview with 166 imageless products, because the
+     *  deploy only ever has what is committed. 166 WebP files, 5.4 MB total
+     *  (69 MB as PNG). */
+    private const PACKSHOT_DIR = 'seeders/data/packshots';
 
     public function run(): void
     {
@@ -206,14 +205,7 @@ class HalalCatalogueSeeder extends Seeder
      *  so the caller can report how many are still pending. */
     private function attachPackshot(Product $product, string $ref): bool
     {
-        [$set, $file] = explode('/', $ref, 2);
-        $root = self::IMAGE_ROOTS[$set] ?? null;
-
-        if ($root === null) {
-            return false;
-        }
-
-        $absolute = rtrim((string) getenv('HOME'), '/').'/'.$root.'/'.$file;
+        $absolute = database_path(self::PACKSHOT_DIR.'/'.basename($ref));
 
         if (! File::exists($absolute)) {
             return false;

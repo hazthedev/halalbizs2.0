@@ -185,7 +185,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.8,
    "reviews": 1204,
-   "image": "reference/01_beras_basmathi_halal.png",
+   "image": "packshots/01_beras_basmathi_halal.webp",
    "source": "reference",
    "key": "beras-basmathi-aged-12-months"
   },
@@ -200,7 +200,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.6,
    "reviews": 862,
-   "image": "reference/02_minyak_masak_halal.png",
+   "image": "packshots/02_minyak_masak_halal.webp",
    "source": "reference",
    "key": "minyak-masak-sawi-tulen"
   },
@@ -215,7 +215,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.5,
    "reviews": 431,
-   "image": "reference/03_tepung_gandum_halal.png",
+   "image": "packshots/03_tepung_gandum_halal.webp",
    "source": "reference",
    "key": "tepung-gandum-serbaguna"
   },
@@ -230,7 +230,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.4,
    "reviews": 388,
-   "image": "reference/04_gula_pasir_halal.png",
+   "image": "packshots/04_gula_pasir_halal.webp",
    "source": "reference",
    "key": "gula-pasir-halus"
   },
@@ -245,7 +245,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.7,
    "reviews": 2104,
-   "image": "reference/05_mi_segera_halal.png",
+   "image": "packshots/05_mi_segera_halal.webp",
    "source": "reference",
    "key": "mi-segera-perisa-ayam"
   },
@@ -260,7 +260,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.6,
    "reviews": 674,
-   "image": "reference/06_tuna_halal.png",
+   "image": "packshots/06_tuna_halal.webp",
    "source": "reference",
    "key": "tuna-dalam-minyak"
   },
@@ -275,7 +275,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.5,
    "reviews": 512,
-   "image": "reference/07_sos_cili_halal.png",
+   "image": "packshots/07_sos_cili_halal.webp",
    "source": "reference",
    "key": "sos-cili-pedas-manis"
   },
@@ -290,7 +290,7 @@
    "department": "Food & Snacks",
    "rating": 4.9,
    "reviews": 1418,
-   "image": "reference/08_kurma_halal.png",
+   "image": "packshots/08_kurma_halal.webp",
    "source": "reference",
    "key": "kurma-premium-ajwa"
   },
@@ -305,7 +305,7 @@
    "department": "Drinks",
    "rating": 4.7,
    "reviews": 596,
-   "image": "reference/09_susu_tepung_halal.png",
+   "image": "packshots/09_susu_tepung_halal.webp",
    "source": "reference",
    "key": "susu-tepung-penuh-krim"
   },
@@ -320,7 +320,7 @@
    "department": "Drinks",
    "rating": 4.6,
    "reviews": 803,
-   "image": "reference/10_susu_coklat_halal.png",
+   "image": "packshots/10_susu_coklat_halal.webp",
    "source": "reference",
    "key": "susu-coklat-uht"
   },
@@ -335,7 +335,7 @@
    "department": "Food & Snacks",
    "rating": 4.5,
    "reviews": 1092,
-   "image": "reference/11_biskut_marie_halal.png",
+   "image": "packshots/11_biskut_marie_halal.webp",
    "source": "reference",
    "key": "biskut-marie-klasik"
   },
@@ -350,7 +350,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.9,
    "reviews": 341,
-   "image": "reference/12_madu_asli_halal.png",
+   "image": "packshots/12_madu_asli_halal.webp",
    "source": "reference",
    "key": "madu-asli-hutan"
   },
@@ -365,7 +365,7 @@
    "department": "Drinks",
    "rating": 4.7,
    "reviews": 468,
-   "image": "reference/13_teh_hijau_halal.png",
+   "image": "packshots/13_teh_hijau_halal.webp",
    "source": "reference",
    "key": "teh-hijau-premium"
   },
@@ -380,7 +380,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.8,
    "reviews": 921,
-   "image": "reference/14_serbuk_kari_halal.png",
+   "image": "packshots/14_serbuk_kari_halal.webp",
    "source": "reference",
    "key": "serbuk-kari-daging"
   },
@@ -395,7 +395,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.6,
    "reviews": 1533,
-   "image": "reference/15_santan_kelapa_halal.png",
+   "image": "packshots/15_santan_kelapa_halal.webp",
    "source": "reference",
    "key": "santan-kelapa-pekat"
   },
@@ -410,7 +410,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.8,
    "reviews": 287,
-   "image": "reference/16_lada_hitam_halal.png",
+   "image": "packshots/16_lada_hitam_halal.webp",
    "source": "reference",
    "key": "lada-hitam-tumbuk-sarawak"
   },
@@ -425,7 +425,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.5,
    "reviews": 744,
-   "image": "reference/17_kiub_pati_ayam_halal.png",
+   "image": "packshots/17_kiub_pati_ayam_halal.webp",
    "source": "reference",
    "key": "kiub-pati-ayam"
   },
@@ -440,7 +440,7 @@
    "department": "Food & Snacks",
    "rating": 4.8,
    "reviews": 655,
-   "image": "reference/18_coklat_dark_halal.png",
+   "image": "packshots/18_coklat_dark_halal.webp",
    "source": "reference",
    "key": "coklat-dark-70-koko"
   },
@@ -455,7 +455,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.7,
    "reviews": 402,
-   "image": "reference/19_mentega_kacang_halal.png",
+   "image": "packshots/19_mentega_kacang_halal.webp",
    "source": "reference",
    "key": "mentega-kacang-krim"
   },
@@ -470,7 +470,7 @@
    "department": "Food & Snacks",
    "rating": 4.6,
    "reviews": 519,
-   "image": "reference/20_oat_segera_halal.png",
+   "image": "packshots/20_oat_segera_halal.webp",
    "source": "reference",
    "key": "oat-segera-bijirin-penuh"
   },
@@ -485,7 +485,7 @@
    "department": "Cosmetics & Care",
    "rating": 4.8,
    "reviews": 604,
-   "image": "reference/41_syampu_herba_halal.png",
+   "image": "packshots/41_syampu_herba_halal.webp",
    "source": "reference",
    "key": "syampu-herba-nourish-care"
   },
@@ -500,7 +500,7 @@
    "department": "Pharma & Supplements",
    "rating": 4.6,
    "reviews": 221,
-   "image": "reference/42_multivitamin_halal.png",
+   "image": "packshots/42_multivitamin_halal.webp",
    "source": "reference",
    "key": "multivitamin-harian-60-tablet"
   },
@@ -515,7 +515,7 @@
    "department": "Pharma & Supplements",
    "rating": 4.7,
    "reviews": 264,
-   "image": "reference/21_quinoa_halal.png",
+   "image": "packshots/21_quinoa_halal.webp",
    "source": "reference",
    "key": "quinoa-premium-high-protein"
   },
@@ -530,7 +530,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.8,
    "reviews": 512,
-   "image": "reference/22_olive_oil_halal.png",
+   "image": "packshots/22_olive_oil_halal.webp",
    "source": "reference",
    "key": "extra-virgin-olive-oil-cold-pressed"
   },
@@ -545,7 +545,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.6,
    "reviews": 331,
-   "image": "reference/23_chickpeas_halal.png",
+   "image": "packshots/23_chickpeas_halal.webp",
    "source": "reference",
    "key": "chickpeas-kacang-kuda"
   },
@@ -560,7 +560,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.8,
    "reviews": 1104,
-   "image": "reference/24_hazelnut_spread_halal.png",
+   "image": "packshots/24_hazelnut_spread_halal.webp",
    "source": "reference",
    "key": "hazelnut-spread-with-cocoa"
   },
@@ -575,7 +575,7 @@
    "department": "Drinks",
    "rating": 4.6,
    "reviews": 428,
-   "image": "reference/25_black_tea_halal.png",
+   "image": "packshots/25_black_tea_halal.webp",
    "source": "reference",
    "key": "black-tea-premium-strong"
   },
@@ -590,7 +590,7 @@
    "department": "Pharma & Supplements",
    "rating": 4.7,
    "reviews": 388,
-   "image": "reference/26_almonds_halal.png",
+   "image": "packshots/26_almonds_halal.webp",
    "source": "reference",
    "key": "almonds-natural-vitamin-e"
   },
@@ -605,7 +605,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.5,
    "reviews": 176,
-   "image": "reference/27_rice_pasta_halal.png",
+   "image": "packshots/27_rice_pasta_halal.webp",
    "source": "reference",
    "key": "rice-pasta-gluten-free"
   },
@@ -620,7 +620,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.6,
    "reviews": 142,
-   "image": "reference/28_oregano_halal.png",
+   "image": "packshots/28_oregano_halal.webp",
    "source": "reference",
    "key": "oregano-leaves-100-natural"
   },
@@ -635,7 +635,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.5,
    "reviews": 296,
-   "image": "reference/29_mushroom_soup_halal.png",
+   "image": "packshots/29_mushroom_soup_halal.webp",
    "source": "reference",
    "key": "mushroom-soup-creamy-rich"
   },
@@ -650,7 +650,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.4,
    "reviews": 208,
-   "image": "reference/30_mustard_halal.png",
+   "image": "packshots/30_mustard_halal.webp",
    "source": "reference",
    "key": "mustard-sauce-classic"
   },
@@ -665,7 +665,7 @@
    "department": "Drinks",
    "rating": 4.7,
    "reviews": 902,
-   "image": "reference/31_coconut_water_halal.png",
+   "image": "packshots/31_coconut_water_halal.webp",
    "source": "reference",
    "key": "coconut-water-100-natural"
   },
@@ -680,7 +680,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.5,
    "reviews": 187,
-   "image": "reference/32_mixed_pickles_halal.png",
+   "image": "packshots/32_mixed_pickles_halal.webp",
    "source": "reference",
    "key": "mixed-pickles-traditional"
   },
@@ -695,7 +695,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.7,
    "reviews": 641,
-   "image": "reference/33_beef_stock_halal.png",
+   "image": "packshots/33_beef_stock_halal.webp",
    "source": "reference",
    "key": "beef-stock-cubes-no-added-msg"
   },
@@ -710,7 +710,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.6,
    "reviews": 733,
-   "image": "reference/34_mayonnaise_halal.png",
+   "image": "packshots/34_mayonnaise_halal.webp",
    "source": "reference",
    "key": "mayonnaise-original"
   },
@@ -725,7 +725,7 @@
    "department": "Pharma & Supplements",
    "rating": 4.8,
    "reviews": 415,
-   "image": "reference/35_chia_seeds_halal.png",
+   "image": "packshots/35_chia_seeds_halal.webp",
    "source": "reference",
    "key": "chia-seeds-omega-3-superfood"
   },
@@ -740,7 +740,7 @@
    "department": "Drinks",
    "rating": 4.9,
    "reviews": 688,
-   "image": "reference/36_arabica_coffee_halal.png",
+   "image": "packshots/36_arabica_coffee_halal.webp",
    "source": "reference",
    "key": "arabica-coffee-premium-blend"
   },
@@ -755,7 +755,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.8,
    "reviews": 254,
-   "image": "reference/37_ghee_halal.png",
+   "image": "packshots/37_ghee_halal.webp",
    "source": "reference",
    "key": "ghee-clarified-butter"
   },
@@ -770,7 +770,7 @@
    "department": "Food & Snacks",
    "rating": 4.6,
    "reviews": 361,
-   "image": "reference/38_steel_cut_oats_halal.png",
+   "image": "packshots/38_steel_cut_oats_halal.webp",
    "source": "reference",
    "key": "steel-cut-oats-wholegrain"
   },
@@ -785,7 +785,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.5,
    "reviews": 522,
-   "image": "reference/39_hot_sauce_halal.png",
+   "image": "packshots/39_hot_sauce_halal.webp",
    "source": "reference",
    "key": "hot-sauce-spicy-tangy"
   },
@@ -800,7 +800,7 @@
    "department": "Groceries & Pantry",
    "rating": 4.6,
    "reviews": 298,
-   "image": "reference/40_sea_salt_halal.png",
+   "image": "packshots/40_sea_salt_halal.webp",
    "source": "reference",
    "key": "sea-salt-natural-unrefined"
   },
@@ -815,7 +815,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/local-super-fragrant-rice.png",
+   "image": "packshots/local-super-fragrant-rice.webp",
    "source": "generated",
    "key": "local-super-fragrant-rice"
   },
@@ -830,7 +830,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/white-glutinous-rice.png",
+   "image": "packshots/white-glutinous-rice.webp",
    "source": "generated",
    "key": "white-glutinous-rice"
   },
@@ -845,7 +845,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/wholegrain-brown-rice.png",
+   "image": "packshots/wholegrain-brown-rice.webp",
    "source": "generated",
    "key": "wholegrain-brown-rice"
   },
@@ -860,7 +860,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/thai-fragrant-rice.png",
+   "image": "packshots/thai-fragrant-rice.webp",
    "source": "generated",
    "key": "thai-fragrant-rice"
   },
@@ -875,7 +875,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/biryani-basmati-rice.png",
+   "image": "packshots/biryani-basmati-rice.webp",
    "source": "generated",
    "key": "biryani-basmati-rice"
   },
@@ -890,7 +890,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/pure-palm-cooking-oil.png",
+   "image": "packshots/pure-palm-cooking-oil.webp",
    "source": "generated",
    "key": "pure-palm-cooking-oil"
   },
@@ -905,7 +905,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/virgin-coconut-oil.png",
+   "image": "packshots/virgin-coconut-oil.webp",
    "source": "generated",
    "key": "virgin-coconut-oil"
   },
@@ -920,7 +920,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/pure-sesame-oil.png",
+   "image": "packshots/pure-sesame-oil.webp",
    "source": "generated",
    "key": "pure-sesame-oil"
   },
@@ -935,7 +935,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/corn-oil.png",
+   "image": "packshots/corn-oil.webp",
    "source": "generated",
    "key": "corn-oil"
   },
@@ -950,7 +950,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/fine-rice-flour.png",
+   "image": "packshots/fine-rice-flour.webp",
    "source": "generated",
    "key": "fine-rice-flour"
   },
@@ -965,7 +965,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/tapioca-flour.png",
+   "image": "packshots/tapioca-flour.webp",
    "source": "generated",
    "key": "tapioca-flour"
   },
@@ -980,7 +980,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/corn-flour.png",
+   "image": "packshots/corn-flour.webp",
    "source": "generated",
    "key": "corn-flour"
   },
@@ -995,7 +995,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/glutinous-rice-flour.png",
+   "image": "packshots/glutinous-rice-flour.webp",
    "source": "generated",
    "key": "glutinous-rice-flour"
   },
@@ -1010,7 +1010,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/all-purpose-cake-flour.png",
+   "image": "packshots/all-purpose-cake-flour.webp",
    "source": "generated",
    "key": "all-purpose-cake-flour"
   },
@@ -1025,7 +1025,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/baking-powder.png",
+   "image": "packshots/baking-powder.webp",
    "source": "generated",
    "key": "baking-powder"
   },
@@ -1040,7 +1040,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/coarse-granulated-sugar.png",
+   "image": "packshots/coarse-granulated-sugar.webp",
    "source": "generated",
    "key": "coarse-granulated-sugar"
   },
@@ -1055,7 +1055,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/soft-brown-sugar.png",
+   "image": "packshots/soft-brown-sugar.webp",
    "source": "generated",
    "key": "soft-brown-sugar"
   },
@@ -1070,7 +1070,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/palm-sugar-syrup.png",
+   "image": "packshots/palm-sugar-syrup.webp",
    "source": "generated",
    "key": "palm-sugar-syrup"
   },
@@ -1085,7 +1085,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/icing-sugar.png",
+   "image": "packshots/icing-sugar.webp",
    "source": "generated",
    "key": "icing-sugar"
   },
@@ -1100,7 +1100,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/instant-noodles-tomyam.png",
+   "image": "packshots/instant-noodles-tomyam.webp",
    "source": "generated",
    "key": "instant-noodles-tomyam"
   },
@@ -1115,7 +1115,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/instant-noodles-curry.png",
+   "image": "packshots/instant-noodles-curry.webp",
    "source": "generated",
    "key": "instant-noodles-curry"
   },
@@ -1130,7 +1130,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/fine-rice-vermicelli.png",
+   "image": "packshots/fine-rice-vermicelli.webp",
    "source": "generated",
    "key": "fine-rice-vermicelli"
   },
@@ -1145,7 +1145,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/dried-flat-rice-noodles.png",
+   "image": "packshots/dried-flat-rice-noodles.webp",
    "source": "generated",
    "key": "dried-flat-rice-noodles"
   },
@@ -1160,7 +1160,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/dried-yellow-noodles.png",
+   "image": "packshots/dried-yellow-noodles.webp",
    "source": "generated",
    "key": "dried-yellow-noodles"
   },
@@ -1175,7 +1175,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/instant-laksa-noodles.png",
+   "image": "packshots/instant-laksa-noodles.webp",
    "source": "generated",
    "key": "instant-laksa-noodles"
   },
@@ -1190,7 +1190,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/tuna-in-brine.png",
+   "image": "packshots/tuna-in-brine.webp",
    "source": "generated",
    "key": "tuna-in-brine"
   },
@@ -1205,7 +1205,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/sardines-in-tomato-sauce.png",
+   "image": "packshots/sardines-in-tomato-sauce.webp",
    "source": "generated",
    "key": "sardines-in-tomato-sauce"
   },
@@ -1220,7 +1220,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/mackerel-in-chilli-sauce.png",
+   "image": "packshots/mackerel-in-chilli-sauce.webp",
    "source": "generated",
    "key": "mackerel-in-chilli-sauce"
   },
@@ -1235,7 +1235,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/premium-dried-anchovies.png",
+   "image": "packshots/premium-dried-anchovies.webp",
    "source": "generated",
    "key": "premium-dried-anchovies"
   },
@@ -1250,7 +1250,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/selected-dried-shrimp.png",
+   "image": "packshots/selected-dried-shrimp.webp",
    "source": "generated",
    "key": "selected-dried-shrimp"
   },
@@ -1265,7 +1265,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/thick-tomato-sauce.png",
+   "image": "packshots/thick-tomato-sauce.webp",
    "source": "generated",
    "key": "thick-tomato-sauce"
   },
@@ -1280,7 +1280,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/sweet-soy-sauce.png",
+   "image": "packshots/sweet-soy-sauce.webp",
    "source": "generated",
    "key": "sweet-soy-sauce"
   },
@@ -1295,7 +1295,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/light-soy-sauce.png",
+   "image": "packshots/light-soy-sauce.webp",
    "source": "generated",
    "key": "light-soy-sauce"
   },
@@ -1310,7 +1310,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/halal-oyster-style-sauce.png",
+   "image": "packshots/halal-oyster-style-sauce.webp",
    "source": "generated",
    "key": "halal-oyster-style-sauce"
   },
@@ -1325,7 +1325,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/distilled-vinegar.png",
+   "image": "packshots/distilled-vinegar.webp",
    "source": "generated",
    "key": "distilled-vinegar"
   },
@@ -1340,7 +1340,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/thai-sweet-chilli-sauce.png",
+   "image": "packshots/thai-sweet-chilli-sauce.webp",
    "source": "generated",
    "key": "thai-sweet-chilli-sauce"
   },
@@ -1355,7 +1355,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/premium-medjool-dates.png",
+   "image": "packshots/premium-medjool-dates.webp",
    "source": "generated",
    "key": "premium-medjool-dates"
   },
@@ -1370,7 +1370,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/soft-sukari-dates.png",
+   "image": "packshots/soft-sukari-dates.webp",
    "source": "generated",
    "key": "soft-sukari-dates"
   },
@@ -1385,7 +1385,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/chocolate-coated-dates.png",
+   "image": "packshots/chocolate-coated-dates.webp",
    "source": "generated",
    "key": "chocolate-coated-dates"
   },
@@ -1400,7 +1400,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/unsweetened-date-paste.png",
+   "image": "packshots/unsweetened-date-paste.webp",
    "source": "generated",
    "key": "unsweetened-date-paste"
   },
@@ -1415,7 +1415,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/date-juice-ready-to-serve.png",
+   "image": "packshots/date-juice-ready-to-serve.webp",
    "source": "generated",
    "key": "date-juice-ready-to-serve"
   },
@@ -1430,7 +1430,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/pasteurised-fresh-milk.png",
+   "image": "packshots/pasteurised-fresh-milk.webp",
    "source": "generated",
    "key": "pasteurised-fresh-milk"
   },
@@ -1445,7 +1445,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/plain-natural-yoghurt.png",
+   "image": "packshots/plain-natural-yoghurt.webp",
    "source": "generated",
    "key": "plain-natural-yoghurt"
   },
@@ -1460,7 +1460,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/cheddar-cheese-slices.png",
+   "image": "packshots/cheddar-cheese-slices.webp",
    "source": "generated",
    "key": "cheddar-cheese-slices"
   },
@@ -1475,7 +1475,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/unsalted-butter.png",
+   "image": "packshots/unsalted-butter.webp",
    "source": "generated",
    "key": "unsalted-butter"
   },
@@ -1490,7 +1490,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/sweetened-condensed-milk.png",
+   "image": "packshots/sweetened-condensed-milk.webp",
    "source": "generated",
    "key": "sweetened-condensed-milk"
   },
@@ -1505,7 +1505,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/goat-milk-powder.png",
+   "image": "packshots/goat-milk-powder.webp",
    "source": "generated",
    "key": "goat-milk-powder"
   },
@@ -1520,7 +1520,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/crisp-coconut-biscuits.png",
+   "image": "packshots/crisp-coconut-biscuits.webp",
    "source": "generated",
    "key": "crisp-coconut-biscuits"
   },
@@ -1535,7 +1535,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/chocolate-layer-biscuits.png",
+   "image": "packshots/chocolate-layer-biscuits.webp",
    "source": "generated",
    "key": "chocolate-layer-biscuits"
   },
@@ -1550,7 +1550,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/vanilla-wafers.png",
+   "image": "packshots/vanilla-wafers.webp",
    "source": "generated",
    "key": "vanilla-wafers"
   },
@@ -1565,7 +1565,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/oat-and-raisin-biscuits.png",
+   "image": "packshots/oat-and-raisin-biscuits.webp",
    "source": "generated",
    "key": "oat-and-raisin-biscuits"
   },
@@ -1580,7 +1580,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/nut-chip-cookies.png",
+   "image": "packshots/nut-chip-cookies.webp",
    "source": "generated",
    "key": "nut-chip-cookies"
   },
@@ -1595,7 +1595,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/raw-tualang-honey.png",
+   "image": "packshots/raw-tualang-honey.webp",
    "source": "generated",
    "key": "raw-tualang-honey"
   },
@@ -1610,7 +1610,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/stingless-bee-honey.png",
+   "image": "packshots/stingless-bee-honey.webp",
    "source": "generated",
    "key": "stingless-bee-honey"
   },
@@ -1625,7 +1625,7 @@
    "department": "Pharma & Supplements",
    "rating": null,
    "reviews": 0,
-   "image": "generated/honey-with-propolis.png",
+   "image": "packshots/honey-with-propolis.webp",
    "source": "generated",
    "key": "honey-with-propolis"
   },
@@ -1640,7 +1640,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/natural-comb-honey.png",
+   "image": "packshots/natural-comb-honey.webp",
    "source": "generated",
    "key": "natural-comb-honey"
   },
@@ -1655,7 +1655,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/fragrant-jasmine-tea.png",
+   "image": "packshots/fragrant-jasmine-tea.webp",
    "source": "generated",
    "key": "fragrant-jasmine-tea"
   },
@@ -1670,7 +1670,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/classic-black-tea.png",
+   "image": "packshots/classic-black-tea.webp",
    "source": "generated",
    "key": "classic-black-tea"
   },
@@ -1685,7 +1685,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/instant-teh-tarik-3-in-1.png",
+   "image": "packshots/instant-teh-tarik-3-in-1.webp",
    "source": "generated",
    "key": "instant-teh-tarik-3-in-1"
   },
@@ -1700,7 +1700,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/calming-chamomile-tea.png",
+   "image": "packshots/calming-chamomile-tea.webp",
    "source": "generated",
    "key": "calming-chamomile-tea"
   },
@@ -1715,7 +1715,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/matcha-green-tea-powder.png",
+   "image": "packshots/matcha-green-tea-powder.webp",
    "source": "generated",
    "key": "matcha-green-tea-powder"
   },
@@ -1730,7 +1730,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/pure-turmeric-powder.png",
+   "image": "packshots/pure-turmeric-powder.webp",
    "source": "generated",
    "key": "pure-turmeric-powder"
   },
@@ -1745,7 +1745,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/ground-chilli-powder.png",
+   "image": "packshots/ground-chilli-powder.webp",
    "source": "generated",
    "key": "ground-chilli-powder"
   },
@@ -1760,7 +1760,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/tamarind-paste.png",
+   "image": "packshots/tamarind-paste.webp",
    "source": "generated",
    "key": "tamarind-paste"
   },
@@ -1775,7 +1775,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/bone-soup-spice-mix.png",
+   "image": "packshots/bone-soup-spice-mix.webp",
    "source": "generated",
    "key": "bone-soup-spice-mix"
   },
@@ -1790,7 +1790,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/beef-rendang-spice-mix.png",
+   "image": "packshots/beef-rendang-spice-mix.webp",
    "source": "generated",
    "key": "beef-rendang-spice-mix"
   },
@@ -1805,7 +1805,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/dried-star-anise.png",
+   "image": "packshots/dried-star-anise.webp",
    "source": "generated",
    "key": "dried-star-anise"
   },
@@ -1820,7 +1820,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/cinnamon-sticks.png",
+   "image": "packshots/cinnamon-sticks.webp",
    "source": "generated",
    "key": "cinnamon-sticks"
   },
@@ -1835,7 +1835,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/chicken-curry-powder.png",
+   "image": "packshots/chicken-curry-powder.webp",
    "source": "generated",
    "key": "chicken-curry-powder"
   },
@@ -1850,7 +1850,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/smooth-milk-chocolate.png",
+   "image": "packshots/smooth-milk-chocolate.webp",
    "source": "generated",
    "key": "smooth-milk-chocolate"
   },
@@ -1865,7 +1865,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/pure-cocoa-powder.png",
+   "image": "packshots/pure-cocoa-powder.webp",
    "source": "generated",
    "key": "pure-cocoa-powder"
   },
@@ -1880,7 +1880,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/hazelnut-filled-chocolate.png",
+   "image": "packshots/hazelnut-filled-chocolate.webp",
    "source": "generated",
    "key": "hazelnut-filled-chocolate"
   },
@@ -1895,7 +1895,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/instant-drinking-chocolate.png",
+   "image": "packshots/instant-drinking-chocolate.webp",
    "source": "generated",
    "key": "instant-drinking-chocolate"
   },
@@ -1910,7 +1910,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/85-dark-chocolate.png",
+   "image": "packshots/85-dark-chocolate.webp",
    "source": "generated",
    "key": "85-dark-chocolate"
   },
@@ -1925,7 +1925,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/coated-peanuts.png",
+   "image": "packshots/coated-peanuts.webp",
    "source": "generated",
    "key": "coated-peanuts"
   },
@@ -1940,7 +1940,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/roasted-cashews.png",
+   "image": "packshots/roasted-cashews.webp",
    "source": "generated",
    "key": "roasted-cashews"
   },
@@ -1955,7 +1955,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/honey-roasted-almonds.png",
+   "image": "packshots/honey-roasted-almonds.webp",
    "source": "generated",
    "key": "honey-roasted-almonds"
   },
@@ -1970,7 +1970,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/crunchy-peanut-butter.png",
+   "image": "packshots/crunchy-peanut-butter.webp",
    "source": "generated",
    "key": "crunchy-peanut-butter"
   },
@@ -1985,7 +1985,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/premium-mixed-nuts.png",
+   "image": "packshots/premium-mixed-nuts.webp",
    "source": "generated",
    "key": "premium-mixed-nuts"
   },
@@ -2000,7 +2000,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/honey-and-almond-granola.png",
+   "image": "packshots/honey-and-almond-granola.webp",
    "source": "generated",
    "key": "honey-and-almond-granola"
   },
@@ -2015,7 +2015,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/crispy-corn-flakes.png",
+   "image": "packshots/crispy-corn-flakes.webp",
    "source": "generated",
    "key": "crispy-corn-flakes"
   },
@@ -2030,7 +2030,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/mixed-fruit-muesli.png",
+   "image": "packshots/mixed-fruit-muesli.webp",
    "source": "generated",
    "key": "mixed-fruit-muesli"
   },
@@ -2045,7 +2045,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/wholegrain-rolled-oats.png",
+   "image": "packshots/wholegrain-rolled-oats.webp",
    "source": "generated",
    "key": "wholegrain-rolled-oats"
   },
@@ -2060,7 +2060,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/date-cereal-bars.png",
+   "image": "packshots/date-cereal-bars.webp",
    "source": "generated",
    "key": "date-cereal-bars"
   },
@@ -2075,7 +2075,7 @@
    "department": "Cosmetics & Care",
    "rating": null,
    "reviews": 0,
-   "image": "generated/goat-milk-body-soap.png",
+   "image": "packshots/goat-milk-body-soap.webp",
    "source": "generated",
    "key": "goat-milk-body-soap"
   },
@@ -2090,7 +2090,7 @@
    "department": "Cosmetics & Care",
    "rating": null,
    "reviews": 0,
-   "image": "generated/moisturising-body-lotion.png",
+   "image": "packshots/moisturising-body-lotion.webp",
    "source": "generated",
    "key": "moisturising-body-lotion"
   },
@@ -2105,7 +2105,7 @@
    "department": "Cosmetics & Care",
    "rating": null,
    "reviews": 0,
-   "image": "generated/gentle-facial-cleanser.png",
+   "image": "packshots/gentle-facial-cleanser.webp",
    "source": "generated",
    "key": "gentle-facial-cleanser"
   },
@@ -2120,7 +2120,7 @@
    "department": "Cosmetics & Care",
    "rating": null,
    "reviews": 0,
-   "image": "generated/night-face-cream.png",
+   "image": "packshots/night-face-cream.webp",
    "source": "generated",
    "key": "night-face-cream"
   },
@@ -2135,7 +2135,7 @@
    "department": "Cosmetics & Care",
    "rating": null,
    "reviews": 0,
-   "image": "generated/alcohol-free-perfume-oil.png",
+   "image": "packshots/alcohol-free-perfume-oil.webp",
    "source": "generated",
    "key": "alcohol-free-perfume-oil"
   },
@@ -2150,7 +2150,7 @@
    "department": "Cosmetics & Care",
    "rating": null,
    "reviews": 0,
-   "image": "generated/herbal-hair-conditioner.png",
+   "image": "packshots/herbal-hair-conditioner.webp",
    "source": "generated",
    "key": "herbal-hair-conditioner"
   },
@@ -2165,7 +2165,7 @@
    "department": "Cosmetics & Care",
    "rating": null,
    "reviews": 0,
-   "image": "generated/spf50-sunscreen.png",
+   "image": "packshots/spf50-sunscreen.webp",
    "source": "generated",
    "key": "spf50-sunscreen"
   },
@@ -2180,7 +2180,7 @@
    "department": "Cosmetics & Care",
    "rating": null,
    "reviews": 0,
-   "image": "generated/siwak-herbal-toothpaste.png",
+   "image": "packshots/siwak-herbal-toothpaste.webp",
    "source": "generated",
    "key": "siwak-herbal-toothpaste"
   },
@@ -2195,7 +2195,7 @@
    "department": "Pharma & Supplements",
    "rating": null,
    "reviews": 0,
-   "image": "generated/vitamin-c-1000mg.png",
+   "image": "packshots/vitamin-c-1000mg.webp",
    "source": "generated",
    "key": "vitamin-c-1000mg"
   },
@@ -2210,7 +2210,7 @@
    "department": "Pharma & Supplements",
    "rating": null,
    "reviews": 0,
-   "image": "generated/omega-3-fish-oil.png",
+   "image": "packshots/omega-3-fish-oil.webp",
    "source": "generated",
    "key": "omega-3-fish-oil"
   },
@@ -2225,7 +2225,7 @@
    "department": "Pharma & Supplements",
    "rating": null,
    "reviews": 0,
-   "image": "generated/gut-health-probiotic.png",
+   "image": "packshots/gut-health-probiotic.webp",
    "source": "generated",
    "key": "gut-health-probiotic"
   },
@@ -2240,7 +2240,7 @@
    "department": "Pharma & Supplements",
    "rating": null,
    "reviews": 0,
-   "image": "generated/calcium-with-vitamin-d3.png",
+   "image": "packshots/calcium-with-vitamin-d3.webp",
    "source": "generated",
    "key": "calcium-with-vitamin-d3"
   },
@@ -2255,7 +2255,7 @@
    "department": "Pharma & Supplements",
    "rating": null,
    "reviews": 0,
-   "image": "generated/halal-marine-collagen.png",
+   "image": "packshots/halal-marine-collagen.webp",
    "source": "generated",
    "key": "halal-marine-collagen"
   },
@@ -2270,7 +2270,7 @@
    "department": "Pharma & Supplements",
    "rating": null,
    "reviews": 0,
-   "image": "generated/chewable-zinc-with-vitamin-c.png",
+   "image": "packshots/chewable-zinc-with-vitamin-c.webp",
    "source": "generated",
    "key": "chewable-zinc-with-vitamin-c"
   },
@@ -2285,7 +2285,7 @@
    "department": "Pharma & Supplements",
    "rating": null,
    "reviews": 0,
-   "image": "generated/black-seed-capsules.png",
+   "image": "packshots/black-seed-capsules.webp",
    "source": "generated",
    "key": "black-seed-capsules"
   },
@@ -2300,7 +2300,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/concentrated-tomato-paste.png",
+   "image": "packshots/concentrated-tomato-paste.webp",
    "source": "generated",
    "key": "concentrated-tomato-paste"
   },
@@ -2315,7 +2315,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/dried-red-lentils.png",
+   "image": "packshots/dried-red-lentils.webp",
    "source": "generated",
    "key": "dried-red-lentils"
   },
@@ -2330,7 +2330,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/canned-black-beans.png",
+   "image": "packshots/canned-black-beans.webp",
    "source": "generated",
    "key": "canned-black-beans"
   },
@@ -2345,7 +2345,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/durum-wheat-couscous.png",
+   "image": "packshots/durum-wheat-couscous.webp",
    "source": "generated",
    "key": "durum-wheat-couscous"
   },
@@ -2360,7 +2360,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/pure-sesame-tahini.png",
+   "image": "packshots/pure-sesame-tahini.webp",
    "source": "generated",
    "key": "pure-sesame-tahini"
   },
@@ -2375,7 +2375,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/green-olives-in-brine.png",
+   "image": "packshots/green-olives-in-brine.webp",
    "source": "generated",
    "key": "green-olives-in-brine"
   },
@@ -2390,7 +2390,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/balsamic-vinegar.png",
+   "image": "packshots/balsamic-vinegar.webp",
    "source": "generated",
    "key": "balsamic-vinegar"
   },
@@ -2405,7 +2405,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/wheat-spaghetti.png",
+   "image": "packshots/wheat-spaghetti.webp",
    "source": "generated",
    "key": "wheat-spaghetti"
   },
@@ -2420,7 +2420,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/creamy-tomato-soup.png",
+   "image": "packshots/creamy-tomato-soup.webp",
    "source": "generated",
    "key": "creamy-tomato-soup"
   },
@@ -2435,7 +2435,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/golden-sultana-raisins.png",
+   "image": "packshots/golden-sultana-raisins.webp",
    "source": "generated",
    "key": "golden-sultana-raisins"
   },
@@ -2450,7 +2450,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/dried-apricots.png",
+   "image": "packshots/dried-apricots.webp",
    "source": "generated",
    "key": "dried-apricots"
   },
@@ -2465,7 +2465,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/sea-salt-potato-crisps.png",
+   "image": "packshots/sea-salt-potato-crisps.webp",
    "source": "generated",
    "key": "sea-salt-potato-crisps"
   },
@@ -2480,7 +2480,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/ready-to-eat-butter-popcorn.png",
+   "image": "packshots/ready-to-eat-butter-popcorn.webp",
    "source": "generated",
    "key": "ready-to-eat-butter-popcorn"
   },
@@ -2495,7 +2495,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/no-added-sugar-orange-juice.png",
+   "image": "packshots/no-added-sugar-orange-juice.webp",
    "source": "generated",
    "key": "no-added-sugar-orange-juice"
   },
@@ -2510,7 +2510,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/clear-apple-juice.png",
+   "image": "packshots/clear-apple-juice.webp",
    "source": "generated",
    "key": "clear-apple-juice"
   },
@@ -2525,7 +2525,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/natural-mineral-water.png",
+   "image": "packshots/natural-mineral-water.webp",
    "source": "generated",
    "key": "natural-mineral-water"
   },
@@ -2540,7 +2540,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/instant-coffee-3-in-1.png",
+   "image": "packshots/instant-coffee-3-in-1.webp",
    "source": "generated",
    "key": "instant-coffee-3-in-1"
   },
@@ -2555,7 +2555,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/robusta-coffee-beans.png",
+   "image": "packshots/robusta-coffee-beans.webp",
    "source": "generated",
    "key": "robusta-coffee-beans"
   },
@@ -2570,7 +2570,7 @@
    "department": "Drinks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/rose-bandung-syrup.png",
+   "image": "packshots/rose-bandung-syrup.webp",
    "source": "generated",
    "key": "rose-bandung-syrup"
   },
@@ -2585,7 +2585,7 @@
    "department": "Pharma & Supplements",
    "rating": null,
    "reviews": 0,
-   "image": "generated/vanilla-protein-powder.png",
+   "image": "packshots/vanilla-protein-powder.webp",
    "source": "generated",
    "key": "vanilla-protein-powder"
   },
@@ -2600,7 +2600,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/reusable-kraft-shopping-bag.png",
+   "image": "packshots/reusable-kraft-shopping-bag.webp",
    "source": "generated",
    "key": "reusable-kraft-shopping-bag"
   },
@@ -2615,7 +2615,7 @@
    "department": "Food & Snacks",
    "rating": null,
    "reviews": 0,
-   "image": "generated/almond-stuffed-dates.png",
+   "image": "packshots/almond-stuffed-dates.webp",
    "source": "generated",
    "key": "almond-stuffed-dates"
   },
@@ -2630,7 +2630,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/traditional-sesame-halva.png",
+   "image": "packshots/traditional-sesame-halva.webp",
    "source": "generated",
    "key": "traditional-sesame-halva"
   },
@@ -2645,7 +2645,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/ceylon-cinnamon-powder.png",
+   "image": "packshots/ceylon-cinnamon-powder.webp",
    "source": "generated",
    "key": "ceylon-cinnamon-powder"
   },
@@ -2660,7 +2660,7 @@
    "department": "Groceries & Pantry",
    "rating": null,
    "reviews": 0,
-   "image": "generated/manuka-honey-umf10.png",
+   "image": "packshots/manuka-honey-umf10.webp",
    "source": "generated",
    "key": "manuka-honey-umf10"
   }

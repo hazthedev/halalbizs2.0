@@ -84,6 +84,15 @@ echo "→ seed idempotent reference data"
 # so real prod never gets demo content — no manual edit needed at cutover.
 if [ "$APP_ENV" != "production" ]; then
     "$PHP_BIN" artisan db:seed --class=DemoReviewsSeeder --force || echo "  ! demo reviews seed reported errors — continuing"
+
+    # The halal catalogue: 19 seller accounts, 166 SKUs, packshots committed
+    # under database/seeders/data/packshots, then the certificate records the
+    # register screen reads. Both are idempotent (catalogue keyed on the slug
+    # the model itself generates, certificates on the number), so they are safe
+    # to re-run on every deploy. Order matters: certificates are built FROM the
+    # seeded products.
+    "$PHP_BIN" artisan db:seed --class=HalalCatalogueSeeder --force || echo "  ! catalogue seed reported errors — continuing"
+    "$PHP_BIN" artisan db:seed --class=HalalCertificateSeeder --force || echo "  ! certificate seed reported errors — continuing"
 else
     echo "→ skip demo data (production)"
 fi
