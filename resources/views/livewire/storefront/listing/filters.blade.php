@@ -29,6 +29,26 @@
     </div>
 @endif
 
+{{-- Certifying body — pill toggles, as the reference has them. This is the
+     filter that makes the catalogue a HALAL catalogue rather than a grocery
+     one, so it sits directly under the department list.
+     The authority is read from the certificate number's prefix; see
+     Listing::CERTIFIER_PREFIX. --}}
+<div>
+    <p class="mb-2 font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-ink-faint">{{ __('Certifying body') }}</p>
+    <div class="flex flex-wrap gap-1.5">
+        @foreach (array_keys(\App\Livewire\Storefront\Listing::CERTIFIER_PREFIX) as $body)
+            @php $on = in_array($body, $certifiers, true); @endphp
+            <button
+                type="button"
+                wire:click="toggleCertifier('{{ $body }}')"
+                aria-pressed="{{ $on ? 'true' : 'false' }}"
+                class="rounded-[var(--radius-pill)] border px-2.5 py-1 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label)] transition-colors duration-(--dur-micro) {{ $on ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line text-ink-faint hover:border-line-strong hover:text-ink' }}"
+            >{{ $body }}</button>
+        @endforeach
+    </div>
+</div>
+
 <div>
     <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Price (RM)') }}</p>
     <div class="flex items-center gap-2">

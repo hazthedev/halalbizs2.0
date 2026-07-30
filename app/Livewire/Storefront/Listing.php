@@ -78,6 +78,26 @@ class Listing extends Component
     #[Url(except: false)]
     public bool $cod = false;
 
+    /**
+     * Certifying bodies to filter by (JAKIM / MUIS / BPJPH / ESMA). The
+     * catalogue stores the authority in the certificate number's prefix
+     * (MY-JKM-…, SG-MUIS-…), so this filters on that prefix rather than on a
+     * separate column. The reference design puts this filter front and centre —
+     * it is the difference between a grocery search and a halal one.
+     *
+     * @var array<int, string>
+     */
+    #[Url(as: 'cert', except: [])]
+    public array $certifiers = [];
+
+    /** Certificate-number prefix per authority, as written by the seeder. */
+    public const CERTIFIER_PREFIX = [
+        'JAKIM' => 'MY-JKM',
+        'MUIS' => 'SG-MUIS',
+        'BPJPH' => 'ID-BPJPH',
+        'ESMA' => 'AE-ESMA',
+    ];
+
     /** Selected attribute-value ids for faceting (M1.3). */
     #[Url(as: 'attrs', except: [])]
     public array $attrs = [];
@@ -105,7 +125,7 @@ class Listing extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['q', 'sort', 'childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'attrs', 'mode'], true)) {
+        if (in_array($property, ['q', 'sort', 'childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'certifiers', 'attrs', 'mode'], true)) {
             $this->perPage = self::PER_PAGE;
         }
 
@@ -126,7 +146,7 @@ class Listing extends Component
 
     public function clearFilters(): void
     {
-        $this->reset('childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'attrs');
+        $this->reset('childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'certifiers', 'attrs');
         $this->perPage = self::PER_PAGE;
     }
 
@@ -142,6 +162,23 @@ class Listing extends Component
         $this->perPage = self::PER_PAGE;
     }
 
+    /** Toggle one certifying body on or off. */
+    public function toggleCertifier(string $body): void
+    {
+        if (! array_key_exists($body, self::CERTIFIER_PREFIX)) {
+            return;
+        }
+
+        $this->certifiers = in_array($body, $this->certifiers, true)
+            ? array_values(array_diff($this->certifiers, [$body]))
+            : [...$this->certifiers, $body];
+
+        // No resetPage() here: this component pages with a load-more counter,
+        // not Livewire's paginator. Every other filter resets that window in
+        // updated(); a method-driven filter has to do it itself.
+        $this->perPage = self::PER_PAGE;
+    }
+
     public function removeFilter(string $filter): void
     {
         match ($filter) {
@@ -150,6 +187,7 @@ class Listing extends Component
             'rating' => $this->reset('rating'),
             'state' => $this->reset('state'),
             'cod' => $this->reset('cod'),
+            'certifiers' => $this->reset('certifiers'),
             default => null,
         };
 
@@ -290,6 +328,17 @@ class Listing extends Component
 
         if ($this->cod) {
             $query->where('cod_enabled', true);
+        }
+
+        if ($this->certifiers !== []) {
+            $prefixes = array_values(array_intersect_key(self::CERTIFIER_PREFIX, array_flip($this->certifiers)));
+
+            // OR within the group, like every other multi-select facet here.
+            $query->where(function (Builder $q) use ($prefixes): void {
+                foreach ($prefixes as $prefix) {
+                    $q->orWhere('halal_cert_number', 'like', $prefix.'-%');
+                }
+            });
         }
 
         if ($applyAttrs && $this->attrs !== []) {
