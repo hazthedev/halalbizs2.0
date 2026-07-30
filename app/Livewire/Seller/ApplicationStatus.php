@@ -11,7 +11,7 @@ use Livewire\Component;
  * Application status screen (docs/07 §A1) — what pending/rejected/suspended
  * sellers see instead of the seller panel.
  */
-#[Layout('layouts.storefront')]
+#[Layout('layouts.landing', ['variant' => 'light'])]
 class ApplicationStatus extends Component
 {
     public function mount(): void
