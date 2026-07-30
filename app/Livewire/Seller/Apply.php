@@ -24,7 +24,7 @@ use Livewire\WithFileUploads;
  * Seller application (docs/07 §A1) — storefront-side, any logged-in buyer.
  * Submits a pending store + SSM/IC documents; admin approval happens in M7.
  */
-#[Layout('layouts.storefront')]
+#[Layout('layouts.landing', ['variant' => 'light'])]
 class Apply extends Component
 {
     use WithFileUploads;

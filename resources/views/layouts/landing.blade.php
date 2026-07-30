@@ -25,13 +25,29 @@
                 HalalBizs
             </a>
 
+            {{-- Offer only what applies. A logged-in applicant was being shown
+                 "Log in", and someone already on the apply page was being shown
+                 "Start Selling" pointing at the page they are on. --}}
             <div class="flex shrink-0 items-center gap-2 sm:gap-3">
-                <a href="{{ route('login') }}" wire:navigate class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium transition-colors {{ $light ? 'text-ink-soft hover:text-ink' : 'text-on-dark/80 hover:text-on-dark' }}">
-                    {{ __('Log in') }}
-                </a>
-                <x-ui.button variant="brass" :href="route('seller.apply')">
-                    {{ __('Start Selling') }}
-                </x-ui.button>
+                @guest
+                    <a href="{{ route('login') }}" wire:navigate class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium transition-colors {{ $light ? 'text-ink-soft hover:text-ink' : 'text-on-dark/80 hover:text-on-dark' }}">
+                        {{ __('Log in') }}
+                    </a>
+                @else
+                    <span class="hidden text-[13px] text-ink-faint sm:inline">{{ auth()->user()->name }}</span>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium transition-colors {{ $light ? 'text-ink-soft hover:text-ink' : 'text-on-dark/80 hover:text-on-dark' }}">
+                            {{ __('Log out') }}
+                        </button>
+                    </form>
+                @endguest
+
+                @unless (request()->routeIs('seller.apply', 'seller.status'))
+                    <x-ui.button variant="brass" :href="route('seller.apply')">
+                        {{ __('Start Selling') }}
+                    </x-ui.button>
+                @endunless
             </div>
         </div>
     </header>
