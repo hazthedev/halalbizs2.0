@@ -98,6 +98,18 @@ class Listing extends Component
         'ESMA' => 'AE-ESMA',
     ];
 
+    /**
+     * Assurance facets, from the reference's sidebar. Each maps to a real
+     * column on the certificate record — a filter that cannot be answered from
+     * data would be theatre.
+     *
+     * @var array<int, string>
+     */
+    #[Url(as: 'assure', except: [])]
+    public array $assurances = [];
+
+    public const ASSURANCES = ['valid12', 'dedicated', 'export'];
+
     /** Selected attribute-value ids for faceting (M1.3). */
     #[Url(as: 'attrs', except: [])]
     public array $attrs = [];
@@ -125,7 +137,7 @@ class Listing extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['q', 'sort', 'childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'certifiers', 'attrs', 'mode'], true)) {
+        if (in_array($property, ['q', 'sort', 'childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'certifiers', 'assurances', 'attrs', 'mode'], true)) {
             $this->perPage = self::PER_PAGE;
         }
 
@@ -146,7 +158,7 @@ class Listing extends Component
 
     public function clearFilters(): void
     {
-        $this->reset('childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'certifiers', 'attrs');
+        $this->reset('childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'certifiers', 'assurances', 'attrs');
         $this->perPage = self::PER_PAGE;
     }
 
@@ -179,6 +191,20 @@ class Listing extends Component
         $this->perPage = self::PER_PAGE;
     }
 
+    /** Toggle one assurance facet. */
+    public function toggleAssurance(string $key): void
+    {
+        if (! in_array($key, self::ASSURANCES, true)) {
+            return;
+        }
+
+        $this->assurances = in_array($key, $this->assurances, true)
+            ? array_values(array_diff($this->assurances, [$key]))
+            : [...$this->assurances, $key];
+
+        $this->perPage = self::PER_PAGE;
+    }
+
     public function removeFilter(string $filter): void
     {
         match ($filter) {
@@ -188,6 +214,7 @@ class Listing extends Component
             'state' => $this->reset('state'),
             'cod' => $this->reset('cod'),
             'certifiers' => $this->reset('certifiers'),
+            'assurances' => $this->reset('assurances'),
             default => null,
         };
 
@@ -328,6 +355,22 @@ class Listing extends Component
 
         if ($this->cod) {
             $query->where('cod_enabled', true);
+        }
+
+        if ($this->assurances !== []) {
+            $query->whereHas('halalCertificate', function (Builder $cert): void {
+                foreach ($this->assurances as $assurance) {
+                    match ($assurance) {
+                        // "valid 12 months+" is about REMAINING life, not the
+                        // original term: a buyer wants cover through the year
+                        // ahead, not a certificate that was long once.
+                        'valid12' => $cert->whereDate('valid_to', '>=', now()->addYear()),
+                        'dedicated' => $cert->where('dedicated_facility', true),
+                        'export' => $cert->where('export_paperwork', true),
+                        default => null,
+                    };
+                }
+            });
         }
 
         if ($this->certifiers !== []) {

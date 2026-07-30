@@ -79,6 +79,45 @@
                     <span class="tnum">{{ $product->sold_count >= 1000 ? number_format($product->sold_count / 1000, 1).'k' : $product->sold_count }} {{ __('sold') }}</span>
                 </div>
 
+
+                {{-- Halal certificate — the reference puts this above the price,
+                     because on a certificate-first marketplace it outranks it.
+                     Mint tint + paired border are the tokens reserved for
+                     certificate surfaces. Renders only when the SKU really
+                     carries one; there is no placeholder state. --}}
+                @if ($product->halal_cert_number)
+                    @php
+                        $cert = $product->halalCertificate;
+                        $certExpiry = $cert?->valid_to ?? $product->halal_cert_expiry;
+                        $certBody = $cert?->issuing_body ?? \App\Models\HalalCertificate::bodyFromNumber($product->halal_cert_number);
+                        $certLapsed = $certExpiry !== null && $certExpiry->lt(now()->startOfDay());
+                    @endphp
+                    <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--radius-panel)] border px-4 py-3 {{ $certLapsed ? 'border-danger/30 bg-danger-tint' : 'border-emerald-tint-edge bg-emerald-tint' }}">
+                        <svg class="size-4 shrink-0 {{ $certLapsed ? 'text-danger' : 'text-emerald' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $certLapsed ? 'M6 18 18 6M6 6l12 12' : 'm4.5 12.75 6 6 9-13.5' }}"/>
+                        </svg>
+                        <div class="min-w-0">
+                            <p class="font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] {{ $certLapsed ? 'text-danger' : 'text-emerald' }}">
+                                {{ $certLapsed ? __('Certificate lapsed') : __('Halal certificate verified') }}
+                            </p>
+                            <p class="mt-1 text-[length:var(--text-md)] text-ink-head">
+                                @if ($certBody){{ $certBody }} <span aria-hidden="true" class="text-ink-faint">·</span> @endif
+                                <span class="font-mono">{{ $product->halal_cert_number }}</span>
+                                @if ($certExpiry)
+                                    <span aria-hidden="true" class="text-ink-faint">·</span>
+                                    {{ $certLapsed ? __('expired :date', ['date' => $certExpiry->format('j M Y')]) : __('valid to :date', ['date' => $certExpiry->format('j M Y')]) }}
+                                @endif
+                            </p>
+                        </div>
+                        @if ($cert)
+                            <a href="{{ route('certificate.register', ['no' => $cert->number]) }}" wire:navigate
+                               class="ml-auto shrink-0 rounded-[var(--radius-pill)] border border-line bg-surface px-4 py-2 text-[length:var(--text-xs)] text-ink transition-colors duration-(--dur-micro) hover:border-ink-head hover:text-ink-head">
+                                {{ __('Read the record') }}
+                            </a>
+                        @endif
+                    </div>
+                @endif
+
                 {{-- Price block --}}
                 <div class="mt-4 rounded-[var(--radius-card)] bg-paper px-4 py-3">
                     @if ($variant !== null)
@@ -170,6 +209,67 @@
                     <span aria-hidden="true">·</span>
                     <span>{{ __('Shipping calculated at checkout') }}</span>
                 </div>
+
+                {{-- Ingredients & scope. The reference's wording explains WHY the
+                     badge can be trusted for this item: the certificate's annex
+                     names the SKU, so a shop-wide badge cannot cover it by
+                     implication. The scope line is the certificate's own, not
+                     marketing copy. --}}
+                @if ($product->halalCertificate?->scope_note)
+                    <div class="mt-6 border-t border-line pt-5">
+                        <p class="font-display text-[length:var(--text-h4)] text-ink-head">{{ __('Ingredients & scope') }}</p>
+                        <p class="mt-3 max-w-[62ch] text-[length:var(--text-base)] leading-relaxed text-ink-soft">
+                            {{ __('Certified scope: :scope.', ['scope' => $product->halalCertificate->scope_note]) }}
+                            {{ __('The certificate names this SKU in its annex, so the badge is bound to the item you are buying, not to the shop that sells it.') }}
+                        </p>
+                    </div>
+                @endif
+
+                {{-- Traceability — the reference's key/value table. Only rows the
+                     data can actually answer are rendered: an empty row on a
+                     compliance surface is worse than no row. --}}
+                @if ($product->halalCertificate || $product->halal_batch_code)
+                    @php $trace = $product->halalCertificate; @endphp
+                    <dl class="mt-6 border-t border-line pt-5">
+                        <p class="font-display text-[length:var(--text-h4)] text-ink-head">{{ __('Traceability') }}</p>
+                        <div class="mt-4 space-y-3">
+                            @foreach (array_filter([
+                                __('Facility') => $trace?->facility,
+                                __('Batch') => $product->halal_batch_code
+                                    ? $product->halal_batch_code.($product->halal_packed_on ? ' · '.__('packed :date', ['date' => $product->halal_packed_on->format('j M Y')]) : '')
+                                    : null,
+                                __('Certificate') => $trace ? $trace->issuing_body.' · '.$trace->number : $product->halal_cert_number,
+                                __('Expiry') => $certExpiry
+                                    ? $certExpiry->format('j M Y').($certLapsed ? ' · '.__('lapsed') : ' · '.trans_choice('{1} :count day remaining|[2,*] :count days remaining', (int) now()->startOfDay()->diffInDays($certExpiry, false), ['count' => (int) now()->startOfDay()->diffInDays($certExpiry, false)]))
+                                    : null,
+                            ]) as $label => $value)
+                                <div class="flex flex-wrap gap-x-6 gap-y-1">
+                                    <dt class="w-28 shrink-0 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] text-ink-faint">{{ $label }}</dt>
+                                    <dd class="min-w-0 flex-1 text-[length:var(--text-base)] text-ink">{{ $value }}</dd>
+                                </div>
+                            @endforeach
+                        </div>
+                    </dl>
+                @endif
+
+                {{-- Sold by --}}
+                @if ($store)
+                    <div class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+                        <div>
+                            <p class="font-display text-[length:var(--text-h4)] text-ink-head">{{ __('Sold by') }}</p>
+                            <p class="mt-2 text-[length:var(--text-base)] text-ink-soft">
+                                {{ $store->name }}
+                                @if ($store->approved_at)
+                                    <span aria-hidden="true" class="text-ink-faint">·</span> {{ __('audited seller since :year', ['year' => $store->approved_at->format('Y')]) }}
+                                @endif
+                                @if ($store->state)
+                                    <span aria-hidden="true" class="text-ink-faint">·</span> {{ __('ships from :state', ['state' => $store->state]) }}
+                                @endif
+                            </p>
+                        </div>
+                        <a href="{{ $store->storefrontUrl() }}" wire:navigate class="shrink-0 text-[length:var(--text-base)] text-emerald underline-offset-4 hover:underline">{{ __('Storefront') }}</a>
+                    </div>
+                @endif
 
                 {{-- Badges row --}}
                 @if ($codAvailable)

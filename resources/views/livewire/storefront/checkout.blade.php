@@ -1,6 +1,30 @@
 <div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12">
     <x-ui.section-heading as="h1" :title="__('Checkout')" />
 
+    {{-- Progress rail, ported from the reference. This checkout is one page, so
+         the steps mark what is REACHED rather than acting as navigation: the
+         address is done once one is chosen, fulfilment once shipping resolves,
+         payment once a method is selected. --}}
+    @php
+        $steps = [
+            ['n' => '1', 'label' => __('Delivery details'), 'done' => $address !== null],
+            ['n' => '2', 'label' => __('Fulfilment'), 'done' => $address !== null && $shippingTotalSen >= 0],
+            ['n' => '3', 'label' => __('Payment'), 'done' => ($paymentMethod ?? null) !== null],
+        ];
+    @endphp
+    <ol class="mb-8 flex flex-wrap items-center gap-x-3 gap-y-2">
+        @foreach ($steps as $step)
+            <li class="flex items-center gap-3">
+                <span class="rounded-[var(--radius-pill)] border px-3 py-1 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] {{ $step['done'] ? 'border-emerald text-emerald' : 'border-line text-ink-faint' }}">
+                    {{ $step['n'] }} &middot; {{ $step['label'] }}
+                </span>
+                @unless ($loop->last)
+                    <span aria-hidden="true" class="h-px w-6 bg-line-strong"></span>
+                @endunless
+            </li>
+        @endforeach
+    </ol>
+
     <div class="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6">
 
         {{-- ===== Left column ===== --}}
@@ -92,13 +116,13 @@
                                      alt="{{ $line->variant->product->getTranslation('name', app()->getLocale()) }} {{ $line->variant->options_label }}"
                                      class="size-16 shrink-0 rounded-[var(--radius-card)] border border-line bg-paper object-contain">
                                 <div class="min-w-0 flex-1">
-                                    <p class="line-clamp-2 text-sm font-medium">{{ $line->variant->product->getTranslation('name', app()->getLocale()) }}</p>
+                                    <p class="line-clamp-2 font-display text-[length:var(--text-md)] text-ink-head">{{ $line->variant->product->getTranslation('name', app()->getLocale()) }}</p>
                                     @if ($line->variant->options_label)
                                         <p class="mt-0.5 truncate text-xs text-ink-soft">{{ $line->variant->options_label }}</p>
                                     @endif
-                                    <p class="mt-0.5 text-[13px] text-ink-soft tnum">@price($line->variant->effectivePriceSen()) <span class="font-mono">× {{ $line->qty }}</span></p>
+                                    <p class="mt-0.5 font-mono text-[length:var(--text-tiny)] text-ink-soft tnum">@price($line->variant->effectivePriceSen()) <span class="font-mono">× {{ $line->qty }}</span></p>
                                 </div>
-                                <span class="shrink-0 self-center text-sm font-medium tnum">@price($line->variant->effectivePriceSen() * $line->qty)</span>
+                                <span class="shrink-0 self-center font-mono text-[length:var(--text-price)] font-medium text-ink-head tnum">@price($line->variant->effectivePriceSen() * $line->qty)</span>
                             </li>
                         @endforeach
                     </ul>
@@ -111,7 +135,7 @@
                             @elseif ($group->shippingFeeSen === 0)
                                 <span class="font-medium text-emerald">{{ __('FREE') }}</span>
                             @else
-                                <span class="font-medium tnum">@price($group->shippingFeeSen)</span>
+                                <span class="font-mono font-medium text-ink-head tnum">@price($group->shippingFeeSen)</span>
                             @endif
                         </div>
 
@@ -263,11 +287,11 @@
             <dl class="mt-3 space-y-2 text-sm">
                 <div class="flex items-center justify-between">
                     <dt class="text-ink-soft">{{ __('Items subtotal') }}</dt>
-                    <dd class="font-medium tnum">@money($subtotalSen)</dd>
+                    <dd class="font-mono font-medium text-ink-head tnum">@money($subtotalSen)</dd>
                 </div>
                 <div class="flex items-center justify-between">
                     <dt class="text-ink-soft">{{ __('Shipping total') }}</dt>
-                    <dd class="font-medium tnum">@if ($address === null) — @else @money($shippingTotalSen) @endif</dd>
+                    <dd class="font-mono font-medium text-ink-head tnum">@if ($address === null) — @else @money($shippingTotalSen) @endif</dd>
                 </div>
                 @if ($taxTotalSen > 0)
                     <div class="flex items-center justify-between">
@@ -315,7 +339,7 @@
             <div class="mt-3 border-t border-line pt-3">
                 <div class="flex items-baseline justify-between">
                     <span class="text-sm font-medium">{{ __('Grand total') }}</span>
-                    <span class="text-2xl font-medium tnum">@money($grandTotalSen)</span>
+                    <span class="font-mono text-[length:var(--text-h3)] font-medium text-ink-head tnum">@money($grandTotalSen)</span>
                 </div>
                 @if ($displayCurrency !== 'MYR')
                     <p class="mt-0.5 text-right text-[13px] text-ink-soft tnum">@price($grandTotalSen)</p>

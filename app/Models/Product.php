@@ -34,6 +34,7 @@ class Product extends Model implements HasMedia
         'store_id', 'category_id', 'brand_id', 'name', 'slug', 'description',
         'condition', 'status', 'tax_class', 'weight_grams', 'length_mm', 'width_mm', 'height_mm',
         'cod_enabled', 'halal_status', 'halal_cert_number', 'halal_cert_expiry', 'published_at',
+        'halal_certificate_id', 'halal_batch_code', 'halal_packed_on',
     ];
 
     protected function casts(): array
@@ -44,6 +45,7 @@ class Product extends Model implements HasMedia
             'tax_class' => TaxClass::class,
             'cod_enabled' => 'boolean',
             'halal_cert_expiry' => 'date',
+            'halal_packed_on' => 'date',
             'published_at' => 'datetime',
             'rating_avg' => 'decimal:2',
         ];
@@ -77,6 +79,13 @@ class Product extends Model implements HasMedia
             ->logOnly(['status', 'category_id'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
+    }
+
+    /** The certificate this SKU is bound to. Nullable: a product may exist
+     *  before its certificate record is attached. */
+    public function halalCertificate(): BelongsTo
+    {
+        return $this->belongsTo(HalalCertificate::class, 'halal_certificate_id');
     }
 
     public function store(): BelongsTo

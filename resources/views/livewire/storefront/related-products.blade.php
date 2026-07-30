@@ -20,8 +20,8 @@
     @endif
 
     @if ($related->isNotEmpty())
-        <section class="mt-10" aria-label="{{ __('Related products') }}">
-            <x-ui.section-heading :title="__('Related products')" />
+        <section class="mt-10" aria-label="{{ __('Verified alongside it') }}">
+            <x-ui.section-heading :title="__('Verified alongside it')" />
             <div class="mt-4 flex gap-3 overflow-x-auto pb-2">
                 @foreach ($related as $item)
                     <div class="w-44 shrink-0 sm:w-48" wire:key="related-{{ $item->id }}">

@@ -243,11 +243,17 @@
                 </p>
                 <p class="mt-3 max-w-[34ch] text-[length:var(--text-base)] leading-relaxed">{{ __('Malaysia’s trusted multi-vendor marketplace.') }}</p>
 
+                {{-- Payment rails actually accepted. The reference shows
+                     COD / DUITNOW / CARD / PICKUP; this app has COD and iPay88,
+                     whose real rails are FPX, cards and e-wallets. Four chips as
+                     in the reference, but every one of them true — a payment
+                     method a buyer cannot use is a worse lie than a shorter row.
+                     Driven off the enum so removing a method removes its chip. --}}
                 <ul class="mt-5 flex flex-wrap gap-2">
                     @foreach (\App\Enums\PaymentMethod::cases() as $method)
-                        <li class="rounded-[var(--radius-pill)] border border-emerald-edge px-2.5 py-1 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label)] text-on-dark-faint">
-                            {{ $method === \App\Enums\PaymentMethod::Cod ? 'COD' : __('Online') }}
-                        </li>
+                        @foreach ($method->rails() as $rail)
+                            <li class="rounded-[var(--radius-pill)] border border-emerald-edge px-2.5 py-1 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label)] text-on-dark-faint">{{ $rail }}</li>
+                        @endforeach
                     @endforeach
                 </ul>
             </div>

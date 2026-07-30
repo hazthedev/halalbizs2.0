@@ -35,7 +35,7 @@
      The authority is read from the certificate number's prefix; see
      Listing::CERTIFIER_PREFIX. --}}
 <div>
-    <p class="mb-2 font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-ink-faint">{{ __('Certifying body') }}</p>
+    <p class="mb-3 border-b border-line pb-2 font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-ink-faint">{{ __('Certifying body') }}</p>
     <div class="flex flex-wrap gap-1.5">
         @foreach (array_keys(\App\Livewire\Storefront\Listing::CERTIFIER_PREFIX) as $body)
             @php $on = in_array($body, $certifiers, true); @endphp
@@ -45,6 +45,28 @@
                 aria-pressed="{{ $on ? 'true' : 'false' }}"
                 class="rounded-[var(--radius-pill)] border px-2.5 py-1 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label)] transition-colors duration-(--dur-micro) {{ $on ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line text-ink-faint hover:border-line-strong hover:text-ink' }}"
             >{{ $body }}</button>
+        @endforeach
+    </div>
+</div>
+
+{{-- Assurance — each box maps to a column on the certificate record, so a
+     tick genuinely narrows the catalogue. AND across the group: every box a
+     buyer ticks is another requirement, not another option. --}}
+<div>
+    <p class="mb-3 border-b border-line pb-2 font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-ink-faint">{{ __('Assurance') }}</p>
+    <div class="space-y-2.5">
+        @foreach ([
+            'valid12' => __('Certificate valid 12 months+'),
+            'dedicated' => __('Dedicated halal facility'),
+            'export' => __('Export paperwork included'),
+        ] as $key => $label)
+            <label for="{{ $idPrefix }}-assure-{{ $key }}" class="flex cursor-pointer items-start gap-2.5 text-[length:var(--text-base)] text-ink">
+                <input id="{{ $idPrefix }}-assure-{{ $key }}" type="checkbox"
+                       wire:click="toggleAssurance('{{ $key }}')"
+                       @checked(in_array($key, $assurances, true))
+                       class="mt-0.5 size-4 shrink-0 rounded-[4px] border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                <span>{{ $label }}</span>
+            </label>
         @endforeach
     </div>
 </div>

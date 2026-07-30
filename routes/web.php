@@ -43,6 +43,10 @@ Route::get('/live/{session:slug}', Storefront\Live\Room::class)->name('live.room
 Route::get('/page/{slug}', Storefront\StaticPage::class)->name('page.show');
 Route::get('/welcome', Storefront\Landing::class)->name('landing');
 
+// Public certificate register. Unauthenticated by design: a verification tool
+// that requires a login verifies nothing for the person who needs it.
+Route::get('/certificate-register', Storefront\CertificateRegister::class)->name('certificate.register');
+
 // ===== Preferences & newsletter =====
 Route::post('/preferences/locale', [PreferenceController::class, 'locale'])->middleware('throttle:30,1')->name('preferences.locale');
 Route::post('/preferences/currency', [PreferenceController::class, 'currency'])->middleware('throttle:30,1')->name('preferences.currency');
