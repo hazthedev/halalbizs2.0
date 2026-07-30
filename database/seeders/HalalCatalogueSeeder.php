@@ -11,6 +11,7 @@ use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -81,7 +82,23 @@ class HalalCatalogueSeeder extends Seeder
             }
         }
 
-        $this->command?->info("Stores: {$stores->count()} · products: {$seeded} · with packshot: {$withImage}");
+        // Retire anything left in a category this tree deactivated — i.e. the
+        // factory demo products (Latin names, no media on disk). DELISTED, not
+        // deleted: orders, reviews and ledger rows reference them, so a delete
+        // would either trip a constraint or orphan history.
+        //
+        // This was done by hand locally and therefore did NOT happen on the
+        // preview, which then advertised 266 listings: 166 real ones plus 100
+        // Latin-named demos with broken images. Reproducible now.
+        $retired = Product::query()
+            ->where('status', ProductStatus::Live)
+            ->whereHas('category', fn ($q) => $q->where('is_active', false))
+            ->update(['status' => ProductStatus::Delisted]);
+
+        Cache::forget('hb.listing-count');
+        Cache::forget('landing:stats');
+
+        $this->command?->info("Stores: {$stores->count()} · products: {$seeded} · with packshot: {$withImage} · retired demo: {$retired}");
 
         if ($missingImages !== []) {
             $this->command?->warn(count($missingImages).' packshots not on disk yet (re-run this seeder once the batch finishes)');
