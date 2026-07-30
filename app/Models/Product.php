@@ -166,13 +166,22 @@ class Product extends Model implements HasMedia
     #[Scope]
     protected function keywordSearch(Builder $query, ?string $term): void
     {
-        $like = '%'.trim((string) $term).'%';
+        // ⚠ LOWER() on both sides, not a plain LIKE.
+        // `name` and `description` are JSON columns, and MySQL gives JSON a
+        // BINARY collation — so `LIKE '%beras%'` never matches "Beras Wangi…".
+        // SQLite stores them as TEXT with case-insensitive LIKE, so this was
+        // invisible locally and broke every product-name search on the preview:
+        // "Beras" returned 8 results, "beras" returned 0. Store and brand names
+        // are ordinary VARCHAR and did match, which is what made it look like
+        // search "half worked".
+        $term = mb_strtolower(trim((string) $term));
+        $like = '%'.$term.'%';
 
         $query->where(function (Builder $q) use ($like): void {
-            $q->where('name', 'like', $like)
-                ->orWhere('description', 'like', $like)
-                ->orWhereHas('store', fn (Builder $s) => $s->where('name', 'like', $like))
-                ->orWhereHas('brand', fn (Builder $b) => $b->where('name', 'like', $like));
+            $q->whereRaw('LOWER(name) LIKE ?', [$like])
+                ->orWhereRaw('LOWER(description) LIKE ?', [$like])
+                ->orWhereHas('store', fn (Builder $s) => $s->whereRaw('LOWER(name) LIKE ?', [$like]))
+                ->orWhereHas('brand', fn (Builder $b) => $b->whereRaw('LOWER(name) LIKE ?', [$like]));
         });
     }
 
