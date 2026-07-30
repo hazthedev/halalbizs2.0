@@ -36,7 +36,11 @@ git config --global --add safe.directory "$(pwd)" 2>/dev/null || true
 # Normalize the same way for both: strip surrounding quotes/whitespace, lowercase
 # the booleans — so APP_DEBUG="True" / 'true' / true all read identically (a naive
 # regex would miss the quoted/cased forms and let a debug-on prod deploy through).
-read_env() { grep -E "^$1=" .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d " \"'"; }
+# ⚠ \r is stripped too: a .env edited in a control-panel editor can be saved
+# CRLF, which made SEED_DEMO_CATALOGUE read as "true\r" and silently never match
+# — the deploy reported success while seeding nothing. Applies to every value
+# read here, APP_ENV and APP_DEBUG included.
+read_env() { grep -E "^[[:space:]]*$1=" .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d " \"'\r"; }
 APP_ENV="$(read_env APP_ENV)";   APP_ENV="${APP_ENV:-production}"
 APP_DEBUG="$(read_env APP_DEBUG | tr '[:upper:]' '[:lower:]')"
 echo "→ environment: $APP_ENV (debug=${APP_DEBUG:-unset})"
@@ -101,13 +105,13 @@ fi
 # reads. Both seeders are idempotent (the catalogue keys on the slug the model
 # generates for itself, certificates on the number), so re-running on every
 # deploy is safe. Order matters: certificates are built FROM the seeded products.
-SEED_DEMO_CATALOGUE="$(read_env SEED_DEMO_CATALOGUE)"
-if [ "$SEED_DEMO_CATALOGUE" = "true" ]; then
+SEED_DEMO_CATALOGUE="$(read_env SEED_DEMO_CATALOGUE | tr '[:upper:]' '[:lower:]')"
+if [ "$SEED_DEMO_CATALOGUE" = "true" ] || [ "$SEED_DEMO_CATALOGUE" = "1" ]; then
     echo "→ seed demo catalogue (SEED_DEMO_CATALOGUE=true)"
     "$PHP_BIN" artisan db:seed --class=HalalCatalogueSeeder --force || echo "  ! catalogue seed reported errors — continuing"
     "$PHP_BIN" artisan db:seed --class=HalalCertificateSeeder --force || echo "  ! certificate seed reported errors — continuing"
 else
-    echo "→ skip demo catalogue (set SEED_DEMO_CATALOGUE=true to enable)"
+    echo "→ skip demo catalogue (SEED_DEMO_CATALOGUE='${SEED_DEMO_CATALOGUE:-unset}' — set it to true to enable)"
 fi
 
 echo "→ clear caches"
