@@ -1,16 +1,23 @@
-{{-- Bell lives in the ink topbar of all three contexts — paper-on-ink styling. --}}
+{{-- The bell used to be paper-on-ink in all three contexts. After the revamp the
+     STOREFRONT header is light, so cream-on-cream made it invisible: only the
+     unread dot showed, because that carries its own dark ring. Seller and admin
+     topbars are still dark, so the styling follows the context rather than
+     picking one and breaking the other. --}}
+@php
+    $onDark = $context !== 'storefront';
+@endphp
 <div class="relative" x-data="{ open: false }" x-on:keydown.escape.window="open = false" wire:poll.60s>
     <button type="button"
             x-on:click="open = !open"
             x-bind:aria-expanded="open ? 'true' : 'false'"
-            class="relative flex size-10 items-center justify-center rounded-lg text-paper transition-colors duration-150 hover:bg-paper/10 focus-visible:ring-2 focus-visible:ring-emerald"
+            class="relative flex size-10 items-center justify-center rounded-[var(--radius-pill)] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald {{ $onDark ? 'text-on-dark hover:bg-on-dark/10' : 'border border-line text-ink-soft hover:border-line-strong hover:text-ink' }}"
             aria-label="{{ $unreadCount > 0 ? __('Notifications — :count unread', ['count' => $unreadCount]) : __('Notifications') }}"
             data-testid="notification-bell">
         <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/>
         </svg>
         @if ($unreadCount > 0)
-            <span class="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-emerald ring-2 ring-ink"
+            <span class="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-emerald ring-2 {{ $onDark ? 'ring-emerald-night' : 'ring-surface' }}"
                   data-testid="bell-unread-dot" aria-hidden="true"></span>
         @endif
     </button>

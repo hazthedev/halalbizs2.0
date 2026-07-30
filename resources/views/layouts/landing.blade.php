@@ -20,13 +20,13 @@
     @php $light = ($variant ?? null) === 'light'; @endphp
     <header class="{{ $light ? 'border-b border-line bg-surface' : 'absolute inset-x-0 top-0 z-40 bg-gradient-to-b from-emerald-night/70 via-emerald-night/20 to-transparent' }}">
         <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-            <a href="{{ route('home') }}" wire:navigate class="flex shrink-0 items-center gap-2 font-display text-lg font-bold tracking-tight {{ $light ? 'text-ink' : 'text-paper' }}">
+            <a href="{{ route('home') }}" wire:navigate class="flex shrink-0 items-center gap-2 font-display text-lg font-medium tracking-tight {{ $light ? 'text-ink' : 'text-on-dark' }}">
                 <x-ui.star-mark :size="22" class="text-brass" />
                 HalalBizs
             </a>
 
             <div class="flex shrink-0 items-center gap-2 sm:gap-3">
-                <a href="{{ route('login') }}" wire:navigate class="rounded-lg px-3 py-2 text-[13px] font-semibold transition-colors {{ $light ? 'text-ink-soft hover:text-ink' : 'text-paper/80 hover:text-paper' }}">
+                <a href="{{ route('login') }}" wire:navigate class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium transition-colors {{ $light ? 'text-ink-soft hover:text-ink' : 'text-on-dark/80 hover:text-on-dark' }}">
                     {{ __('Log in') }}
                 </a>
                 <x-ui.button variant="brass" :href="route('seller.apply')">
@@ -41,9 +41,9 @@
     </main>
 
     {{-- ===== Minimal landing footer ===== --}}
-    <footer class="border-t border-brass/20 bg-ink px-4 py-6 text-center text-xs text-paper/64">
+    <footer class="border-t border-brass/20 bg-emerald-night px-4 py-6 text-center text-xs text-on-dark/64">
         © {{ now()->year }} HalalBizs.
-        <a href="{{ route('home') }}" wire:navigate class="font-medium text-brass-tint transition-colors hover:text-paper">{{ __('Back to shopping') }}</a>
+        <a href="{{ route('home') }}" wire:navigate class="font-medium text-brass-tint transition-colors hover:text-on-dark">{{ __('Back to shopping') }}</a>
     </footer>
 
     @stack('scripts')
