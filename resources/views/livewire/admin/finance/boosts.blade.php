@@ -12,7 +12,7 @@
         ] as $key => $label)
             <x-ui.card class="p-4" wire:key="revenue-{{ $key }}">
                 <p class="text-[13px] text-ink-soft">{{ $label }}</p>
-                <p class="mt-1 font-display text-xl font-bold tabular-nums">@money($revenue[$key])</p>
+                <p class="mt-1 font-display text-xl font-medium tabular-nums">@money($revenue[$key])</p>
             </x-ui.card>
         @endforeach
     </div>
@@ -51,7 +51,7 @@
                             <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">
                                 {{ $boost->starts_at->format('d M Y H:i') }} → {{ $boost->ends_at->format('d M Y H:i') }}
                             </td>
-                            <td class="px-3 py-2 text-right font-semibold tabular-nums whitespace-nowrap">@money($boost->amount_sen)</td>
+                            <td class="px-3 py-2 text-right font-medium tabular-nums whitespace-nowrap">@money($boost->amount_sen)</td>
                             <td class="px-3 py-2"><x-ui.badge :variant="$pill">{{ $boost->status->label() }}</x-ui.badge></td>
                         </tr>
                     @endforeach

@@ -11,7 +11,7 @@
         {{-- Expand / collapse --}}
         @if ($hasChildren)
             <button type="button" x-on:click="open = !open" :aria-expanded="open"
-                    class="flex size-11 shrink-0 items-center justify-center rounded-lg text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald"
+                    class="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald"
                     aria-label="{{ __('Toggle :name', ['name' => $category->getTranslation('name', 'en')]) }}">
                 <svg class="size-4 transition-transform duration-150" :class="open ? 'rotate-90' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
             </button>
@@ -31,7 +31,7 @@
                 {{ trans_choice('{0}No products|{1}1 product|[2,*]:count products', $category->products_count, ['count' => $category->products_count]) }}
                 · {{ __('Commission') }}:
                 @if ($category->commission_rate !== null)
-                    <span class="font-semibold text-ink">{{ rtrim(rtrim(number_format((float) $category->commission_rate, 2, '.', ''), '0'), '.') }}%</span>
+                    <span class="font-medium text-ink">{{ rtrim(rtrim(number_format((float) $category->commission_rate, 2, '.', ''), '0'), '.') }}%</span>
                 @else
                     <span class="text-ink-faint">{{ __('inherited') }}</span>
                 @endif
@@ -42,12 +42,12 @@
         <div class="flex shrink-0 items-center gap-0.5">
             {{-- Reorder within parent --}}
             <button type="button" wire:click="move({{ $category->id }}, -1)" @disabled($isFirst)
-                    class="flex size-11 items-center justify-center rounded-lg text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-40"
+                    class="flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-40"
                     aria-label="{{ __('Move :name up', ['name' => $category->getTranslation('name', 'en')]) }}">
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
             </button>
             <button type="button" wire:click="move({{ $category->id }}, 1)" @disabled($isLast)
-                    class="flex size-11 items-center justify-center rounded-lg text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-40"
+                    class="flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-40"
                     aria-label="{{ __('Move :name down', ['name' => $category->getTranslation('name', 'en')]) }}">
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
             </button>
@@ -62,13 +62,13 @@
             </button>
 
             <button type="button" wire:click="edit({{ $category->id }})"
-                    class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Edit') }}
             </button>
 
             @if ($depth < \App\Livewire\Admin\Catalog\Categories::MAX_DEPTH)
                 <button type="button" wire:click="startCreate({{ $category->id }})"
-                        class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Add child') }}
                 </button>
             @endif
@@ -76,13 +76,13 @@
             @if ($blocked)
                 <button type="button" disabled
                         title="{{ $hasChildren ? __('Delete its sub-categories first.') : __('This category still has products — move products first.') }}"
-                        class="inline-flex min-h-11 cursor-not-allowed items-center rounded-lg px-2 text-[13px] font-medium text-ink-faint">
+                        class="inline-flex min-h-11 cursor-not-allowed items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-faint">
                     {{ __('Delete') }}
                 </button>
             @else
                 <button type="button" wire:click="delete({{ $category->id }})"
                         wire:confirm="{{ __('Delete ":name"? This cannot be undone.', ['name' => $category->getTranslation('name', 'en')]) }}"
-                        class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Delete') }}
                 </button>
             @endif

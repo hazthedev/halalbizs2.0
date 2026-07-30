@@ -33,8 +33,8 @@
                                 @if ($editingId === $brand->id)
                                     <form wire:submit="update" class="flex flex-wrap items-center gap-2">
                                         <x-ui.input wire:model="editName" :error="$errors->first('editName')" aria-label="{{ __('Brand name') }}" />
-                                        <button type="submit" class="inline-flex min-h-11 items-center rounded-lg px-2 font-semibold text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Save') }}</button>
-                                        <button type="button" wire:click="cancelEdit" class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
+                                        <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Save') }}</button>
+                                        <button type="button" wire:click="cancelEdit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
                                     </form>
                                 @else
                                     <span class="font-medium text-ink">{{ $brand->name }}</span>
@@ -54,12 +54,12 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
                                     <button type="button" wire:click="edit({{ $brand->id }})"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Rename') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Rename') }}</button>
                                     <button type="button" wire:click="delete({{ $brand->id }})"
                                             wire:confirm="{{ $brand->products_count > 0
                                                 ? trans_choice('{1}Delete ":name"? :count product loses its brand link — it keeps selling without one.|[2,*]Delete ":name"? :count products lose their brand link — they keep selling without one.', $brand->products_count, ['name' => $brand->name, 'count' => $brand->products_count])
                                                 : __('Delete ":name"? This cannot be undone.', ['name' => $brand->name]) }}"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
                                 </div>
                             </td>
                         </tr>

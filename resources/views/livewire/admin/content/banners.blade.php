@@ -15,7 +15,7 @@
     @if ($showForm)
         <x-ui.card class="p-4">
             <form wire:submit="save" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">
+                <h2 class="font-display text-lg font-medium">
                     {{ $editingId !== null ? __('Edit banner') : __('New banner') }}
                 </h2>
 
@@ -25,13 +25,13 @@
                         <button type="button" role="tab" x-on:click="tab = 'en'"
                                 x-bind:aria-selected="tab === 'en' ? 'true' : 'false'"
                                 x-bind:class="tab === 'en' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
-                                class="min-h-11 border-b-2 px-3 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="min-h-11 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('English') }}
                         </button>
                         <button type="button" role="tab" x-on:click="tab = 'ms'"
                                 x-bind:aria-selected="tab === 'ms' ? 'true' : 'false'"
                                 x-bind:class="tab === 'ms' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
-                                class="min-h-11 border-b-2 px-3 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="min-h-11 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Bahasa Melayu') }}
                         </button>
                     </div>
@@ -127,12 +127,12 @@
                                 <div class="flex items-center gap-0.5">
                                     <button type="button" wire:click="move({{ $banner->id }}, -1)" @disabled($loop->first)
                                             aria-label="{{ __('Move up') }}"
-                                            class="inline-flex size-11 items-center justify-center rounded-lg text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
                                     </button>
                                     <button type="button" wire:click="move({{ $banner->id }}, 1)" @disabled($loop->last)
                                             aria-label="{{ __('Move down') }}"
-                                            class="inline-flex size-11 items-center justify-center rounded-lg text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
                                     </button>
                                 </div>
@@ -140,9 +140,9 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-center gap-3">
                                     @if ($url = $banner->getFirstMediaUrl('image'))
-                                        <img src="{{ $url }}" alt="{{ $banner->getTranslation('title', 'en') }}" class="h-10 w-20 shrink-0 rounded-lg border border-line bg-paper object-cover">
+                                        <img src="{{ $url }}" alt="{{ $banner->getTranslation('title', 'en') }}" class="h-10 w-20 shrink-0 rounded-[var(--radius-control)] border border-line bg-paper object-cover">
                                     @else
-                                        <span class="flex h-10 w-20 shrink-0 items-center justify-center rounded-lg border border-line bg-paper text-ink-faint">—</span>
+                                        <span class="flex h-10 w-20 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-line bg-paper text-ink-faint">—</span>
                                     @endif
                                     <span class="font-medium text-ink">{{ $banner->getTranslation('title', 'en') }}</span>
                                 </div>
@@ -159,7 +159,7 @@
                                 <button type="button" role="switch" aria-checked="{{ $banner->is_active ? 'true' : 'false' }}"
                                         wire:click="toggleActive({{ $banner->id }})"
                                         aria-label="{{ __('Toggle :title', ['title' => $banner->getTranslation('title', 'en')]) }}"
-                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $banner->is_active ? 'bg-emerald' : 'bg-line-strong' }}">
                                         <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $banner->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                     </span>
@@ -168,10 +168,10 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
                                     <button type="button" wire:click="edit({{ $banner->id }})"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
                                     <button type="button" wire:click="delete({{ $banner->id }})"
                                             wire:confirm="{{ __('Delete this banner? This cannot be undone.') }}"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
                                 </div>
                             </td>
                         </tr>

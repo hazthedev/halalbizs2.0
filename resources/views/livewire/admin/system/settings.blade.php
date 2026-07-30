@@ -7,7 +7,7 @@
         {{-- ── General ───────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveGeneral" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">{{ __('General') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('General') }}</h2>
 
                 <x-ui.input :label="__('Site name')" wire:model="siteName" :error="$errors->first('siteName')" />
 
@@ -33,7 +33,7 @@
         {{-- ── Order ─────────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveOrder" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">{{ __('Orders') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Orders') }}</h2>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <x-ui.input :label="__('Return window (days)')" type="number" min="1" max="60" wire:model="returnWindowDays" :error="$errors->first('returnWindowDays')" />
@@ -49,7 +49,7 @@
         {{-- ── COD ───────────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveCod" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">{{ __('Cash on delivery') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Cash on delivery') }}</h2>
 
                 <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
                     <input type="checkbox" wire:model="codEnabled" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
@@ -65,7 +65,7 @@
         {{-- ── Moderation ────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveModeration" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">{{ __('Moderation') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Moderation') }}</h2>
 
                 <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
                     <input type="checkbox" wire:model="requireProductApproval" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
@@ -79,7 +79,7 @@
         {{-- ── Security (Turnstile + Google OAuth + SMS) ─────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveSecurity" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">{{ __('Security') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Security') }}</h2>
 
                 <p class="text-[13px] font-medium text-ink-soft">{{ __('Cloudflare Turnstile') }}</p>
                 <x-ui.input :label="__('Site key')" wire:model="turnstileSiteKey" :error="$errors->first('turnstileSiteKey')" />
@@ -107,7 +107,7 @@
         {{-- ── Tracking pixels ───────────────────────────────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveTracking" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">{{ __('Tracking') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Tracking') }}</h2>
 
                 <div class="grid gap-4 sm:grid-cols-3">
                     <x-ui.input :label="__('GA4 measurement ID')" placeholder="G-XXXXXXX" wire:model="ga4Id" :error="$errors->first('ga4Id')" />
@@ -122,7 +122,7 @@
         {{-- ── iPay88 ────────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveIpay88" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">{{ __('iPay88') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('iPay88') }}</h2>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <x-ui.input :label="__('Merchant code')" wire:model="merchantCode" :error="$errors->first('merchantCode')" />

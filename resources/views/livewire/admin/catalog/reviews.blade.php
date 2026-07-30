@@ -72,7 +72,7 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end">
                                     <button type="button" wire:click="startModeration({{ $review->id }})"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium focus-visible:ring-2 focus-visible:ring-emerald {{ $review->is_hidden ? 'text-emerald hover:text-emerald-deep' : 'text-danger hover:bg-danger-tint' }}">
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium focus-visible:ring-2 focus-visible:ring-emerald {{ $review->is_hidden ? 'text-emerald hover:text-emerald-deep' : 'text-danger hover:bg-danger-tint' }}">
                                         {{ $review->is_hidden ? __('Unhide') : __('Hide') }}
                                     </button>
                                 </div>
@@ -90,11 +90,11 @@
 
     {{-- Hide/unhide reason modal --}}
     @if ($moderating !== null)
-        <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:p-8" wire:click.self="cancelModeration">
+        <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-emerald-night/40 p-4 sm:p-8" wire:click.self="cancelModeration">
             <x-ui.card class="w-full max-w-lg shadow-pop">
                 <form wire:submit="confirmModeration">
                     <div class="border-b border-line px-5 py-4">
-                        <h2 class="font-display text-lg font-semibold">
+                        <h2 class="font-display text-lg font-medium">
                             {{ $moderating->is_hidden ? __('Unhide review') : __('Hide review') }}
                         </h2>
                         <p class="mt-0.5 text-[13px] text-ink-soft">{{ $moderating->product?->getTranslation('name', 'en') }}</p>
@@ -113,14 +113,14 @@
                     </div>
                     <div class="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
                         <button type="button" wire:click="cancelModeration"
-                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Cancel') }}
                         </button>
                         @if ($moderating->is_hidden)
                             <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Unhide review') }}</x-ui.button>
                         @else
                             <button type="submit" wire:loading.attr="disabled"
-                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-danger px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-danger px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
                                 {{ __('Hide review') }}
                             </button>
                         @endif

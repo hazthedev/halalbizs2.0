@@ -6,10 +6,10 @@
     <nav class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Subscription status') }}">
         @foreach (SubscriptionStatus::cases() as $statusCase)
             <button type="button" wire:click="$set('tab', '{{ $statusCase->value }}')" wire:key="tab-{{ $statusCase->value }}"
-                    class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm {{ $tab === $statusCase->value ? 'border-ink font-semibold text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}">
+                    class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm {{ $tab === $statusCase->value ? 'border-ink font-medium text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}">
                 {{ $statusCase->label() }}
                 @if ($counts[$statusCase->value] > 0)
-                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-semibold tnum text-emerald">{{ $counts[$statusCase->value] }}</span>
+                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium tnum text-emerald">{{ $counts[$statusCase->value] }}</span>
                 @endif
             </button>
         @endforeach
@@ -19,10 +19,10 @@
         <table class="w-full text-sm">
             <thead class="border-b border-line text-left text-[11px] uppercase tracking-[0.06em] text-ink-faint">
                 <tr>
-                    <th class="px-4 py-3 font-semibold">{{ __('Buyer') }}</th>
-                    <th class="px-4 py-3 font-semibold">{{ __('Product') }}</th>
-                    <th class="px-4 py-3 text-right font-semibold">{{ __('Every') }}</th>
-                    <th class="px-4 py-3 text-right font-semibold">{{ __('Next') }}</th>
+                    <th class="px-4 py-3 font-medium">{{ __('Buyer') }}</th>
+                    <th class="px-4 py-3 font-medium">{{ __('Product') }}</th>
+                    <th class="px-4 py-3 text-right font-medium">{{ __('Every') }}</th>
+                    <th class="px-4 py-3 text-right font-medium">{{ __('Next') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-line">

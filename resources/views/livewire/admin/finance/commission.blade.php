@@ -7,7 +7,7 @@
 
         {{-- Global rate --}}
         <x-ui.card class="p-4">
-            <h2 class="text-sm font-semibold">{{ __('Global default rate') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Global default rate') }}</h2>
             <p class="mt-1 text-[13px] text-ink-soft">{{ __('Applies when neither the store nor the category chain has an override.') }}</p>
             <form wire:submit="saveGlobalRate" class="mt-3 flex items-end gap-2">
                 <div class="flex-1">
@@ -16,7 +16,7 @@
                            class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('globalRate') ? 'border-danger' : 'border-line-strong' }}">
                 </div>
                 <button type="submit" wire:loading.attr="disabled"
-                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                     {{ __('Save rate') }}
                 </button>
             </form>
@@ -27,7 +27,7 @@
 
         {{-- What the rate is charged ON --}}
         <x-ui.card class="p-4">
-            <h2 class="text-sm font-semibold">{{ __('Commission basis') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Commission basis') }}</h2>
             <p class="mt-1 text-[13px] text-ink-soft">
                 {{ __('What the rate is charged on. Only seller-funded discounts are affected — platform vouchers never reduce the base, because the platform absorbs those and the seller is paid in full.') }}
             </p>
@@ -40,7 +40,7 @@
                             <input type="radio" wire:model.live="discountBasis" value="{{ $basis->value }}" name="discount-basis"
                                    class="mt-0.5 size-4 shrink-0 border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                             <span class="min-w-0">
-                                <span class="block text-[13px] font-semibold text-ink">{{ $basis->label() }}</span>
+                                <span class="block text-[13px] font-medium text-ink">{{ $basis->label() }}</span>
                                 <span class="mt-0.5 block text-[12px] text-ink-soft">{{ $basis->description() }}</span>
                             </span>
                         </label>
@@ -52,7 +52,7 @@
                 </p>
 
                 <button type="submit" wire:loading.attr="disabled"
-                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                     {{ __('Save basis') }}
                 </button>
             </form>
@@ -63,7 +63,7 @@
 
         {{-- Effective-rate tester (docs/08 §F — living documentation) --}}
         <x-ui.card class="p-4">
-            <h2 class="text-sm font-semibold">{{ __('Effective-rate tester') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Effective-rate tester') }}</h2>
             <p class="mt-1 text-[13px] text-ink-soft">{{ __('Pick a store and category to see the rate a new sub-order would snapshot — resolved by the real CommissionResolver.') }}</p>
             <div class="mt-3 grid gap-2 sm:grid-cols-2">
                 <div>
@@ -89,7 +89,7 @@
             </div>
             @if ($tester !== null)
                 <div class="mt-3 rounded-[var(--radius-card)] border border-line bg-paper p-3">
-                    <p class="font-display text-3xl font-bold tabular-nums">{{ $tester['rate'] }}%</p>
+                    <p class="font-mono text-3xl font-medium tabular-nums">{{ $tester['rate'] }}%</p>
                     <p class="mt-0.5 text-[13px] text-ink-soft">{{ $tester['source'] }}</p>
                 </div>
             @else
@@ -103,7 +103,7 @@
         {{-- Category overrides summary --}}
         <x-ui.card class="overflow-x-auto">
             <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
-                <h2 class="text-sm font-semibold">{{ __('Category overrides') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Category overrides') }}</h2>
                 <a href="{{ route('admin.catalog.categories') }}" wire:navigate
                    class="inline-flex min-h-11 items-center text-[13px] font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Edit in Catalog → Categories') }}
@@ -139,7 +139,7 @@
         {{-- Store overrides summary --}}
         <x-ui.card class="overflow-x-auto">
             <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
-                <h2 class="text-sm font-semibold">{{ __('Store overrides') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Store overrides') }}</h2>
                 <a href="{{ route('admin.sellers.stores') }}" wire:navigate
                    class="inline-flex min-h-11 items-center text-[13px] font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Edit in Sellers → Stores') }}

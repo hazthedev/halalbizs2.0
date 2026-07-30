@@ -17,7 +17,7 @@
     <form wire:submit="save" class="space-y-4">
 
         <x-ui.card class="space-y-4 p-4">
-            <h2 class="font-display text-lg font-semibold">{{ __('Occasion') }}</h2>
+            <h2 class="font-display text-lg font-medium">{{ __('Occasion') }}</h2>
             <x-ui.input :label="__('Occasion name')" wire:model="occasion" :error="$errors->first('occasion')"
                         placeholder="{{ __('e.g. Hari Raya Aidilfitri') }}" :hint="__('Shown on the home hero. Leave empty for no label.')" class="max-w-sm" />
 
@@ -29,7 +29,7 @@
 
         <x-ui.card class="space-y-4 p-4">
             <div class="flex items-center justify-between gap-3">
-                <h2 class="font-display text-lg font-semibold">{{ __('Announcement bar') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Announcement bar') }}</h2>
                 <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
                     <input type="checkbox" wire:model="announcementEnabled" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Enabled') }}
@@ -67,7 +67,7 @@
 
         <x-ui.card class="space-y-4 p-4">
             <div class="flex items-center justify-between gap-3">
-                <h2 class="font-display text-lg font-semibold">{{ __('Home hero') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Home hero') }}</h2>
                 <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
                     <input type="checkbox" wire:model="heroImageEnabled" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Enabled') }}
@@ -77,7 +77,7 @@
             <div>
                 <label for="hero-image" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Hero image') }}</label>
                 <input id="hero-image" type="file" accept="image/*" wire:model="heroImage"
-                       class="block w-full text-[13px] text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border file:border-line-strong file:bg-surface file:px-4 file:py-2 file:text-[13px] file:font-semibold file:text-ink hover:file:bg-paper">
+                       class="block w-full text-[13px] text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-line-strong file:bg-surface file:px-4 file:py-2 file:text-[13px] file:font-medium file:text-ink hover:file:bg-paper">
                 @error('heroImage')
                     <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                 @else

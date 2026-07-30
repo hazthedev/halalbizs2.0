@@ -42,7 +42,7 @@
         aria-label="{{ __('Shopping concierge') }}"
     >
         {{-- Header --}}
-        <div class="surface-girih flex items-center gap-2.5 border-b border-brass/25 bg-emerald-night px-4 py-3 text-on-dark">
+        <div class="flex items-center gap-2.5 border-b border-emerald-edge bg-emerald-night px-4 py-3 text-on-dark">
             <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brass/15 text-brass">
                 <x-ui.star-mark :size="18" />
             </span>

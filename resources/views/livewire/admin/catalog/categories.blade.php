@@ -39,11 +39,11 @@
 
     {{-- Edit / create panel --}}
     @if ($formOpen)
-        <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:p-8" wire:click.self="cancel">
+        <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-emerald-night/40 p-4 sm:p-8" wire:click.self="cancel">
             <x-ui.card class="w-full max-w-2xl shadow-pop" x-data="{ tab: 'en' }">
                 <form wire:submit="save">
                     <div class="flex items-center justify-between border-b border-line px-5 py-4">
-                        <h2 class="font-display text-lg font-semibold">
+                        <h2 class="font-display text-lg font-medium">
                             @if ($editingId !== null)
                                 {{ __('Edit category') }}
                             @elseif ($parentName !== null)
@@ -61,12 +61,12 @@
                         {{-- Language tabs --}}
                         <div class="flex gap-1 border-b border-line" role="tablist">
                             <button type="button" role="tab" x-on:click="tab = 'en'" :aria-selected="tab === 'en'"
-                                    class="min-h-11 px-3 text-[13px] font-semibold focus-visible:ring-2 focus-visible:ring-emerald"
+                                    class="min-h-11 px-3 text-[13px] font-medium focus-visible:ring-2 focus-visible:ring-emerald"
                                     :class="tab === 'en' ? 'border-b-2 border-ink text-ink' : 'text-ink-soft hover:text-ink'">
                                 {{ __('English') }}
                             </button>
                             <button type="button" role="tab" x-on:click="tab = 'ms'" :aria-selected="tab === 'ms'"
-                                    class="min-h-11 px-3 text-[13px] font-semibold focus-visible:ring-2 focus-visible:ring-emerald"
+                                    class="min-h-11 px-3 text-[13px] font-medium focus-visible:ring-2 focus-visible:ring-emerald"
                                     :class="tab === 'ms' ? 'border-b-2 border-ink text-ink' : 'text-ink-soft hover:text-ink'">
                                 {{ __('Bahasa Melayu') }}
                             </button>
@@ -104,7 +104,7 @@
                                     @elseif ($editingImageUrl)
                                         <img src="{{ $editingImageUrl }}" alt="{{ __('Category image') }}" class="size-11 rounded-[var(--radius-control)] border border-line bg-paper object-cover">
                                     @endif
-                                    <label class="inline-flex min-h-11 cursor-pointer items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper">
+                                    <label class="inline-flex min-h-11 cursor-pointer items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper">
                                         <input type="file" wire:model="image" accept="image/*" class="sr-only">
                                         {{ ($image || $editingImageUrl) ? __('Replace image') : __('Upload image') }}
                                     </label>
@@ -145,7 +145,7 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
-                        <button type="button" wire:click="cancel" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-semibold text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
+                        <button type="button" wire:click="cancel" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
                         <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="save, image">
                             {{ $editingId !== null ? __('Save changes') : __('Create category') }}
                         </x-ui.button>

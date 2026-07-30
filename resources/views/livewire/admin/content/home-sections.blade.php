@@ -32,18 +32,18 @@
                             <div class="flex items-center gap-0.5">
                                 <button type="button" wire:click="move({{ $section->id }}, -1)" @disabled($loop->first)
                                         aria-label="{{ __('Move up') }}"
-                                        class="inline-flex size-11 items-center justify-center rounded-lg text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                        class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
                                 </button>
                                 <button type="button" wire:click="move({{ $section->id }}, 1)" @disabled($loop->last)
                                         aria-label="{{ __('Move down') }}"
-                                        class="inline-flex size-11 items-center justify-center rounded-lg text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                        class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
                                 </button>
                             </div>
 
                             <div class="min-w-0 flex-1">
-                                <p class="text-[13px] font-semibold text-ink">{{ \App\Livewire\Admin\Content\HomeSections::typeLabel($section->type) }}</p>
+                                <p class="text-[13px] font-medium text-ink">{{ \App\Livewire\Admin\Content\HomeSections::typeLabel($section->type) }}</p>
                                 <p class="truncate text-[12px] text-ink-soft">
                                     {{ $section->getTranslation('title', 'en', false) ?: __('No heading') }}
                                     @if ($section->payload)
@@ -56,19 +56,19 @@
                             <button type="button" role="switch" aria-checked="{{ $section->is_active ? 'true' : 'false' }}"
                                     wire:click="toggleActive({{ $section->id }})"
                                     aria-label="{{ __('Toggle :type', ['type' => \App\Livewire\Admin\Content\HomeSections::typeLabel($section->type)]) }}"
-                                    class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $section->is_active ? 'bg-emerald' : 'bg-line-strong' }}">
                                     <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $section->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                 </span>
                             </button>
 
                             <button type="button" wire:click="{{ $editingId === $section->id ? 'cancel' : 'edit('.$section->id.')' }}"
-                                    class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ $editingId === $section->id ? __('Close') : __('Edit') }}
                             </button>
                             <button type="button" wire:click="delete({{ $section->id }})"
                                     wire:confirm="{{ __('Remove this section from the home page?') }}"
-                                    class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ __('Remove') }}
                             </button>
                         </div>

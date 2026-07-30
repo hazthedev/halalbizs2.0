@@ -3,7 +3,7 @@
 
     {{-- Live now --}}
     <div class="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
-        <h2 class="border-b border-line px-4 py-3 font-semibold">{{ __('Live now') }} <span class="text-ink-faint">({{ $liveNow->count() }})</span></h2>
+        <h2 class="border-b border-line px-4 py-3 font-medium">{{ __('Live now') }} <span class="text-ink-faint">({{ $liveNow->count() }})</span></h2>
         @if ($liveNow->isEmpty())
             <p class="px-4 py-8 text-center text-sm text-ink-soft">{{ __('No streams live right now.') }}</p>
         @else
@@ -15,8 +15,8 @@
                             <p class="text-xs text-ink-faint">{{ $session->store?->name }} · {{ trans_choice(':count item|:count items', $session->products_count, ['count' => $session->products_count]) }} · {{ $session->started_at?->diffForHumans() }}</p>
                         </div>
                         <div class="flex items-center gap-3">
-                            <a href="{{ route('live.room', $session->slug) }}" target="_blank" class="text-[13px] font-semibold text-emerald hover:text-emerald-deep">{{ __('Open room') }}</a>
-                            <button type="button" wire:click="forceEnd({{ $session->id }})" wire:confirm="{{ __('Force-end this live session?') }}" class="text-[13px] font-semibold text-ink-soft hover:text-danger">{{ __('Force end') }}</button>
+                            <a href="{{ route('live.room', $session->slug) }}" target="_blank" class="text-[13px] font-medium text-emerald hover:text-emerald-deep">{{ __('Open room') }}</a>
+                            <button type="button" wire:click="forceEnd({{ $session->id }})" wire:confirm="{{ __('Force-end this live session?') }}" class="text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Force end') }}</button>
                         </div>
                     </li>
                 @endforeach
@@ -29,9 +29,9 @@
         <table class="w-full text-sm">
             <thead class="border-b border-line text-left text-[11px] uppercase tracking-[0.06em] text-ink-faint">
                 <tr>
-                    <th class="px-4 py-3 font-semibold">{{ __('Session') }}</th>
-                    <th class="px-4 py-3 font-semibold">{{ __('Store') }}</th>
-                    <th class="px-4 py-3 font-semibold">{{ __('Status') }}</th>
+                    <th class="px-4 py-3 font-medium">{{ __('Session') }}</th>
+                    <th class="px-4 py-3 font-medium">{{ __('Store') }}</th>
+                    <th class="px-4 py-3 font-medium">{{ __('Status') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-line">

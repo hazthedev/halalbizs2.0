@@ -15,12 +15,12 @@
     @if ($generatedPassword !== null)
         <div class="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-emerald bg-emerald-tint px-4 py-3 shadow-soft">
             <div class="flex-1 text-[13px] text-ink">
-                <p class="font-semibold">{{ __('Temporary password for :email', ['email' => $generatedFor]) }}</p>
+                <p class="font-medium">{{ __('Temporary password for :email', ['email' => $generatedFor]) }}</p>
                 <p class="mt-0.5 font-mono text-sm">{{ $generatedPassword }}</p>
                 <p class="mt-0.5 text-ink-soft">{{ __('Shown once — share it securely and ask them to change it after first login.') }}</p>
             </div>
             <button type="button" wire:click="dismissPassword"
-                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-semibold text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Dismiss') }}
             </button>
         </div>
@@ -30,7 +30,7 @@
     @if ($showInvite)
         <x-ui.card class="p-4">
             <form wire:submit="invite" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">{{ __('Invite an admin') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Invite an admin') }}</h2>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <x-ui.input :label="__('Name')" wire:model="inviteName" :error="$errors->first('inviteName')" />
@@ -41,7 +41,7 @@
                     <legend class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Permissions') }}</legend>
                     <div class="grid gap-1 sm:grid-cols-2">
                         @foreach ($allPermissions as $permission)
-                            <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-2 text-[13px] font-medium text-ink hover:bg-paper">
+                            <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink hover:bg-paper">
                                 <input type="checkbox" wire:model="invitePermissions" value="{{ $permission }}"
                                        class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                                 <span class="font-mono text-[12px]">{{ $permission }}</span>
@@ -67,7 +67,7 @@
                 <li wire:key="admin-{{ $admin->id }}">
                     <div class="flex flex-wrap items-center gap-3 px-4 py-2">
                         <div class="min-w-0 flex-1">
-                            <p class="text-[13px] font-semibold text-ink">
+                            <p class="text-[13px] font-medium text-ink">
                                 {{ $admin->name }}
                                 @if ($admin->id === auth()->id())
                                     <x-ui.badge variant="neutral" class="ml-1">{{ __('You') }}</x-ui.badge>
@@ -96,20 +96,20 @@
                                     wire:confirm="{{ $admin->is_superadmin
                                         ? __('Remove superadmin from :name? They keep only their ticked permissions.', ['name' => $admin->name])
                                         : __('Make :name a superadmin? They will have full access to every admin section.', ['name' => $admin->name]) }}"
-                                    class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ $admin->is_superadmin ? __('Remove superadmin') : __('Make superadmin') }}
                             </button>
                         @endif
 
                         <button type="button" wire:click="{{ $editingId === $admin->id ? 'cancelEdit' : 'editPermissions('.$admin->id.')' }}"
-                                class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ $editingId === $admin->id ? __('Close') : __('Edit permissions') }}
                         </button>
 
                         @if ($admin->id !== auth()->id())
                             <button type="button" wire:click="removeAdmin({{ $admin->id }})"
                                     wire:confirm="{{ __('Remove admin access for :name? They keep their account but lose the admin panel.', ['name' => $admin->name]) }}"
-                                    class="inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ __('Remove admin') }}
                             </button>
                         @endif
@@ -120,7 +120,7 @@
                         <form wire:submit="savePermissions" class="space-y-3 border-t border-line bg-paper px-4 py-4">
                             <div class="grid gap-1 sm:grid-cols-2">
                                 @foreach ($allPermissions as $permission)
-                                    <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-2 text-[13px] font-medium text-ink hover:bg-surface">
+                                    <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink hover:bg-surface">
                                         <input type="checkbox" wire:model="editPermissions" value="{{ $permission }}"
                                                class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                                         <span class="font-mono text-[12px]">{{ $permission }}</span>

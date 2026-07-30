@@ -3,12 +3,12 @@
 
     <div class="grid gap-4 sm:grid-cols-2">
         <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">{{ __('Coins in circulation') }}</p>
-            <p class="mt-1 font-display text-2xl font-bold tnum">{{ number_format($circulation) }}</p>
+            <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">{{ __('Coins in circulation') }}</p>
+            <p class="mt-1 font-display text-2xl font-medium tnum">{{ number_format($circulation) }}</p>
         </div>
         <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">{{ __('Wallets') }}</p>
-            <p class="mt-1 font-display text-2xl font-bold tnum">{{ number_format($walletCount) }}</p>
+            <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">{{ __('Wallets') }}</p>
+            <p class="mt-1 font-display text-2xl font-medium tnum">{{ number_format($walletCount) }}</p>
         </div>
     </div>
 
@@ -19,9 +19,9 @@
         <table class="w-full text-sm">
             <thead class="border-b border-line text-left text-[11px] uppercase tracking-[0.06em] text-ink-faint">
                 <tr>
-                    <th class="px-4 py-3 font-semibold">{{ __('Buyer') }}</th>
-                    <th class="px-4 py-3 text-right font-semibold">{{ __('Balance') }}</th>
-                    <th class="px-4 py-3 text-right font-semibold">{{ __('Lifetime') }}</th>
+                    <th class="px-4 py-3 font-medium">{{ __('Buyer') }}</th>
+                    <th class="px-4 py-3 text-right font-medium">{{ __('Balance') }}</th>
+                    <th class="px-4 py-3 text-right font-medium">{{ __('Lifetime') }}</th>
                     <th class="px-4 py-3"></th>
                 </tr>
             </thead>
@@ -32,10 +32,10 @@
                             <p class="font-medium text-ink">{{ $wallet->user?->name }}</p>
                             <p class="text-xs text-ink-faint">{{ $wallet->user?->email }}</p>
                         </td>
-                        <td class="px-4 py-3 text-right font-bold tnum">{{ number_format($wallet->balance) }}</td>
+                        <td class="px-4 py-3 text-right font-medium tnum">{{ number_format($wallet->balance) }}</td>
                         <td class="px-4 py-3 text-right text-ink-soft tnum">{{ number_format($wallet->lifetime_earned) }}</td>
                         <td class="px-4 py-3 text-right">
-                            <button type="button" wire:click="openAdjust({{ $wallet->user_id }})" class="text-[13px] font-semibold text-emerald hover:text-emerald-deep">{{ __('Adjust') }}</button>
+                            <button type="button" wire:click="openAdjust({{ $wallet->user_id }})" class="text-[13px] font-medium text-emerald hover:text-emerald-deep">{{ __('Adjust') }}</button>
                         </td>
                     </tr>
                     @if ($adjustUserId === $wallet->user_id)
@@ -52,8 +52,8 @@
                                         <input type="text" wire:model="adjustReason" class="mt-1 block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm">
                                         @error('adjustReason') <p class="mt-1 text-[13px] text-danger">{{ $message }}</p> @enderror
                                     </div>
-                                    <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep">{{ __('Apply') }}</button>
-                                    <button type="button" wire:click="$set('adjustUserId', null)" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 text-sm font-semibold text-ink">{{ __('Cancel') }}</button>
+                                    <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep">{{ __('Apply') }}</button>
+                                    <button type="button" wire:click="$set('adjustUserId', null)" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 text-sm font-medium text-ink">{{ __('Cancel') }}</button>
                                 </form>
                             </td>
                         </tr>

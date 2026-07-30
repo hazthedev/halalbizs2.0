@@ -1,7 +1,7 @@
 <div>
     @if ($deals->isNotEmpty())
         <section class="mt-6 overflow-hidden rounded-[var(--radius-card)] border border-brass/30 bg-surface shadow-soft" aria-label="{{ __('Group buy') }}">
-            <div class="surface-girih flex items-center gap-2 border-b border-brass/25 bg-emerald-night px-4 py-2.5 text-on-dark">
+            <div class="flex items-center gap-2 border-b border-emerald-edge bg-emerald-night px-4 py-2.5 text-on-dark">
                 <x-ui.star-mark :size="16" class="text-brass" />
                 <h2 class="text-sm font-medium">{{ __('Group buy — team up to unlock a lower price') }}</h2>
             </div>
