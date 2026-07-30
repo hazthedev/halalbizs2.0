@@ -9,67 +9,76 @@ use Illuminate\Support\Str;
 class CategorySeeder extends Seeder
 {
     /**
-     * 3-level sample tree. Keys: en name => [ms name, children].
+     * The marketplace's real department tree (2026-07-30 revamp): the five
+     * departments the reference design ships, with bilingual leaves matching
+     * the seeded halal-grocery catalogue. Two levels, department to leaf --
+     * products attach to leaves.
      */
     private const TREE = [
-        'Electronics' => ['Elektronik', [
-            'Mobile & Gadgets' => ['Telefon & Gajet', [
-                'Smartphones' => ['Telefon Pintar', []],
-                'Tablets' => ['Tablet', []],
-                'Wearables' => ['Peranti Boleh Pakai', []],
-            ]],
-            'Computers' => ['Komputer', [
-                'Laptops' => ['Komputer Riba', []],
-                'Accessories' => ['Aksesori Komputer', []],
-            ]],
-            'Audio' => ['Audio', [
-                'Earphones' => ['Fon Telinga', []],
-                'Speakers' => ['Pembesar Suara', []],
-            ]],
+        'Groceries & Pantry' => ['Barangan Dapur', [
+            'Rice & Grains' => ['Beras & Bijirin', []],
+            'Cooking Oils' => ['Minyak Masak', []],
+            'Flour & Baking' => ['Tepung & Bakeri', []],
+            'Sugar & Sweeteners' => ['Gula & Pemanis', []],
+            'Spices & Seasoning' => ['Rempah & Perencah', []],
+            'Sauces & Soy' => ['Sos & Kicap', []],
+            'Canned & Preserved' => ['Makanan Tin', []],
+            'Noodles & Pasta' => ['Mi & Pasta', []],
+            'Dairy & Chilled' => ['Tenusu & Sejuk', []],
+            'Honey & Spreads' => ['Madu & Sapuan', []],
         ]],
-        'Fashion' => ['Fesyen', [
-            "Men's Wear" => ['Pakaian Lelaki', [
-                'Shirts' => ['Kemeja', []],
-                'Pants' => ['Seluar', []],
-            ]],
-            "Women's Wear" => ['Pakaian Wanita', [
-                'Dresses' => ['Pakaian Dress', []],
-                'Hijab & Scarves' => ['Tudung & Selendang', []],
-            ]],
-            'Shoes & Bags' => ['Kasut & Beg', [
-                'Sneakers' => ['Kasut Sukan', []],
-                'Handbags' => ['Beg Tangan', []],
-            ]],
+        'Food & Snacks' => ['Makanan & Snek', [
+            'Biscuits & Cookies' => ['Biskut', []],
+            'Chocolate & Sweets' => ['Coklat & Gula-gula', []],
+            'Nuts & Dried Fruit' => ['Kacang & Buah Kering', []],
+            'Dates' => ['Kurma', []],
+            'Cereals & Bars' => ['Bijirin & Bar', []],
+            'Crisps & Savoury Snacks' => ['Kerepek & Snek Masin', []],
         ]],
-        'Home & Living' => ['Rumah & Kehidupan', [
-            'Kitchen' => ['Dapur', [
-                'Cookware' => ['Peralatan Memasak', []],
-                'Storage' => ['Penyimpanan', []],
-            ]],
-            'Furniture' => ['Perabot', [
-                'Living Room' => ['Ruang Tamu', []],
-                'Bedroom' => ['Bilik Tidur', []],
-            ]],
-            'Groceries' => ['Barangan Runcit', [
-                'Snacks' => ['Snek', []],
-                'Beverages' => ['Minuman', []],
-            ]],
+        'Drinks' => ['Minuman', [
+            'Tea' => ['Teh', []],
+            'Coffee' => ['Kopi', []],
+            'Milk & Dairy Drinks' => ['Susu & Minuman Tenusu', []],
+            'Juices & Water' => ['Jus & Air Mineral', []],
+        ]],
+        'Cosmetics & Care' => ['Kosmetik & Penjagaan', [
+            'Skin Care' => ['Penjagaan Kulit', []],
+            'Hair Care' => ['Penjagaan Rambut', []],
+            'Body & Bath' => ['Badan & Mandian', []],
+            'Fragrance' => ['Minyak Wangi', []],
+            'Oral Care' => ['Penjagaan Mulut', []],
+        ]],
+        'Pharma & Supplements' => ['Farmasi & Suplemen', [
+            'Vitamins & Minerals' => ['Vitamin & Mineral', []],
+            'Herbal & Traditional' => ['Herba & Tradisional', []],
+            'Sports Nutrition' => ['Nutrisi Sukan', []],
         ]],
     ];
 
     public function run(): void
     {
         $position = 0;
+        $slugs = [];
 
         foreach (self::TREE as $en => [$ms, $children]) {
-            $this->createNode($en, $ms, $children, null, $position++);
+            $this->createNode($en, $ms, $children, null, $position++, $slugs);
         }
+
+        // Retire anything outside the tree (the pre-revamp Electronics / Fashion
+        // / Home & Living demo tree) by DEACTIVATING, not deleting: products
+        // still reference those category ids until they are reseeded, and a
+        // delete would either fail on the constraint or orphan them. Inactive
+        // is enough to drop them from the storefront, and it is reversible.
+        Category::whereNotIn('slug', $slugs)->update(['is_active' => false]);
     }
 
-    private function createNode(string $en, string $ms, array $children, ?int $parentId, int $position): void
+    private function createNode(string $en, string $ms, array $children, ?int $parentId, int $position, array &$slugs): void
     {
+        $slug = Str::slug($en);
+        $slugs[] = $slug;
+
         $category = Category::updateOrCreate(
-            ['slug' => Str::slug($en)],
+            ['slug' => $slug],
             [
                 'name' => ['en' => $en, 'ms' => $ms],
                 'parent_id' => $parentId,
@@ -81,7 +90,7 @@ class CategorySeeder extends Seeder
         $childPosition = 0;
 
         foreach ($children as $childEn => [$childMs, $grandchildren]) {
-            $this->createNode($childEn, $childMs, $grandchildren, $category->id, $childPosition++);
+            $this->createNode($childEn, $childMs, $grandchildren, $category->id, $childPosition++, $slugs);
         }
     }
 }

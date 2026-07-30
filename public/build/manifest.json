@@ -51,57 +51,105 @@
     "file": "assets/instrument-sans-600-normal-DMks36a2.woff",
     "src": "_instrument-sans-600-normal-DMks36a2.woff"
   },
-  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-normal.woff2": {
-    "file": "assets/fraunces-latin-ext-wght-normal-Ca2vKHc0.woff2",
-    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-normal.woff2"
+  "node_modules/@fontsource-variable/instrument-sans/files/instrument-sans-latin-ext-wght-normal.woff2": {
+    "file": "assets/instrument-sans-latin-ext-wght-normal-B5bTHO_g.woff2",
+    "src": "node_modules/@fontsource-variable/instrument-sans/files/instrument-sans-latin-ext-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2": {
-    "file": "assets/fraunces-latin-wght-normal-ukD16Tqj.woff2",
-    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2"
+  "node_modules/@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2": {
+    "file": "assets/instrument-sans-latin-wght-normal-BbzFLZTg.woff2",
+    "src": "node_modules/@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/fraunces/files/fraunces-vietnamese-wght-normal.woff2": {
-    "file": "assets/fraunces-vietnamese-wght-normal-CnvboYUG.woff2",
-    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-vietnamese-wght-normal.woff2"
+  "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-normal.woff2": {
+    "file": "assets/newsreader-latin-ext-wght-normal-C-3rgBeH.woff2",
+    "src": "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-ext-wght-normal.woff2": {
-    "file": "assets/jetbrains-mono-cyrillic-ext-wght-normal-EocZY2iu.woff2",
-    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-ext-wght-normal.woff2"
+  "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2": {
+    "file": "assets/newsreader-latin-wght-normal-CCVVNp6i.woff2",
+    "src": "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-wght-normal.woff2": {
-    "file": "assets/jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2",
-    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-wght-normal.woff2"
+  "node_modules/@fontsource-variable/newsreader/files/newsreader-vietnamese-wght-normal.woff2": {
+    "file": "assets/newsreader-vietnamese-wght-normal-Czsa-EzN.woff2",
+    "src": "node_modules/@fontsource-variable/newsreader/files/newsreader-vietnamese-wght-normal.woff2"
   },
-  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-greek-wght-normal.woff2": {
-    "file": "assets/jetbrains-mono-greek-wght-normal-Bw9x6K1M.woff2",
-    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-greek-wght-normal.woff2"
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-400-normal.woff": {
+    "file": "assets/ibm-plex-mono-cyrillic-400-normal-CEL4l2ZJ.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-400-normal.woff"
   },
-  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-ext-wght-normal.woff2": {
-    "file": "assets/jetbrains-mono-latin-ext-wght-normal-DBQx-q_a.woff2",
-    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-ext-wght-normal.woff2"
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-400-normal.woff2": {
+    "file": "assets/ibm-plex-mono-cyrillic-400-normal-BSMlKf0J.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-400-normal.woff2"
   },
-  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2": {
-    "file": "assets/jetbrains-mono-latin-wght-normal-B9CIFXIH.woff2",
-    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2"
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-500-normal.woff": {
+    "file": "assets/ibm-plex-mono-cyrillic-500-normal-Ael50iVv.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-500-normal.woff"
   },
-  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-vietnamese-wght-normal.woff2": {
-    "file": "assets/jetbrains-mono-vietnamese-wght-normal-Bt-aOZkq.woff2",
-    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-vietnamese-wght-normal.woff2"
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-500-normal.woff2": {
+    "file": "assets/ibm-plex-mono-cyrillic-500-normal-Bq9vWWag.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-500-normal.woff2"
   },
-  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-cyrillic-ext-wght-normal.woff2": {
-    "file": "assets/plus-jakarta-sans-cyrillic-ext-wght-normal-lLTsRRxN.woff2",
-    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-cyrillic-ext-wght-normal.woff2"
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-ext-400-normal.woff": {
+    "file": "assets/ibm-plex-mono-cyrillic-ext-400-normal-DMdlQ8Kv.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-ext-400-normal.woff"
   },
-  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-ext-wght-normal.woff2": {
-    "file": "assets/plus-jakarta-sans-latin-ext-wght-normal-DmpS2jIq.woff2",
-    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-ext-wght-normal.woff2"
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-ext-400-normal.woff2": {
+    "file": "assets/ibm-plex-mono-cyrillic-ext-400-normal-xuaO2J-f.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-ext-400-normal.woff2"
   },
-  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2": {
-    "file": "assets/plus-jakarta-sans-latin-wght-normal-eXO_dkmS.woff2",
-    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2"
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-ext-500-normal.woff": {
+    "file": "assets/ibm-plex-mono-cyrillic-ext-500-normal-BIfNGwUT.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-ext-500-normal.woff"
   },
-  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2": {
-    "file": "assets/plus-jakarta-sans-vietnamese-wght-normal-qRpaaN48.woff2",
-    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2"
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-ext-500-normal.woff2": {
+    "file": "assets/ibm-plex-mono-cyrillic-ext-500-normal-BqneJy0T.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-ext-500-normal.woff2"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff": {
+    "file": "assets/ibm-plex-mono-latin-400-normal-CvHOgSBP.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2": {
+    "file": "assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff": {
+    "file": "assets/ibm-plex-mono-latin-500-normal-CB9ihrfo.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2": {
+    "file": "assets/ibm-plex-mono-latin-500-normal-DSY6xOcd.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-400-normal.woff": {
+    "file": "assets/ibm-plex-mono-latin-ext-400-normal-D3D2R8hC.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-400-normal.woff"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-400-normal.woff2": {
+    "file": "assets/ibm-plex-mono-latin-ext-400-normal-BmRBH3aV.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-400-normal.woff2"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-500-normal.woff": {
+    "file": "assets/ibm-plex-mono-latin-ext-500-normal-CZ70TYgx.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-500-normal.woff"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-500-normal.woff2": {
+    "file": "assets/ibm-plex-mono-latin-ext-500-normal-CAhNIIs5.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-500-normal.woff2"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-400-normal.woff": {
+    "file": "assets/ibm-plex-mono-vietnamese-400-normal-DDuiU_S-.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-400-normal.woff"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-400-normal.woff2": {
+    "file": "assets/ibm-plex-mono-vietnamese-400-normal-BulugwFq.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-400-normal.woff2"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-500-normal.woff": {
+    "file": "assets/ibm-plex-mono-vietnamese-500-normal-C8zxqsMH.woff",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-500-normal.woff"
+  },
+  "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-500-normal.woff2": {
+    "file": "assets/ibm-plex-mono-vietnamese-500-normal-DZ4AoWbu.woff2",
+    "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-500-normal.woff2"
   },
   "node_modules/qrcode/lib/browser.js": {
     "file": "assets/browser-CmZ8OnR_.js",
@@ -113,7 +161,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-JC3bLr-V.css",
+    "file": "assets/app-CJe0u7Kq.css",
     "name": "app",
     "names": [
       "app.css"
@@ -121,19 +169,31 @@
     "src": "resources/css/app.css",
     "isEntry": true,
     "assets": [
-      "assets/fraunces-vietnamese-wght-normal-CnvboYUG.woff2",
-      "assets/fraunces-latin-ext-wght-normal-Ca2vKHc0.woff2",
-      "assets/fraunces-latin-wght-normal-ukD16Tqj.woff2",
-      "assets/plus-jakarta-sans-cyrillic-ext-wght-normal-lLTsRRxN.woff2",
-      "assets/plus-jakarta-sans-vietnamese-wght-normal-qRpaaN48.woff2",
-      "assets/plus-jakarta-sans-latin-ext-wght-normal-DmpS2jIq.woff2",
-      "assets/plus-jakarta-sans-latin-wght-normal-eXO_dkmS.woff2",
-      "assets/jetbrains-mono-cyrillic-ext-wght-normal-EocZY2iu.woff2",
-      "assets/jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2",
-      "assets/jetbrains-mono-greek-wght-normal-Bw9x6K1M.woff2",
-      "assets/jetbrains-mono-vietnamese-wght-normal-Bt-aOZkq.woff2",
-      "assets/jetbrains-mono-latin-ext-wght-normal-DBQx-q_a.woff2",
-      "assets/jetbrains-mono-latin-wght-normal-B9CIFXIH.woff2"
+      "assets/newsreader-vietnamese-wght-normal-Czsa-EzN.woff2",
+      "assets/newsreader-latin-ext-wght-normal-C-3rgBeH.woff2",
+      "assets/newsreader-latin-wght-normal-CCVVNp6i.woff2",
+      "assets/instrument-sans-latin-ext-wght-normal-B5bTHO_g.woff2",
+      "assets/instrument-sans-latin-wght-normal-BbzFLZTg.woff2",
+      "assets/ibm-plex-mono-cyrillic-ext-400-normal-xuaO2J-f.woff2",
+      "assets/ibm-plex-mono-cyrillic-ext-400-normal-DMdlQ8Kv.woff",
+      "assets/ibm-plex-mono-cyrillic-400-normal-BSMlKf0J.woff2",
+      "assets/ibm-plex-mono-cyrillic-400-normal-CEL4l2ZJ.woff",
+      "assets/ibm-plex-mono-vietnamese-400-normal-BulugwFq.woff2",
+      "assets/ibm-plex-mono-vietnamese-400-normal-DDuiU_S-.woff",
+      "assets/ibm-plex-mono-latin-ext-400-normal-BmRBH3aV.woff2",
+      "assets/ibm-plex-mono-latin-ext-400-normal-D3D2R8hC.woff",
+      "assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2",
+      "assets/ibm-plex-mono-latin-400-normal-CvHOgSBP.woff",
+      "assets/ibm-plex-mono-cyrillic-ext-500-normal-BqneJy0T.woff2",
+      "assets/ibm-plex-mono-cyrillic-ext-500-normal-BIfNGwUT.woff",
+      "assets/ibm-plex-mono-cyrillic-500-normal-Bq9vWWag.woff2",
+      "assets/ibm-plex-mono-cyrillic-500-normal-Ael50iVv.woff",
+      "assets/ibm-plex-mono-vietnamese-500-normal-DZ4AoWbu.woff2",
+      "assets/ibm-plex-mono-vietnamese-500-normal-C8zxqsMH.woff",
+      "assets/ibm-plex-mono-latin-ext-500-normal-CAhNIIs5.woff2",
+      "assets/ibm-plex-mono-latin-ext-500-normal-CZ70TYgx.woff",
+      "assets/ibm-plex-mono-latin-500-normal-DSY6xOcd.woff2",
+      "assets/ibm-plex-mono-latin-500-normal-CB9ihrfo.woff"
     ]
   },
   "resources/js/app.js": {

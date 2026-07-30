@@ -1,6 +1,7 @@
-@import '@fontsource-variable/fraunces';
-@import '@fontsource-variable/plus-jakarta-sans';
-@import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource-variable/newsreader';
+@import '@fontsource-variable/instrument-sans';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -9,31 +10,47 @@
 @source '../../app/Livewire/**/*.php';
 
 @theme {
-    /* ── Souk: Emerald & Brass ──
-       Warm ivory canvas, warmed ink, emerald = money/action,
-       brass = premium/ornament. */
+    /* ── Souk mk2: the certificate-first revamp ──
+       Values remapped 2026-07-30 to the reference prototype measured in
+       library/theme/halalbizs-revamp-ref-tokens.md (~97% MEASURED off its
+       computed DOM). The token NAMES are deliberately unchanged so all 156
+       views re-skin at once — "emerald" now denotes the ACTION colour, which
+       in this palette is a deep forest green rather than a true emerald.
+       Roles are unchanged: green = action, brass = ornament. */
 
     /* canvas + ink */
-    --color-paper: #FAF7F0;
-    --color-surface: #FFFDF8;
-    --color-ink: #1A1714;
-    --color-ink-soft: #5C544B;
-    --color-ink-faint: #8E867A;
-    --color-line: #E7E1D5;
-    --color-line-strong: #D2C9B8;
+    --color-paper: #FAF7F1;        /* page canvas */
+    --color-surface: #FFFFFF;      /* cards, raised surfaces */
+    --color-cream: #F4F2EC;        /* NEW — packshot beds, tiles, inset panels */
+    --color-ink: #1A1E19;          /* primary text */
+    --color-ink-head: #14301C;     /* serif headings + product names (the reference's heading ink) */
+    --color-ink-soft: #3D4A3C;     /* secondary paragraphs */
+    --color-ink-faint: #8A8272;    /* meta, brand lines, captions */
+    --color-ink-moss: #7E8A78;     /* NEW — ratings, tertiary meta */
+    --color-line: #E4DED1;         /* the standard hairline — does most of the work */
+    --color-line-strong: #DED7C8;
 
-    /* emerald = money & action (hexes kept exact — charts/tests depend on them) */
-    --color-emerald: #047857;
-    --color-emerald-deep: #065F46;
-    --color-emerald-night: #03392B;
-    --color-emerald-tint: #E7F1EB;
+    /* green = action. Ornament brass never fills a button; this always does. */
+    --color-emerald: #22572F;      /* buttons, links, badges */
+    --color-emerald-deep: #14301C; /* action hover (the prototype's a:hover) */
+    --color-emerald-night: #14301C;/* full-bleed dark band + footer */
+    --color-emerald-card: #193A22; /* NEW — card INSIDE the dark band */
+    --color-emerald-edge: #2E4C36; /* NEW — border inside the dark band */
+    --color-emerald-tint: #F1F6EF; /* mint wash — certificate panels */
+    --color-emerald-tint-edge: #C9D8C6; /* NEW — its paired border */
+
+    /* on-dark inks, for the dark band and footer */
+    --color-on-dark: #E8EDE4;
+    --color-on-dark-soft: #B6C4B2;
+    --color-on-dark-faint: #A69C86;
 
     /* brass = premium & ornament.
        ⚠ Split by ROLE, not shade: --color-brass is the ORNAMENT brass (marks,
-       rules, numerals, borders). It is NOT safe as a fill behind white text —
-       white on #A8772E is 3.93:1, under AA. Fills start at -deep (5.61:1) and
-       hover to -darker (7.70:1). See x-ui.button's brass variant. */
-    --color-brass: #A8772E;
+       rules, numerals, borders). It is NOT safe as a fill behind white text.
+       Fills start at -deep and hover to -darker. See x-ui.button's brass
+       variant. The reference uses brass ~9 times on a 4,000px page and never
+       fills a button with it — keep that restraint. */
+    --color-brass: #B9902F;
     --color-brass-deep: #8A5F22;
     --color-brass-darker: #6F4C1B;
     --color-brass-tint: #F3EAD6;
@@ -44,19 +61,71 @@
     --color-warn-tint: #FBF3E8;
     --color-danger-tint: #FBEDF0;
 
-    /* elevation — warm-tinted, low (no harsh shadows) */
-    --shadow-soft: 0 1px 2px rgba(26, 23, 20, 0.05);
-    --shadow-card: 0 1px 2px rgba(26, 23, 20, 0.04), 0 10px 28px -14px rgba(26, 23, 20, 0.14);
-    --shadow-pop: 0 8px 40px -8px rgba(26, 23, 20, 0.22);
+    /* ── Elevation: depth is PRINT, not UI ──
+       The reference renders exactly ONE shadow on its whole home screen — on
+       the hero image — green-tinted with a large negative spread, so it lifts
+       rather than drops. Everywhere else depth comes from a 1px hairline and a
+       cream-vs-white surface shift. There is deliberately no elevation ramp:
+       reaching for a generic shadow here is a defect, not a shortcut. */
+    --shadow-lift: 0 18px 40px -22px rgba(20, 48, 28, 0.32);   /* hero imagery */
+    --shadow-lift-sm: 0 14px 30px -24px rgba(20, 48, 28, 0.40); /* smaller media */
+    /* kept as aliases so existing views don't break mid-revamp; both resolve
+       to the flat model. Retire once every view is ported. */
+    --shadow-soft: 0 0 0 0 rgba(0, 0, 0, 0);
+    --shadow-card: 0 0 0 0 rgba(0, 0, 0, 0);
+    --shadow-pop: 0 18px 40px -22px rgba(20, 48, 28, 0.32);
 
-    /* radius scale */
-    --radius-control: 11px;
-    --radius-card: 14px;
+    /* radius scale — pills on cards is the signature pairing */
+    --radius-control: 12px;  /* inputs, small tiles */
+    --radius-card: 18px;     /* cards, panels */
+    --radius-panel: 16px;    /* large panels */
+    --radius-pill: 999px;    /* every button, badge, chip, stepper step */
 
-    /* type — Fraunces (display) + Plus Jakarta Sans (body) + JetBrains Mono (ids/amounts) */
-    --font-display: 'Fraunces Variable', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
-    --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, 'Noto Sans SC', sans-serif;
-    --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+    /* ── Type: three families, ONE JOB EACH ──
+       This is the load-bearing decision of the design, not a style choice.
+         display (Newsreader, serif)   = VOICE. Hero, section headings, product
+                                         names. Nothing else — the reference
+                                         uses it on 41 of 324 elements.
+         sans (Instrument Sans)        = everything a human wrote: body,
+                                         labels, buttons, nav, forms.
+         mono (IBM Plex Mono)          = EVIDENCE. Only machine-checked facts:
+                                         prices, certificate ids, SKUs, dates,
+                                         counts, numerals, table keys, method
+                                         chips. If marketing wrote it, it is
+                                         not mono.
+       Erode this and the design still looks similar but loses its argument. */
+    --font-display: 'Newsreader Variable', ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+    --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, 'Noto Sans SC', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+    /* ── Type scale (MEASURED off the reference) ──
+       The half-steps are deliberate — Tailwind's default scale cannot express
+       them, so they are explicit here. */
+    --text-nano: 9px;      /* certifier pill */
+    --text-micro: 10.5px;  /* ticker, legal */
+    --text-tiny: 11px;     /* brand lines, mono labels, eyebrows */
+    --text-mini: 11.5px;   /* rating line */
+    --text-xs: 12px;       /* small buttons, footer links */
+    --text-sm: 12.5px;
+    --text-base: 13px;     /* the workhorse body size */
+    --text-md: 13.5px;
+    --text-lg: 14.5px;
+    --text-price: 15px;    /* mono 500 */
+    --text-name: 16px;     /* product name, serif */
+    --text-lead: 17px;
+    --text-h4: 19px;
+    --text-h3: 22px;
+    --text-h2: 28px;       /* section heading, serif */
+    --text-h1: 38px;       /* page title, serif */
+
+    /* ── Tracking: two opposing ramps ──
+       The smaller and more uppercase the text, the WIDER the tracking; the
+       larger the serif, the TIGHTER. */
+    --tracking-label-xl: 0.14em; /* 9-11px uppercase mono */
+    --tracking-label: 0.1em;     /* uppercase sans labels, ticker */
+    --tracking-brand: 0.06em;    /* brand line in a product card */
+    --tracking-head: -0.02em;    /* serif headings */
+    --tracking-hero: -0.05em;    /* hero only */
 
     /* ── Motion vocabulary ──
        Three working easings + a duration scale. ease-out-soft (decelerating,
@@ -83,10 +152,11 @@
         @apply bg-paper text-ink font-sans antialiased;
     }
 
-    /* Fraunces shines at large optical sizes; tighten a touch for display use. */
+    /* Newsreader is an optical-size variable serif — let it size itself, and
+       tighten for display use per the reference's -0.02em on headings. */
     .font-display {
         font-optical-sizing: auto;
-        letter-spacing: -0.012em;
+        letter-spacing: var(--tracking-head);
     }
 
     :focus-visible {
