@@ -9,10 +9,10 @@
         x-data
         x-on:keydown.escape.window="$wire.closeShipModal()"
     >
-        <div class="fixed inset-0 bg-ink/40" wire:click="closeShipModal" aria-hidden="true"></div>
+        <div class="fixed inset-0 bg-emerald-night/40" wire:click="closeShipModal" aria-hidden="true"></div>
 
         <div class="relative w-full max-w-md rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-pop">
-            <h2 id="ship-modal-title" class="font-display text-xl font-semibold">{{ __('Arrange shipment') }}</h2>
+            <h2 id="ship-modal-title" class="font-display text-xl font-medium">{{ __('Arrange shipment') }}</h2>
             <p class="mt-1 text-[13px] text-ink-soft">{{ __('Pick the courier and enter the tracking number from the consignment note.') }}</p>
 
             <div class="mt-4 space-y-3">
@@ -21,7 +21,7 @@
                     <select
                         id="ship-courier"
                         wire:model.live="courier"
-                        class="mt-1 block min-h-11 w-full rounded-lg border bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('courier') ? 'border-danger' : 'border-line-strong' }}"
+                        class="mt-1 block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('courier') ? 'border-danger' : 'border-line-strong' }}"
                     >
                         <option value="">{{ __('Select a courier') }}</option>
                         @foreach ($couriers as $courierOption)
@@ -42,7 +42,7 @@
                             type="text"
                             wire:model="courierOther"
                             placeholder="{{ __('e.g. Skynet') }}"
-                            class="mt-1 block min-h-11 w-full rounded-lg border bg-surface px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('courierOther') ? 'border-danger' : 'border-line-strong' }}"
+                            class="mt-1 block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('courierOther') ? 'border-danger' : 'border-line-strong' }}"
                         >
                         @error('courierOther')
                             <p class="mt-1 text-[13px] text-danger">{{ $message }}</p>
@@ -60,7 +60,7 @@
                         placeholder="MY0123456789"
                         autocomplete="off"
                         spellcheck="false"
-                        class="mt-1 block min-h-11 w-full rounded-lg border bg-surface px-3 py-2 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('trackingNo') ? 'border-danger' : 'border-line-strong' }}"
+                        class="mt-1 block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 py-2 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('trackingNo') ? 'border-danger' : 'border-line-strong' }}"
                     >
                     @error('trackingNo')
                         <p class="mt-1 text-[13px] text-danger">{{ $message }}</p>
@@ -72,7 +72,7 @@
                 <button
                     type="button"
                     wire:click="closeShipModal"
-                    class="inline-flex min-h-11 items-center justify-center rounded-lg border border-ink px-4 text-sm font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2"
+                    class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2"
                 >
                     {{ __('Cancel') }}
                 </button>
@@ -80,7 +80,7 @@
                     type="button"
                     wire:click="ship"
                     wire:loading.attr="disabled"
-                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2"
+                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2"
                 >
                     <svg wire:loading wire:target="ship" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/></svg>
                     {{ __('Mark as shipped') }}

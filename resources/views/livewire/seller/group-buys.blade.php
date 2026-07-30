@@ -1,11 +1,11 @@
 <div class="mx-auto w-full max-w-5xl px-4 py-6 lg:py-8">
     <div class="flex items-center justify-between gap-4">
         <div>
-            <h1 class="font-display text-2xl font-bold">{{ __('Group buys') }}</h1>
+            <h1 class="font-display text-2xl font-medium">{{ __('Group buys') }}</h1>
             <p class="mt-1 text-[13px] text-ink-soft">{{ __('Offer a lower price that unlocks when shoppers team up.') }}</p>
         </div>
         <button type="button" wire:click="create"
-                class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white hover:bg-emerald-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
+                class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
             {{ __('Create deal') }}
         </button>
     </div>
@@ -66,8 +66,8 @@
             </div>
 
             <div class="flex gap-2">
-                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-semibold text-white hover:bg-emerald-deep">{{ __('Save deal') }}</button>
-                <button type="button" wire:click="$set('showForm', false)" class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-5 text-sm font-semibold text-ink hover:border-ink">{{ __('Cancel') }}</button>
+                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white hover:bg-emerald-deep">{{ __('Save deal') }}</button>
+                <button type="button" wire:click="$set('showForm', false)" class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-5 text-sm font-medium text-ink hover:border-ink">{{ __('Cancel') }}</button>
             </div>
         </form>
     @endif
@@ -83,7 +83,7 @@
                             <p class="truncate text-sm font-medium text-ink">{{ $deal->product?->getTranslation('name', 'en') }}</p>
                             <p class="text-[13px] text-ink-soft">
                                 {{ $deal->variant?->options_label ?: __('Default') }} ·
-                                <span class="font-semibold text-ink">@money($deal->group_price_sen)</span> ·
+                                <span class="font-medium text-ink">@money($deal->group_price_sen)</span> ·
                                 {{ __(':n people', ['n' => $deal->target_size]) }} ·
                                 {{ __(':n teams', ['n' => $deal->teams_count]) }}
                             </p>
@@ -91,7 +91,7 @@
                         <div class="flex items-center gap-3">
                             <x-ui.badge :variant="$deal->status === \App\Enums\GroupBuyStatus::Active ? 'success' : 'neutral'">{{ $deal->status->label() }}</x-ui.badge>
                             @if ($deal->status === \App\Enums\GroupBuyStatus::Active)
-                                <button type="button" wire:click="end({{ $deal->id }})" class="text-[13px] font-semibold text-ink-soft hover:text-danger">{{ __('End') }}</button>
+                                <button type="button" wire:click="end({{ $deal->id }})" class="text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('End') }}</button>
                             @endif
                         </div>
                     </li>

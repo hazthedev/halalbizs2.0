@@ -11,7 +11,7 @@
                 <x-ui.card class="p-4" wire:key="review-{{ $review->id }}">
                     <div class="flex flex-wrap items-start justify-between gap-2">
                         <div class="min-w-0">
-                            <p class="text-sm font-semibold text-ink">
+                            <p class="text-sm font-medium text-ink">
                                 {{ $review->product?->getTranslation('name', app()->getLocale()) ?? $review->orderItem?->product_name }}
                             </p>
                             <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-ink-soft">
@@ -45,7 +45,7 @@
                             <label for="reply-text-{{ $review->id }}" class="block text-[13px] font-medium text-ink">{{ __('Your reply') }}</label>
                             <textarea id="reply-text-{{ $review->id }}" rows="3" wire:model="replyText"
                                       placeholder="{{ __('Thank the buyer or address their feedback — everyone sees this on the product page.') }}"
-                                      class="mt-1 block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('replyText') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                                      class="mt-1 block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('replyText') ? 'border-danger' : 'border-line-strong' }}"></textarea>
                             @error('replyText')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
                             <p class="mt-1 text-[13px] text-ink-faint">{{ __('You can edit your reply for 24 hours after posting — then it locks.') }}</p>
                             <div class="mt-2 flex items-center gap-2">
@@ -53,8 +53,8 @@
                                 <x-ui.button variant="ghost" wire:click="cancelReply">{{ __('Cancel') }}</x-ui.button>
                             </div>
                         @elseif ($review->seller_reply !== null)
-                            <div class="max-w-prose rounded-lg border-l-2 border-line-strong bg-paper px-3.5 py-2.5">
-                                <p class="text-xs font-semibold text-ink">{{ __('Your reply') }} <span class="font-normal text-ink-faint">· {{ $review->seller_replied_at->diffForHumans() }}</span></p>
+                            <div class="max-w-prose rounded-[var(--radius-control)] border-l-2 border-line-strong bg-paper px-3.5 py-2.5">
+                                <p class="text-xs font-medium text-ink">{{ __('Your reply') }} <span class="font-normal text-ink-faint">· {{ $review->seller_replied_at->diffForHumans() }}</span></p>
                                 <p class="mt-1 text-[13px] leading-relaxed text-ink-soft">{{ $review->seller_reply }}</p>
                             </div>
                             @if ($review->replyLocked())

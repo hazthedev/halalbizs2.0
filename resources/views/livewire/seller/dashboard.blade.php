@@ -15,7 +15,7 @@
             <x-ui.card class="p-4">
                 <p class="text-[13px] font-medium text-ink-soft">{{ $stat['label'] }}</p>
                 <p
-                    class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums {{ ($stat['warn'] ?? false) ? 'text-warn' : 'text-ink' }}"
+                    class="mt-1 font-mono text-[28px] font-medium leading-tight tabular-nums {{ ($stat['warn'] ?? false) ? 'text-warn' : 'text-ink-head' }}"
                     x-data="{ target: {{ $stat['value'] }}, display: 0 }"
                     x-init="
                         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || target === 0) {
@@ -39,7 +39,7 @@
     {{-- ===== To-do strip ===== --}}
     @if ($toShip > 0 || $lowStock > 0)
         <x-ui.card class="flex flex-wrap items-center gap-2 p-4">
-            <p class="text-[13px] font-semibold text-ink">{{ __('To do') }}</p>
+            <p class="text-[13px] font-medium text-ink">{{ __('To do') }}</p>
 
             @if ($toShip > 0)
                 @if (Illuminate\Support\Facades\Route::has('seller.orders.index'))
@@ -74,7 +74,7 @@
                     wire:click="$set('period', '{{ $option }}')"
                     wire:key="period-{{ $option }}"
                     aria-pressed="{{ $period === $option ? 'true' : 'false' }}"
-                    class="inline-flex min-h-8 items-center rounded-full px-3 text-[13px] font-medium tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 {{ $period === $option ? 'bg-ink text-surface' : 'text-ink-soft hover:text-ink' }}"
+                    class="inline-flex min-h-8 items-center rounded-full px-3 text-[13px] font-medium tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 {{ $period === $option ? 'bg-emerald-night text-surface' : 'text-ink-soft hover:text-ink' }}"
                 >
                     {{ __(':n days', ['n' => (int) $option]) }}
                 </button>
@@ -87,15 +87,15 @@
                 {{-- A negative balance is an amount OWED (COD commission, or a
                      refund on an order already paid out). Emerald is the money
                      colour, so showing a debt in it reads as earnings. --}}
-                <dd class="font-mono font-semibold tabular-nums {{ $earnings['available'] < 0 ? 'text-danger' : 'text-emerald' }}">@money($earnings['available'])</dd>
+                <dd class="font-mono font-medium tabular-nums {{ $earnings['available'] < 0 ? 'text-danger' : 'text-emerald' }}">@money($earnings['available'])</dd>
             </div>
             <div class="flex items-baseline gap-1.5">
                 <dt class="text-ink-soft">{{ __('Gross (period)') }}</dt>
-                <dd class="font-mono font-semibold tabular-nums text-ink">@money($earnings['gross'])</dd>
+                <dd class="font-mono font-medium tabular-nums text-ink">@money($earnings['gross'])</dd>
             </div>
             <div class="flex items-baseline gap-1.5">
                 <dt class="text-ink-soft">{{ __('Commission (period)') }}</dt>
-                <dd class="font-mono font-semibold tabular-nums text-ink-soft">@money($earnings['commission'])</dd>
+                <dd class="font-mono font-medium tabular-nums text-ink-soft">@money($earnings['commission'])</dd>
             </div>
         </dl>
     </div>
@@ -105,7 +105,7 @@
         {{-- CHART 1 — revenue over time (replaces the old zero sparkline). Own
              refresh event so the foundation's single-payload handler updates it. --}}
         <x-ui.card class="p-4 lg:col-span-2">
-            <h2 class="text-sm font-semibold">{{ __('Revenue over time') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Revenue over time') }}</h2>
             <p class="mt-0.5 text-[13px] text-ink-soft">{{ __('Confirmed and progressing orders, by day (RM).') }}</p>
             <div class="mt-3">
                 <x-ui.chart
@@ -120,7 +120,7 @@
 
         {{-- CHART 2 — orders by status donut --}}
         <x-ui.card class="p-4">
-            <h2 class="text-sm font-semibold">{{ __('Orders by status') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Orders by status') }}</h2>
             <div class="mt-3">
                 <x-ui.chart
                     id="seller-status"
@@ -135,7 +135,7 @@
 
     {{-- CHART 3 — top products bar --}}
     <x-ui.card class="p-4">
-        <h2 class="text-sm font-semibold">{{ __('Top products') }}</h2>
+        <h2 class="text-sm font-medium">{{ __('Top products') }}</h2>
         <p class="mt-0.5 text-[13px] text-ink-soft">{{ __('Best sellers this period by units sold.') }}</p>
         <div class="mt-3">
             <x-ui.chart
@@ -152,7 +152,7 @@
         {{-- ===== Recent orders ===== --}}
         <x-ui.card class="lg:col-span-3">
             <div class="border-b border-line px-4 py-3">
-                <h2 class="text-sm font-semibold">{{ __('Recent orders') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Recent orders') }}</h2>
             </div>
 
             @if ($recentOrders->isEmpty())

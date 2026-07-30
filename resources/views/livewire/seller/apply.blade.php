@@ -8,7 +8,7 @@
     <form wire:submit="submit" class="mt-6 space-y-4">
         {{-- ===== Shop details ===== --}}
         <x-ui.card class="p-6">
-            <h2 class="font-display text-lg font-semibold">{{ __('Shop details') }}</h2>
+            <h2 class="font-display text-lg font-medium">{{ __('Shop details') }}</h2>
 
             <div class="mt-4 space-y-4">
                 <div>
@@ -40,7 +40,7 @@
                         required
                         maxlength="2000"
                         placeholder="{{ __('What do you sell? What makes your shop worth following?') }}"
-                        class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('description') ? 'border-danger' : 'border-line-strong' }}"
+                        class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('description') ? 'border-danger' : 'border-line-strong' }}"
                     ></textarea>
                     @error('description')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
@@ -53,7 +53,7 @@
                         id="state"
                         wire:model="state"
                         required
-                        class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('state') ? 'border-danger' : 'border-line-strong' }}"
+                        class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('state') ? 'border-danger' : 'border-line-strong' }}"
                     >
                         <option value="">{{ __('Select a state') }}</option>
                         @foreach ($states as $stateOption)
@@ -85,7 +85,7 @@
 
         {{-- ===== Bank details ===== --}}
         <x-ui.card class="p-6">
-            <h2 class="font-display text-lg font-semibold">{{ __('Bank details') }}</h2>
+            <h2 class="font-display text-lg font-medium">{{ __('Bank details') }}</h2>
             <p class="mt-1 text-[13px] text-ink-soft">{{ __('Payouts for completed orders are transferred to this account.') }}</p>
 
             <div class="mt-4 space-y-4">
@@ -95,7 +95,7 @@
                         id="bankName"
                         wire:model="bankName"
                         required
-                        class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('bankName') ? 'border-danger' : 'border-line-strong' }}"
+                        class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('bankName') ? 'border-danger' : 'border-line-strong' }}"
                     >
                         <option value="">{{ __('Select a bank') }}</option>
                         @foreach ($banks as $bank)
@@ -131,7 +131,7 @@
 
         {{-- ===== Documents ===== --}}
         <x-ui.card class="p-6">
-            <h2 class="font-display text-lg font-semibold">{{ __('Documents') }}</h2>
+            <h2 class="font-display text-lg font-medium">{{ __('Documents') }}</h2>
             <p class="mt-1 text-[13px] text-ink-soft">{{ __('PDF, JPG or PNG, up to 4MB each.') }}</p>
 
             <div class="mt-4 space-y-4">
@@ -143,7 +143,7 @@
                         wire:model="ssmFile"
                         accept=".pdf,.jpg,.jpeg,.png"
                         required
-                        class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink hover:file:bg-paper"
+                        class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-paper"
                     >
                     <div wire:loading wire:target="ssmFile" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                     @error('ssmFile')
@@ -159,7 +159,7 @@
                         wire:model="icFile"
                         accept=".pdf,.jpg,.jpeg,.png"
                         required
-                        class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink hover:file:bg-paper"
+                        class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-paper"
                     >
                     <div wire:loading wire:target="icFile" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                     @error('icFile')

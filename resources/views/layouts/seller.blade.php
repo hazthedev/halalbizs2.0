@@ -10,22 +10,22 @@
 <body class="min-h-screen overflow-x-clip bg-paper text-ink antialiased" x-data="{ sidebarOpen: false }">
 
     {{-- Ink topbar --}}
-    <header class="surface-girih sticky top-0 z-40 border-b border-brass/25 bg-ink">
+    <header class="sticky top-0 z-40 border-b border-emerald-edge bg-emerald-night">
         <div class="flex h-14 items-center gap-3 px-4">
-            <button type="button" class="flex size-10 items-center justify-center rounded-[var(--radius-control)] text-paper lg:hidden" x-on:click="sidebarOpen = !sidebarOpen" aria-label="{{ __('Menu') }}">
+            <button type="button" class="flex size-10 items-center justify-center rounded-[var(--radius-control)] text-on-dark lg:hidden" x-on:click="sidebarOpen = !sidebarOpen" aria-label="{{ __('Menu') }}">
                 <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
             </button>
-            <a href="{{ route('seller.dashboard') }}" wire:navigate class="flex items-center gap-2 font-display text-lg font-bold text-paper">
+            <a href="{{ route('seller.dashboard') }}" wire:navigate class="flex items-center gap-2 font-display text-lg font-medium text-on-dark">
                 <x-ui.star-mark :size="20" class="text-brass" />
-                HalalBizs <span class="font-sans text-[13px] font-medium text-brass-tint/70">{{ __('Seller Centre') }}</span>
+                HalalBizs <span class="font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] text-on-dark-faint">{{ __('Seller Centre') }}</span>
             </a>
             <div class="ml-auto flex items-center gap-2">
-                <a href="{{ route('home') }}" class="rounded-lg px-3 py-2 text-[13px] font-medium text-paper/64 hover:text-paper">{{ __('View storefront') }}</a>
+                <a href="{{ route('home') }}" class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium text-on-dark/64 hover:text-on-dark">{{ __('View storefront') }}</a>
                 <livewire:notification-bell context="seller" />
-                <span class="hidden text-[13px] text-paper/64 sm:block">{{ auth()->user()->store?->name }}</span>
+                <span class="hidden text-[13px] text-on-dark/64 sm:block">{{ auth()->user()->store?->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="rounded-lg px-3 py-2 text-[13px] font-medium text-paper/64 hover:text-paper">{{ __('Log out') }}</button>
+                    <button type="submit" class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium text-on-dark/64 hover:text-on-dark">{{ __('Log out') }}</button>
                 </form>
             </div>
         </div>
@@ -46,18 +46,18 @@
                 @endphp
                 @foreach ($links as $link)
                     <a href="{{ route($link['route']) }}" wire:navigate
-                       class="block rounded-lg px-3 py-2 text-sm font-medium {{ $link['active'] ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                       class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ $link['active'] ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                         {{ $link['label'] }}
                     </a>
                 @endforeach
 
                 @if (Illuminate\Support\Facades\Route::has('seller.orders.index'))
                     <a href="{{ route('seller.orders.index') }}" wire:navigate
-                       class="block rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.orders.*') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                       class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.orders.*') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                         {{ __('Orders') }}
                     </a>
                 @else
-                    <span class="block cursor-not-allowed rounded-lg px-3 py-2 text-sm font-medium text-ink-faint">{{ __('Orders') }} <span class="text-[11px]">({{ __('soon') }})</span></span>
+                    <span class="block cursor-not-allowed rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-ink-faint">{{ __('Orders') }} <span class="text-[11px]">({{ __('soon') }})</span></span>
                 @endif
 
                 @php
@@ -68,10 +68,10 @@
                         ->count();
                 @endphp
                 <a href="{{ route('seller.messages') }}" wire:navigate
-                   class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.messages') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                   class="flex items-center justify-between gap-2 rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.messages') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                     <span>{{ __('Messages') }}</span>
                     @if ($sellerUnreadMessages > 0)
-                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 text-[11px] font-semibold text-emerald tnum">{{ $sellerUnreadMessages }}</span>
+                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 text-[11px] font-medium text-emerald tnum">{{ $sellerUnreadMessages }}</span>
                     @endif
                 </a>
 
@@ -86,28 +86,28 @@
                 @foreach ($sellerNavItems as [$routeName, $label])
                     @if (Illuminate\Support\Facades\Route::has($routeName))
                         <a href="{{ route($routeName) }}" wire:navigate
-                           class="block rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs(str_replace('.index', '.*', $routeName)) ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                           class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ request()->routeIs(str_replace('.index', '.*', $routeName)) ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                             {{ $label }}
                         </a>
                     @else
-                        <span class="block cursor-not-allowed rounded-lg px-3 py-2 text-sm font-medium text-ink-faint">{{ $label }} <span class="text-[11px]">({{ __('soon') }})</span></span>
+                        <span class="block cursor-not-allowed rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-ink-faint">{{ $label }} <span class="text-[11px]">({{ __('soon') }})</span></span>
                     @endif
                 @endforeach
 
                 <a href="{{ route('seller.settings') }}" wire:navigate
-                   class="block rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.settings') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                   class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.settings') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                     {{ __('Shop settings') }}
                 </a>
 
                 <a href="{{ route('help.index') }}" wire:navigate
-                   class="block rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-paper hover:text-ink">
+                   class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-ink-soft hover:bg-paper hover:text-ink">
                     {{ __('Get help') }}
                 </a>
             </nav>
         </aside>
 
         {{-- Backdrop for mobile sidebar --}}
-        <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-20 bg-ink/40 lg:hidden" x-on:click="sidebarOpen = false"></div>
+        <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-20 bg-emerald-night/40 lg:hidden" x-on:click="sidebarOpen = false"></div>
 
         <main class="min-h-[calc(100vh-3.5rem)] min-w-0 flex-1 p-4 lg:p-6">
             {{ $slot }}
@@ -119,11 +119,11 @@
         <template x-for="toast in $store.toasts.items" :key="toast.id">
             <div x-transition:enter="transition duration-150 ease-out" x-transition:enter-start="-translate-y-2 opacity-0"
                  x-transition:leave="transition duration-100 ease-in" x-transition:leave-end="opacity-0"
-                 class="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-[var(--radius-card)] border border-brass/20 bg-ink px-5 py-4 text-sm text-paper shadow-pop">
+                 class="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-[var(--radius-card)] border border-brass/20 bg-emerald-night px-5 py-4 text-sm text-on-dark shadow-pop">
                 <svg x-show="toast.type === 'success'" class="size-4 shrink-0 text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                 <svg x-show="toast.type === 'error'" class="size-4 shrink-0 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                 <span x-text="toast.message" class="flex-1"></span>
-                <button type="button" x-on:click="$store.toasts.dismiss(toast.id)" class="shrink-0 text-paper/64 hover:text-paper" aria-label="{{ __('Dismiss') }}">
+                <button type="button" x-on:click="$store.toasts.dismiss(toast.id)" class="shrink-0 text-on-dark/64 hover:text-on-dark" aria-label="{{ __('Dismiss') }}">
                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                 </button>
             </div>

@@ -3,7 +3,7 @@
     {{-- Header --}}
     <div class="flex items-center justify-between gap-3">
         <x-ui.section-heading as="h1" :title="__('Orders')" />
-        <button type="button" wire:click="exportCsv" class="inline-flex min-h-11 shrink-0 items-center rounded-lg border border-line-strong px-3 text-[13px] font-medium text-ink hover:border-emerald hover:text-emerald">{{ __('Export CSV') }}</button>
+        <button type="button" wire:click="exportCsv" class="inline-flex min-h-11 shrink-0 items-center rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-medium text-ink hover:border-emerald hover:text-emerald">{{ __('Export CSV') }}</button>
     </div>
 
     {{-- Status tabs — wire:poll.30s keeps the count chips fresh (sound-free badge bump, docs/07 §B).
@@ -15,11 +15,11 @@
                 wire:click="$set('tab', '{{ $key }}')"
                 wire:key="tab-{{ $key }}"
                 aria-current="{{ $tab === $key ? 'page' : 'false' }}"
-                class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $key ? 'border-ink font-semibold text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}"
+                class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $key ? 'border-ink font-medium text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}"
             >
                 {{ $label }}
                 @if ($counts[$key] > 0)
-                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-emerald">{{ $counts[$key] }}</span>
+                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-emerald">{{ $counts[$key] }}</span>
                 @endif
             </button>
         @endforeach
@@ -88,7 +88,7 @@
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $placedAt->diffForHumans() }}</td>
                             <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $subOrder->order->user->name }}</span></td>
                             <td class="px-3 py-2 text-right tabular-nums text-ink-soft">{{ $subOrder->items_count }}</td>
-                            <td class="px-3 py-2 text-right font-mono font-semibold tabular-nums whitespace-nowrap">@money($subOrder->total_sen)</td>
+                            <td class="px-3 py-2 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($subOrder->total_sen)</td>
                             <td class="px-3 py-2"><x-ui.badge :variant="$badgeVariant">{{ $subOrder->status->label() }}</x-ui.badge></td>
                             @if ($tab === 'new')
                                 @php $hoursWaiting = (int) $placedAt->diffInHours(now()); @endphp
@@ -117,7 +117,7 @@
                                 <td class="px-3 py-2">
                                     <div class="flex justify-end">
                                         <button type="button" wire:click="confirmAndPack({{ $subOrder->id }})" wire:loading.attr="disabled"
-                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                                             {{ __('Confirm & pack') }}
                                         </button>
                                     </div>
@@ -126,7 +126,7 @@
                                 <td class="px-3 py-2">
                                     <div class="flex justify-end">
                                         <button type="button" wire:click="openShipModal({{ $subOrder->id }})"
-                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                                             {{ __('Arrange shipment') }}
                                         </button>
                                     </div>

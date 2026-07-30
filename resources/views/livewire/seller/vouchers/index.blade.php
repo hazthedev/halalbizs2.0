@@ -19,7 +19,7 @@
     @if ($showForm)
         <x-ui.card class="p-4">
             <form wire:submit="save" class="space-y-4">
-                <h2 class="font-display text-lg font-semibold">
+                <h2 class="font-display text-lg font-medium">
                     {{ $editingId !== null ? __('Edit voucher') : __('New shop voucher') }}
                 </h2>
 
@@ -28,7 +28,7 @@
                     <div>
                         <label for="voucher-type" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Type') }}</label>
                         <select id="voucher-type" wire:model.live="type"
-                                class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             @foreach ($types as $typeCase)
                                 <option value="{{ $typeCase->value }}">{{ $typeCase->label() }}</option>
                             @endforeach
@@ -117,7 +117,7 @@
                                 <button type="button" role="switch" aria-checked="{{ $voucher->is_active ? 'true' : 'false' }}"
                                         wire:click="toggleActive({{ $voucher->id }})"
                                         aria-label="{{ __('Toggle :code', ['code' => $voucher->code]) }}"
-                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $voucher->is_active ? 'bg-emerald' : 'bg-line-strong' }}">
                                         <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $voucher->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                     </span>
@@ -126,10 +126,10 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
                                     <button type="button" wire:click="edit({{ $voucher->id }})"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
                                     <button type="button" wire:click="delete({{ $voucher->id }})"
                                             wire:confirm="{{ __('Delete voucher :code? This cannot be undone.', ['code' => $voucher->code]) }}"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
                                 </div>
                             </td>
                         </tr>

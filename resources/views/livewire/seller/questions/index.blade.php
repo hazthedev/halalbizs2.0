@@ -1,6 +1,6 @@
 <div class="space-y-5">
     <div>
-        <h1 class="text-xl font-bold text-ink">{{ __('Questions') }}</h1>
+        <h1 class="text-xl font-medium text-ink">{{ __('Questions') }}</h1>
         <p class="text-[13px] text-ink-soft">{{ __('Answer buyer questions on your products. Unanswered questions are shown first.') }}</p>
     </div>
 
@@ -10,7 +10,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-2">
                     <div class="min-w-0">
                         <a href="{{ route('product.show', $question->product->slug) }}" target="_blank" rel="noopener"
-                           class="text-[13px] font-semibold text-emerald hover:underline">{{ $question->product->getTranslation('name', app()->getLocale()) }}</a>
+                           class="text-[13px] font-medium text-emerald hover:underline">{{ $question->product->getTranslation('name', app()->getLocale()) }}</a>
                         <p class="mt-1 text-sm text-ink">{{ $question->question }}</p>
                         <p class="mt-0.5 text-[12px] text-ink-faint">{{ $question->askerName() }} · {{ $question->created_at->diffForHumans() }}</p>
                     </div>
@@ -41,12 +41,12 @@
                 @else
                     <div class="mt-3 flex flex-wrap gap-2">
                         <button type="button" wire:click="startAnswer({{ $question->id }})"
-                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ $question->isAnswered() ? __('Edit answer') : __('Answer') }}
                         </button>
                         <button type="button" wire:click="hide({{ $question->id }})"
                                 wire:confirm="{{ __('Hide this question from the product page?') }}"
-                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-semibold text-danger hover:bg-danger-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Hide') }}
                         </button>
                     </div>
