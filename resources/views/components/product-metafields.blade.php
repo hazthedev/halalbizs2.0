@@ -17,7 +17,7 @@
                 @if ($groupKey === 'halal')
                     {{-- Halal certification: brass = premium/trust ornament --}}
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-brass/40 bg-brass/10 px-3 py-1 text-[13px] font-semibold text-brass-deep">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-brass/40 bg-brass/10 px-3 py-1 text-[13px] font-medium text-brass-deep">
                             <x-ui.star-mark :size="14" class="text-brass" />
                             {{ __($groupLabel) }}
                         </span>
@@ -31,7 +31,7 @@
                         @endforeach
                     </dl>
                 @else
-                    <h3 class="text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-faint">{{ __($groupLabel) }}</h3>
+                    <h3 class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-faint">{{ __($groupLabel) }}</h3>
                     <dl class="mt-2 space-y-1.5 text-[13px]">
                         @foreach ($rows as $row)
                             <div class="sm:flex sm:gap-3">

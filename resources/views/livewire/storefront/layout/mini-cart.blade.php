@@ -7,7 +7,7 @@
     <div x-show="open" x-cloak
          x-transition:enter="transition-opacity duration-(--dur-standard) ease-standard" x-transition:enter-start="opacity-0"
          x-transition:leave="transition-opacity duration-200 ease-in-soft" x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-40 bg-ink/40" x-on:click="open = false"></div>
+         class="fixed inset-0 z-40 bg-emerald-night/40" x-on:click="open = false"></div>
 
     {{-- Slide-over — 16px edge slide + fade, faster exit --}}
     <aside x-show="open" x-cloak
@@ -17,7 +17,7 @@
            role="dialog" aria-label="{{ __('Cart') }}">
 
         <div class="flex items-center justify-between border-b border-line px-4 py-3.5">
-            <h2 class="font-display text-lg font-bold">{{ __('Cart') }}</h2>
+            <h2 class="font-display text-lg font-medium">{{ __('Cart') }}</h2>
             <button type="button" x-on:click="open = false" class="flex size-9 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink" aria-label="{{ __('Close') }}">
                 <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
             </button>
@@ -27,14 +27,14 @@
             @forelse ($groups as $storeId => $lines)
                 <div class="mb-4">
                     <a href="{{ $lines->first()->variant->product->store->storefrontUrl() }}" wire:navigate
-                       class="mb-2 block text-[13px] font-semibold text-ink">
+                       class="mb-2 block text-[13px] font-medium text-ink">
                         {{ $lines->first()->variant->product->store->name }}
                     </a>
                     <ul class="space-y-3">
                         @foreach ($lines as $line)
                             <li class="flex gap-3" wire:key="mini-line-{{ $line->variant->id }}">
                                 <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
-                                     alt="" class="size-16 shrink-0 rounded-[var(--radius-card)] border border-line object-cover bg-paper">
+                                     alt="" class="size-16 shrink-0 rounded-[var(--radius-card)] border border-line object-contain bg-paper">
                                 <div class="min-w-0 flex-1">
                                     <p class="line-clamp-1 text-[13px] font-medium">{{ $line->variant->product->getTranslation('name', app()->getLocale()) }}</p>
                                     @if ($line->variant->options_label)
@@ -46,7 +46,7 @@
                                             <span class="min-w-6 text-center font-mono text-[13px]">{{ $line->qty }}</span>
                                             <button type="button" wire:click="updateQty({{ $line->variant->id }}, {{ $line->qty + 1 }})" class="flex size-7 items-center justify-center text-ink-soft hover:text-ink" aria-label="{{ __('Increase') }}" @disabled($line->qty >= $line->variant->stock)>+</button>
                                         </div>
-                                        <span class="text-[13px] font-bold tnum">@price($line->variant->effectivePriceSen() * $line->qty)</span>
+                                        <span class="text-[13px] font-medium tnum">@price($line->variant->effectivePriceSen() * $line->qty)</span>
                                     </div>
                                 </div>
                                 <button type="button" wire:click="removeLine({{ $line->variant->id }})" class="self-start text-ink-faint hover:text-danger" aria-label="{{ __('Remove') }}">
@@ -58,7 +58,7 @@
                 </div>
             @empty
                 <div class="flex h-full flex-col items-center justify-center text-center">
-                    <p class="font-display text-lg font-semibold">{{ __('Your cart is empty') }}</p>
+                    <p class="font-display text-lg font-medium">{{ __('Your cart is empty') }}</p>
                     <p class="mt-1 text-sm text-ink-soft">{{ __('Things you add will appear here.') }}</p>
                 </div>
             @endforelse
@@ -68,7 +68,7 @@
             <div class="border-t border-line p-4">
                 <div class="mb-3 flex items-center justify-between text-sm">
                     <span class="text-ink-soft">{{ __('Items total') }}</span>
-                    <span class="font-bold tnum">@price($subtotalSen)</span>
+                    <span class="font-medium tnum">@price($subtotalSen)</span>
                 </div>
                 <x-ui.button :href="route('cart')" class="w-full">{{ __('View cart & checkout') }}</x-ui.button>
             </div>

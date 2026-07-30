@@ -1,6 +1,6 @@
 <div class="space-y-6">
     <div class="flex items-center justify-between">
-        <h2 class="text-base font-bold text-ink">{{ __('Questions & Answers') }}
+        <h2 class="text-base font-medium text-ink">{{ __('Questions & Answers') }}
             <span class="text-ink-faint tnum">({{ $totalCount }})</span>
         </h2>
     </div>
@@ -8,7 +8,7 @@
     {{-- Ask form --}}
     @auth
         <form wire:submit="ask" class="space-y-2 rounded-[var(--radius-card)] border border-line bg-surface p-4">
-            <label for="ask-question" class="block text-[13px] font-semibold text-ink">{{ __('Ask the seller a question') }}</label>
+            <label for="ask-question" class="block text-[13px] font-medium text-ink">{{ __('Ask the seller a question') }}</label>
             <textarea id="ask-question" wire:model="question" rows="2" maxlength="500"
                       placeholder="{{ __('e.g. Is this halal-certified? Does it ship to East Malaysia?') }}"
                       class="w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
@@ -21,7 +21,7 @@
         </form>
     @else
         <p class="rounded-[var(--radius-card)] border border-line bg-paper p-4 text-[13px] text-ink-soft">
-            <a href="{{ route('login') }}" wire:navigate class="font-semibold text-emerald hover:underline">{{ __('Log in') }}</a>
+            <a href="{{ route('login') }}" wire:navigate class="font-medium text-emerald hover:underline">{{ __('Log in') }}</a>
             {{ __('to ask the seller a question.') }}
         </p>
     @endauth
@@ -31,7 +31,7 @@
         @forelse ($questions as $question)
             <div class="border-b border-line pb-4" wire:key="question-{{ $question->id }}">
                 <div class="flex items-start gap-2">
-                    <span class="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-paper text-[11px] font-bold text-ink-soft">Q</span>
+                    <span class="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-paper text-[11px] font-medium text-ink-soft">Q</span>
                     <div class="min-w-0 flex-1">
                         <p class="text-sm text-ink">{{ $question->question }}</p>
                         <p class="mt-0.5 text-[12px] text-ink-faint">{{ $question->askerName() }} · {{ $question->created_at->diffForHumans() }}</p>
@@ -40,7 +40,7 @@
 
                 @if ($question->isAnswered())
                     <div class="mt-2 flex items-start gap-2 pl-7">
-                        <span class="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald/10 text-[11px] font-bold text-emerald">A</span>
+                        <span class="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald/10 text-[11px] font-medium text-emerald">A</span>
                         <div class="min-w-0 flex-1">
                             <p class="text-sm text-ink">{{ $question->answer }}</p>
                             <p class="mt-0.5 text-[12px] text-ink-faint">{{ __('Seller') }} · {{ $question->answered_at->diffForHumans() }}</p>

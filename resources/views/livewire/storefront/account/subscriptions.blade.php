@@ -14,7 +14,7 @@
                     <li class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
                         <div class="flex flex-wrap items-start justify-between gap-3">
                             <div class="min-w-0">
-                                <p class="text-sm font-semibold text-ink">
+                                <p class="text-sm font-medium text-ink">
                                     @if ($product)
                                         <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="hover:text-emerald">{{ $product->getTranslation('name', app()->getLocale()) }}</a>
                                     @else
@@ -48,14 +48,14 @@
                             <div class="mt-3 flex flex-wrap gap-2 border-t border-line pt-3">
                                 @if ($paused)
                                     <button type="button" wire:click="resume({{ $subscription->id }})"
-                                            class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-semibold text-ink hover:border-emerald hover:text-emerald">{{ __('Resume') }}</button>
+                                            class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink hover:border-emerald hover:text-emerald">{{ __('Resume') }}</button>
                                 @else
                                     <button type="button" wire:click="pause({{ $subscription->id }})"
-                                            class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-semibold text-ink hover:border-ink">{{ __('Pause') }}</button>
+                                            class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink hover:border-ink">{{ __('Pause') }}</button>
                                 @endif
                                 <button type="button" wire:click="cancel({{ $subscription->id }})"
                                         wire:confirm="{{ __('Cancel this subscription?') }}"
-                                        class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-semibold text-ink-soft hover:text-danger">{{ __('Cancel') }}</button>
+                                        class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Cancel') }}</button>
                             </div>
                         @endunless
                     </li>

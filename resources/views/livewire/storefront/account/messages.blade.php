@@ -16,13 +16,13 @@
                                          alt="{{ $conversation->store->name }}"
                                          class="size-10 shrink-0 rounded-full border border-line bg-paper object-cover">
                                 @else
-                                    <span class="flex size-10 shrink-0 items-center justify-center rounded-full border border-line bg-paper font-display text-base font-bold text-ink-soft" aria-hidden="true">
+                                    <span class="flex size-10 shrink-0 items-center justify-center rounded-full border border-line bg-paper font-display text-base font-medium text-ink-soft" aria-hidden="true">
                                         {{ mb_substr($conversation->store?->name ?? '?', 0, 1) }}
                                     </span>
                                 @endif
                                 <span class="min-w-0 flex-1">
                                     <span class="flex items-baseline justify-between gap-2">
-                                        <span class="truncate text-sm text-ink {{ $conversation->unread_count > 0 ? 'font-semibold' : 'font-medium' }}">{{ $conversation->store?->name }}</span>
+                                        <span class="truncate text-sm text-ink {{ $conversation->unread_count > 0 ? 'font-medium' : 'font-medium' }}">{{ $conversation->store?->name }}</span>
                                         @if ($conversation->last_message_at)
                                             <span class="shrink-0 text-[11px] text-ink-faint">{{ $conversation->last_message_at->diffForHumans(short: true) }}</span>
                                         @endif
@@ -41,7 +41,7 @@
                 </ul>
             @else
                 <div class="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
-                    <p class="font-display text-lg font-semibold">{{ __('No messages yet') }}</p>
+                    <p class="font-display text-lg font-medium">{{ __('No messages yet') }}</p>
                     <p class="mt-1 text-sm text-ink-soft">{{ __('Chats with sellers appear here. Start one from any product page.') }}</p>
                 </div>
             @endif
@@ -61,11 +61,11 @@
                         <img src="{{ $active->store->getFirstMediaUrl('logo', 'thumb') }}" alt="{{ $active->store->name }}"
                              class="size-9 shrink-0 rounded-full border border-line bg-paper object-cover">
                     @else
-                        <span class="flex size-9 shrink-0 items-center justify-center rounded-full border border-line bg-paper font-display text-sm font-bold text-ink-soft" aria-hidden="true">
+                        <span class="flex size-9 shrink-0 items-center justify-center rounded-full border border-line bg-paper font-display text-sm font-medium text-ink-soft" aria-hidden="true">
                             {{ mb_substr($active->store?->name ?? '?', 0, 1) }}
                         </span>
                     @endif
-                    <a href="{{ $active->store?->storefrontUrl() }}" wire:navigate class="min-w-0 truncate text-sm font-semibold text-ink hover:text-emerald">
+                    <a href="{{ $active->store?->storefrontUrl() }}" wire:navigate class="min-w-0 truncate text-sm font-medium text-ink hover:text-emerald">
                         {{ $active->store?->name }}
                     </a>
                 </div>
@@ -91,7 +91,7 @@
                                 @if ($contextProduct->getFirstMediaUrl('images', 'thumb'))
                                     <img src="{{ $contextProduct->getFirstMediaUrl('images', 'thumb') }}"
                                          alt="{{ $contextProduct->getTranslation('name', app()->getLocale()) }}"
-                                         class="size-full object-cover">
+                                         class="size-full object-contain">
                                 @endif
                             </span>
                             <span class="min-w-0 flex-1">
@@ -125,7 +125,7 @@
                 </form>
             @else
                 <div class="hidden flex-1 flex-col items-center justify-center px-6 text-center lg:flex">
-                    <p class="font-display text-lg font-semibold">{{ __('Pick a conversation') }}</p>
+                    <p class="font-display text-lg font-medium">{{ __('Pick a conversation') }}</p>
                     <p class="mt-1 text-sm text-ink-soft">{{ __('Select a chat on the left to read and reply.') }}</p>
                 </div>
             @endif

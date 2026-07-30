@@ -1,6 +1,30 @@
 <div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12">
     <x-ui.section-heading as="h1" :title="__('Checkout')" />
 
+    {{-- Progress rail, ported from the reference. This checkout is one page, so
+         the steps mark what is REACHED rather than acting as navigation: the
+         address is done once one is chosen, fulfilment once shipping resolves,
+         payment once a method is selected. --}}
+    @php
+        $steps = [
+            ['n' => '1', 'label' => __('Delivery details'), 'done' => $address !== null],
+            ['n' => '2', 'label' => __('Fulfilment'), 'done' => $address !== null && $shippingTotalSen >= 0],
+            ['n' => '3', 'label' => __('Payment'), 'done' => ($paymentMethod ?? null) !== null],
+        ];
+    @endphp
+    <ol class="mb-8 flex flex-wrap items-center gap-x-3 gap-y-2">
+        @foreach ($steps as $step)
+            <li class="flex items-center gap-3">
+                <span class="rounded-[var(--radius-pill)] border px-3 py-1 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] {{ $step['done'] ? 'border-emerald text-emerald' : 'border-line text-ink-faint' }}">
+                    {{ $step['n'] }} &middot; {{ $step['label'] }}
+                </span>
+                @unless ($loop->last)
+                    <span aria-hidden="true" class="h-px w-6 bg-line-strong"></span>
+                @endunless
+            </li>
+        @endforeach
+    </ol>
+
     <div class="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6">
 
         {{-- ===== Left column ===== --}}
@@ -9,11 +33,11 @@
             {{-- (1) Delivery address --}}
             <x-ui.card class="p-4">
                 <div class="flex items-center justify-between gap-3">
-                    <h2 class="text-sm font-semibold">{{ __('Delivery address') }}</h2>
+                    <h2 class="text-sm font-medium">{{ __('Delivery address') }}</h2>
                     @if ($addresses->isNotEmpty())
                         <button type="button" wire:click="$toggle('changingAddress')"
                                 wire:loading.attr="disabled" wire:target="changingAddress"
-                                class="-my-1 flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-sm font-semibold text-emerald hover:text-emerald-deep">
+                                class="-my-1 flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-sm font-medium text-emerald hover:text-emerald-deep">
                             {{ $changingAddress ? __('Close') : __('Change') }}
                         </button>
                     @endif
@@ -38,7 +62,7 @@
                 @if ($addressError)
                     <p class="mt-1.5 text-[13px] text-danger">
                         {{ $addressError }}
-                        <a href="{{ route('account.addresses') }}" wire:navigate class="font-semibold underline">{{ __('Add new address') }}</a>
+                        <a href="{{ route('account.addresses') }}" wire:navigate class="font-medium underline">{{ __('Add new address') }}</a>
                     </p>
                 @endif
 
@@ -68,7 +92,7 @@
                             @endforeach
                         </ul>
                         <a href="{{ route('account.addresses') }}" wire:navigate
-                           class="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-emerald hover:text-emerald-deep">
+                           class="mt-1 inline-flex min-h-11 items-center text-sm font-medium text-emerald hover:text-emerald-deep">
                             {{ __('Add new address') }}
                         </a>
                     </fieldset>
@@ -79,7 +103,7 @@
             @foreach ($groups as $group)
                 <x-ui.card wire:key="checkout-store-{{ $group->store->id }}">
                     <div class="flex min-h-11 items-center gap-2 border-b border-line px-4">
-                        <span class="truncate text-sm font-semibold">{{ $group->store->name }}</span>
+                        <span class="truncate text-sm font-medium">{{ $group->store->name }}</span>
                         @if ($group->store->state)
                             <span class="shrink-0 text-xs text-ink-soft">{{ $group->store->state }}</span>
                         @endif
@@ -90,15 +114,15 @@
                             <li wire:key="checkout-line-{{ $line->variant->id }}" class="flex gap-3 px-4 py-3.5">
                                 <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
                                      alt="{{ $line->variant->product->getTranslation('name', app()->getLocale()) }} {{ $line->variant->options_label }}"
-                                     class="size-16 shrink-0 rounded-[var(--radius-card)] border border-line bg-paper object-cover">
+                                     class="size-16 shrink-0 rounded-[var(--radius-card)] border border-line bg-paper object-contain">
                                 <div class="min-w-0 flex-1">
-                                    <p class="line-clamp-2 text-sm font-medium">{{ $line->variant->product->getTranslation('name', app()->getLocale()) }}</p>
+                                    <p class="line-clamp-2 font-display text-[length:var(--text-md)] text-ink-head">{{ $line->variant->product->getTranslation('name', app()->getLocale()) }}</p>
                                     @if ($line->variant->options_label)
                                         <p class="mt-0.5 truncate text-xs text-ink-soft">{{ $line->variant->options_label }}</p>
                                     @endif
-                                    <p class="mt-0.5 text-[13px] text-ink-soft tnum">@price($line->variant->effectivePriceSen()) <span class="font-mono">× {{ $line->qty }}</span></p>
+                                    <p class="mt-0.5 font-mono text-[length:var(--text-tiny)] text-ink-soft tnum">@price($line->variant->effectivePriceSen()) <span class="font-mono">× {{ $line->qty }}</span></p>
                                 </div>
-                                <span class="shrink-0 self-center text-sm font-bold tnum">@price($line->variant->effectivePriceSen() * $line->qty)</span>
+                                <span class="shrink-0 self-center font-mono text-[length:var(--text-price)] font-medium text-ink-head tnum">@price($line->variant->effectivePriceSen() * $line->qty)</span>
                             </li>
                         @endforeach
                     </ul>
@@ -109,9 +133,9 @@
                             @if ($group->shippingFeeSen === null)
                                 <span class="text-[13px] text-ink-faint">{{ __('Add an address to see shipping') }}</span>
                             @elseif ($group->shippingFeeSen === 0)
-                                <span class="font-semibold text-emerald">{{ __('FREE') }}</span>
+                                <span class="font-medium text-emerald">{{ __('FREE') }}</span>
                             @else
-                                <span class="font-bold tnum">@price($group->shippingFeeSen)</span>
+                                <span class="font-mono font-medium text-ink-head tnum">@price($group->shippingFeeSen)</span>
                             @endif
                         </div>
 
@@ -130,10 +154,10 @@
                  One platform voucher + one shop voucher per order (Shopee model). --}}
             <x-ui.card class="p-4">
                 <div class="flex items-center justify-between gap-3">
-                    <h2 class="text-sm font-semibold">{{ __('Vouchers') }}</h2>
+                    <h2 class="text-sm font-medium">{{ __('Vouchers') }}</h2>
                     <button type="button" wire:click="$toggle('voucherPanelOpen')"
                             wire:loading.attr="disabled" wire:target="voucherPanelOpen"
-                            class="-my-1 flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-sm font-semibold text-emerald hover:text-emerald-deep">
+                            class="-my-1 flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-sm font-medium text-emerald hover:text-emerald-deep">
                         {{ $voucherPanelOpen ? __('Close') : __('Select voucher') }}
                     </button>
                 </div>
@@ -143,7 +167,7 @@
                     <ul class="mt-2 space-y-2">
                         @if ($shippingDiscount !== null)
                             <li class="flex items-center justify-between gap-3">
-                                <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-semibold text-emerald">
+                                <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-medium text-emerald">
                                     <span class="truncate font-mono">{{ $shippingDiscount->voucher->code }}</span>
                                     <span class="hidden font-normal sm:inline">· {{ __('Free shipping') }}</span>
                                     <button type="button" wire:click="removeVoucher('shipping')"
@@ -153,12 +177,12 @@
                                         <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                                     </button>
                                 </span>
-                                <span class="shrink-0 text-sm font-bold text-emerald">{{ __('Free shipping') }}</span>
+                                <span class="shrink-0 text-sm font-medium text-emerald">{{ __('Free shipping') }}</span>
                             </li>
                         @endif
                         @if ($platformDiscount !== null)
                             <li class="flex items-center justify-between gap-3">
-                                <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-semibold text-emerald">
+                                <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-medium text-emerald">
                                     <span class="truncate font-mono">{{ $platformDiscount->voucher->code }}</span>
                                     <span class="hidden font-normal sm:inline">· {{ __('Platform') }}</span>
                                     <button type="button" wire:click="removeVoucher('platform')"
@@ -169,16 +193,16 @@
                                     </button>
                                 </span>
                                 @if ($platformDiscount->voucher->type === \App\Enums\VoucherType::FreeShipping)
-                                    <span class="shrink-0 text-sm font-bold text-emerald">{{ __('Free shipping') }}</span>
+                                    <span class="shrink-0 text-sm font-medium text-emerald">{{ __('Free shipping') }}</span>
                                 @else
-                                    <span class="shrink-0 text-sm font-bold text-emerald tnum">-@money($platformDiscountSen)</span>
+                                    <span class="shrink-0 text-sm font-medium text-emerald tnum">-@money($platformDiscountSen)</span>
                                 @endif
                             </li>
                         @endif
 
                         @if ($shopDiscount !== null)
                             <li class="flex items-center justify-between gap-3">
-                                <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-semibold text-emerald">
+                                <span class="inline-flex min-w-0 items-center gap-1 rounded-full bg-emerald-tint py-0.5 pl-3 pr-0.5 text-[13px] font-medium text-emerald">
                                     <span class="truncate font-mono">{{ $shopDiscount->voucher->code }}</span>
                                     <span class="hidden truncate font-normal sm:inline">· {{ $shopDiscount->voucher->store?->name }}</span>
                                     <button type="button" wire:click="removeVoucher('shop')"
@@ -189,9 +213,9 @@
                                     </button>
                                 </span>
                                 @if ($shopDiscount->voucher->type === \App\Enums\VoucherType::FreeShipping)
-                                    <span class="shrink-0 text-sm font-bold text-emerald">{{ __('Free shipping') }}</span>
+                                    <span class="shrink-0 text-sm font-medium text-emerald">{{ __('Free shipping') }}</span>
                                 @else
-                                    <span class="shrink-0 text-sm font-bold text-emerald tnum">-@money($shopDiscountSen)</span>
+                                    <span class="shrink-0 text-sm font-medium text-emerald tnum">-@money($shopDiscountSen)</span>
                                 @endif
                             </li>
                         @endif
@@ -258,33 +282,33 @@
 
         {{-- ===== Right: sticky summary ===== --}}
         <x-ui.card class="sticky bottom-0 z-10 p-4 lg:bottom-auto lg:top-24">
-            <h2 class="text-sm font-semibold">{{ __('Order summary') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Order summary') }}</h2>
 
             <dl class="mt-3 space-y-2 text-sm">
                 <div class="flex items-center justify-between">
                     <dt class="text-ink-soft">{{ __('Items subtotal') }}</dt>
-                    <dd class="font-bold tnum">@money($subtotalSen)</dd>
+                    <dd class="font-mono font-medium text-ink-head tnum">@money($subtotalSen)</dd>
                 </div>
                 <div class="flex items-center justify-between">
                     <dt class="text-ink-soft">{{ __('Shipping total') }}</dt>
-                    <dd class="font-bold tnum">@if ($address === null) — @else @money($shippingTotalSen) @endif</dd>
+                    <dd class="font-mono font-medium text-ink-head tnum">@if ($address === null) — @else @money($shippingTotalSen) @endif</dd>
                 </div>
                 @if ($taxTotalSen > 0)
                     <div class="flex items-center justify-between">
                         <dt class="text-ink-soft">{{ __('SST') }}</dt>
-                        <dd class="font-bold tnum">@money($taxTotalSen)</dd>
+                        <dd class="font-medium tnum">@money($taxTotalSen)</dd>
                     </div>
                 @endif
                 @if ($platformDiscountSen > 0)
                     <div class="flex items-center justify-between">
                         <dt class="text-ink-soft">{{ __('Platform voucher') }}</dt>
-                        <dd class="font-bold text-emerald tnum">-@money($platformDiscountSen)</dd>
+                        <dd class="font-medium text-emerald tnum">-@money($platformDiscountSen)</dd>
                     </div>
                 @endif
                 @if ($shopDiscountSen > 0)
                     <div class="flex items-center justify-between">
                         <dt class="text-ink-soft">{{ __('Shop voucher') }}</dt>
-                        <dd class="font-bold text-emerald tnum">-@money($shopDiscountSen)</dd>
+                        <dd class="font-medium text-emerald tnum">-@money($shopDiscountSen)</dd>
                     </div>
                 @endif
                 @if ($coinsEnabled && $useCoins && $coinRedemptionSen > 0)
@@ -293,7 +317,7 @@
                             <x-ui.star-mark :size="13" class="text-brass" />
                             {{ __('Coins') }}
                         </dt>
-                        <dd class="font-bold text-emerald tnum">-@money($coinRedemptionSen)</dd>
+                        <dd class="font-medium text-emerald tnum">-@money($coinRedemptionSen)</dd>
                     </div>
                 @endif
             </dl>
@@ -314,8 +338,8 @@
 
             <div class="mt-3 border-t border-line pt-3">
                 <div class="flex items-baseline justify-between">
-                    <span class="text-sm font-semibold">{{ __('Grand total') }}</span>
-                    <span class="text-2xl font-bold tnum">@money($grandTotalSen)</span>
+                    <span class="text-sm font-medium">{{ __('Grand total') }}</span>
+                    <span class="font-mono text-[length:var(--text-h3)] font-medium text-ink-head tnum">@money($grandTotalSen)</span>
                 </div>
                 @if ($displayCurrency !== 'MYR')
                     <p class="mt-0.5 text-right text-[13px] text-ink-soft tnum">@price($grandTotalSen)</p>

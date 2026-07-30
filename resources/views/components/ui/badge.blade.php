@@ -15,4 +15,4 @@ $classes = match ($variant) {
 };
 @endphp
 
-<span {{ $attributes->merge(['class' => "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.03em] $classes"]) }}>{{ $slot }}</span>
+<span {{ $attributes->merge(['class' => "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.03em] $classes"]) }}>{{ $slot }}</span>

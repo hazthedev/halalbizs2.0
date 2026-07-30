@@ -36,7 +36,7 @@
                     @if ($showInvoice)
                         {{-- Plain anchor: file download must not go through wire:navigate --}}
                         <a href="{{ route('account.orders.invoice', $subOrder) }}"
-                           class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-ink px-4 py-2.5 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper">
+                           class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-ink px-4 py-2.5 text-sm font-medium text-ink transition-colors duration-150 hover:bg-paper">
                             {{ __('Download invoice') }}
                         </a>
                     @endif
@@ -92,7 +92,7 @@
             {{-- Return request panel (docs/09 §D): reason + description + up to 5 photos --}}
             @if ($requestingReturn)
                 <div class="mt-4 rounded-[var(--radius-card)] border border-line-strong bg-paper p-4">
-                    <h3 class="text-sm font-semibold text-ink">{{ __('Request a return') }}</h3>
+                    <h3 class="text-sm font-medium text-ink">{{ __('Request a return') }}</h3>
 
                     <label for="return-reason" class="mt-3 block text-[13px] font-medium text-ink">{{ __('Why are you returning this order?') }}</label>
                     <select id="return-reason" wire:model="returnReasonId"
@@ -145,7 +145,7 @@
         @if ($returnRequest)
             <x-ui.card class="p-4 sm:p-5">
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <h3 class="font-display text-lg font-semibold">{{ __('Return status') }}</h3>
+                    <h3 class="font-display text-lg font-medium">{{ __('Return status') }}</h3>
                     <x-return-status-pill :status="$returnRequest->status" />
                 </div>
 
@@ -198,14 +198,14 @@
             <div class="space-y-4">
                 {{-- Status timeline (docs/03 §7): vertical, history ascending, current pulses once --}}
                 <x-ui.card class="p-4 sm:p-5">
-                    <h3 class="font-display text-lg font-semibold">{{ __('Order status') }}</h3>
+                    <h3 class="font-display text-lg font-medium">{{ __('Order status') }}</h3>
                     <ol class="mt-4">
                         {{-- Seeded/legacy orders may carry no history rows — show the current status instead of an empty card --}}
                         @if ($histories->isEmpty() && $futureStatuses === [])
                             <li class="relative flex gap-3">
                                 <span class="relative mt-1.5 size-[11px] shrink-0 rounded-full bg-emerald ring-2 ring-emerald-tint" aria-hidden="true"></span>
                                 <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-ink">{{ $subOrder->status->label() }}</p>
+                                    <p class="text-sm font-medium text-ink">{{ $subOrder->status->label() }}</p>
                                     <p class="mt-0.5 text-xs text-ink-soft">{{ __('Step-by-step history is not available for this order.') }}</p>
                                 </div>
                             </li>
@@ -218,7 +218,7 @@
                                 @endunless
                                 <span class="relative mt-1.5 size-[11px] shrink-0 rounded-full {{ $isCurrent ? 'ot-dot-current bg-emerald ring-2 ring-emerald-tint' : 'bg-emerald' }}" aria-hidden="true"></span>
                                 <div class="min-w-0">
-                                    <p class="text-sm {{ $isCurrent ? 'font-semibold text-ink' : 'font-medium text-ink' }}">
+                                    <p class="text-sm {{ $isCurrent ? 'font-medium text-ink' : 'font-medium text-ink' }}">
                                         {{ \App\Enums\SubOrderStatus::tryFrom($history->to_status)?->label() ?? $history->to_status }}
                                     </p>
                                     <p class="mt-0.5 text-xs text-ink-soft">
@@ -249,7 +249,7 @@
                     <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
                         <div class="flex min-w-0 flex-wrap items-center gap-x-2">
                             <a href="{{ $subOrder->store->storefrontUrl() }}" wire:navigate
-                               class="truncate text-sm font-semibold text-ink hover:text-emerald">{{ $subOrder->store->name }}</a>
+                               class="truncate text-sm font-medium text-ink hover:text-emerald">{{ $subOrder->store->name }}</a>
                             <a href="{{ route('account.messages', ['store' => $subOrder->store_id]) }}" wire:navigate
                                data-testid="order-chat-seller"
                                class="inline-flex min-h-11 items-center gap-1 rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft transition-colors duration-150 hover:text-ink">
@@ -266,7 +266,7 @@
                                     @if ($item->product?->getFirstMediaUrl('images', 'thumb'))
                                         <img src="{{ $item->product->getFirstMediaUrl('images', 'thumb') }}"
                                              alt="{{ $item->product_name }}{{ $item->variant_label ? ' — '.$item->variant_label : '' }}"
-                                             class="size-full object-cover" loading="lazy">
+                                             class="size-full object-contain" loading="lazy">
                                     @endif
                                 </span>
                                 <div class="min-w-0 flex-1">
@@ -276,7 +276,7 @@
                                     @endif
                                     <p class="mt-0.5 text-xs text-ink-soft" style="font-feature-settings: 'tnum'">@money($item->unit_price_sen) × {{ $item->qty }}</p>
                                 </div>
-                                <p class="shrink-0 text-sm font-bold text-ink" style="font-feature-settings: 'tnum'">@money($item->line_total_sen)</p>
+                                <p class="shrink-0 text-sm font-medium text-ink" style="font-feature-settings: 'tnum'">@money($item->line_total_sen)</p>
                             </li>
                         @endforeach
                     </ul>
@@ -287,7 +287,7 @@
                 {{-- Tracking (visible once shipped) --}}
                 @if ($subOrder->tracking_no && $subOrder->shipped_at)
                     <x-ui.card class="p-4">
-                        <h3 class="text-sm font-semibold text-ink">{{ __('Tracking') }}</h3>
+                        <h3 class="text-sm font-medium text-ink">{{ __('Tracking') }}</h3>
                         <p class="mt-2 text-sm text-ink">{{ $subOrder->tracking_courier }}</p>
                         <div class="mt-1 flex items-center justify-between gap-2">
                             <p class="truncate font-mono text-sm text-ink">{{ $subOrder->tracking_no }}</p>
@@ -307,7 +307,7 @@
                 {{-- Delivery address (snapshot from the parent order) --}}
                 @php($address = $subOrder->order->shipping_address)
                 <x-ui.card class="p-4">
-                    <h3 class="text-sm font-semibold text-ink">{{ __('Delivery address') }}</h3>
+                    <h3 class="text-sm font-medium text-ink">{{ __('Delivery address') }}</h3>
                     <p class="mt-2 text-sm font-medium text-ink">{{ $address['recipient_name'] ?? '' }}</p>
                     @if (! empty($address['phone']))
                         <p class="text-sm text-ink-soft">{{ $address['phone'] }}</p>
@@ -321,7 +321,7 @@
 
                 {{-- Totals + payment --}}
                 <x-ui.card class="p-4">
-                    <h3 class="text-sm font-semibold text-ink">{{ __('Order summary') }}</h3>
+                    <h3 class="text-sm font-medium text-ink">{{ __('Order summary') }}</h3>
                     <dl class="mt-3 space-y-2 text-sm" style="font-feature-settings: 'tnum'">
                         <div class="flex justify-between gap-3">
                             <dt class="text-ink-soft">{{ __('Items subtotal') }}</dt>
@@ -338,8 +338,8 @@
                             </div>
                         @endif
                         <div class="flex justify-between gap-3 border-t border-line pt-2">
-                            <dt class="font-semibold text-ink">{{ __('Total') }}</dt>
-                            <dd class="text-base font-bold text-ink">@money($subOrder->total_sen)</dd>
+                            <dt class="font-medium text-ink">{{ __('Total') }}</dt>
+                            <dd class="text-base font-medium text-ink">@money($subOrder->total_sen)</dd>
                         </div>
                     </dl>
 

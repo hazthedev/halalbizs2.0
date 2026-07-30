@@ -3,12 +3,12 @@
 
     {{-- ===== Profile ===== --}}
     <x-ui.card class="p-4 lg:p-6">
-        <h2 class="text-sm font-semibold">{{ __('Profile') }}</h2>
+        <h2 class="text-sm font-medium">{{ __('Profile') }}</h2>
 
         <form wire:submit="saveProfile" class="mt-4 space-y-4">
             <div>
                 <p class="mb-1.5 text-[13px] font-medium text-ink">{{ __('Shop name') }}</p>
-                <p class="text-sm font-semibold">{{ $store->name }}</p>
+                <p class="text-sm font-medium">{{ $store->name }}</p>
                 <p class="mt-1 text-[13px] text-ink-faint">{{ __('Contact support to rename your shop.') }}</p>
             </div>
 
@@ -19,7 +19,7 @@
                         <img src="{{ $store->getFirstMediaUrl('logo') }}" alt="{{ __(':store logo', ['store' => $store->name]) }}" class="mb-2 size-16 rounded-[var(--radius-card)] border border-line object-cover">
                     @endif
                     <input type="file" id="logo" wire:model="logo" accept=".jpg,.jpeg,.png,.webp"
-                           class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink hover:file:bg-paper">
+                           class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-paper">
                     <div wire:loading wire:target="logo" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                     @error('logo')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
@@ -34,7 +34,7 @@
                         <img src="{{ $store->getFirstMediaUrl('banner') }}" alt="{{ __(':store banner', ['store' => $store->name]) }}" class="mb-2 h-16 w-full rounded-[var(--radius-card)] border border-line object-cover">
                     @endif
                     <input type="file" id="banner" wire:model="banner" accept=".jpg,.jpeg,.png,.webp"
-                           class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink hover:file:bg-paper">
+                           class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-paper">
                     <div wire:loading wire:target="banner" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                     @error('banner')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
@@ -47,7 +47,7 @@
             <div>
                 <label for="description" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Description') }}</label>
                 <textarea id="description" wire:model="description" rows="4" maxlength="2000"
-                          class="block w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('description') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                          class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('description') ? 'border-danger' : 'border-line-strong' }}"></textarea>
                 @error('description')
                     <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                 @enderror
@@ -56,7 +56,7 @@
             <div>
                 <label for="state" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('State') }}</label>
                 <select id="state" wire:model="state"
-                        class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('state') ? 'border-danger' : 'border-line-strong' }}">
+                        class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('state') ? 'border-danger' : 'border-line-strong' }}">
                     <option value="">{{ __('Select a state') }}</option>
                     @foreach ($states as $stateOption)
                         <option value="{{ $stateOption }}">{{ $stateOption }}</option>
@@ -77,7 +77,7 @@
     <x-ui.card class="p-4 lg:p-6">
         <div class="flex items-start justify-between gap-4">
             <div>
-                <h2 class="text-sm font-semibold">{{ __('Holiday mode') }}</h2>
+                <h2 class="text-sm font-medium">{{ __('Holiday mode') }}</h2>
                 <p class="mt-1 text-[13px] text-ink-soft">{{ __('Buyers can\'t place orders while holiday mode is on. Your products stay visible but can\'t be bought.') }}</p>
             </div>
             <label class="relative inline-flex min-h-11 cursor-pointer items-center">
@@ -88,23 +88,23 @@
             </label>
         </div>
         @if ($holidayMode)
-            <p class="mt-3 rounded-lg bg-warn-tint p-3 text-[13px] text-warn">{{ __('Holiday mode is on — buyers can\'t place orders right now.') }}</p>
+            <p class="mt-3 rounded-[var(--radius-control)] bg-warn-tint p-3 text-[13px] text-warn">{{ __('Holiday mode is on — buyers can\'t place orders right now.') }}</p>
         @endif
     </x-ui.card>
 
     {{-- ===== Shipping ===== --}}
     <x-ui.card class="p-4 lg:p-6">
-        <h2 class="text-sm font-semibold">{{ __('Shipping') }}</h2>
+        <h2 class="text-sm font-medium">{{ __('Shipping') }}</h2>
 
         <form wire:submit="saveShipping" class="mt-4 space-y-4">
             <fieldset>
                 <legend class="mb-1.5 text-[13px] font-medium text-ink">{{ __('Shipping fee mode') }}</legend>
                 <div class="flex flex-wrap gap-2">
-                    <label class="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3.5 py-2 text-sm {{ $shippingMode === 'flat' ? 'border-emerald bg-emerald-tint font-medium' : 'border-line-strong' }}">
+                    <label class="flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-control)] border px-3.5 py-2 text-sm {{ $shippingMode === 'flat' ? 'border-emerald bg-emerald-tint font-medium' : 'border-line-strong' }}">
                         <input type="radio" wire:model.live="shippingMode" value="flat" class="size-4 accent-emerald">
                         {{ __('Flat fee for all of Malaysia') }}
                     </label>
-                    <label class="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3.5 py-2 text-sm {{ $shippingMode === 'matrix' ? 'border-emerald bg-emerald-tint font-medium' : 'border-line-strong' }}">
+                    <label class="flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-control)] border px-3.5 py-2 text-sm {{ $shippingMode === 'matrix' ? 'border-emerald bg-emerald-tint font-medium' : 'border-line-strong' }}">
                         <input type="radio" wire:model.live="shippingMode" value="matrix" class="size-4 accent-emerald">
                         {{ __('Per-state fees') }}
                     </label>
@@ -117,7 +117,7 @@
                     <div class="relative">
                         <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-sm text-ink-faint">RM</span>
                         <input type="text" id="flatFee" wire:model="flatFee" inputmode="decimal" placeholder="8.00"
-                               class="block min-h-11 w-full rounded-lg border bg-surface py-2.5 pl-11 pr-3.5 text-right font-mono text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('flatFee') ? 'border-danger' : 'border-line-strong' }}">
+                               class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface py-2.5 pl-11 pr-3.5 text-right font-mono text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('flatFee') ? 'border-danger' : 'border-line-strong' }}">
                     </div>
                     @error('flatFee')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
@@ -129,7 +129,7 @@
                         <div class="max-w-[180px]">
                             <label for="applyAll" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Apply to all (RM)') }}</label>
                             <input type="text" id="applyAll" wire:model="applyAll" inputmode="decimal" placeholder="8.00"
-                                   class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-right font-mono text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('applyAll') ? 'border-danger' : 'border-line-strong' }}">
+                                   class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-right font-mono text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('applyAll') ? 'border-danger' : 'border-line-strong' }}">
                         </div>
                         <x-ui.button variant="secondary" wire:click="applyToAll" wire:loading.attr="disabled">{{ __('Apply to all') }}</x-ui.button>
                     </div>
@@ -152,7 +152,7 @@
                                         <td class="px-3 py-1.5">
                                             <input type="text" wire:model="matrix.{{ $index }}" inputmode="decimal" placeholder="0.00"
                                                    aria-label="{{ __('Fee for :state (RM)', ['state' => $stateName]) }}"
-                                                   class="block min-h-9 w-full rounded-lg border bg-surface px-2.5 py-1.5 text-right font-mono text-[13px] tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has("matrix.$index") ? 'border-danger' : 'border-line-strong' }}">
+                                                   class="block min-h-9 w-full rounded-[var(--radius-control)] border bg-surface px-2.5 py-1.5 text-right font-mono text-[13px] tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has("matrix.$index") ? 'border-danger' : 'border-line-strong' }}">
                                             @error("matrix.$index")
                                                 <p class="mt-1 text-[13px] text-danger">{{ $message }}</p>
                                             @enderror
@@ -170,7 +170,7 @@
                 <div class="relative">
                     <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-sm text-ink-faint">RM</span>
                     <input type="text" id="freeOver" wire:model="freeOver" inputmode="decimal" placeholder="40.00"
-                           class="block min-h-11 w-full rounded-lg border bg-surface py-2.5 pl-11 pr-3.5 text-right font-mono text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('freeOver') ? 'border-danger' : 'border-line-strong' }}">
+                           class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface py-2.5 pl-11 pr-3.5 text-right font-mono text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('freeOver') ? 'border-danger' : 'border-line-strong' }}">
                 </div>
                 @error('freeOver')
                     <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
@@ -187,14 +187,14 @@
 
     {{-- ===== Bank details ===== --}}
     <x-ui.card class="p-4 lg:p-6">
-        <h2 class="text-sm font-semibold">{{ __('Bank details') }}</h2>
+        <h2 class="text-sm font-medium">{{ __('Bank details') }}</h2>
         <p class="mt-1 text-[13px] text-ink-soft">{{ __('Used for payouts. Each payout snapshots these details at request time.') }}</p>
 
         <form wire:submit="saveBank" class="mt-4 space-y-4">
             <div>
                 <label for="bankName" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Bank') }}</label>
                 <select id="bankName" wire:model="bankName"
-                        class="block min-h-11 w-full rounded-lg border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('bankName') ? 'border-danger' : 'border-line-strong' }}">
+                        class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('bankName') ? 'border-danger' : 'border-line-strong' }}">
                     <option value="">{{ __('Select a bank') }}</option>
                     @foreach ($banks as $bank)
                         <option value="{{ $bank }}">{{ $bank }}</option>

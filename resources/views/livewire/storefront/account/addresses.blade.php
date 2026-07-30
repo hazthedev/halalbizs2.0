@@ -111,7 +111,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div class="min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
-                            <p class="text-sm font-semibold text-ink">{{ $address->recipient_name }}</p>
+                            <p class="text-sm font-medium text-ink">{{ $address->recipient_name }}</p>
                             <span class="text-[13px] text-ink-soft tnum">{{ $address->phone }}</span>
                             @if ($address->label)
                                 <x-ui.badge variant="neutral">{{ $address->label }}</x-ui.badge>

@@ -1,54 +1,52 @@
-{{-- ===== How buying works — vertical step rail =====
-     Was a 3-column row, which made it the third consecutive 3-across
-     section and also read worst on mobile (three stacked columns with no
-     sense of sequence). A vertical rail says "these happen in order" in a
-     way a row never does, and it collapses to mobile unchanged.
+{{-- The dark band. This is the ONLY inverted section on the page and the only
+     place white text lives, which is exactly how the reference uses it. Cards
+     inside sit on the lighter dark-band surface with their own edge colour, so
+     the contrast comes from surface shift rather than from a shadow.
 
-     `#how-path` keeps its id and `.how-path` class: landing.js scrubs its
-     stroke-dasharray to scroll progress, so the line now draws DOWNWARD
-     through the steps as you read them. The path renders fully drawn with
-     no JS, and reduced-motion leaves it that way.
+     ⚠ Steps 01-03 describe what the app does TODAY. Step 04 describes the
+     expiry watch, which is phase 2 and is labelled as coming rather than
+     claimed as live -- the page must not promise a check that does not run. --}}
+<section class="bg-emerald-night">
+    <div class="mx-auto grid max-w-[1400px] gap-12 px-4 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:px-12">
 
-     Brass numerals mark sequence, not action, so they stay brass. --}}
-<section data-land="how" class="mx-auto max-w-3xl px-4 py-20 sm:py-24 lg:py-28">
-    <x-ui.section-heading
-        as="h2"
-        :title="__('How buying works')"
-        :subtitle="__('From browsing to your doorstep, in three steps.')"
-    />
+        <div>
+            <p class="font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-brass">{{ __('How verification works') }}</p>
+            <h2 class="mt-5 max-w-[18ch] font-display text-[clamp(1.75rem,3vw,2rem)] font-light leading-[1.15] tracking-[var(--tracking-head)] text-white">
+                {{ __('Four checks between a seller and your basket.') }}
+            </h2>
+            <p class="mt-5 max-w-[46ch] text-[length:var(--text-base)] leading-relaxed text-on-dark-soft">
+                {{ __('Sellers upload the certificate, not a claim. It is tied to the specific products it names, and it travels with the listing all the way to your order.') }}
+            </p>
+            <a href="{{ route('seller.apply') }}" wire:navigate
+               class="mt-8 inline-block rounded-[var(--radius-pill)] border border-on-dark px-6 py-3 text-[length:var(--text-base)] text-on-dark transition-colors duration-(--dur-micro) hover:bg-on-dark hover:text-emerald-night">
+                {{ __('Sell on HalalBizs') }}
+            </a>
+        </div>
 
-    <ol class="relative mt-10 sm:mt-12">
-        {{-- The rail. Sits behind the numerals (z-0 vs z-10) and stops short
-             of the last numeral so the line never dangles past step 3. --}}
-        <svg viewBox="0 0 2 100" preserveAspectRatio="none" aria-hidden="true"
-             class="pointer-events-none absolute left-[17px] top-4 -z-0 h-[calc(100%-5rem)] w-0.5 sm:left-[19px]">
-            <path id="how-path" class="how-path" d="M1,0 L1,100"
-                  stroke="var(--color-brass)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.45" />
-        </svg>
-
-        @foreach ([
-            [
-                'title' => __('Browse the souk'),
-                'body' => __('Explore halal-certified products across fashion, food, beauty, home and more, all from one marketplace.'),
-            ],
-            [
-                'title' => __('Pay, protected'),
-                'body' => __('Pay online or choose cash on delivery. Every order is protected from checkout through to delivery.'),
-            ],
-            [
-                'title' => __('Delivered to your door'),
-                'body' => __('Follow your parcel in real time, then rate the seller so other buyers know what to expect.'),
-            ],
-        ] as $step)
-            <li data-motion="item" class="relative flex gap-5 pb-10 last:pb-0 sm:gap-6 sm:pb-12">
-                <span class="relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full bg-brass font-display text-base font-bold text-white shadow-soft sm:size-10">
-                    {{ $loop->iteration }}
-                </span>
-                <div class="pt-1">
-                    <h3 class="font-display text-lg font-semibold text-ink sm:text-xl">{{ $step['title'] }}</h3>
-                    <p class="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft sm:text-base">{{ $step['body'] }}</p>
-                </div>
-            </li>
-        @endforeach
-    </ol>
+        <ol class="space-y-3">
+            @foreach ([
+                ['n' => '01', 'title' => __('Document intake'),
+                 'body' => __('The certificate, its issuing body and its expiry date are captured when the product is listed.'), 'soon' => false],
+                ['n' => '02', 'title' => __('Body recognised'),
+                 'body' => __('We record which authority issued it — JAKIM, MUIS, BPJPH or ESMA — and show that on the listing.'), 'soon' => false],
+                ['n' => '03', 'title' => __('Scope binding'),
+                 'body' => __('The certificate is attached to the SKU it names. A shop-wide badge never covers a product the annex leaves out.'), 'soon' => false],
+                ['n' => '04', 'title' => __('Expiry watch'),
+                 'body' => __('Automatic de-listing the moment a certificate lapses, with a renewal reminder to the seller before it does.'), 'soon' => true],
+            ] as $step)
+                <li class="flex gap-4 rounded-[var(--radius-panel)] border border-emerald-edge bg-emerald-card p-5">
+                    <span class="font-mono text-[length:var(--text-base)] font-medium text-brass" aria-hidden="true">{{ $step['n'] }}</span>
+                    <div>
+                        <h3 class="flex flex-wrap items-center gap-2 text-[length:var(--text-md)] font-medium text-white">
+                            {{ $step['title'] }}
+                            @if ($step['soon'])
+                                <span class="rounded-[var(--radius-pill)] border border-brass/50 px-2 py-0.5 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label)] text-brass">{{ __('In build') }}</span>
+                            @endif
+                        </h3>
+                        <p class="mt-1.5 max-w-[52ch] text-[length:var(--text-sm)] leading-relaxed text-on-dark-soft">{{ $step['body'] }}</p>
+                    </div>
+                </li>
+            @endforeach
+        </ol>
+    </div>
 </section>

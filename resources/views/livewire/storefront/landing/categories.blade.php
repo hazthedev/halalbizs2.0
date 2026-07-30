@@ -1,83 +1,42 @@
-{{-- ===== Category tiles — auto-fit grid, editorial tiles =====
-     Was a centred flex cluster of small square cards, which left 3 live
-     categories adrift in a wide empty band and read as unfinished.
+{{-- Shop by department. Serif heading left, mono count right, then tiles whose
+     image sits on the cream bed exactly as the product cards do. Counts are
+     live, so a department with nothing in it says so instead of lying. --}}
+<section class="bg-paper">
+    <div class="mx-auto max-w-[1400px] px-4 py-16 lg:px-12">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+            <h2 class="font-display text-[length:var(--text-h2)] text-ink-head">{{ __('Shop by department') }}</h2>
+            <span class="font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-ink-faint">
+                {{ trans_choice('{1} :count department|[2,*] :count departments', $categories->count(), ['count' => $categories->count()]) }}
+            </span>
+        </div>
 
-     `auto-fit` + `minmax` is the fix for the real constraint: the count is
-     DATA, not design. 3 categories fill the row as 3 wide tiles, 8 wrap to
-     4+4, and no arrangement can leave an empty cell — the failure mode a
-     fixed 4-col grid has with 3 items.
-
-     Visual variation comes from the house zellij field on every third tile
-     (the design hub allows a pattern in place of a photo). There is no real
-     product photography in the app yet — every seeded image is a flat colour
-     block with two letters on it — so photos here would look worse than
-     ornament. Flagged in the redesign report as the one thing this page
-     still wants.
-
-     NO data-plx: alternating per-card drift read as broken row alignment
-     with only 3 cards (Haze 2026-07-24). Tiles sit flush. --}}
-<section data-land="categories" class="border-y border-line bg-surface/60 px-4 py-20 sm:py-24 lg:py-28">
-    <div class="mx-auto max-w-7xl">
-        <x-ui.section-heading
-            as="h2"
-            :title="__('Shop by category')"
-            :subtitle="__('A snapshot of what Malaysian halal sellers are stocking right now.')"
-            :href="$categories->isNotEmpty() ? route('search') : null"
-            :link-label="__('Browse all')"
-        />
-
-        @php
-            // One shape for both branches: real categories link, the pre-seed
-            // fallback does not. Keeps the two paths from drifting apart.
-            $tiles = $categories->isNotEmpty()
-                ? $categories->map(fn ($category) => [
-                    'name' => $category->getTranslation('name', app()->getLocale()),
-                    'href' => route('category.show', $category->slug),
-                ])
-                : collect([
-                    __('Groceries & Pantry'), __('Fashion & Apparel'), __('Beauty & Personal Care'), __('Home & Living'),
-                    __('Health & Wellness'), __('Baby & Kids'), __('Books & Stationery'), __('Electronics & Gadgets'),
-                ])->map(fn ($name) => ['name' => $name, 'href' => null]);
-        @endphp
-
-        <div class="mt-10 grid gap-4 sm:gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))]">
-            @foreach ($tiles as $tile)
+        <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            @foreach ($categories as $category)
                 @php
-                    $patterned = $loop->index % 3 === 2;
-                    // Content sits at the BOTTOM with an oversized watermark
-                    // mark bleeding off the top-right corner. First pass put a
-                    // small mark at the top and the label at the bottom with
-                    // `justify-between`, and the gap between them just read as
-                    // an empty box at both 1440 and 390 (screenshots, not
-                    // markup, said so).
-                    $tileClass = 'group relative flex min-h-36 flex-col justify-end overflow-hidden rounded-[var(--radius-card)] border p-5 shadow-soft sm:min-h-40 '
-                        .($patterned
-                            ? 'surface-zellij border-brass/25 bg-brass-tint/40'
-                            : 'border-line bg-surface');
+                    $sample = \App\Models\Product::live()
+                        ->whereIn('category_id', \App\Models\Category::where('parent_id', $category->id)->pluck('id'))
+                        ->has('media')
+                        ->inRandomOrder()
+                        ->first();
+                    $count = \App\Models\Product::live()
+                        ->whereIn('category_id', \App\Models\Category::where('parent_id', $category->id)->pluck('id'))
+                        ->count();
                 @endphp
-
-                @php
-                    $tag = $tile['href'] ? 'a' : 'div';
-                    $interactive = (bool) $tile['href'];
-                @endphp
-
-                <{{ $tag }}
-                    @if ($interactive) href="{{ $tile['href'] }}" wire:navigate @endif
-                    data-motion="item"
-                    class="{{ $tileClass }}{{ $interactive ? ' spot-card hb-lift' : '' }}">
-
-                    {{-- Oversized mark, cropped by the tile. Ornament, so it is
-                         aria-hidden and never the thing being read. --}}
-                    <x-ui.star-mark :size="96"
-                        class="pointer-events-none absolute -right-6 -top-6 text-brass/15 transition-transform duration-[var(--dur-standard)] ease-[var(--ease-out-soft)] {{ $interactive ? 'group-hover:scale-110' : '' }}" />
-
-                    <span class="relative flex items-center gap-2.5">
-                        <x-ui.star-mark :size="18" class="shrink-0 text-brass" />
-                        <span class="font-display text-lg font-semibold leading-snug text-ink {{ $interactive ? 'transition-colors group-hover:text-emerald' : '' }}">
-                            {{ $tile['name'] }}
-                        </span>
-                    </span>
-                </{{ $tag }}>
+                <a href="{{ route('category.show', $category->slug) }}" wire:navigate
+                   class="group rounded-[var(--radius-card)] border border-line bg-surface transition-colors duration-(--dur-micro) hover:border-line-strong">
+                    <div class="aspect-square overflow-hidden rounded-t-[var(--radius-card)] bg-cream">
+                        @if ($sample)
+                            <img src="{{ $sample->getFirstMediaUrl('images', 'thumb') }}" alt=""
+                                 class="size-full object-contain p-4" loading="lazy">
+                        @endif
+                    </div>
+                    <div class="p-4">
+                        <p class="text-[length:var(--text-md)] text-ink-head">{{ $category->getTranslation('name', app()->getLocale()) }}</p>
+                        <p class="mt-1 font-mono text-[length:var(--text-tiny)] text-ink-faint tnum">
+                            {{ trans_choice('{0} No listings yet|{1} :count listing|[2,*] :count listings', $count, ['count' => number_format($count)]) }}
+                        </p>
+                    </div>
+                </a>
             @endforeach
         </div>
     </div>

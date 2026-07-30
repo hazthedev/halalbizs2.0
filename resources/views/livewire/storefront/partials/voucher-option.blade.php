@@ -8,7 +8,7 @@
             {{ $applied ? 'border-emerald bg-emerald-tint' : ($option->minSpendMet ? 'cursor-pointer border-line-strong hover:border-ink' : 'border-line opacity-60') }}">
     <span class="min-w-0">
         <span class="flex flex-wrap items-center gap-1.5">
-            <span class="font-mono text-sm font-semibold">{{ $option->voucher->code }}</span>
+            <span class="font-mono text-sm font-medium">{{ $option->voucher->code }}</span>
             @if ($option->storeName !== null)
                 <span class="truncate text-[12px] text-ink-soft">· {{ $option->storeName }}</span>
             @endif
@@ -30,7 +30,7 @@
             </span>
         @endif
     </span>
-    <span class="shrink-0 text-sm font-bold tnum {{ $option->minSpendMet ? 'text-emerald' : 'text-ink-faint' }}">
+    <span class="shrink-0 text-sm font-medium tnum {{ $option->minSpendMet ? 'text-emerald' : 'text-ink-faint' }}">
         @if ($option->freeShipping)
             {{ __('Free shipping') }}
         @elseif ($option->minSpendMet)

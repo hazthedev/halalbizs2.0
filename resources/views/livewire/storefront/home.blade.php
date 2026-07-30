@@ -1,13 +1,13 @@
 <div class="pb-12 sm:pb-16">
     {{-- ===== Occasion hero (ThemeSettings + ThemeAsset 'hero') ===== --}}
     @if ($heroUrl)
-        <section class="relative h-[280px] w-full overflow-hidden bg-ink" aria-label="{{ $occasion !== '' ? $occasion : __('Seasonal highlight') }}">
+        <section class="relative h-[280px] w-full overflow-hidden bg-emerald-night" aria-label="{{ $occasion !== '' ? $occasion : __('Seasonal highlight') }}">
             <img src="{{ $heroUrl }}" alt="{{ $occasion !== '' ? $occasion : __('Seasonal highlight') }}" class="absolute inset-0 size-full object-cover">
             <div class="surface-zellij absolute inset-0 opacity-40"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/35 to-ink/10"></div>
             @if ($occasion !== '')
                 <div class="relative mx-auto flex h-full max-w-7xl items-end px-4 pb-8">
-                    <h1 class="reveal flex items-center gap-3 font-display text-3xl font-bold text-paper sm:text-4xl">
+                    <h1 class="reveal flex items-center gap-3 font-display text-3xl font-medium text-on-dark sm:text-4xl">
                         <x-ui.star-mark :size="28" class="text-brass" />
                         {{ $occasion }}
                     </h1>
@@ -117,11 +117,11 @@
                                x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'"
                                style="animation-delay: {{ min($loop->index * 40, 320) }}ms"
                                class="group motion-reveal flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-3 shadow-soft hb-lift hover:border-brass/40">
-                                <span class="block aspect-square w-full overflow-hidden rounded-lg bg-paper">
+                                <span class="block aspect-square w-full overflow-hidden rounded-[var(--radius-control)] bg-paper">
                                     @if ($categoryImage = $category->getFirstMediaUrl('image', 'thumb'))
                                         <img src="{{ $categoryImage }}" alt="{{ $categoryName }}"
                                              x-data="{ ld: false }" x-init="ld = $el.complete" x-on:load="ld = true" x-bind:class="ld && 'loaded'"
-                                             class="img-motion [--img-zoom-dur:450ms] size-full object-cover group-hover:scale-[1.05]" loading="lazy">
+                                             class="img-motion [--img-zoom-dur:450ms] size-full object-contain group-hover:scale-[1.05]" loading="lazy">
                                     @endif
                                 </span>
                                 <span class="line-clamp-2 text-center text-[13px] font-medium leading-snug text-ink transition-colors duration-(--dur-micro) group-hover:text-emerald">{{ $categoryName }}</span>

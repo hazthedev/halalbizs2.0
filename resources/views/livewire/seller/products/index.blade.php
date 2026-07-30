@@ -21,12 +21,12 @@
                     wire:model.live.debounce.300ms="search"
                     placeholder="{{ __('Search name or SKU') }}"
                     aria-label="{{ __('Search name or SKU') }}"
-                    class="block min-h-11 w-full rounded-lg border border-line-strong bg-surface py-2 pl-9 pr-3 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+                    class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface py-2 pl-9 pr-3 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
                 >
             </div>
 
             <select wire:model.live="status" aria-label="{{ __('Filter by status') }}"
-                    class="min-h-11 rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                 <option value="">{{ __('All statuses') }}</option>
                 @foreach ($statuses as $statusCase)
                     <option value="{{ $statusCase->value }}">{{ $statusCase->label() }}</option>
@@ -34,14 +34,14 @@
             </select>
 
             <select wire:model.live="category" aria-label="{{ __('Filter by category') }}"
-                    class="min-h-11 max-w-56 rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    class="min-h-11 max-w-56 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                 <option value="">{{ __('All categories') }}</option>
                 @foreach ($categoryOptions as $id => $label)
                     <option value="{{ $id }}">{{ $label }}</option>
                 @endforeach
             </select>
 
-            <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-line-strong bg-surface px-3 py-2 text-[13px] font-medium text-ink">
+            <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] font-medium text-ink">
                 <input type="checkbox" wire:model.live="lowStock" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Low stock') }}
             </label>
@@ -53,12 +53,12 @@
         <div class="flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-2 shadow-soft">
             <span class="text-[13px] font-medium text-ink">{{ trans_choice('{1}:count selected|[2,*]:count selected', count($selected), ['count' => count($selected)]) }}</span>
             <button type="button" wire:click="bulkDelist"
-                    class="inline-flex min-h-11 items-center rounded-lg border border-ink px-3 text-[13px] font-semibold text-ink hover:bg-paper">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper">
                 {{ __('Delist selected') }}
             </button>
             <button type="button" wire:click="bulkDelete"
                     wire:confirm="{{ __('Delete the selected drafts? Only drafts are deleted — this cannot be undone.') }}"
-                    class="inline-flex min-h-11 items-center rounded-lg border border-danger px-3 text-[13px] font-semibold text-danger hover:bg-danger-tint">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint">
                 {{ __('Delete drafts') }}
             </button>
         </div>
@@ -117,9 +117,9 @@
                             <td class="px-3 py-2">
                                 <a href="{{ route('seller.products.edit', $product) }}" wire:navigate class="flex items-center gap-3">
                                     @if ($url = $product->getFirstMediaUrl('images', 'thumb'))
-                                        <img src="{{ $url }}" alt="{{ $product->getTranslation('name', 'en') }}" class="size-10 shrink-0 rounded-lg border border-line bg-paper object-cover">
+                                        <img src="{{ $url }}" alt="{{ $product->getTranslation('name', 'en') }}" class="size-10 shrink-0 rounded-[var(--radius-control)] border border-line bg-paper object-contain">
                                     @else
-                                        <span class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-line bg-paper text-ink-faint">
+                                        <span class="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-line bg-paper text-ink-faint">
                                             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Z"/></svg>
                                         </span>
                                     @endif
@@ -127,27 +127,27 @@
                                 </a>
                             </td>
                             <td class="px-3 py-2 text-right tabular-nums text-ink-soft">{{ $product->variants_count }}</td>
-                            <td class="px-3 py-2 text-right font-semibold tabular-nums whitespace-nowrap">
+                            <td class="px-3 py-2 text-right font-medium tabular-nums whitespace-nowrap">
                                 @money($minSen)@if ($maxSen !== $minSen) – @money($maxSen)@endif
                             </td>
-                            <td class="px-3 py-2 text-right tabular-nums {{ $stockTotal < $lowStockThreshold ? 'font-semibold text-warn' : '' }}">{{ $stockTotal }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums {{ $stockTotal < $lowStockThreshold ? 'font-medium text-warn' : '' }}">{{ $stockTotal }}</td>
                             <td class="px-3 py-2 text-right tabular-nums text-ink-soft">{{ $product->sold_count }}</td>
                             <td class="px-3 py-2"><x-ui.badge :variant="$pill">{{ $product->status->label() }}</x-ui.badge></td>
                             <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">{{ $product->updated_at->diffForHumans() }}</td>
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
                                     <a href="{{ route('seller.products.edit', $product) }}" wire:navigate
-                                       class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</a>
+                                       class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</a>
                                     <button type="button" wire:click="duplicate({{ $product->id }})" wire:loading.attr="disabled"
-                                            class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Duplicate') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Duplicate') }}</button>
                                     @if ($product->status === \App\Enums\ProductStatus::Live)
                                         <a href="{{ route('seller.boosts', ['product' => $product->id]) }}" wire:navigate
-                                           class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Boost') }}</a>
+                                           class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Boost') }}</a>
                                         <button type="button" wire:click="delist({{ $product->id }})"
-                                                class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delist') }}</button>
+                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delist') }}</button>
                                     @elseif ($product->status === \App\Enums\ProductStatus::Delisted)
                                         <button type="button" wire:click="relist({{ $product->id }})"
-                                                class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Relist') }}</button>
+                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Relist') }}</button>
                                     @endif
                                 </div>
                             </td>

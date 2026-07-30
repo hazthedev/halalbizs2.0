@@ -78,6 +78,38 @@ class Listing extends Component
     #[Url(except: false)]
     public bool $cod = false;
 
+    /**
+     * Certifying bodies to filter by (JAKIM / MUIS / BPJPH / ESMA). The
+     * catalogue stores the authority in the certificate number's prefix
+     * (MY-JKM-…, SG-MUIS-…), so this filters on that prefix rather than on a
+     * separate column. The reference design puts this filter front and centre —
+     * it is the difference between a grocery search and a halal one.
+     *
+     * @var array<int, string>
+     */
+    #[Url(as: 'cert', except: [])]
+    public array $certifiers = [];
+
+    /** Certificate-number prefix per authority, as written by the seeder. */
+    public const CERTIFIER_PREFIX = [
+        'JAKIM' => 'MY-JKM',
+        'MUIS' => 'SG-MUIS',
+        'BPJPH' => 'ID-BPJPH',
+        'ESMA' => 'AE-ESMA',
+    ];
+
+    /**
+     * Assurance facets, from the reference's sidebar. Each maps to a real
+     * column on the certificate record — a filter that cannot be answered from
+     * data would be theatre.
+     *
+     * @var array<int, string>
+     */
+    #[Url(as: 'assure', except: [])]
+    public array $assurances = [];
+
+    public const ASSURANCES = ['valid12', 'dedicated', 'export'];
+
     /** Selected attribute-value ids for faceting (M1.3). */
     #[Url(as: 'attrs', except: [])]
     public array $attrs = [];
@@ -105,7 +137,7 @@ class Listing extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['q', 'sort', 'childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'attrs', 'mode'], true)) {
+        if (in_array($property, ['q', 'sort', 'childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'certifiers', 'assurances', 'attrs', 'mode'], true)) {
             $this->perPage = self::PER_PAGE;
         }
 
@@ -126,7 +158,7 @@ class Listing extends Component
 
     public function clearFilters(): void
     {
-        $this->reset('childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'attrs');
+        $this->reset('childCategory', 'priceMin', 'priceMax', 'rating', 'state', 'cod', 'certifiers', 'assurances', 'attrs');
         $this->perPage = self::PER_PAGE;
     }
 
@@ -142,6 +174,37 @@ class Listing extends Component
         $this->perPage = self::PER_PAGE;
     }
 
+    /** Toggle one certifying body on or off. */
+    public function toggleCertifier(string $body): void
+    {
+        if (! array_key_exists($body, self::CERTIFIER_PREFIX)) {
+            return;
+        }
+
+        $this->certifiers = in_array($body, $this->certifiers, true)
+            ? array_values(array_diff($this->certifiers, [$body]))
+            : [...$this->certifiers, $body];
+
+        // No resetPage() here: this component pages with a load-more counter,
+        // not Livewire's paginator. Every other filter resets that window in
+        // updated(); a method-driven filter has to do it itself.
+        $this->perPage = self::PER_PAGE;
+    }
+
+    /** Toggle one assurance facet. */
+    public function toggleAssurance(string $key): void
+    {
+        if (! in_array($key, self::ASSURANCES, true)) {
+            return;
+        }
+
+        $this->assurances = in_array($key, $this->assurances, true)
+            ? array_values(array_diff($this->assurances, [$key]))
+            : [...$this->assurances, $key];
+
+        $this->perPage = self::PER_PAGE;
+    }
+
     public function removeFilter(string $filter): void
     {
         match ($filter) {
@@ -150,6 +213,8 @@ class Listing extends Component
             'rating' => $this->reset('rating'),
             'state' => $this->reset('state'),
             'cod' => $this->reset('cod'),
+            'certifiers' => $this->reset('certifiers'),
+            'assurances' => $this->reset('assurances'),
             default => null,
         };
 
@@ -290,6 +355,33 @@ class Listing extends Component
 
         if ($this->cod) {
             $query->where('cod_enabled', true);
+        }
+
+        if ($this->assurances !== []) {
+            $query->whereHas('halalCertificate', function (Builder $cert): void {
+                foreach ($this->assurances as $assurance) {
+                    match ($assurance) {
+                        // "valid 12 months+" is about REMAINING life, not the
+                        // original term: a buyer wants cover through the year
+                        // ahead, not a certificate that was long once.
+                        'valid12' => $cert->whereDate('valid_to', '>=', now()->addYear()),
+                        'dedicated' => $cert->where('dedicated_facility', true),
+                        'export' => $cert->where('export_paperwork', true),
+                        default => null,
+                    };
+                }
+            });
+        }
+
+        if ($this->certifiers !== []) {
+            $prefixes = array_values(array_intersect_key(self::CERTIFIER_PREFIX, array_flip($this->certifiers)));
+
+            // OR within the group, like every other multi-select facet here.
+            $query->where(function (Builder $q) use ($prefixes): void {
+                foreach ($prefixes as $prefix) {
+                    $q->orWhere('halal_cert_number', 'like', $prefix.'-%');
+                }
+            });
         }
 
         if ($applyAttrs && $this->attrs !== []) {

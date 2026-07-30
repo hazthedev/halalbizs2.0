@@ -1,5 +1,12 @@
 <div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12">
-    <x-ui.section-heading as="h1" :title="__('Cart')" />
+    <x-ui.section-heading as="h1" :title="__('Your basket')" />
+    @if ($selectedCount > 0)
+        <p class="-mt-4 mb-6 text-[length:var(--text-base)] text-ink-soft">
+            {{ trans_choice('{1} :count item|[2,*] :count items', $selectedCount, ['count' => $selectedCount]) }}
+            <span aria-hidden="true" class="text-ink-faint">·</span>
+            {{ __('every line carries the certificate it was listed under') }}
+        </p>
+    @endif
 
     @if ($groups->isEmpty())
         {{-- Empty state (design §6: one display line + one sentence + one emerald action) --}}
@@ -33,7 +40,7 @@
                                 </label>
                             @endauth
                             <a href="{{ $group->store->storefrontUrl() }}" wire:navigate
-                               class="flex min-h-11 items-center truncate text-sm font-semibold hover:underline">
+                               class="flex min-h-11 items-center truncate text-sm font-medium hover:underline">
                                 {{ $group->store->name }}
                             </a>
                             @if ($group->store->state)
@@ -60,12 +67,12 @@
                                     <a href="{{ route('product.show', $line->variant->product->slug) }}" wire:navigate class="shrink-0 self-start">
                                         <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
                                              alt="{{ $line->variant->product->getTranslation('name', app()->getLocale()) }} {{ $line->variant->options_label }}"
-                                             class="size-20 rounded-[var(--radius-card)] border border-line bg-paper object-cover {{ $line->excluded ? 'opacity-40' : '' }}">
+                                             class="size-20 rounded-[var(--radius-card)] border border-line bg-paper object-contain {{ $line->excluded ? 'opacity-40' : '' }}">
                                     </a>
 
                                     <div class="ml-1 min-w-0 flex-1">
                                         <a href="{{ route('product.show', $line->variant->product->slug) }}" wire:navigate
-                                           class="line-clamp-2 text-sm font-medium hover:underline {{ $line->excluded ? 'text-ink-faint' : '' }}">
+                                           class="line-clamp-2 font-display text-[length:var(--text-name)] leading-snug hover:underline {{ $line->excluded ? 'text-ink-faint' : 'text-ink-head' }}">
                                             {{ $line->variant->product->getTranslation('name', app()->getLocale()) }}
                                         </a>
 
@@ -73,7 +80,14 @@
                                             <p class="mt-0.5 truncate text-xs text-ink-soft">{{ $line->variant->options_label }}</p>
                                         @endif
 
-                                        <p class="mt-0.5 text-[13px] text-ink-soft tnum">@price($line->variant->effectivePriceSen())</p>
+                                        <p class="mt-1 font-mono text-[length:var(--text-tiny)] text-ink-soft tnum">@price($line->variant->effectivePriceSen())</p>
+
+                                        @if ($line->variant->product->halal_cert_number)
+                                            <p class="mt-1.5 flex flex-wrap items-center gap-1.5 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label)] text-emerald">
+                                                <svg class="size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                                {{ $line->variant->product->halal_cert_number }}
+                                            </p>
+                                        @endif
 
                                         @if ($line->unavailable)
                                             <x-ui.badge variant="danger" class="mt-1.5">{{ __('No longer available') }}</x-ui.badge>
@@ -100,7 +114,7 @@
                                                             aria-label="{{ __('Increase quantity') }}">+</button>
                                                 </div>
 
-                                                <span class="text-sm font-bold tnum">@price($line->lineTotalSen)</span>
+                                                <span class="font-mono text-[length:var(--text-price)] font-medium text-ink-head tnum">@price($line->lineTotalSen)</span>
                                             </div>
                                         @endunless
                                     </div>
@@ -118,7 +132,7 @@
                         {{-- Per-seller subtotal (selected lines) --}}
                         <div class="flex items-center justify-between border-t border-line px-4 py-3">
                             <span class="text-[13px] text-ink-soft">{{ __('Subtotal') }}</span>
-                            <span class="text-sm font-bold tnum">@price($group->subtotalSen)</span>
+                            <span class="font-mono text-[length:var(--text-price)] font-medium text-ink-head tnum">@price($group->subtotalSen)</span>
                         </div>
                     </x-ui.card>
                 @endforeach
@@ -132,13 +146,13 @@
 
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-ink-soft">{{ __('Items total') }}</span>
-                    <span class="font-bold tnum">@price($itemsTotalSen)</span>
+                    <span class="font-mono font-medium text-ink-head tnum">@price($itemsTotalSen)</span>
                 </div>
                 <p class="mt-1 text-[13px] text-ink-soft">{{ __('Shipping calculated at checkout') }}</p>
 
                 <div class="mt-3 flex items-baseline justify-between border-t border-line pt-3">
-                    <span class="text-sm font-semibold">{{ __('Total') }}</span>
-                    <span class="text-xl font-bold tnum">@price($itemsTotalSen)</span>
+                    <span class="text-sm font-medium">{{ __('Total') }}</span>
+                    <span class="font-mono text-[length:var(--text-h3)] font-medium text-ink-head tnum">@price($itemsTotalSen)</span>
                 </div>
 
                 <div class="mt-4">

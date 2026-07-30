@@ -140,7 +140,7 @@ class CartPage extends Component
             'allSelected' => $selectable->isNotEmpty() && $selectable->every(fn ($line) => $line->selected),
             'selectedCount' => $selected->count(),
             'itemsTotalSen' => (int) $selected->sum(fn ($line) => $line->lineTotalSen),
-        ])->title(__('Cart'));
+        ])->title(__('Your basket'));
     }
 
     /**

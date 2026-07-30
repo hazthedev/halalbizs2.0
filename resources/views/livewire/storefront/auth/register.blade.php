@@ -87,7 +87,7 @@
 
         <p class="mt-6 border-t border-line pt-5 text-center text-sm text-ink-soft">
             {{ __('Already have an account?') }}
-            <a href="{{ $ctx === \App\Enums\AuthContext::Seller ? route('seller.login') : route('login') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Log in') }}</a>
+            <a href="{{ $ctx === \App\Enums\AuthContext::Seller ? route('seller.login') : route('login') }}" wire:navigate class="font-medium text-emerald hover:text-emerald-deep">{{ __('Log in') }}</a>
         </p>
     </x-ui.card>
 </div>

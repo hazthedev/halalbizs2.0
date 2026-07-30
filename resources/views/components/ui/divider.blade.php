@@ -9,7 +9,7 @@ $lineClass = match ($tone) {
 };
 $markClass = match ($tone) {
     'brass' => 'text-brass',
-    'paper' => 'text-paper/50',
+    'paper' => 'text-on-dark/50',
     default => 'text-line-strong',
 };
 @endphp

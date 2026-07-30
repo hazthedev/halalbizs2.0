@@ -11,31 +11,31 @@
     <div class="grid gap-3 sm:grid-cols-3">
         <x-ui.card class="p-4">
             <p class="text-[13px] text-ink-soft">{{ __('Price per day') }}</p>
-            <p class="mt-1 font-display text-xl font-bold tabular-nums">@money($settings->price_sen_per_day)</p>
+            <p class="mt-1 font-display text-xl font-medium tabular-nums">@money($settings->price_sen_per_day)</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] text-ink-soft">{{ __('Active boosts') }}</p>
-            <p class="mt-1 font-display text-xl font-bold tabular-nums">{{ $activeCount }} / {{ $settings->max_active_per_store }}</p>
+            <p class="mt-1 font-display text-xl font-medium tabular-nums">{{ $activeCount }} / {{ $settings->max_active_per_store }}</p>
         </x-ui.card>
         <x-ui.card class="p-4">
             <p class="text-[13px] text-ink-soft">{{ __('Available balance') }}</p>
-            <p class="mt-1 font-display text-xl font-bold tabular-nums">@money($availableSen)</p>
+            <p class="mt-1 font-display text-xl font-medium tabular-nums">@money($availableSen)</p>
         </x-ui.card>
     </div>
 
     {{-- Boost a product --}}
     <x-ui.card class="p-5">
-        <h2 class="font-display text-lg font-semibold">{{ __('Boost a product') }}</h2>
+        <h2 class="font-display text-lg font-medium">{{ __('Boost a product') }}</h2>
         <p class="mt-1 text-[13px] text-ink-soft">
             {{ __('The fee is paid up-front from your available earnings. Cancelling a boost stops the placement immediately — unused days are not refunded.') }}
         </p>
 
         @if (! $settings->enabled)
-            <div class="mt-4 rounded-lg border border-line bg-paper px-3.5 py-2.5 text-[13px] text-ink-soft">
+            <div class="mt-4 rounded-[var(--radius-control)] border border-line bg-paper px-3.5 py-2.5 text-[13px] text-ink-soft">
                 {{ __('Boosts are switched off right now — check back soon.') }}
             </div>
         @elseif ($products->isEmpty())
-            <div class="mt-4 rounded-lg border border-line bg-paper px-3.5 py-2.5 text-[13px] text-ink-soft">
+            <div class="mt-4 rounded-[var(--radius-control)] border border-line bg-paper px-3.5 py-2.5 text-[13px] text-ink-soft">
                 {{ __('You need at least one live product to start a boost.') }}
             </div>
         @else
@@ -43,7 +43,7 @@
                 <div class="min-w-56 flex-1">
                     <label for="boost-product" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Product') }}</label>
                     <select id="boost-product" wire:model.live="productId"
-                            class="block min-h-11 w-full rounded-lg border bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('productId') ? 'border-danger' : 'border-line-strong' }}">
+                            class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('productId') ? 'border-danger' : 'border-line-strong' }}">
                         <option value="">{{ __('Choose a live product') }}</option>
                         @foreach ($products as $product)
                             <option value="{{ $product->id }}">{{ $product->getTranslation('name', app()->getLocale()) }}</option>
@@ -55,13 +55,13 @@
                 <div class="w-28">
                     <label for="boost-days" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Days') }}</label>
                     <input id="boost-days" type="number" min="1" max="30" wire:model.live="days" inputmode="numeric"
-                           class="block min-h-11 w-full rounded-lg border bg-surface px-3 py-2 text-sm text-ink tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('days') ? 'border-danger' : 'border-line-strong' }}">
+                           class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-sm text-ink tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('days') ? 'border-danger' : 'border-line-strong' }}">
                     @error('days')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="pb-2.5 text-sm text-ink-soft">
                     {{ __('Cost') }}
-                    <span class="ml-1 font-bold text-ink tabular-nums">@money($costSen)</span>
+                    <span class="ml-1 font-medium text-ink tabular-nums">@money($costSen)</span>
                 </div>
 
                 <x-ui.button
@@ -110,7 +110,7 @@
                             <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">
                                 {{ $boost->starts_at->format('d M Y H:i') }} → {{ $boost->ends_at->format('d M Y H:i') }}
                             </td>
-                            <td class="px-3 py-2 text-right font-semibold tabular-nums whitespace-nowrap">@money($boost->amount_sen)</td>
+                            <td class="px-3 py-2 text-right font-medium tabular-nums whitespace-nowrap">@money($boost->amount_sen)</td>
                             <td class="px-3 py-2"><x-ui.badge :variant="$pill">{{ $boost->status->label() }}</x-ui.badge></td>
                             <td class="px-3 py-2">
                                 <div class="flex justify-end">
@@ -118,7 +118,7 @@
                                         <button type="button"
                                                 wire:click="cancel({{ $boost->id }})"
                                                 wire:confirm="{{ __('Cancel this boost? It stops appearing immediately and the remaining days are not refunded.') }}"
-                                                class="inline-flex min-h-11 items-center rounded-lg px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                             {{ __('Cancel') }}
                                         </button>
                                     @endif

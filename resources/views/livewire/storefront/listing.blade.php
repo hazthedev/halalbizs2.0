@@ -33,7 +33,7 @@
             <div class="flex items-center gap-2">
                 <button type="button" wire:click="$set('mode', '{{ $mode === 'smart' ? '' : 'smart' }}')"
                         @class([
-                            'inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-semibold transition-colors',
+                            'inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors',
                             'border-brass bg-brass/10 text-brass-deep' => $mode === 'smart',
                             'border-line-strong text-ink-soft hover:border-ink hover:text-ink' => $mode !== 'smart',
                         ])
@@ -75,7 +75,7 @@
             <button
                 type="button"
                 x-on:click="filtersOpen = true"
-                class="mb-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 text-sm font-semibold text-ink lg:hidden"
+                class="mb-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 text-sm font-medium text-ink lg:hidden"
             >
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"/></svg>
                 {{ __('Filters') }}@if (count($chips) > 0)<span class="tnum">({{ count($chips) }})</span>@endif
@@ -112,7 +112,7 @@
                             : ($isSearch ? __('Check the spelling or try a more general term.') : __('Products will appear here as soon as sellers list them.'));
                     @endphp
                     <x-ui.card class="flex flex-col items-center px-6 py-16 text-center">
-                        <p class="font-display text-[22px] font-semibold text-ink">{{ $emptyTitle }}</p>
+                        <p class="font-display text-[22px] font-medium text-ink">{{ $emptyTitle }}</p>
                         <p class="mx-auto mt-2 max-w-md text-sm text-ink-soft">{{ $emptyMessage }}</p>
                         @if (count($chips) > 0)
                             <x-ui.button variant="primary" wire:click="clearFilters" class="mt-6">{{ __('Clear filters') }}</x-ui.button>
@@ -174,7 +174,7 @@
 
     {{-- Mobile filters bottom sheet (overlay — shadow permitted) --}}
     <div x-show="filtersOpen" x-cloak class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="{{ __('Filters') }}">
-        <div x-show="filtersOpen" x-transition.opacity.duration.150ms class="absolute inset-0 bg-ink/50" x-on:click="filtersOpen = false"></div>
+        <div x-show="filtersOpen" x-transition.opacity.duration.150ms class="absolute inset-0 bg-emerald-night/50" x-on:click="filtersOpen = false"></div>
         <div
             x-show="filtersOpen"
             x-transition:enter="transition duration-150 ease-out"
@@ -185,7 +185,7 @@
             class="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-[var(--radius-card)] bg-surface shadow-pop"
         >
             <div class="flex items-center justify-between border-b border-line px-4 py-3">
-                <p class="font-display text-lg font-bold">{{ __('Filters') }}</p>
+                <p class="font-display text-lg font-medium">{{ __('Filters') }}</p>
                 <button type="button" x-on:click="filtersOpen = false" class="flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink" aria-label="{{ __('Close filters') }}">
                     <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                 </button>

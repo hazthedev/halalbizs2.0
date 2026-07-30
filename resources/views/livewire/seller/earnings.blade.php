@@ -4,14 +4,14 @@
 
     <div class="flex items-center justify-between gap-3">
         <x-ui.section-heading as="h1" :title="__('Earnings')" />
-        <button type="button" wire:click="exportCsv" class="inline-flex min-h-11 shrink-0 items-center rounded-lg border border-line-strong px-3 text-[13px] font-medium text-ink hover:border-emerald hover:text-emerald">{{ __('Export CSV') }}</button>
+        <button type="button" wire:click="exportCsv" class="inline-flex min-h-11 shrink-0 items-center rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-medium text-ink hover:border-emerald hover:text-emerald">{{ __('Export CSV') }}</button>
     </div>
 
     {{-- ===== Balance cards ===== --}}
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Available') }}</p>
-            <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums {{ $availableSen < 0 ? 'text-danger' : 'text-ink' }}">@money($availableSen)</p>
+            <p class="mt-1 font-display text-[28px] font-medium leading-tight tabular-nums {{ $availableSen < 0 ? 'text-danger' : 'text-ink' }}">@money($availableSen)</p>
             @if ($availableSen < 0)
                 {{-- Not only COD: a refund on an order you were already paid for
                      lands here too, so the copy names both causes. --}}
@@ -21,30 +21,30 @@
 
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('In escrow') }}</p>
-            <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums text-ink">@money($heldSen)</p>
+            <p class="mt-1 font-display text-[28px] font-medium leading-tight tabular-nums text-ink">@money($heldSen)</p>
             <p class="mt-1 text-[12px] text-ink-soft">{{ __('Released when buyers receive their orders.') }}</p>
         </x-ui.card>
 
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Pending payout') }}</p>
             @if ($pendingPayout !== null)
-                <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums text-ink">@money($pendingPayout->amount_sen)</p>
+                <p class="mt-1 font-display text-[28px] font-medium leading-tight tabular-nums text-ink">@money($pendingPayout->amount_sen)</p>
                 <p class="mt-1 text-[12px] text-ink-soft"><span class="font-mono">{{ $pendingPayout->payout_no }}</span> · {{ $pendingPayout->status->label() }}</p>
             @else
-                <p class="mt-1 font-display text-[28px] font-bold leading-tight text-ink-faint">—</p>
+                <p class="mt-1 font-display text-[28px] font-medium leading-tight text-ink-faint">—</p>
                 <p class="mt-1 text-[12px] text-ink-soft">{{ __('No payout in progress.') }}</p>
             @endif
         </x-ui.card>
 
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Paid out (lifetime)') }}</p>
-            <p class="mt-1 font-display text-[28px] font-bold leading-tight tabular-nums text-ink">@money($paidOutSen)</p>
+            <p class="mt-1 font-display text-[28px] font-medium leading-tight tabular-nums text-ink">@money($paidOutSen)</p>
         </x-ui.card>
     </div>
 
     {{-- ===== Request payout ===== --}}
     <x-ui.card class="p-4">
-        <h2 class="text-sm font-semibold">{{ __('Request a payout') }}</h2>
+        <h2 class="text-sm font-medium">{{ __('Request a payout') }}</h2>
 
         @if ($pendingPayout !== null)
             <p class="mt-2 text-[13px] text-ink-soft">
@@ -85,7 +85,7 @@
     {{-- ===== Ledger ===== --}}
     <x-ui.card class="overflow-x-auto">
         <div class="border-b border-line px-4 py-3">
-            <h2 class="text-sm font-semibold">{{ __('Ledger') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Ledger') }}</h2>
         </div>
 
         @if ($entries->isEmpty())
@@ -113,7 +113,7 @@
                             <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $entry->created_at->format('j M Y, g:ia') }}</td>
                             <td class="px-4 py-2.5"><x-ui.badge :variant="$chip">{{ $entry->type->label() }}</x-ui.badge></td>
                             <td class="px-4 py-2.5">{{ $entry->description }}</td>
-                            <td class="px-4 py-2.5 text-right font-mono font-semibold tabular-nums whitespace-nowrap {{ $entry->amount_sen >= 0 ? 'text-emerald' : 'text-ink' }}">{{ $entry->amount_sen >= 0 ? '+' : '' }}@money($entry->amount_sen)</td>
+                            <td class="px-4 py-2.5 text-right font-mono font-medium tabular-nums whitespace-nowrap {{ $entry->amount_sen >= 0 ? 'text-emerald' : 'text-ink' }}">{{ $entry->amount_sen >= 0 ? '+' : '' }}@money($entry->amount_sen)</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -128,7 +128,7 @@
     {{-- ===== Payout history ===== --}}
     <x-ui.card class="overflow-x-auto">
         <div class="border-b border-line px-4 py-3">
-            <h2 class="text-sm font-semibold">{{ __('Payout history') }}</h2>
+            <h2 class="text-sm font-medium">{{ __('Payout history') }}</h2>
         </div>
 
         @if ($payouts->isEmpty())
@@ -157,7 +157,7 @@
                         @endphp
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="payout-{{ $payout->id }}">
                             <td class="px-4 py-2.5 whitespace-nowrap font-mono font-medium">{{ $payout->payout_no }}</td>
-                            <td class="px-4 py-2.5 text-right font-mono font-semibold tabular-nums whitespace-nowrap">@money($payout->amount_sen)</td>
+                            <td class="px-4 py-2.5 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($payout->amount_sen)</td>
                             <td class="px-4 py-2.5"><x-ui.badge :variant="$pill">{{ $payout->status->label() }}</x-ui.badge></td>
                             <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $payout->requested_at?->format('j M Y') ?? '—' }}</td>
                             <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $payout->paid_at?->format('j M Y') ?? '—' }}</td>

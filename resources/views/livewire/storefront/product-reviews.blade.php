@@ -2,14 +2,14 @@
 <div>
     @if ($visibleReviewTotal === 0)
         <div class="py-5 text-center">
-            <p class="font-display text-lg font-semibold">{{ __('No reviews yet') }}</p>
+            <p class="font-display text-lg font-medium">{{ __('No reviews yet') }}</p>
             <p class="mt-1 text-sm text-ink-soft">{{ __('Reviews appear here after buyers complete their orders.') }}</p>
         </div>
     @else
         {{-- Summary: big average + per-star distribution bars --}}
         <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10">
             <div class="shrink-0 text-center sm:text-left">
-                <p class="font-display text-5xl font-bold text-ink tnum">{{ number_format((float) $product->rating_avg, 1) }}</p>
+                <p class="font-display text-5xl font-medium text-ink tnum">{{ number_format((float) $product->rating_avg, 1) }}</p>
                 <p class="mt-1 flex justify-center gap-0.5 text-lg leading-none sm:justify-start" aria-hidden="true">
                     @foreach (range(1, 5) as $star)
                         <span class="{{ $star <= (int) round((float) $product->rating_avg) ? 'text-warn' : 'text-line' }}">★</span>
@@ -55,7 +55,7 @@
                         <span class="text-ink-faint" aria-hidden="true">·</span>
                         <span class="text-ink-soft">{{ $review->created_at->diffForHumans() }}</span>
                         @if ($review->isVerifiedPurchase())
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-tint px-2 py-0.5 text-[11px] font-semibold text-emerald">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-tint px-2 py-0.5 text-[11px] font-medium text-emerald">
                                 <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                                 {{ __('Verified purchase') }}
                             </span>
@@ -97,7 +97,7 @@
                     </div>
                     @if ($review->seller_reply)
                         <div class="ml-4 mt-3 max-w-prose rounded-[var(--radius-control)] border-l-2 border-line-strong bg-paper px-3.5 py-2.5">
-                            <p class="text-xs font-semibold text-ink">{{ __('Seller response') }}</p>
+                            <p class="text-xs font-medium text-ink">{{ __('Seller response') }}</p>
                             <p class="mt-1 text-[13px] leading-relaxed text-ink-soft">{{ $review->seller_reply }}</p>
                         </div>
                     @endif
