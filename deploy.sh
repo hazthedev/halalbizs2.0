@@ -108,6 +108,13 @@ fi
 SEED_DEMO_CATALOGUE="$(read_env SEED_DEMO_CATALOGUE | tr '[:upper:]' '[:lower:]')"
 if [ "$SEED_DEMO_CATALOGUE" = "true" ] || [ "$SEED_DEMO_CATALOGUE" = "1" ]; then
     echo "→ seed demo catalogue (SEED_DEMO_CATALOGUE=true)"
+    # CategorySeeder FIRST: the catalogue attaches every product to a leaf
+    # category by name, so without the department tree it skips all 166 and
+    # reports "19 stores, 0 products" — which is exactly what happened on the
+    # first run. It also deactivates categories outside its tree, which is why
+    # it lives behind this flag rather than with the reference seeders above:
+    # real production must not have its own categories retired by a deploy.
+    "$PHP_BIN" artisan db:seed --class=CategorySeeder --force || echo "  ! category seed reported errors — continuing"
     "$PHP_BIN" artisan db:seed --class=HalalCatalogueSeeder --force || echo "  ! catalogue seed reported errors — continuing"
     "$PHP_BIN" artisan db:seed --class=HalalCertificateSeeder --force || echo "  ! certificate seed reported errors — continuing"
 else
