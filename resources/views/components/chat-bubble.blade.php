@@ -9,11 +9,11 @@
             <a href="{{ route('product.show', $message->product->slug) }}" wire:navigate
                data-testid="chat-context-chip"
                class="mb-1 flex min-h-11 items-center gap-2 rounded-[10px] border border-line bg-surface px-2.5 py-1.5 transition-colors duration-150 hover:border-ink">
-                <span class="block size-9 shrink-0 overflow-hidden rounded-lg border border-line bg-paper">
+                <span class="block size-9 shrink-0 overflow-hidden rounded-[var(--radius-control)] border border-line bg-paper">
                     @if ($message->product->getFirstMediaUrl('images', 'thumb'))
                         <img src="{{ $message->product->getFirstMediaUrl('images', 'thumb') }}"
                              alt="{{ $message->product->getTranslation('name', app()->getLocale()) }}"
-                             class="size-full object-cover" loading="lazy">
+                             class="size-full object-contain" loading="lazy">
                     @endif
                 </span>
                 <span class="line-clamp-2 min-w-0 text-xs font-medium text-ink">

@@ -5,7 +5,7 @@
         <div class="mx-auto flex size-16 items-center justify-center rounded-full bg-emerald-tint">
             <svg class="size-8 text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
         </div>
-        <h1 class="mt-4 font-display text-[28px] font-bold">{{ __('Order placed') }}</h1>
+        <h1 class="mt-4 font-display text-[28px] font-medium">{{ __('Order placed') }}</h1>
         <p class="mt-1 text-sm text-ink-soft">{{ __('Order number') }} <span class="font-mono text-ink">{{ $order->order_no }}</span></p>
     </div>
 
@@ -22,12 +22,12 @@
             @foreach ($order->subOrders as $subOrder)
                 <li wire:key="success-sub-{{ $subOrder->id }}" class="flex items-center justify-between gap-3 px-4 py-3.5">
                     <div class="min-w-0">
-                        <p class="truncate text-sm font-semibold">{{ $subOrder->store->name }}</p>
+                        <p class="truncate text-sm font-medium">{{ $subOrder->store->name }}</p>
                         <p class="mt-0.5 font-mono text-xs text-ink-soft">{{ $subOrder->sub_order_no }}</p>
                     </div>
                     <div class="flex shrink-0 items-center gap-3">
                         <x-ui.badge :variant="$this->statusVariant($subOrder->status)">{{ $subOrder->status->label() }}</x-ui.badge>
-                        <span class="text-sm font-bold tnum">@money($subOrder->total_sen)</span>
+                        <span class="text-sm font-medium tnum">@money($subOrder->total_sen)</span>
                     </div>
                 </li>
             @endforeach
@@ -37,12 +37,12 @@
             @if ($order->discount_total_sen > 0)
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-ink-soft">{{ __('Voucher discount') }}</span>
-                    <span class="font-bold text-emerald tnum">-@money($order->discount_total_sen)</span>
+                    <span class="font-medium text-emerald tnum">-@money($order->discount_total_sen)</span>
                 </div>
             @endif
             <div class="flex items-baseline justify-between">
-                <span class="text-sm font-semibold">{{ __('Total') }}</span>
-                <span class="text-lg font-bold tnum">@money($order->grand_total_sen)</span>
+                <span class="text-sm font-medium">{{ __('Total') }}</span>
+                <span class="text-lg font-medium tnum">@money($order->grand_total_sen)</span>
             </div>
         </div>
     </x-ui.card>

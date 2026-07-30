@@ -12,7 +12,7 @@
      element so role/name selectors stay valid. --}}
 <div {{ $attributes->merge(['class' => 'flex items-end justify-between gap-4']) }}>
     <div class="min-w-0">
-        <{{ $as }} class="flex items-center gap-2.5 font-display text-xl font-semibold leading-tight text-ink sm:text-[26px]">
+        <{{ $as }} class="flex items-center gap-2.5 font-display text-xl font-medium leading-tight text-ink sm:text-[26px]">
             @if ($mark)
                 <x-ui.star-mark :size="18" class="text-brass" />
             @endif
@@ -25,7 +25,7 @@
 
     @if ($href)
         <a href="{{ $href }}" wire:navigate
-           class="group inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-emerald transition-colors duration-[120ms] ease-out-soft hover:text-emerald-deep">
+           class="group inline-flex shrink-0 items-center gap-1 text-sm font-medium text-emerald transition-colors duration-[120ms] ease-out-soft hover:text-emerald-deep">
             {{ $linkLabel ?? __('View all') }}
             <span aria-hidden="true" class="transition-transform duration-[120ms] ease-out-soft group-hover:translate-x-0.5">&rarr;</span>
         </a>

@@ -14,7 +14,7 @@
     @endif
 
     @if ($title)
-        <h2 class="font-display text-[22px] font-semibold leading-tight text-ink">{{ $title }}</h2>
+        <h2 class="font-display text-[22px] font-medium leading-tight text-ink">{{ $title }}</h2>
     @endif
 
     @if ($message)

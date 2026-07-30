@@ -1,15 +1,15 @@
 <div>
     <x-account-shell active="coins" :title="__('My Coins')">
         {{-- Balance — brass coin ornament, neutral money figure --}}
-        <div class="surface-girih relative overflow-hidden rounded-[var(--radius-card)] border border-brass/25 bg-ink p-6 text-paper shadow-card">
+        <div class="surface-girih relative overflow-hidden rounded-[var(--radius-card)] border border-brass/25 bg-emerald-night p-6 text-on-dark shadow-card">
             <div class="relative flex items-center gap-4">
                 <span class="flex size-14 shrink-0 items-center justify-center rounded-full bg-brass/15 text-brass">
                     <x-ui.star-mark :size="30" />
                 </span>
                 <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-brass-tint/70">{{ __('Coin balance') }}</p>
-                    <p class="font-display text-4xl font-bold tnum">{{ number_format($wallet->balance) }}</p>
-                    <p class="mt-0.5 text-[13px] text-paper/64">{{ __(':n earned all-time', ['n' => number_format($wallet->lifetime_earned)]) }}</p>
+                    <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-brass-tint/70">{{ __('Coin balance') }}</p>
+                    <p class="font-display text-4xl font-medium tnum">{{ number_format($wallet->balance) }}</p>
+                    <p class="mt-0.5 text-[13px] text-on-dark/64">{{ __(':n earned all-time', ['n' => number_format($wallet->lifetime_earned)]) }}</p>
                 </div>
             </div>
 
@@ -23,7 +23,7 @@
         <div class="mt-5 grid gap-5 sm:grid-cols-2">
             {{-- Daily check-in --}}
             <div class="flex flex-col rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-soft">
-                <h2 class="font-display text-lg font-bold">{{ __('Daily check-in') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Daily check-in') }}</h2>
                 <p class="mt-1 text-[13px] text-ink-soft">{{ __('Check in every day to grow your streak and earn more coins.') }}</p>
 
                 {{-- 7-day streak dots --}}
@@ -31,7 +31,7 @@
                     @php($streakInWeek = $wallet->checkin_streak % 7 ?: ($wallet->checkin_streak > 0 ? 7 : 0))
                     @for ($day = 1; $day <= 7; $day++)
                         <span @class([
-                            'flex h-8 flex-1 items-center justify-center rounded-md text-[11px] font-bold tnum',
+                            'flex h-8 flex-1 items-center justify-center rounded-md text-[11px] font-medium tnum',
                             'bg-brass/15 text-brass' => $day <= $streakInWeek,
                             'bg-paper text-ink-faint' => $day > $streakInWeek,
                         ])>{{ $day }}</span>
@@ -41,7 +41,7 @@
                 <div class="mt-4">
                     @if ($canCheckIn)
                         <button type="button" wire:click="checkIn" wire:loading.attr="disabled" wire:target="checkIn"
-                                class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
+                                class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
                             {{ __('Check in today') }}
                         </button>
                     @else
@@ -54,7 +54,7 @@
 
             {{-- Spin-to-win --}}
             <div class="flex flex-col rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-soft">
-                <h2 class="font-display text-lg font-bold">{{ __('Spin to win') }}</h2>
+                <h2 class="font-display text-lg font-medium">{{ __('Spin to win') }}</h2>
                 <p class="mt-1 text-[13px] text-ink-soft">{{ __('One free spin a day — coins or a surprise voucher.') }}</p>
 
                 <div class="my-4 flex flex-1 items-center justify-center">
@@ -68,7 +68,7 @@
 
                 @if ($canSpin)
                     <button type="button" wire:click="spin" wire:loading.attr="disabled" wire:target="spin"
-                            class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
+                            class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
                         {{ __('Spin the wheel') }}
                     </button>
                 @else
@@ -78,14 +78,14 @@
                 @endif
 
                 @if ($reward)
-                    <p class="mt-3 rounded-[var(--radius-control)] bg-brass/10 px-3 py-2 text-center text-[13px] font-semibold text-brass-deep">{{ $reward }}</p>
+                    <p class="mt-3 rounded-[var(--radius-control)] bg-brass/10 px-3 py-2 text-center text-[13px] font-medium text-brass-deep">{{ $reward }}</p>
                 @endif
             </div>
         </div>
 
         {{-- Ledger --}}
         <div class="mt-5 rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
-            <h2 class="border-b border-line px-5 py-4 font-display text-lg font-bold">{{ __('Recent activity') }}</h2>
+            <h2 class="border-b border-line px-5 py-4 font-display text-lg font-medium">{{ __('Recent activity') }}</h2>
             @if ($history->isEmpty())
                 <p class="px-5 py-8 text-center text-sm text-ink-soft">{{ __('No coin activity yet — start with a daily check-in.') }}</p>
             @else
@@ -97,7 +97,7 @@
                                 <p class="text-xs text-ink-faint">{{ $txn->created_at?->format('d M Y') }}</p>
                             </div>
                             <span @class([
-                                'shrink-0 text-sm font-bold tnum',
+                                'shrink-0 text-sm font-medium tnum',
                                 'text-emerald' => $txn->amount > 0,
                                 'text-ink-soft' => $txn->amount < 0,
                             ])>{{ $txn->amount > 0 ? '+' : '' }}{{ number_format($txn->amount) }}</span>

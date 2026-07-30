@@ -6,7 +6,7 @@
 
 @section('actions')
     <a href="{{ url('/') }}"
-       class="mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald px-5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+       class="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white transition-colors duration-150 hover:bg-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
         {{ __('Back to home') }}
     </a>
 @endsection

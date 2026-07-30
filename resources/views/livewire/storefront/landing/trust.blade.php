@@ -1,47 +1,24 @@
-{{-- ===== Trust — asymmetric editorial split =====
-     Was three identical icon-roundel cards, which is the stock marketing row
-     and made this the first of four consecutive 3-across sections. Now a
-     5/7 split: the claim carries the left column, the proofs are a divided
-     list on the right. No card boxes — a hairline between rows groups them
-     just as well and costs no elevation this hierarchy needs.
-     Brass stays ornament (the marks); nothing here is actionable, so
-     nothing here is emerald. --}}
-<section data-land="trust" class="mx-auto max-w-7xl px-4 py-20 sm:py-24 lg:py-28">
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-16">
-
-        <div class="lg:col-span-5">
-            <h2 class="font-display text-3xl font-bold leading-[1.15] tracking-tight text-ink sm:text-4xl">
-                {{ __('Every store is reviewed before it opens.') }}
-            </h2>
-            <p class="mt-5 max-w-md text-base leading-relaxed text-ink-soft">
-                {{ __('Halal-first is the entry requirement here, not a filter you switch on afterwards.') }}
-            </p>
-        </div>
-
-        <ul class="divide-y divide-line lg:col-span-7">
-            @foreach ([
-                [
-                    'title' => __('Halal-first curation'),
-                    'body' => __('Listings are reviewed for halal status before they ever reach the shelf, so you never have to guess.'),
-                ],
-                [
-                    'title' => __('Your money, held safely'),
-                    'body' => __('We hold your payment until delivery. The seller is only paid once your order actually arrives.'),
-                ],
-                [
-                    'title' => __('Local Malaysian sellers'),
-                    'body' => __('Every store is run by a Malaysian seller, so each ringgit you spend supports a small business here.'),
-                ],
-            ] as $proof)
-                <li data-motion="item" class="flex gap-5 py-6 first:pt-0 last:pb-0 sm:gap-6 sm:py-7">
-                    <x-ui.star-mark :size="20" class="mt-1 shrink-0 text-brass" />
-                    <div>
-                        <h3 class="font-display text-lg font-semibold text-ink">{{ $proof['title'] }}</h3>
-                        <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-soft">{{ $proof['body'] }}</p>
-                    </div>
-                </li>
-            @endforeach
-        </ul>
-
+{{-- Three-point trust rail on the cream tile. Brass 01/02/03 numerals, no
+     icons, no cards, no borders — the reference deliberately leaves this
+     section flat, which is why it reads as a statement rather than a feature
+     grid. Each point names a MECHANISM, not an adjective. --}}
+<section class="border-b border-line bg-cream">
+    <div class="mx-auto grid max-w-[1400px] gap-10 px-4 py-14 md:grid-cols-3 lg:px-12">
+        @foreach ([
+            ['n' => '01', 'title' => __('Certificate before catalogue'),
+             'body' => __('A listing cannot go live without a readable certificate, its issuing body and an expiry date we can monitor.')],
+            ['n' => '02', 'title' => __('Bound to the item'),
+             'body' => __('The certificate is attached to the SKU you are buying, not to the shop that sells it, so a broad shop badge cannot cover a narrow product.')],
+            ['n' => '03', 'title' => __('Expiry in the open'),
+             'body' => __('Every listing shows the certificate number and the date it runs out, on the product page and in your basket.')],
+        ] as $point)
+            <div class="flex gap-4">
+                <span class="font-mono text-[length:var(--text-base)] font-medium text-brass" aria-hidden="true">{{ $point['n'] }}</span>
+                <div>
+                    <h2 class="font-display text-[length:var(--text-h4)] text-ink-head">{{ $point['title'] }}</h2>
+                    <p class="mt-2 max-w-[42ch] text-[length:var(--text-sm)] leading-relaxed text-ink-soft">{{ $point['body'] }}</p>
+                </div>
+            </div>
+        @endforeach
     </div>
 </section>

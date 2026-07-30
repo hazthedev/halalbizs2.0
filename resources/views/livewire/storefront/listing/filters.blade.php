@@ -3,13 +3,13 @@
 
 @if (! $isSearch && $children->isNotEmpty())
     <div>
-        <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Category') }}</p>
+        <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Category') }}</p>
         <ul class="space-y-1">
             <li>
                 <button
                     type="button"
                     wire:click="$set('childCategory', '')"
-                    class="flex min-h-11 w-full items-center rounded-[var(--radius-control)] px-3 text-left text-sm {{ $childCategory === '' ? 'bg-emerald-tint font-semibold text-emerald' : 'text-ink-soft hover:text-ink' }}"
+                    class="flex min-h-11 w-full items-center rounded-[var(--radius-control)] px-3 text-left text-sm {{ $childCategory === '' ? 'bg-emerald-tint font-medium text-emerald' : 'text-ink-soft hover:text-ink' }}"
                 >
                     {{ __('All in :name', ['name' => $rootCategory->getTranslation('name', app()->getLocale())]) }}
                 </button>
@@ -19,7 +19,7 @@
                     <button
                         type="button"
                         wire:click="$set('childCategory', '{{ $child->slug }}')"
-                        class="flex min-h-11 w-full items-center rounded-[var(--radius-control)] px-3 text-left text-sm {{ $childCategory === $child->slug ? 'bg-emerald-tint font-semibold text-emerald' : 'text-ink-soft hover:text-ink' }}"
+                        class="flex min-h-11 w-full items-center rounded-[var(--radius-control)] px-3 text-left text-sm {{ $childCategory === $child->slug ? 'bg-emerald-tint font-medium text-emerald' : 'text-ink-soft hover:text-ink' }}"
                     >
                         {{ $child->getTranslation('name', app()->getLocale()) }}
                     </button>
@@ -30,7 +30,7 @@
 @endif
 
 <div>
-    <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Price (RM)') }}</p>
+    <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Price (RM)') }}</p>
     <div class="flex items-center gap-2">
         <label for="{{ $idPrefix }}-price-min" class="sr-only">{{ __('Minimum price in RM') }}</label>
         <input
@@ -59,14 +59,14 @@
 </div>
 
 <div>
-    <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Rating') }}</p>
+    <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Rating') }}</p>
     <ul class="space-y-1">
         @foreach ([4, 3, 2, 1] as $stars)
             <li>
                 <button
                     type="button"
                     wire:click="$set('rating', {{ $rating === $stars ? 'null' : $stars }})"
-                    class="flex min-h-11 w-full items-center gap-1.5 rounded-[var(--radius-control)] px-3 text-left text-sm {{ $rating === $stars ? 'bg-emerald-tint font-semibold text-emerald' : 'text-ink-soft hover:text-ink' }}"
+                    class="flex min-h-11 w-full items-center gap-1.5 rounded-[var(--radius-control)] px-3 text-left text-sm {{ $rating === $stars ? 'bg-emerald-tint font-medium text-emerald' : 'text-ink-soft hover:text-ink' }}"
                     @if ($rating === $stars) aria-pressed="true" @endif
                 >
                     <span aria-hidden="true">{{ str_repeat('★', $stars) }}{{ str_repeat('☆', 5 - $stars) }}</span>
@@ -78,7 +78,7 @@
 </div>
 
 <div>
-    <label for="{{ $idPrefix }}-state" class="mb-2 block text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Ships from') }}</label>
+    <label for="{{ $idPrefix }}-state" class="mb-2 block text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Ships from') }}</label>
     <select
         id="{{ $idPrefix }}-state"
         wire:model.live="state"
@@ -92,7 +92,7 @@
 </div>
 
 <div>
-    <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Payment') }}</p>
+    <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Payment') }}</p>
     <label for="{{ $idPrefix }}-cod" class="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[var(--radius-control)] px-3 text-sm text-ink">
         <input
             id="{{ $idPrefix }}-cod"
@@ -109,7 +109,7 @@
     @foreach ($facetAttributes as $facetAttribute)
         @if ($facetAttribute->values->isNotEmpty())
             <div>
-                <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ $facetAttribute->getTranslation('name', app()->getLocale()) }}</p>
+                <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ $facetAttribute->getTranslation('name', app()->getLocale()) }}</p>
                 <ul class="space-y-1">
                     @foreach ($facetAttribute->values as $facetValue)
                         <li>

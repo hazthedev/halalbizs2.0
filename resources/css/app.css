@@ -69,10 +69,16 @@
        reaching for a generic shadow here is a defect, not a shortcut. */
     --shadow-lift: 0 18px 40px -22px rgba(20, 48, 28, 0.32);   /* hero imagery */
     --shadow-lift-sm: 0 14px 30px -24px rgba(20, 48, 28, 0.40); /* smaller media */
-    /* kept as aliases so existing views don't break mid-revamp; both resolve
-       to the flat model. Retire once every view is ported. */
-    --shadow-soft: 0 0 0 0 rgba(0, 0, 0, 0);
-    --shadow-card: 0 0 0 0 rgba(0, 0, 0, 0);
+    /* The three legacy names still appear in 53 places across pages not yet
+       ported by hand. Rather than edit 53 files, they are REDEFINED here into
+       the print model, so every unported view gets the right look for free:
+         soft/card = a whisper of separation, green-tinted, no ramp
+         pop       = the real lift, because overlays (dropdowns, modals, the
+                     mini-cart) genuinely need to sit above the page
+       Making soft/card literally nothing was the wrong call: it silently
+       flattened 33 files that had no hairline to fall back on. */
+    --shadow-soft: 0 1px 2px rgba(20, 48, 28, 0.05);
+    --shadow-card: 0 1px 3px rgba(20, 48, 28, 0.06);
     --shadow-pop: 0 18px 40px -22px rgba(20, 48, 28, 0.32);
 
     /* radius scale — pills on cards is the signature pairing */
@@ -176,6 +182,26 @@
 /* tabular numerals for prices, counts, ids */
 @utility tnum {
     font-feature-settings: 'tnum';
+}
+
+/* ── Scrollbars hidden across the SHOP (Haze 2026-07-30) ──
+   Vertical and horizontal, page-level and inside any scroller. Scoped to
+   .shopfront (set on the storefront layout's <html>) so admin and seller
+   surfaces, where a visible scrollbar is a working affordance on long tables,
+   keep theirs. The root scrollbar lives on <html>, which is why the class sits
+   there rather than on <body>. Content still scrolls by wheel, trackpad,
+   touch and keyboard -- only the indicator is hidden. */
+.shopfront,
+.shopfront * {
+    scrollbar-width: none;      /* Firefox */
+    -ms-overflow-style: none;   /* legacy Edge */
+}
+
+.shopfront::-webkit-scrollbar,
+.shopfront *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;              /* WebKit / Blink */
 }
 
 /* hide scrollbars on swipe rails (content still scrolls) */

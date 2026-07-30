@@ -33,7 +33,7 @@
                 <div wire:key="reply-{{ $ticketReply->id }}"
                      class="rounded-[var(--radius-card)] border p-4 {{ $ticketReply->isFromSupport() ? 'border-line bg-surface' : 'border-line bg-paper' }}">
                     <div class="flex items-baseline justify-between gap-3">
-                        <p class="text-[13px] font-semibold {{ $ticketReply->isFromSupport() ? 'text-emerald' : 'text-ink' }}">
+                        <p class="text-[13px] font-medium {{ $ticketReply->isFromSupport() ? 'text-emerald' : 'text-ink' }}">
                             {{ $ticketReply->isFromSupport() ? __('Support') : __('You') }}
                         </p>
                         <p class="text-xs text-ink-faint">{{ $ticketReply->created_at?->diffForHumans() }}</p>

@@ -11,13 +11,13 @@
                     <img src="{{ $logo }}" alt="{{ $store->name }}"
                          class="size-20 shrink-0 rounded-full border border-line bg-paper object-cover shadow-soft">
                 @else
-                    <div class="flex size-20 shrink-0 items-center justify-center rounded-full border border-line bg-brass-tint font-display text-2xl font-bold text-brass-deep shadow-soft" aria-hidden="true">
+                    <div class="flex size-20 shrink-0 items-center justify-center rounded-full border border-line bg-brass-tint font-display text-2xl font-medium text-brass-deep shadow-soft" aria-hidden="true">
                         {{ mb_substr($store->name, 0, 1) }}
                     </div>
                 @endif
 
                 <div class="min-w-0">
-                    <h1 class="flex flex-wrap items-center gap-2 font-display text-2xl font-bold text-ink">
+                    <h1 class="flex flex-wrap items-center gap-2 font-display text-2xl font-medium text-ink">
                         {{ $store->name }}
                         <x-ui.badge variant="verified">
                             <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
@@ -61,13 +61,13 @@
             <button type="button" role="tab" x-on:click="tab = 'products'"
                     x-bind:aria-selected="tab === 'products' ? 'true' : 'false'"
                     x-bind:class="tab === 'products' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
-                    class="-mb-px min-h-11 border-b-2 px-4 text-sm font-semibold transition-colors duration-150">
+                    class="-mb-px min-h-11 border-b-2 px-4 text-sm font-medium transition-colors duration-150">
                 {{ __('Products') }}
             </button>
             <button type="button" role="tab" x-on:click="tab = 'about'"
                     x-bind:aria-selected="tab === 'about' ? 'true' : 'false'"
                     x-bind:class="tab === 'about' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
-                    class="-mb-px min-h-11 border-b-2 px-4 text-sm font-semibold transition-colors duration-150">
+                    class="-mb-px min-h-11 border-b-2 px-4 text-sm font-medium transition-colors duration-150">
                 {{ __('About') }}
             </button>
         </div>
@@ -98,7 +98,7 @@
                 @if ($products->count() < $total)
                     <div class="mt-6 text-center">
                         <button type="button" wire:click="loadMore"
-                                class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-6 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper">
+                                class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-6 text-sm font-medium text-ink transition-colors duration-150 hover:bg-paper">
                             <span wire:loading.remove wire:target="loadMore">{{ __('Load more') }}</span>
                             <span wire:loading wire:target="loadMore">{{ __('Loading…') }}</span>
                         </button>

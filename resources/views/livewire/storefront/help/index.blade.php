@@ -41,7 +41,7 @@
 
     {{-- Contact support CTA --}}
     <div class="mt-12 rounded-[var(--radius-card)] border border-line bg-surface p-6 text-center shadow-soft sm:p-8">
-        <h2 class="font-display text-xl font-bold">{{ __('Still stuck?') }}</h2>
+        <h2 class="font-display text-xl font-medium">{{ __('Still stuck?') }}</h2>
         <p class="mt-1 text-sm text-ink-soft">{{ __('Open a ticket and our support team will get back to you.') }}</p>
         <x-ui.button :href="route('help.tickets')" class="mt-4">{{ __('Contact support') }}</x-ui.button>
     </div>

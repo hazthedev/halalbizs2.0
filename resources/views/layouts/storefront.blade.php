@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="shopfront">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +35,7 @@
             </div>
             <button type="button"
                     x-on:click="shown = false; sessionStorage.setItem('hb-announcement-dismissed', '1')"
-                    class="absolute inset-y-0 right-1 my-auto flex size-11 items-center justify-center rounded-lg opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+                    class="absolute inset-y-0 right-1 my-auto flex size-11 items-center justify-center rounded-[var(--radius-control)] opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
                     aria-label="{{ __('Dismiss announcement') }}">
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
             </button>
@@ -308,15 +308,15 @@
         <template x-for="toast in $store.toasts.items" :key="toast.id">
             <div x-transition:enter="transition duration-150 ease-out" x-transition:enter-start="-translate-y-2 opacity-0"
                  x-transition:leave="transition duration-100 ease-in" x-transition:leave-end="opacity-0"
-                 class="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-[var(--radius-card)] border border-brass/20 bg-ink px-5 py-4 text-sm text-paper shadow-pop">
+                 class="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-[var(--radius-card)] border border-brass/20 bg-emerald-night px-5 py-4 text-sm text-on-dark shadow-pop">
                 <svg x-show="toast.type === 'success'" class="size-4 shrink-0 text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                 <svg x-show="toast.type === 'error'" class="size-4 shrink-0 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                 <span x-text="toast.message" class="flex-1"></span>
-                <a x-show="toast.actionLabel && toast.actionEvent === 'view-cart'" href="{{ route('cart') }}" wire:navigate class="shrink-0 font-semibold text-emerald" x-text="toast.actionLabel"></a>
+                <a x-show="toast.actionLabel && toast.actionEvent === 'view-cart'" href="{{ route('cart') }}" wire:navigate class="shrink-0 font-medium text-emerald" x-text="toast.actionLabel"></a>
                 <button type="button" x-show="toast.actionLabel && toast.actionEvent && toast.actionEvent !== 'view-cart'"
                         x-on:click="Livewire.dispatch(toast.actionEvent, toast.actionPayload ?? {}); $store.toasts.dismiss(toast.id)"
-                        class="shrink-0 font-semibold text-emerald" x-text="toast.actionLabel"></button>
-                <button type="button" x-on:click="$store.toasts.dismiss(toast.id)" class="shrink-0 text-paper/64 hover:text-paper" aria-label="{{ __('Dismiss') }}">
+                        class="shrink-0 font-medium text-emerald" x-text="toast.actionLabel"></button>
+                <button type="button" x-on:click="$store.toasts.dismiss(toast.id)" class="shrink-0 text-on-dark/64 hover:text-on-dark" aria-label="{{ __('Dismiss') }}">
                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                 </button>
             </div>

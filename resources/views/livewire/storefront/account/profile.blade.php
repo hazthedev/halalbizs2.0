@@ -141,7 +141,7 @@
                 @if ($freshRecoveryCodes !== null)
                     @php($recoveryCopyText = implode("\n", $freshRecoveryCodes))
                     <div class="mt-4 rounded-[var(--radius-card)] border border-line bg-paper p-4">
-                        <p class="text-sm font-semibold text-ink">{{ __('Your recovery codes') }}</p>
+                        <p class="text-sm font-medium text-ink">{{ __('Your recovery codes') }}</p>
                         <p class="mt-0.5 text-[13px] text-ink-soft">{{ __('Save these somewhere safe — each works once, and this is the only time we show them.') }}</p>
                         <ul class="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 font-mono text-[13px] text-ink sm:grid-cols-3">
                             @foreach ($freshRecoveryCodes as $recoveryCode)
@@ -384,7 +384,7 @@
             <div class="mt-6 rounded-[var(--radius-card)] border border-danger/40 bg-danger-tint/40 p-4">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <p class="text-sm font-semibold text-danger">{{ __('Delete account') }}</p>
+                        <p class="text-sm font-medium text-danger">{{ __('Delete account') }}</p>
                         <p class="mt-0.5 max-w-md text-[13px] text-ink-soft">{{ __('Your name, email and phone are anonymized and you are signed out. Order records are kept — we are legally required to retain financial records.') }}</p>
                     </div>
                     <x-ui.button variant="danger" wire:click="$set('showDeleteModal', true)">{{ __('Delete my account') }}</x-ui.button>
@@ -398,11 +398,11 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
              role="dialog" aria-modal="true" aria-labelledby="delete-account-title"
              x-data x-on:keydown.escape.window="$wire.set('showDeleteModal', false)">
-            <div class="absolute inset-0 bg-ink/50" wire:click="$set('showDeleteModal', false)" aria-hidden="true"></div>
+            <div class="absolute inset-0 bg-emerald-night/50" wire:click="$set('showDeleteModal', false)" aria-hidden="true"></div>
 
             {{-- shadow allowed: overlay surface --}}
             <x-ui.card class="relative w-full max-w-md p-6 shadow-pop">
-                <h3 id="delete-account-title" class="font-display text-xl font-semibold text-danger">{{ __('Delete this account?') }}</h3>
+                <h3 id="delete-account-title" class="font-display text-xl font-medium text-danger">{{ __('Delete this account?') }}</h3>
                 <p class="mt-2 text-[13px] text-ink-soft">{{ __('This cannot be undone. Your personal details are anonymized immediately; order records stay for legal and financial reasons.') }}</p>
 
                 <div class="mt-4 space-y-4">

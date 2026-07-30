@@ -28,7 +28,7 @@ $items += [
 @endphp
 
 <div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12">
-    <h1 class="font-display text-[28px] font-bold leading-tight">{{ $title ?? __('My account') }}</h1>
+    <h1 class="font-display text-[28px] font-medium leading-tight">{{ $title ?? __('My account') }}</h1>
 
     <div class="mt-6 lg:grid lg:grid-cols-[200px_minmax(0,1fr)] lg:items-start lg:gap-10">
         {{-- Mobile: horizontal scroll tabs · Desktop: vertical left nav --}}
@@ -39,7 +39,7 @@ $items += [
                 <a href="{{ $item['href'] }}" wire:navigate
                    @if ($isActive) aria-current="page" @endif
                    class="-mb-px flex min-h-11 shrink-0 items-center whitespace-nowrap border-b-2 px-3 text-sm transition-colors lg:mb-0 lg:border-b-0 lg:border-l-2 lg:px-3.5 {{ $isActive
-                       ? 'border-brass font-semibold text-ink'
+                       ? 'border-brass font-medium text-ink'
                        : 'border-transparent font-medium text-ink-soft hover:text-ink' }}">
                     {{ $item['label'] }}
                 </a>

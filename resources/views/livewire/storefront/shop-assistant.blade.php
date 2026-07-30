@@ -3,46 +3,59 @@
     x-on:keydown.escape.window="open = false"
     x-on:open-concierge.window="open = true"
 >
-    {{-- Launcher: brass-ringed premium ornament; bottom-left to clear the toast
-         stack. Hidden on mobile (sm:flex) so it never overlaps the PDP/checkout
-         sticky bottom action bars; desktop/tablet have no bottom bar. --}}
+    {{-- Launcher. Moved bottom-LEFT to bottom-RIGHT 2026-07-30: fixed at the
+         bottom-left it sat on top of whatever the page put there, and after the
+         revamp that was the hero's CTA pair and the footer copyright. The
+         original note said left cleared the toast stack, but toasts render
+         top-right (see layouts/storefront), so the bottom-right corner is free
+         and is where a launcher is conventionally looked for anyway.
+         Hidden on mobile (sm:flex) so it never overlaps the PDP/checkout sticky
+         bottom action bars; desktop/tablet have no bottom bar.
+
+         COLLAPSED TO A CIRCLE 2026-07-30: a fixed full-width pill covers page
+         content wherever it sits -- bottom-left it sat on the hero CTAs and the
+         footer copyright, bottom-right it sat on the PDP subscribe panel. A
+         floating launcher cannot avoid every corner, so the honest fix is to
+         shrink its footprint: an icon by default, expanding to the full label
+         on hover or keyboard focus. The accessible name is on the button
+         itself, so the label is decoration and may stay hidden. --}}
     <button
         type="button"
         x-on:click="open = ! open"
         x-show="! open"
-        class="fixed bottom-4 left-4 z-40 hidden items-center gap-2 rounded-full border border-brass/40 bg-ink py-2.5 pl-2.5 pr-4 text-paper shadow-pop transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass sm:flex"
+        class="group fixed bottom-5 right-5 z-40 hidden items-center gap-2 rounded-[var(--radius-pill)] border border-emerald-edge bg-emerald-night p-2.5 text-on-dark transition-colors duration-(--dur-micro) hover:bg-emerald-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brass sm:flex"
         aria-label="{{ __('Open shopping assistant') }}"
     >
         <span class="flex size-8 items-center justify-center rounded-full bg-brass/15 text-brass">
             <x-ui.star-mark :size="18" />
         </span>
-        <span class="text-[13px] font-semibold">{{ __('Ask the concierge') }}</span>
+        <span class="max-w-0 overflow-hidden whitespace-nowrap text-[length:var(--text-base)] font-medium opacity-0 transition-all duration-(--dur-standard) ease-(--ease-out-soft) group-hover:max-w-[12rem] group-hover:pr-1.5 group-hover:opacity-100 group-focus-visible:max-w-[12rem] group-focus-visible:pr-1.5 group-focus-visible:opacity-100 motion-reduce:transition-none" aria-hidden="true">{{ __('Ask the concierge') }}</span>
     </button>
 
     {{-- Panel --}}
     <div
         x-show="open"
         x-cloak
-        x-transition.origin.bottom.left
-        class="fixed bottom-4 left-4 z-50 flex h-[min(34rem,80vh)] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[var(--radius-card)] border border-brass/25 bg-surface shadow-pop"
+        x-transition.origin.bottom.right
+        class="fixed bottom-5 right-5 z-50 flex h-[min(34rem,80vh)] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-[var(--shadow-lift)]"
         role="dialog"
         aria-label="{{ __('Shopping concierge') }}"
     >
         {{-- Header --}}
-        <div class="surface-girih flex items-center gap-2.5 border-b border-brass/25 bg-ink px-4 py-3 text-paper">
+        <div class="surface-girih flex items-center gap-2.5 border-b border-brass/25 bg-emerald-night px-4 py-3 text-on-dark">
             <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brass/15 text-brass">
                 <x-ui.star-mark :size="18" />
             </span>
             <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-semibold">{{ __('Shopping concierge') }}</p>
-                <p class="truncate text-[11px] text-paper/64">{{ __('Find products in English or Bahasa Melayu') }}</p>
+                <p class="truncate text-sm font-medium">{{ __('Shopping concierge') }}</p>
+                <p class="truncate text-[11px] text-on-dark/64">{{ __('Find products in English or Bahasa Melayu') }}</p>
             </div>
             @if ($history !== [])
-                <button type="button" wire:click="clearChat" class="rounded-lg px-2 py-1 text-[11px] font-medium text-paper/64 hover:text-paper" aria-label="{{ __('Clear conversation') }}">
+                <button type="button" wire:click="clearChat" class="rounded-[var(--radius-control)] px-2 py-1 text-[11px] font-medium text-on-dark/64 hover:text-on-dark" aria-label="{{ __('Clear conversation') }}">
                     {{ __('Clear') }}
                 </button>
             @endif
-            <button type="button" x-on:click="open = false" class="flex size-8 items-center justify-center rounded-lg text-paper/64 hover:text-paper" aria-label="{{ __('Close') }}">
+            <button type="button" x-on:click="open = false" class="flex size-8 items-center justify-center rounded-[var(--radius-control)] text-on-dark/64 hover:text-on-dark" aria-label="{{ __('Close') }}">
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
             </button>
         </div>
@@ -75,13 +88,13 @@
                                     @php($thumb = $product->getFirstMediaUrl('images', 'thumb'))
                                     <a href="{{ route('product.show', $product->slug) }}" wire:navigate
                                        class="flex items-center gap-2.5 rounded-[var(--radius-card)] border border-line bg-surface p-1.5 transition-colors hover:border-line-strong hover:bg-paper">
-                                        <span class="size-12 shrink-0 overflow-hidden rounded-lg bg-paper">
-                                            @if ($thumb)<img src="{{ $thumb }}" alt="" class="size-full object-cover" loading="lazy">@endif
+                                        <span class="size-12 shrink-0 overflow-hidden rounded-[var(--radius-control)] bg-paper">
+                                            @if ($thumb)<img src="{{ $thumb }}" alt="" class="size-full object-contain" loading="lazy">@endif
                                         </span>
                                         <span class="min-w-0 flex-1">
                                             <span class="line-clamp-1 text-[13px] font-medium text-ink">{{ $product->getTranslation('name', app()->getLocale()) }}</span>
                                             <span class="mt-0.5 flex items-center gap-1.5 text-xs text-ink-soft">
-                                                <span class="font-bold text-ink tnum">@price($minSen)</span>
+                                                <span class="font-medium text-ink tnum">@price($minSen)</span>
                                                 @if ($product->rating_count > 0)
                                                     <span aria-hidden="true">·</span><span>★ {{ number_format((float) $product->rating_avg, 1) }}</span>
                                                 @endif

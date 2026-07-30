@@ -1,6 +1,6 @@
 <div class="mx-auto max-w-7xl px-4 py-6" wire:poll.30s>
     <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="font-display text-2xl font-bold text-ink">{{ __('Flash Sale') }}</h1>
+        <h1 class="font-display text-2xl font-medium text-ink">{{ __('Flash Sale') }}</h1>
 
         @if ($endsAt)
             <div class="flex items-center gap-2 text-sm" x-data="{
@@ -15,7 +15,7 @@
                 },
             }" x-init="tick(); setInterval(() => tick(), 1000)">
                 <span class="text-ink-soft">{{ __('Ends in') }}</span>
-                <span class="rounded-lg bg-ink px-2 py-1 font-mono text-sm font-bold text-canvas tnum" x-text="left"></span>
+                <span class="rounded-[var(--radius-control)] bg-emerald-night px-2 py-1 font-mono text-sm font-medium text-canvas tnum" x-text="left"></span>
             </div>
         @endif
     </div>
@@ -27,17 +27,17 @@
             @foreach ($items as $item)
                 @php($product = $item->variant->product)
                 <a href="{{ route('product.show', $product->slug) }}" wire:navigate
-                   class="group block overflow-hidden rounded-xl border border-line bg-surface shadow-soft transition hover:shadow-card">
+                   class="group block overflow-hidden rounded-[var(--radius-panel)] border border-line bg-surface shadow-soft transition hover:shadow-card">
                     <div class="aspect-square overflow-hidden bg-paper">
                         @if ($img = $product->getFirstMediaUrl('images', 'card'))
                             <img src="{{ $img }}" alt="{{ $product->getTranslation('name', app()->getLocale()) }}"
-                                 class="size-full object-cover transition group-hover:scale-105" loading="lazy">
+                                 class="size-full object-contain transition group-hover:scale-105" loading="lazy">
                         @endif
                     </div>
                     <div class="p-2.5">
                         <p class="line-clamp-2 text-[13px] font-medium text-ink">{{ $product->getTranslation('name', app()->getLocale()) }}</p>
                         <div class="mt-1 flex items-baseline gap-1.5">
-                            <span class="text-base font-bold text-emerald tnum">@money($item->promo_price_sen)</span>
+                            <span class="text-base font-medium text-emerald tnum">@money($item->promo_price_sen)</span>
                             <span class="text-[12px] text-ink-faint line-through tnum">@money($item->variant->price_sen)</span>
                         </div>
                         <div class="mt-2 h-2 overflow-hidden rounded-full bg-canvas-deep">

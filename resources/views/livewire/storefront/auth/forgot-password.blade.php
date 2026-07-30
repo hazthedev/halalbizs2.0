@@ -28,7 +28,7 @@
 
         <p class="mt-6 border-t border-line pt-5 text-center text-sm text-ink-soft">
             {{ __('Remembered it?') }}
-            <a href="{{ route('login') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Back to log in') }}</a>
+            <a href="{{ route('login') }}" wire:navigate class="font-medium text-emerald hover:text-emerald-deep">{{ __('Back to log in') }}</a>
         </p>
     </x-ui.card>
 </div>

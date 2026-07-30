@@ -56,7 +56,7 @@
         @if ($ctx === \App\Enums\AuthContext::Seller)
             <p class="mt-6 border-t border-line pt-5 text-center text-sm text-ink-soft">
                 {{ __('Want to sell on HalalBizs?') }}
-                <a href="{{ route('seller.register') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Open a shop') }}</a>
+                <a href="{{ route('seller.register') }}" wire:navigate class="font-medium text-emerald hover:text-emerald-deep">{{ __('Open a shop') }}</a>
             </p>
         @elseif ($ctx === \App\Enums\AuthContext::Admin)
             <p class="mt-6 border-t border-line pt-5 text-center text-[13px] text-ink-faint">
@@ -65,7 +65,7 @@
         @else
             <p class="mt-6 border-t border-line pt-5 text-center text-sm text-ink-soft">
                 {{ __('New here?') }}
-                <a href="{{ route('register') }}" wire:navigate class="font-semibold text-emerald hover:text-emerald-deep">{{ __('Create an account') }}</a>
+                <a href="{{ route('register') }}" wire:navigate class="font-medium text-emerald hover:text-emerald-deep">{{ __('Create an account') }}</a>
             </p>
         @endif
     </x-ui.card>

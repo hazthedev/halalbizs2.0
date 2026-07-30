@@ -19,7 +19,7 @@
     <div x-show="open" x-cloak
          x-transition:enter="transition-opacity duration-(--dur-standard) ease-standard" x-transition:enter-start="opacity-0"
          x-transition:leave="transition-opacity duration-200 ease-in-soft" x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 bg-ink/50 p-4 pt-[10vh]" x-on:click.self="close()">
+         class="fixed inset-0 z-50 bg-emerald-night/50 p-4 pt-[10vh]" x-on:click.self="close()">
         {{-- Dialog slides 16px down from its edge + fades, faster exit --}}
         <div x-show="open"
              x-transition:enter="transition duration-(--dur-standard) ease-out-soft" x-transition:enter-start="-translate-y-4 opacity-0"
@@ -46,7 +46,7 @@
                     <div class="p-3" x-data="{ recents: [] }" x-init="recents = window.recentSearches.all()">
                         <template x-if="recents.length">
                             <div class="mb-4">
-                                <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Recent searches') }}</p>
+                                <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Recent searches') }}</p>
                                 <div class="flex flex-wrap gap-2">
                                     <template x-for="term in recents" :key="term">
                                         <button type="button" x-on:click="$wire.set('query', term)"
@@ -57,7 +57,7 @@
                         </template>
 
                         @if ($trending->isNotEmpty())
-                            <p class="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Trending') }}</p>
+                            <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Trending') }}</p>
                             <div class="flex flex-wrap gap-2">
                                 @foreach ($trending as $term)
                                     <button type="button" wire:click="$set('query', '{{ $term }}')"
@@ -68,7 +68,7 @@
 
                         @if (config('search.enabled', true))
                             <a href="{{ route('search.visual') }}" wire:navigate x-on:click="close()"
-                               class="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[13px] font-semibold text-ink-soft hover:border-ink hover:text-ink">
+                               class="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[13px] font-medium text-ink-soft hover:border-ink hover:text-ink">
                                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z"/></svg>
                                 {{ __('Search by image') }}
                             </a>
@@ -82,19 +82,19 @@
                         @endif
 
                         @if ($products->isNotEmpty())
-                            <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Products') }}</p>
+                            <p class="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Products') }}</p>
                             @foreach ($products as $product)
                                 <a href="{{ route('product.show', $product->slug) }}" wire:navigate x-on:click="close()"
                                    class="flex items-center gap-3 rounded-[var(--radius-control)] px-3 py-2 hover:bg-paper">
-                                    <img src="{{ $product->getFirstMediaUrl('images', 'thumb') }}" alt="" class="size-10 rounded-[var(--radius-control)] border border-line object-cover bg-paper">
+                                    <img src="{{ $product->getFirstMediaUrl('images', 'thumb') }}" alt="" class="size-10 rounded-[var(--radius-control)] border border-line object-contain bg-paper">
                                     <span class="line-clamp-1 flex-1 text-sm">{{ $product->getTranslation('name', app()->getLocale()) }}</span>
-                                    <span class="shrink-0 text-[13px] font-bold tnum">@price($product->variants->map->effectivePriceSen()->min() ?? 0)</span>
+                                    <span class="shrink-0 text-[13px] font-medium tnum">@price($product->variants->map->effectivePriceSen()->min() ?? 0)</span>
                                 </a>
                             @endforeach
                         @endif
 
                         @if ($stores->isNotEmpty())
-                            <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Stores') }}</p>
+                            <p class="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Stores') }}</p>
                             @foreach ($stores as $store)
                                 <a href="{{ $store->storefrontUrl() }}" wire:navigate x-on:click="close()"
                                    class="flex items-center gap-3 rounded-[var(--radius-control)] px-3 py-2 hover:bg-paper">
@@ -108,7 +108,7 @@
                         @endif
 
                         @if ($categories->isNotEmpty())
-                            <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-faint">{{ __('Categories') }}</p>
+                            <p class="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Categories') }}</p>
                             @foreach ($categories as $category)
                                 <a href="{{ route('category.show', $category->slug) }}" wire:navigate x-on:click="close()"
                                    class="flex items-center gap-3 rounded-[var(--radius-control)] px-3 py-2 text-sm hover:bg-paper">
@@ -117,7 +117,7 @@
                             @endforeach
                         @endif
 
-                        <button type="button" x-on:click="go()" class="mt-1 flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-semibold text-emerald hover:bg-emerald-tint">
+                        <button type="button" x-on:click="go()" class="mt-1 flex w-full items-center gap-2 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-medium text-emerald hover:bg-emerald-tint">
                             {{ __('See all results for ":term"', ['term' => trim($query)]) }} →
                         </button>
                     </div>

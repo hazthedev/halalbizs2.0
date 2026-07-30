@@ -33,7 +33,7 @@
                                 </label>
                             @endauth
                             <a href="{{ $group->store->storefrontUrl() }}" wire:navigate
-                               class="flex min-h-11 items-center truncate text-sm font-semibold hover:underline">
+                               class="flex min-h-11 items-center truncate text-sm font-medium hover:underline">
                                 {{ $group->store->name }}
                             </a>
                             @if ($group->store->state)
@@ -60,7 +60,7 @@
                                     <a href="{{ route('product.show', $line->variant->product->slug) }}" wire:navigate class="shrink-0 self-start">
                                         <img src="{{ $line->variant->getFirstMediaUrl('image', 'thumb') ?: $line->variant->product->getFirstMediaUrl('images', 'thumb') }}"
                                              alt="{{ $line->variant->product->getTranslation('name', app()->getLocale()) }} {{ $line->variant->options_label }}"
-                                             class="size-20 rounded-[var(--radius-card)] border border-line bg-paper object-cover {{ $line->excluded ? 'opacity-40' : '' }}">
+                                             class="size-20 rounded-[var(--radius-card)] border border-line bg-paper object-contain {{ $line->excluded ? 'opacity-40' : '' }}">
                                     </a>
 
                                     <div class="ml-1 min-w-0 flex-1">
@@ -100,7 +100,7 @@
                                                             aria-label="{{ __('Increase quantity') }}">+</button>
                                                 </div>
 
-                                                <span class="text-sm font-bold tnum">@price($line->lineTotalSen)</span>
+                                                <span class="text-sm font-medium tnum">@price($line->lineTotalSen)</span>
                                             </div>
                                         @endunless
                                     </div>
@@ -118,7 +118,7 @@
                         {{-- Per-seller subtotal (selected lines) --}}
                         <div class="flex items-center justify-between border-t border-line px-4 py-3">
                             <span class="text-[13px] text-ink-soft">{{ __('Subtotal') }}</span>
-                            <span class="text-sm font-bold tnum">@price($group->subtotalSen)</span>
+                            <span class="text-sm font-medium tnum">@price($group->subtotalSen)</span>
                         </div>
                     </x-ui.card>
                 @endforeach
@@ -132,13 +132,13 @@
 
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-ink-soft">{{ __('Items total') }}</span>
-                    <span class="font-bold tnum">@price($itemsTotalSen)</span>
+                    <span class="font-medium tnum">@price($itemsTotalSen)</span>
                 </div>
                 <p class="mt-1 text-[13px] text-ink-soft">{{ __('Shipping calculated at checkout') }}</p>
 
                 <div class="mt-3 flex items-baseline justify-between border-t border-line pt-3">
-                    <span class="text-sm font-semibold">{{ __('Total') }}</span>
-                    <span class="text-xl font-bold tnum">@price($itemsTotalSen)</span>
+                    <span class="text-sm font-medium">{{ __('Total') }}</span>
+                    <span class="text-xl font-medium tnum">@price($itemsTotalSen)</span>
                 </div>
 
                 <div class="mt-4">

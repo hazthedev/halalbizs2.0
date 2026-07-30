@@ -23,7 +23,7 @@
                                 @if ($item->product?->getFirstMediaUrl('images', 'thumb'))
                                     <img src="{{ $item->product->getFirstMediaUrl('images', 'thumb') }}"
                                          alt="{{ $item->product_name }}{{ $item->variant_label ? ' — '.$item->variant_label : '' }}"
-                                         class="size-full object-cover" loading="lazy">
+                                         class="size-full object-contain" loading="lazy">
                                 @endif
                             </span>
                             <div class="min-w-0 flex-1">
@@ -77,7 +77,7 @@
                                 </label>
                                 <input id="review-photos-{{ $item->id }}" type="file" multiple accept="image/*"
                                        wire:model="photos.{{ $item->id }}"
-                                       class="mt-1 block w-full text-[13px] text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-3 file:text-[13px] file:font-semibold file:text-ink hover:file:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                       class="mt-1 block w-full text-[13px] text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-3 file:text-[13px] file:font-medium file:text-ink hover:file:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 <p class="mt-1 text-[13px] text-ink-faint" wire:loading wire:target="photos.{{ $item->id }}">{{ __('Uploading photos…') }}</p>
                                 @error('photos.'.$item->id)<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
                                 @error('photos.'.$item->id.'.*')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror

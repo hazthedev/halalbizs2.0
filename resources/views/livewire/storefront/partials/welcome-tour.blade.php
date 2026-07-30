@@ -29,7 +29,7 @@
      aria-modal="true"
      aria-label="{{ __('Welcome to HalalBizs') }}">
 
-    <div class="absolute inset-0 bg-ink/50" x-on:click="finishTour()" aria-hidden="true"></div>
+    <div class="absolute inset-0 bg-emerald-night/50" x-on:click="finishTour()" aria-hidden="true"></div>
 
     {{-- Overlay surface — shadow permitted --}}
     <div x-show="tourOpen"
@@ -40,13 +40,13 @@
          x-transition:leave-end="opacity-0"
          class="relative w-full max-w-sm rounded-[var(--radius-card)] border border-line bg-surface p-6 shadow-pop">
 
-        <p class="text-[11px] font-semibold uppercase tracking-[0.04em] text-ink-soft">
+        <p class="text-[11px] font-medium uppercase tracking-[0.04em] text-ink-soft">
             {{ __('Welcome to HalalBizs') }} · <span x-text="tourStep" class="tnum"></span>/3
         </p>
 
         {{-- Step 1: search --}}
         <div x-show="tourStep === 1">
-            <h2 class="mt-2 font-display text-xl font-bold">{{ __('Find anything fast') }}</h2>
+            <h2 class="mt-2 font-display text-xl font-medium">{{ __('Find anything fast') }}</h2>
             <p class="mt-2 text-sm leading-relaxed text-ink-soft">
                 {{ __('Search products, stores and categories from the bar at the top — or press') }}
                 <kbd class="rounded border border-line px-1.5 font-mono text-[11px] text-ink">/</kbd>
@@ -56,7 +56,7 @@
 
         {{-- Step 2: cart + checkout --}}
         <div x-show="tourStep === 2" x-cloak>
-            <h2 class="mt-2 font-display text-xl font-bold">{{ __('One cart, every seller') }}</h2>
+            <h2 class="mt-2 font-display text-xl font-medium">{{ __('One cart, every seller') }}</h2>
             <p class="mt-2 text-sm leading-relaxed text-ink-soft">
                 {{ __('Add items from any store — your cart keeps them grouped by seller and you check out everything in one go.') }}
             </p>
@@ -64,7 +64,7 @@
 
         {{-- Step 3: become a seller --}}
         <div x-show="tourStep === 3" x-cloak>
-            <h2 class="mt-2 font-display text-xl font-bold">{{ __('Sell on HalalBizs') }}</h2>
+            <h2 class="mt-2 font-display text-xl font-medium">{{ __('Sell on HalalBizs') }}</h2>
             <p class="mt-2 text-sm leading-relaxed text-ink-soft">
                 {{ __('Got products of your own? Apply for a free store via “Become a seller” in the footer.') }}
             </p>
@@ -88,13 +88,13 @@
                         x-show="tourStep > 1"
                         x-cloak
                         x-on:click="tourStep--"
-                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-medium text-ink transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Back') }}
                 </button>
                 <button type="button"
                         x-ref="tourPrimary"
                         x-on:click="tourStep < 3 ? tourStep++ : finishTour()"
-                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                     <span x-show="tourStep < 3">{{ __('Next') }}</span>
                     <span x-show="tourStep === 3" x-cloak>{{ __('Start shopping') }}</span>
                 </button>
