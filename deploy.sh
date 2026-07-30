@@ -117,6 +117,13 @@ if [ "$SEED_DEMO_CATALOGUE" = "true" ] || [ "$SEED_DEMO_CATALOGUE" = "1" ]; then
     "$PHP_BIN" artisan db:seed --class=CategorySeeder --force || echo "  ! category seed reported errors — continuing"
     "$PHP_BIN" artisan db:seed --class=HalalCatalogueSeeder --force || echo "  ! catalogue seed reported errors — continuing"
     "$PHP_BIN" artisan db:seed --class=HalalCertificateSeeder --force || echo "  ! certificate seed reported errors — continuing"
+
+    # Re-index after a bulk seed. Products seeded straight into the database do
+    # not necessarily reach the search index — the preview browsed 94 products in
+    # a department while /search?q=beras returned nothing, which is the signature
+    # of a stale index rather than missing data. Harmless on the collection
+    # driver (no external engine to update); rebuilds the index on Meilisearch.
+    "$PHP_BIN" artisan scout:import "App\\Models\\Product" || echo "  ! product re-index reported errors — continuing"
 else
     echo "→ skip demo catalogue (SEED_DEMO_CATALOGUE='${SEED_DEMO_CATALOGUE:-unset}' — set it to true to enable)"
 fi
