@@ -511,3 +511,16 @@
         padding-bottom: 5rem;
     }
 }
+
+/* Phone type floor. The three smallest steps are drawn for a desktop reading
+   distance; on a handset 10.5-11.5px is below comfortable, and they carry real
+   content (the trust ticker, the seller eyebrow, the rating line). Desktop
+   keeps the designed scale untouched - only the phone lifts, and only to 12px,
+   so the steps still rank in the same order they always did. */
+@media (max-width: 639px) {
+    :root {
+        --text-micro: 11px;
+        --text-tiny: 12px;
+        --text-mini: 12px;
+    }
+}

@@ -109,7 +109,11 @@
                         <x-ui.section-heading :title="$title" class="motion-reveal"
                                               x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'" />
                     @endif
-                    <div class="mt-4 grid grid-cols-4 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-8">
+                    {{-- 3 across on a phone, not 4: at 390px four columns give 81px
+                         tiles, and the catalogue has 5 top-level categories rather
+                         than the 8 this grid was drawn for, so the fourth column
+                         only ever bought a lonelier orphan row. --}}
+                    <div class="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4 sm:mt-6 sm:gap-4 lg:grid-cols-8">
                         @foreach ($data as $category)
                             @php $categoryName = $category->getTranslation('name', app()->getLocale()); @endphp
                             <a href="{{ route('category.show', $category->slug) }}" wire:navigate
@@ -122,6 +126,14 @@
                                         <img src="{{ $categoryImage }}" alt="{{ $categoryName }}"
                                              x-data="{ ld: false }" x-init="ld = $el.complete" x-on:load="ld = true" x-bind:class="ld && 'loaded'"
                                              class="img-motion [--img-zoom-dur:450ms] size-full object-contain group-hover:scale-[1.05]" loading="lazy">
+                                    @else
+                                        {{-- No media on the category: without this the tile
+                                             rendered as an empty paper box, which reads as a
+                                             broken image rather than a category. The brand
+                                             mark is what empty-state already uses. --}}
+                                        <span class="grid size-full place-items-center text-brass/45">
+                                            <x-ui.star-mark :size="28" stroke-width="1.25" />
+                                        </span>
                                     @endif
                                 </span>
                                 <span class="line-clamp-2 text-center text-[13px] font-medium leading-snug text-ink transition-colors duration-(--dur-micro) group-hover:text-emerald">{{ $categoryName }}</span>
