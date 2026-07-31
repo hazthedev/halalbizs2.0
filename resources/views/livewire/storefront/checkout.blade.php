@@ -281,7 +281,12 @@
         </div>
 
         {{-- ===== Right: sticky summary ===== --}}
-        <x-ui.card class="sticky bottom-0 z-10 p-4 lg:bottom-auto lg:top-24">
+        {{-- Sticky only from lg, where this really is a sidebar beside a taller
+             left column. On a phone `sticky bottom-0` pinned a 400px card to the
+             bottom of an 844px viewport: at the top of the page it floated 389px
+             up out of its grid row and sat across the delivery details, and the
+             row it left behind read as 400px of empty page above the footer. --}}
+        <x-ui.card class="z-10 p-4 lg:sticky lg:top-24">
             <h2 class="text-sm font-medium">{{ __('Order summary') }}</h2>
 
             <dl class="mt-3 space-y-2 text-sm">
