@@ -65,8 +65,14 @@
         <ul class="divide-y divide-line">
             @foreach ($admins as $admin)
                 <li wire:key="admin-{{ $admin->id }}">
+                    {{-- basis-full below sm: flex-wrap alone does not stack this row,
+                         because flex-1 keeps the identity block on the buttons' line
+                         and lets it squeeze to ~90px. The name badges then wrap into
+                         the action buttons and the email truncates to "devel...".
+                         Full basis puts identity on its own line and drops the
+                         buttons below it. --}}
                     <div class="flex flex-wrap items-center gap-3 px-4 py-2">
-                        <div class="min-w-0 flex-1">
+                        <div class="min-w-0 flex-1 basis-full sm:basis-auto">
                             <p class="text-[13px] font-medium text-ink">
                                 {{ $admin->name }}
                                 @if ($admin->id === auth()->id())
@@ -96,13 +102,13 @@
                                     wire:confirm="{{ $admin->is_superadmin
                                         ? __('Remove superadmin from :name? They keep only their ticked permissions.', ['name' => $admin->name])
                                         : __('Make :name a superadmin? They will have full access to every admin section.', ['name' => $admin->name]) }}"
-                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    class="inline-flex min-h-11 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ $admin->is_superadmin ? __('Remove superadmin') : __('Make superadmin') }}
                             </button>
                         @endif
 
                         <button type="button" wire:click="{{ $editingId === $admin->id ? 'cancelEdit' : 'editPermissions('.$admin->id.')' }}"
-                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                class="inline-flex min-h-11 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ $editingId === $admin->id ? __('Close') : __('Edit permissions') }}
                         </button>
 
