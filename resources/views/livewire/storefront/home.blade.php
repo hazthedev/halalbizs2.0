@@ -67,20 +67,35 @@
                                     @endphp
                                     <div class="swiper-slide">
                                         @if ($banner->link_url)
-                                            <a href="{{ $banner->link_url }}" @if (str_starts_with($banner->link_url, '/')) wire:navigate @endif>
+                                            <a href="{{ $banner->link_url }}" class="relative block" @if (str_starts_with($banner->link_url, '/')) wire:navigate @endif>
+                                        @else
+                                            <div class="relative">
                                         @endif
                                             @if ($bannerVideo)
                                                 <video autoplay muted loop playsinline
                                                        src="{{ $bannerVideo }}"
                                                        poster="{{ $banner->getFirstMediaUrl('image', 'card') }}"
-                                                       aria-label="{{ $bannerTitle }}"
+                                                       aria-hidden="true"
                                                        class="aspect-[3/1] w-full bg-paper object-cover"></video>
                                             @else
-                                                <img src="{{ $banner->getFirstMediaUrl('image', 'card') }}" alt="{{ $bannerTitle }}"
+                                                {{-- alt is empty on purpose: the title is real text below, and
+                                                     alt would make a screen reader announce it twice. --}}
+                                                <img src="{{ $banner->getFirstMediaUrl('image', 'card') }}" alt=""
                                                      class="aspect-[3/1] w-full bg-paper object-cover" @if (! $loop->first) loading="lazy" @endif>
                                             @endif
+
+                                            {{-- The headline is REAL TEXT over the art, never baked into it:
+                                                 it translates with the locale, a screen reader can read it, and
+                                                 an image generator can never hand it back misspelt. The art is
+                                                 composed with its right third quiet, which is where this sits;
+                                                 the scrim keeps it legible whatever the photograph does. --}}
+                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex w-3/5 items-center bg-gradient-to-l from-paper via-paper/85 to-transparent px-4 sm:w-2/5 sm:px-8 lg:px-12">
+                                                <p class="font-display text-[15px] leading-tight font-medium text-ink-head sm:text-2xl lg:text-[32px]">{{ $bannerTitle }}</p>
+                                            </div>
                                         @if ($banner->link_url)
                                             </a>
+                                        @else
+                                            </div>
                                         @endif
                                     </div>
                                 @endforeach
