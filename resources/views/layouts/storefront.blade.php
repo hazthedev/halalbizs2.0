@@ -59,31 +59,44 @@
     {{-- Row 1 — trust ticker. Mono, because these are counted facts. --}}
     <div class="bg-emerald-night text-on-dark-soft">
         <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-1.5 lg:px-12">
-            <p class="flex items-center gap-2 font-mono text-[length:var(--text-micro)] uppercase tracking-[var(--tracking-label)]">
+            {{-- whitespace-nowrap + min-w-0: on a phone all three claims wrapped to
+                 two lines each, which is what made this bar 66px tall and pushed
+                 the first product below the fold. The third claim is the longest,
+                 so it is the one that stands down below sm; the row can then
+                 never wrap, and clips rather than growing if a count gets wider. --}}
+            <p class="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap font-mono text-[length:var(--text-micro)] uppercase tracking-[var(--tracking-label)]">
                 <svg class="size-3 shrink-0 text-on-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                 {{ __('Every seller verified') }}
                 <span aria-hidden="true" class="text-on-dark-faint">&middot;</span>
                 {{ trans_choice('{1} :count listing|[2,*] :count listings', $hbListingCount, ['count' => number_format($hbListingCount)]) }}
-                <span aria-hidden="true" class="text-on-dark-faint">&middot;</span>
-                {{ __('Ships nationwide from Kuala Lumpur') }}
+                <span class="hidden sm:contents">
+                    <span aria-hidden="true" class="text-on-dark-faint">&middot;</span>
+                    {{ __('Ships nationwide from Kuala Lumpur') }}
+                </span>
             </p>
 
-            <div class="flex items-center gap-4">
+            <div class="flex shrink-0 items-center gap-4">
                 {{-- Locale: shown as a segmented pair like the reference, driven by
                      the same POST + `locale` field as before. --}}
                 <form method="POST" action="{{ route('preferences.locale') }}" class="flex items-center rounded-[var(--radius-pill)] bg-emerald-card p-0.5">
                     @csrf
                     <input type="hidden" name="locale" value="{{ app()->getLocale() === 'en' ? 'ms' : 'en' }}">
                     @foreach (['en' => 'EN', 'ms' => 'BM'] as $code => $label)
+                        {{-- py-1.5 not py-0.5: at 35x20px these pills were under the
+                             24px WCAG 2.5.8 floor. 28px tall clears it without
+                             turning the bar back into the thing we just shrank. --}}
                         @if (app()->getLocale() === $code)
-                            <span class="rounded-[var(--radius-pill)] bg-on-dark px-2.5 py-0.5 font-mono text-[length:var(--text-micro)] font-medium tracking-[var(--tracking-label)] text-emerald-night">{{ $label }}</span>
+                            <span class="rounded-[var(--radius-pill)] bg-on-dark px-3 py-1.5 font-mono text-[length:var(--text-micro)] font-medium tracking-[var(--tracking-label)] text-emerald-night">{{ $label }}</span>
                         @else
-                            <button type="submit" class="rounded-[var(--radius-pill)] px-2.5 py-0.5 font-mono text-[length:var(--text-micro)] tracking-[var(--tracking-label)] text-on-dark-faint transition-colors duration-(--dur-micro) hover:text-on-dark" aria-label="{{ __('Switch language') }}">{{ $label }}</button>
+                            <button type="submit" class="rounded-[var(--radius-pill)] px-3 py-1.5 font-mono text-[length:var(--text-micro)] tracking-[var(--tracking-label)] text-on-dark-faint transition-colors duration-(--dur-micro) hover:text-on-dark" aria-label="{{ __('Switch language') }}">{{ $label }}</button>
                         @endif
                     @endforeach
                 </form>
 
-                <a href="{{ route('seller.apply') }}" wire:navigate class="text-[length:var(--text-xs)] text-on-dark transition-colors duration-(--dur-micro) hover:text-white">{{ __('Sell on HalalBizs') }}</a>
+                {{-- Stands down below sm so the ticker keeps its width. The same
+                     link lives in the footer's COMPANY column, so nothing on a
+                     phone becomes unreachable. --}}
+                <a href="{{ route('seller.apply') }}" wire:navigate class="hidden text-[length:var(--text-xs)] text-on-dark transition-colors duration-(--dur-micro) hover:text-white sm:inline">{{ __('Sell on HalalBizs') }}</a>
             </div>
         </div>
     </div>
