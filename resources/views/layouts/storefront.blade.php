@@ -58,7 +58,9 @@
 
     {{-- Row 1 — trust ticker. Mono, because these are counted facts. --}}
     <div class="bg-emerald-night text-on-dark-soft">
-        <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-1.5 lg:px-12">
+        {{-- flex-nowrap on purpose: with flex-wrap a too-wide ticker took a second
+             row instead of shrinking, so the bar grew rather than clipping. --}}
+        <div class="mx-auto flex max-w-[1400px] flex-nowrap items-center justify-between gap-x-6 px-4 py-1.5 lg:flex-wrap lg:gap-y-1 lg:px-12">
             {{-- whitespace-nowrap + min-w-0: on a phone all three claims wrapped to
                  two lines each, which is what made this bar 66px tall and pushed
                  the first product below the fold. The third claim is the longest,
@@ -67,9 +69,14 @@
             <p class="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap font-mono text-[length:var(--text-micro)] uppercase tracking-[var(--tracking-label)]">
                 <svg class="size-3 shrink-0 text-on-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                 {{ __('Every seller verified') }}
-                <span aria-hidden="true" class="text-on-dark-faint">&middot;</span>
-                {{ trans_choice('{1} :count listing|[2,*] :count listings', $hbListingCount, ['count' => number_format($hbListingCount)]) }}
+                {{-- Measured, not guessed: at 390px a mono uppercase claim runs about
+                     6.6px per character, so claim 1 alone (~155px) is all that fits
+                     beside the 90px locale control inside 358px of usable width.
+                     Keeping claim 2 as well came to ~380px and silently wrapped the
+                     bar back into two rows, which is the whole thing being fixed. --}}
                 <span class="hidden sm:contents">
+                    <span aria-hidden="true" class="text-on-dark-faint">&middot;</span>
+                    {{ trans_choice('{1} :count listing|[2,*] :count listings', $hbListingCount, ['count' => number_format($hbListingCount)]) }}
                     <span aria-hidden="true" class="text-on-dark-faint">&middot;</span>
                     {{ __('Ships nationwide from Kuala Lumpur') }}
                 </span>
