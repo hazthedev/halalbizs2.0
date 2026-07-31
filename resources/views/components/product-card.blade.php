@@ -77,9 +77,12 @@
             </span>
         @endif
 
-        <div class="mt-auto flex items-center gap-2 pt-1">
+        {{-- flex-wrap + nowrap price: a price is one value and must never break
+             across lines. If a long one ever outgrows the row, the Add pill
+             drops below it instead. --}}
+        <div class="mt-auto flex flex-wrap items-center gap-2 pt-1">
             {{-- Price is evidence: mono, tabular. --}}
-            <span class="font-mono text-[length:var(--text-price)] font-medium text-ink-head tnum">@price($minPrice)</span>
+            <span class="whitespace-nowrap font-mono text-[length:var(--text-price)] font-medium text-ink-head tnum">@price($minPrice)</span>
             @if ($maxDiscount)
                 <span class="font-mono text-[length:var(--text-tiny)] font-medium uppercase tracking-[var(--tracking-label)] text-brass-deep">{{ __('Save') }} {{ $maxDiscount }}%</span>
             @endif

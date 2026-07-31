@@ -501,3 +501,13 @@
         opacity: 1;
     }
 }
+
+/* A page carrying the mobile sticky buy bar (PDP) must reserve its height, or
+   the bar sits on top of the footer's last two lines — the copyright and the
+   EN/BM language links, which become untappable at max scroll. Scoped with
+   :has() so the other 150+ pages get no dead space. */
+@media (max-width: 1023px) {
+    body:has([data-hb-bottom-bar]) footer {
+        padding-bottom: 5rem;
+    }
+}
