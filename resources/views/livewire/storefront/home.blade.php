@@ -137,7 +137,12 @@
                                     $bSub = trim((string) $b->getTranslation('subtitle', app()->getLocale()));
                                     $bCta = trim((string) $b->getTranslation('cta_label', app()->getLocale()));
                                 @endphp
-                                <div x-show="active === {{ $i }}" x-cloak class="px-4 pt-4">
+                                {{-- x-cloak only from the SECOND block on. Since [x-cloak] is now a
+                                     real display:none rule, cloaking all five would mean "Alpine did
+                                     not run" = "no banner text at all" — a shield, a blocked script or
+                                     one JS error and the copy vanishes. The first block paints without
+                                     JavaScript and Alpine takes over from there. --}}
+                                <div x-show="active === {{ $i }}" @if ($i > 0) x-cloak @endif class="px-4 pt-4">
                                     <p class="font-display text-lg leading-tight font-medium text-balance text-ink-head">{{ $bTitle }}</p>
                                     @if ($bSub !== '')
                                         <p class="mt-1.5 text-[length:var(--text-base)] leading-snug text-ink-soft">{{ $bSub }}</p>
