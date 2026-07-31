@@ -110,8 +110,14 @@ class ArtworkSeeder extends Seeder
             return false;
         }
 
-        // Already carrying this exact file — leave it alone, or every run adds a row.
-        if ($model->getMedia($collection)->contains(fn ($m): bool => $m->file_name === $file)) {
+        // Idempotent on NAME AND SIZE. Name alone is not enough: regenerating the
+        // artwork keeps the filename, so a name-only guard would skip the attach
+        // and leave the old picture live while reporting success.
+        $size = (int) File::size($absolute);
+
+        if ($model->getMedia($collection)->contains(
+            fn ($m): bool => $m->file_name === $file && (int) $m->size === $size
+        )) {
             return true;
         }
 
