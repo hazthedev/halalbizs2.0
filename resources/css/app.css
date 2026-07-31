@@ -25,7 +25,11 @@
     --color-ink: #1A1E19;          /* primary text */
     --color-ink-head: #14301C;     /* serif headings + product names (the reference's heading ink) */
     --color-ink-soft: #3D4A3C;     /* secondary paragraphs */
-    --color-ink-faint: #8A8272;    /* meta, brand lines, captions */
+    /* #8A8272 read 3.55:1 on paper and 3.8:1 on white — under AA on both, and
+       it was the single cause of 23 of the 33 serious axe findings across the
+       site. Tuned against paper (#FAF7F1), the harder of the two surfaces it
+       lands on: #787163 gives 4.53:1 there and 4.84:1 on white. */
+    --color-ink-faint: #787163;    /* meta, brand lines, captions */
     --color-ink-moss: #7E8A78;     /* NEW — ratings, tertiary meta */
     --color-line: #E4DED1;         /* the standard hairline — does most of the work */
     --color-line-strong: #DED7C8;
