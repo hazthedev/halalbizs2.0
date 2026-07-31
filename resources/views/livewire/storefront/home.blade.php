@@ -79,39 +79,15 @@
                                                 <video autoplay muted loop playsinline
                                                        src="{{ $bannerVideo }}"
                                                        poster="{{ $banner->getFirstMediaUrl('image', 'card') }}"
-                                                       aria-hidden="true"
+                                                       aria-label="{{ $bannerTitle }}"
                                                        class="aspect-[3/1] w-full bg-paper object-cover"></video>
                                             @else
-                                                {{-- alt is empty on purpose: the title is real text below, and
-                                                     alt would make a screen reader announce it twice. --}}
-                                                <img src="{{ $banner->getFirstMediaUrl('image', 'card') }}" alt=""
+                                                {{-- The copy is composited INTO the artwork now, so alt is the
+                                                     only route a screen reader has to it. --}}
+                                                <img src="{{ $banner->getFirstMediaUrl('image', 'card') }}" alt="{{ $bannerTitle }}{{ $bannerSubtitle !== '' ? '. '.$bannerSubtitle : '' }}"
                                                      class="aspect-[3/1] w-full bg-paper object-cover" @if (! $loop->first) loading="lazy" @endif>
                                             @endif
 
-                                            {{-- REAL TEXT, never baked into the art: it translates with the
-                                                 locale, a screen reader reads it, and an image model can never
-                                                 hand it back misspelt.
-
-                                                 BELOW the image on a phone, overlaid only from sm. At 375px a
-                                                 3:1 banner is 125px tall — a headline, a supporting line and a
-                                                 call to action cannot be legible inside that, and cropping the
-                                                 art to buy height would throw away the photograph. On sm+ it
-                                                 sits in the right third, which is the area the art was composed
-                                                 to leave quiet, over a scrim that holds it legible. --}}
-                                            <div class="hidden sm:pointer-events-none sm:absolute sm:inset-y-0 sm:right-0 sm:flex sm:w-[46%] sm:flex-col sm:justify-center sm:bg-gradient-to-l sm:from-paper sm:via-paper/90 sm:to-transparent sm:pl-8 sm:pr-20 lg:w-2/5 lg:pl-12 lg:pr-24">
-                                                <p class="font-display text-lg leading-tight font-medium text-balance text-ink-head sm:text-2xl lg:text-[32px]">{{ $bannerTitle }}</p>
-                                                @if ($bannerSubtitle !== '')
-                                                    <p class="mt-1.5 text-[length:var(--text-base)] leading-snug text-ink-soft sm:mt-2.5">{{ $bannerSubtitle }}</p>
-                                                @endif
-                                                @if ($bannerCta !== '')
-                                                    {{-- A span, not a link: the whole slide is already an anchor
-                                                         and nesting one inside it is invalid and fails axe. --}}
-                                                    <span class="mt-3 inline-flex w-fit items-center gap-1.5 rounded-[var(--radius-pill)] bg-emerald px-4 py-2 text-[length:var(--text-xs)] font-medium text-white sm:mt-4">
-                                                        {{ $bannerCta }}
-                                                        <span aria-hidden="true">&rarr;</span>
-                                                    </span>
-                                                @endif
-                                            </div>
                                         @if ($banner->link_url)
                                             </a>
                                         @else
@@ -142,16 +118,13 @@
                                      not run" = "no banner text at all" — a shield, a blocked script or
                                      one JS error and the copy vanishes. The first block paints without
                                      JavaScript and Alpine takes over from there. --}}
-                                <div x-show="active === {{ $i }}" @if ($i > 0) x-cloak @endif class="px-4 pt-4">
-                                    <p class="font-display text-lg leading-tight font-medium text-balance text-ink-head">{{ $bTitle }}</p>
-                                    @if ($bSub !== '')
-                                        <p class="mt-1.5 text-[length:var(--text-base)] leading-snug text-ink-soft">{{ $bSub }}</p>
-                                    @endif
+                                <div x-show="active === {{ $i }}" @if ($i > 0) x-cloak @endif class="px-4 pt-3">
                                     @if ($bCta !== '' && $b->link_url)
-                                        {{-- A real link here: this block is outside the slide anchor,
-                                             so there is no nested-interactive to trip over. --}}
+                                        {{-- Only the action lives here now. The headline and its
+                                             supporting line are composited into the artwork, so
+                                             repeating them underneath would say everything twice. --}}
                                         <a href="{{ $b->link_url }}" @if (str_starts_with($b->link_url, '/')) wire:navigate @endif
-                                           class="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-pill)] bg-emerald px-4 text-[length:var(--text-xs)] font-medium text-white">
+                                           class="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-pill)] bg-emerald px-4 text-[length:var(--text-xs)] font-medium text-white">
                                             {{ $bCta }}
                                             <span aria-hidden="true">&rarr;</span>
                                         </a>
