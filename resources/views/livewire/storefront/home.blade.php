@@ -32,8 +32,8 @@
                 <section class="w-full pt-6 sm:pt-8" aria-label="{{ __('Promotions') }}" wire:key="section-{{ $section->id }}">
                     <div
                         wire:ignore
-                        x-data
-                        x-init="new window.Swiper($refs.container, {
+                        x-data="{ active: 0 }"
+                        x-init="const scope = $data; new window.Swiper($refs.container, {
                             modules: Object.values(window.SwiperModules),
                             slidesPerView: 1,
                             @if ($data->count() > 1)
@@ -48,6 +48,8 @@
                             @endif
                             navigation: { prevEl: $refs.prev, nextEl: $refs.next },
                             pagination: { el: $refs.pagination, clickable: true },
+                            {{-- realIndex, not activeIndex: loop mode clones slides. --}}
+                            on: { slideChange(sw) { scope.active = sw.realIndex } },
                         })"
                         {{-- autoplay also pauses while focus is inside (keyboard users) --}}
                         x-on:focusin="$refs.container.swiper?.autoplay?.stop()"
@@ -96,7 +98,7 @@
                                                  art to buy height would throw away the photograph. On sm+ it
                                                  sits in the right third, which is the area the art was composed
                                                  to leave quiet, over a scrim that holds it legible. --}}
-                                            <div class="px-4 pt-4 pb-1 sm:pointer-events-none sm:absolute sm:inset-y-0 sm:right-0 sm:flex sm:w-[46%] sm:flex-col sm:justify-center sm:bg-gradient-to-l sm:from-paper sm:via-paper/90 sm:to-transparent sm:px-8 sm:pt-0 sm:pb-0 lg:w-2/5 lg:px-12">
+                                            <div class="hidden sm:pointer-events-none sm:absolute sm:inset-y-0 sm:right-0 sm:flex sm:w-[46%] sm:flex-col sm:justify-center sm:bg-gradient-to-l sm:from-paper sm:via-paper/90 sm:to-transparent sm:px-8 lg:w-2/5 lg:px-12">
                                                 <p class="font-display text-lg leading-tight font-medium text-balance text-ink-head sm:text-2xl lg:text-[32px]">{{ $bannerTitle }}</p>
                                                 @if ($bannerSubtitle !== '')
                                                     <p class="mt-1.5 text-[length:var(--text-base)] leading-snug text-ink-soft sm:mt-2.5">{{ $bannerSubtitle }}</p>
@@ -118,12 +120,41 @@
                                     </div>
                                 @endforeach
                             </div>
-                            {{-- !bottom-auto + a top offset: the default puts the dots at the
-                                 bottom of the swiper box, which since the copy moved inside the
-                                 slide meant they sat on top of the call-to-action button on a
-                                 phone. calc pins them to the foot of the 3:1 image band. --}}
-                            <div x-ref="pagination" class="swiper-pagination !bottom-auto !top-[calc(33.333vw_-_1.75rem)] sm:!top-auto sm:!bottom-3"></div>
+                            <div x-ref="pagination" class="swiper-pagination !bottom-3"></div>
                         </div>
+
+                        {{-- MOBILE COPY, deliberately OUTSIDE the swiper.
+                             effect:'fade' stacks every slide and crossfades their
+                             opacity — so copy living inside a slide fades with it.
+                             Measured mid-transition at 414px: two slides at 0.29 and
+                             0.71 opacity with all five copy blocks piled at the same
+                             y, which reads as the text not showing. Out here it is a
+                             single block that simply swaps on slideChange. --}}
+                        <div class="sm:hidden">
+                            @foreach ($data as $i => $b)
+                                @php
+                                    $bTitle = $b->getTranslation('title', app()->getLocale());
+                                    $bSub = trim((string) $b->getTranslation('subtitle', app()->getLocale()));
+                                    $bCta = trim((string) $b->getTranslation('cta_label', app()->getLocale()));
+                                @endphp
+                                <div x-show="active === {{ $i }}" x-cloak class="px-4 pt-4">
+                                    <p class="font-display text-lg leading-tight font-medium text-balance text-ink-head">{{ $bTitle }}</p>
+                                    @if ($bSub !== '')
+                                        <p class="mt-1.5 text-[length:var(--text-base)] leading-snug text-ink-soft">{{ $bSub }}</p>
+                                    @endif
+                                    @if ($bCta !== '' && $b->link_url)
+                                        {{-- A real link here: this block is outside the slide anchor,
+                                             so there is no nested-interactive to trip over. --}}
+                                        <a href="{{ $b->link_url }}" @if (str_starts_with($b->link_url, '/')) wire:navigate @endif
+                                           class="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-pill)] bg-emerald px-4 text-[length:var(--text-xs)] font-medium text-white">
+                                            {{ $bCta }}
+                                            <span aria-hidden="true">&rarr;</span>
+                                        </a>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
 
                         @if ($data->count() > 1)
                             <button type="button" x-ref="prev"
