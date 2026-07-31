@@ -158,7 +158,10 @@
             @if ($recentOrders->isEmpty())
                 <x-ui.empty-state :title="__('No orders yet')" :message="__('New orders appear here the moment a buyer pays.')" />
             @else
-                <div class="overflow-x-auto">
+                {{-- tabindex + role: this table scrolls sideways on a phone and
+                     holds no focusable cells, so a keyboard user had no way to
+                     reach the columns past the viewport edge. --}}
+                <div class="overflow-x-auto" tabindex="0" role="group" aria-label="{{ __('Recent orders') }}">
                     <table class="w-full text-[13px]">
                         <thead>
                             <tr class="border-b border-line text-left text-ink-soft">

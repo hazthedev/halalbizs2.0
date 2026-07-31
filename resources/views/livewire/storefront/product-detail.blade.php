@@ -230,9 +230,15 @@
                      compliance surface is worse than no row. --}}
                 @if ($product->halalCertificate || $product->halal_batch_code)
                     @php $trace = $product->halalCertificate; @endphp
-                    <dl class="mt-6 border-t border-line pt-5">
+                    {{-- The heading sits outside the <dl> and each row is a direct
+                         div child of it: a <p> is not allowed inside <dl>, and
+                         dt/dd must be children of the dl or of one div under it.
+                         They were two divs deep, which failed axe dlitem on every
+                         row and leaves assistive tech without the term/definition
+                         pairing this table is entirely made of. --}}
+                    <div class="mt-6 border-t border-line pt-5">
                         <p class="font-display text-[length:var(--text-h4)] text-ink-head">{{ __('Traceability') }}</p>
-                        <div class="mt-4 space-y-3">
+                        <dl class="mt-4 space-y-3">
                             @foreach (array_filter([
                                 __('Facility') => $trace?->facility,
                                 __('Batch') => $product->halal_batch_code
@@ -248,8 +254,8 @@
                                     <dd class="min-w-0 flex-1 text-[length:var(--text-base)] text-ink">{{ $value }}</dd>
                                 </div>
                             @endforeach
-                        </div>
-                    </dl>
+                        </dl>
+                    </div>
                 @endif
 
                 {{-- Sold by --}}
