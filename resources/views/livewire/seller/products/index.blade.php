@@ -79,7 +79,7 @@
             @endif
         @else
             <table class="w-full min-w-[820px] text-[13px]">
-                <thead class="sticky top-14 z-10 bg-surface">
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <th scope="col" class="w-10 px-3 py-2.5">
                             <input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}"

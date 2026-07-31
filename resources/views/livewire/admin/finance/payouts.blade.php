@@ -52,7 +52,7 @@
                 :message="__('Payout requests appear here the moment a seller asks for their available balance.')" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
-                <thead class="sticky top-14 z-10 bg-surface">
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         @if ($tab === PayoutStatus::Approved->value)
                             <th scope="col" class="w-10 px-3 py-2.5">

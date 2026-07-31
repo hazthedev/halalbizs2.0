@@ -8,7 +8,7 @@
         @else
             {{-- Table per design §6 — hairline rows, 13px, sticky header --}}
             <table class="w-full min-w-[760px] text-[13px]">
-                <thead class="sticky top-14 z-10 bg-surface">
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Owner email') }}</th>

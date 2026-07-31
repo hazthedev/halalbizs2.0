@@ -115,7 +115,7 @@
                     : __('Switch tabs to see the rest of the returns lifecycle.')" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
-                <thead class="sticky top-14 z-10 bg-surface">
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Sub-order') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
