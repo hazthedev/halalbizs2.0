@@ -322,6 +322,11 @@
                 @if ($store !== null)
                     <section class="mt-8 rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft" aria-label="{{ __('Seller') }}">
                         <div class="flex flex-wrap items-center gap-3">
+                            {{-- Avatar and identity share one flex item so they stay on the
+                                 same line and only Chat / Visit store wrap below. basis-full
+                                 on the PAIR, not on the identity alone — putting it on the
+                                 identity pushed the text under the avatar. --}}
+                            <div class="flex min-w-0 flex-1 basis-full items-center gap-3 sm:basis-auto">
                             @if ($store->getFirstMediaUrl('logo'))
                                 <img src="{{ $store->getFirstMediaUrl('logo') }}" alt="{{ $store->name }}"
                                      class="size-12 shrink-0 rounded-full border border-line object-contain bg-paper">
@@ -330,10 +335,7 @@
                                     {{ mb_substr($store->name, 0, 1) }}
                                 </div>
                             @endif
-                            {{-- basis-full below sm: flex-1 kept the name on the same
-                                 line as Chat / Visit store and squeezed it until
-                                 "Nusantara Pantry" truncated to "Nusantara Pan...". --}}
-                            <div class="min-w-0 flex-1 basis-full sm:basis-auto">
+                            <div class="min-w-0 flex-1">
                                 <p class="flex flex-wrap items-center gap-2">
                                     <a href="{{ $store->storefrontUrl() }}" wire:navigate class="truncate text-sm font-medium text-ink">{{ $store->name }}</a>
                                     @if ($store->isApproved())
@@ -359,6 +361,7 @@
                                         <span class="flex items-center gap-1.5"><span aria-hidden="true">·</span><span>{{ $store->state }}</span></span>
                                     @endif
                                 </p>
+                            </div>
                             </div>
                             <a href="{{ auth()->check() ? route('account.messages', ['store' => $store->id, 'product' => $product->id]) : route('login') }}"
                                wire:navigate
