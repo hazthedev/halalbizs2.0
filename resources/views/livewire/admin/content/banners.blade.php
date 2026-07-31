@@ -46,6 +46,18 @@
                     </div>
                 </div>
 
+                {{-- Supporting line + call to action. A headline alone names a
+                     category; these are what actually sell the marketplace. --}}
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <x-ui.input :label="__('Supporting line (English)')" wire:model="subtitle.en" :error="$errors->first('subtitle.en')" :hint="__('Optional — one sentence under the headline.')" />
+                    <x-ui.input :label="__('Supporting line (Bahasa Melayu)')" wire:model="subtitle.ms" :error="$errors->first('subtitle.ms')" :hint="__('Optional — English is shown when empty.')" />
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <x-ui.input :label="__('Button text (English)')" wire:model="ctaLabel.en" :error="$errors->first('ctaLabel.en')" :hint="__('Optional — e.g. Shop Drinks. Hidden when empty.')" />
+                    <x-ui.input :label="__('Button text (Bahasa Melayu)')" wire:model="ctaLabel.ms" :error="$errors->first('ctaLabel.ms')" :hint="__('Optional — English is shown when empty.')" />
+                </div>
+
                 <x-ui.input :label="__('Link URL')" wire:model="linkUrl" placeholder="/c/snacks" :error="$errors->first('linkUrl')" :hint="__('Optional — where the banner clicks through to.')" />
 
                 <div class="grid gap-4 sm:grid-cols-2">
