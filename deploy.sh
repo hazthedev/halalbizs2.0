@@ -117,6 +117,9 @@ if [ "$SEED_DEMO_CATALOGUE" = "true" ] || [ "$SEED_DEMO_CATALOGUE" = "1" ]; then
     "$PHP_BIN" artisan db:seed --class=CategorySeeder --force || echo "  ! category seed reported errors — continuing"
     "$PHP_BIN" artisan db:seed --class=HalalCatalogueSeeder --force || echo "  ! catalogue seed reported errors — continuing"
     "$PHP_BIN" artisan db:seed --class=HalalCertificateSeeder --force || echo "  ! certificate seed reported errors — continuing"
+    # Banner + category artwork. After CategorySeeder, which is what creates the
+    # five top-level categories these images attach to.
+    "$PHP_BIN" artisan db:seed --class=ArtworkSeeder --force || echo "  ! artwork seed reported errors — continuing"
 
     # Re-index after a bulk seed. Products seeded straight into the database do
     # not necessarily reach the search index — the preview browsed 94 products in

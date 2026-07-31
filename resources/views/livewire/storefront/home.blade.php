@@ -27,7 +27,9 @@
         @switch($section->type)
             {{-- ===== Banner carousel (Swiper — quiet 6s crossfade; swipe + arrows kept) ===== --}}
             @case('banner')
-                <section class="mx-auto max-w-7xl px-4 pt-6 sm:pt-8" aria-label="{{ __('Promotions') }}" wire:key="section-{{ $section->id }}">
+                {{-- Full-bleed: no max-w, no side padding, no frame. The banner is the
+                     image itself, edge to edge, so nothing competes with it. --}}
+                <section class="w-full pt-6 sm:pt-8" aria-label="{{ __('Promotions') }}" wire:key="section-{{ $section->id }}">
                     <div
                         wire:ignore
                         x-data
@@ -53,7 +55,7 @@
                         class="relative"
                     >
                         <div
-                            class="swiper overflow-hidden rounded-[var(--radius-card)] border border-line shadow-soft"
+                            class="swiper overflow-hidden"
                             x-ref="container"
                             style="--swiper-pagination-color: var(--color-paper); --swiper-pagination-bullet-inactive-color: var(--color-paper); --swiper-pagination-bullet-inactive-opacity: 0.5;"
                         >
