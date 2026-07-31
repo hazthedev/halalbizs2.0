@@ -23,7 +23,7 @@
             <x-ui.empty-state :title="__('No buyers found')" :message="__('Every registered account that is not admin staff appears here.')" />
         @else
             <table class="w-full min-w-[760px] text-[13px]">
-                <thead class="sticky top-14 z-10 bg-surface">
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Name') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Email') }}</th>
