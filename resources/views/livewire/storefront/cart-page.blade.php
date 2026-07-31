@@ -1,7 +1,11 @@
 <div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12">
     <x-ui.section-heading as="h1" :title="__('Your basket')" />
     @if ($selectedCount > 0)
-        <p class="-mt-4 mb-6 text-[length:var(--text-base)] text-ink-soft">
+        {{-- mt-1.5 matches x-ui.section-heading's own subtitle spacing. The old
+             -mt-4 assumed a gap the heading does not have: at 390px the heading
+             box is only 25px tall, so pulling up 16px laid this line straight
+             across "Your basket". --}}
+        <p class="mt-1.5 mb-6 text-[length:var(--text-base)] text-ink-soft">
             {{ trans_choice('{1} :count item|[2,*] :count items', $selectedCount, ['count' => $selectedCount]) }}
             <span aria-hidden="true" class="text-ink-faint">·</span>
             {{ __('every line carries the certificate it was listed under') }}

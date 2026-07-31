@@ -133,7 +133,11 @@
                 <span class="hidden shrink-0 rounded-[var(--radius-pill)] bg-emerald px-4 py-1.5 text-[length:var(--text-xs)] font-medium text-white transition-colors duration-(--dur-micro) group-hover:bg-emerald-deep sm:block">{{ __('Search') }}</span>
             </button>
 
-            <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {{-- gap-1 below sm: signed in, this cluster carries four controls and
+                 measured 214px, which ran the header 13px past a 390px viewport.
+                 body is overflow-x-clip, so the cart count was being cut rather
+                 than scrolled to. --}}
+            <div class="flex shrink-0 items-center gap-1 sm:gap-2">
                 {{-- Concierge, mobile entry point (desktop uses the floating launcher). --}}
                 @if (config('services.concierge.enabled', true) && ! $bareChrome)
                     <button type="button" x-on:click="$dispatch('open-concierge')"
@@ -192,7 +196,7 @@
                 @endauth
 
                 {{-- Cart — the reference's dark pill with a brass count. --}}
-                <button type="button" x-on:click="$dispatch('open-mini-cart')" class="flex items-center gap-2 rounded-[var(--radius-pill)] bg-emerald-night px-4 py-2 text-[length:var(--text-xs)] font-medium text-on-dark transition-colors duration-(--dur-micro) hover:bg-emerald-deep" aria-label="{{ __('Cart') }}">
+                <button type="button" x-on:click="$dispatch('open-mini-cart')" class="flex items-center gap-2 rounded-[var(--radius-pill)] bg-emerald-night px-3 py-2 text-[length:var(--text-xs)] font-medium text-on-dark transition-colors duration-(--dur-micro) hover:bg-emerald-deep sm:px-4" aria-label="{{ __('Cart') }}">
                     <svg class="size-4 shrink-0 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
                     <span class="hidden sm:block">{{ __('Cart') }}</span>
                     <span x-show="$store.cart.count > 0" x-cloak
