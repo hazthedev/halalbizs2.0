@@ -98,7 +98,7 @@
                                                  art to buy height would throw away the photograph. On sm+ it
                                                  sits in the right third, which is the area the art was composed
                                                  to leave quiet, over a scrim that holds it legible. --}}
-                                            <div class="hidden sm:pointer-events-none sm:absolute sm:inset-y-0 sm:right-0 sm:flex sm:w-[46%] sm:flex-col sm:justify-center sm:bg-gradient-to-l sm:from-paper sm:via-paper/90 sm:to-transparent sm:px-8 lg:w-2/5 lg:px-12">
+                                            <div class="hidden sm:pointer-events-none sm:absolute sm:inset-y-0 sm:right-0 sm:flex sm:w-[46%] sm:flex-col sm:justify-center sm:bg-gradient-to-l sm:from-paper sm:via-paper/90 sm:to-transparent sm:pl-8 sm:pr-20 lg:w-2/5 lg:pl-12 lg:pr-24">
                                                 <p class="font-display text-lg leading-tight font-medium text-balance text-ink-head sm:text-2xl lg:text-[32px]">{{ $bannerTitle }}</p>
                                                 @if ($bannerSubtitle !== '')
                                                     <p class="mt-1.5 text-[length:var(--text-base)] leading-snug text-ink-soft sm:mt-2.5">{{ $bannerSubtitle }}</p>
