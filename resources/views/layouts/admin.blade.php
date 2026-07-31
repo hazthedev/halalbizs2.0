@@ -33,8 +33,8 @@
 
     <div class="flex">
         <aside
-            class="fixed inset-y-0 left-0 z-30 w-60 -translate-x-full overflow-y-auto border-r border-line bg-surface pt-14 transition-transform duration-150 lg:static lg:translate-x-0 lg:pt-0"
-            x-bind:class="sidebarOpen ? 'translate-x-0' : ''"
+            class="invisible fixed inset-y-0 left-0 z-30 w-60 -translate-x-full overflow-y-auto border-r border-line bg-surface pt-14 transition-[transform,visibility] duration-150 lg:visible lg:static lg:translate-x-0 lg:pt-0"
+            x-bind:class="sidebarOpen ? 'translate-x-0 visible' : ''"
         >
             <nav class="space-y-4 p-3 text-sm" aria-label="{{ __('Admin navigation') }}">
                 @php
@@ -129,7 +129,7 @@
                         <div class="space-y-0.5">
                             @foreach ($links as [$routeName, $label, $activePattern])
                                 <a href="{{ route($routeName) }}" wire:navigate
-                                   class="block rounded-[var(--radius-control)] px-3 py-2 font-medium {{ request()->routeIs($activePattern) ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                                   class="block rounded-[var(--radius-control)] px-3 py-3 font-medium lg:py-2 {{ request()->routeIs($activePattern) ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                                     {{ $label }}
                                 </a>
                             @endforeach
