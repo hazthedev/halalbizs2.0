@@ -111,7 +111,10 @@
     {{-- Row 2 — main bar. Light, hairline base, no shadow until elevated. --}}
     <header class="header-motion sticky top-0 z-40 border-b border-line bg-paper"
             x-data="hbHeaderElevate" x-bind:class="elevated && 'is-elevated'">
-        <div class="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-3 lg:px-12">
+        {{-- gap-2 below sm: giving the search trigger a fixed 36px box (instead of
+             letting flex-1 crush it to 24px) added 12px to this row and put a
+             375px viewport back into overflow. The two 16px gaps were the slack. --}}
+        <div class="mx-auto flex max-w-[1400px] items-center gap-2 px-4 py-3 sm:gap-4 lg:px-12">
             <a href="{{ route('home') }}" wire:navigate class="flex shrink-0 items-center gap-2">
                 <x-ui.star-mark :size="26" class="text-emerald" />
                 <span class="flex flex-col leading-none">
