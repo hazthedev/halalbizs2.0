@@ -28,6 +28,12 @@ class Banners extends Component
     /** @var array{en: string, ms: string} */
     public array $title = ['en' => '', 'ms' => ''];
 
+    /** @var array{en: string, ms: string} */
+    public array $subtitle = ['en' => '', 'ms' => ''];
+
+    /** @var array{en: string, ms: string} */
+    public array $ctaLabel = ['en' => '', 'ms' => ''];
+
     public string $linkUrl = '';
 
     public string $startsAt = '';
@@ -57,6 +63,14 @@ class Banners extends Component
             'en' => $banner->getTranslation('title', 'en'),
             'ms' => $banner->getTranslation('title', 'ms', false) ?? '',
         ];
+        $this->subtitle = [
+            'en' => $banner->getTranslation('subtitle', 'en', false) ?? '',
+            'ms' => $banner->getTranslation('subtitle', 'ms', false) ?? '',
+        ];
+        $this->ctaLabel = [
+            'en' => $banner->getTranslation('cta_label', 'en', false) ?? '',
+            'ms' => $banner->getTranslation('cta_label', 'ms', false) ?? '',
+        ];
         $this->linkUrl = $banner->link_url ?? '';
         $this->startsAt = $banner->starts_at?->format('Y-m-d\TH:i') ?? '';
         $this->endsAt = $banner->ends_at?->format('Y-m-d\TH:i') ?? '';
@@ -74,6 +88,10 @@ class Banners extends Component
         $this->validate([
             'title.en' => ['required', 'string', 'max:255'],
             'title.ms' => ['nullable', 'string', 'max:255'],
+            'subtitle.en' => ['nullable', 'string', 'max:255'],
+            'subtitle.ms' => ['nullable', 'string', 'max:255'],
+            'ctaLabel.en' => ['nullable', 'string', 'max:60'],
+            'ctaLabel.ms' => ['nullable', 'string', 'max:60'],
             'linkUrl' => ['nullable', 'string', 'max:255'],
             'startsAt' => ['nullable', 'date'],
             'endsAt' => ['nullable', 'date'],
@@ -115,6 +133,18 @@ class Banners extends Component
             $banner->setTranslation('title', 'ms', trim($this->title['ms']));
         } else {
             $banner->forgetTranslation('title', 'ms');
+        }
+
+        // subtitle and cta_label follow the same rule as title: en is the
+        // fallback, ms only when actually filled in.
+        foreach (['subtitle' => $this->subtitle, 'cta_label' => $this->ctaLabel] as $field => $values) {
+            foreach (['en', 'ms'] as $locale) {
+                if (trim($values[$locale] ?? '') !== '') {
+                    $banner->setTranslation($field, $locale, trim($values[$locale]));
+                } else {
+                    $banner->forgetTranslation($field, $locale);
+                }
+            }
         }
 
         $banner->save();
@@ -198,7 +228,7 @@ class Banners extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['showForm', 'editingId', 'title', 'linkUrl', 'startsAt', 'endsAt', 'isActive', 'image', 'video']);
+        $this->reset(['showForm', 'editingId', 'title', 'subtitle', 'ctaLabel', 'linkUrl', 'startsAt', 'endsAt', 'isActive', 'image', 'video']);
         $this->resetErrorBag();
     }
 

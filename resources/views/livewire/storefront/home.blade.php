@@ -63,6 +63,8 @@
                                 @foreach ($data as $banner)
                                     @php
                                         $bannerTitle = $banner->getTranslation('title', app()->getLocale());
+                                        $bannerSubtitle = trim((string) $banner->getTranslation('subtitle', app()->getLocale()));
+                                        $bannerCta = trim((string) $banner->getTranslation('cta_label', app()->getLocale()));
                                         $bannerVideo = $banner->getFirstMediaUrl('video');
                                     @endphp
                                     <div class="swiper-slide">
@@ -84,13 +86,29 @@
                                                      class="aspect-[3/1] w-full bg-paper object-cover" @if (! $loop->first) loading="lazy" @endif>
                                             @endif
 
-                                            {{-- The headline is REAL TEXT over the art, never baked into it:
-                                                 it translates with the locale, a screen reader can read it, and
-                                                 an image generator can never hand it back misspelt. The art is
-                                                 composed with its right third quiet, which is where this sits;
-                                                 the scrim keeps it legible whatever the photograph does. --}}
-                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex w-3/5 items-center bg-gradient-to-l from-paper via-paper/85 to-transparent px-4 sm:w-2/5 sm:px-8 lg:px-12">
-                                                <p class="font-display text-[15px] leading-tight font-medium text-ink-head sm:text-2xl lg:text-[32px]">{{ $bannerTitle }}</p>
+                                            {{-- REAL TEXT, never baked into the art: it translates with the
+                                                 locale, a screen reader reads it, and an image model can never
+                                                 hand it back misspelt.
+
+                                                 BELOW the image on a phone, overlaid only from sm. At 375px a
+                                                 3:1 banner is 125px tall — a headline, a supporting line and a
+                                                 call to action cannot be legible inside that, and cropping the
+                                                 art to buy height would throw away the photograph. On sm+ it
+                                                 sits in the right third, which is the area the art was composed
+                                                 to leave quiet, over a scrim that holds it legible. --}}
+                                            <div class="px-4 pt-4 pb-1 sm:pointer-events-none sm:absolute sm:inset-y-0 sm:right-0 sm:flex sm:w-[46%] sm:flex-col sm:justify-center sm:bg-gradient-to-l sm:from-paper sm:via-paper/90 sm:to-transparent sm:px-8 sm:pt-0 sm:pb-0 lg:w-2/5 lg:px-12">
+                                                <p class="font-display text-lg leading-tight font-medium text-balance text-ink-head sm:text-2xl lg:text-[32px]">{{ $bannerTitle }}</p>
+                                                @if ($bannerSubtitle !== '')
+                                                    <p class="mt-1.5 text-[length:var(--text-base)] leading-snug text-ink-soft sm:mt-2.5">{{ $bannerSubtitle }}</p>
+                                                @endif
+                                                @if ($bannerCta !== '')
+                                                    {{-- A span, not a link: the whole slide is already an anchor
+                                                         and nesting one inside it is invalid and fails axe. --}}
+                                                    <span class="mt-3 inline-flex w-fit items-center gap-1.5 rounded-[var(--radius-pill)] bg-emerald px-4 py-2 text-[length:var(--text-xs)] font-medium text-white sm:mt-4">
+                                                        {{ $bannerCta }}
+                                                        <span aria-hidden="true">&rarr;</span>
+                                                    </span>
+                                                @endif
                                             </div>
                                         @if ($banner->link_url)
                                             </a>

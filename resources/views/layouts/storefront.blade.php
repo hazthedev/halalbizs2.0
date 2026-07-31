@@ -133,7 +133,7 @@
                      ~24px at 375px — 22px of that being padding — so the shrink-0
                      16px magnifier rendered hanging out of its own pill. --}}
                 aria-label="{{ __('Search products, stores…') }}"
-                class="group flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-pill)] border border-line bg-surface text-[length:var(--text-base)] text-ink-faint transition-colors duration-(--dur-micro) hover:border-line-strong sm:mx-auto sm:h-11 sm:w-auto sm:min-w-0 sm:max-w-2xl sm:flex-1 sm:shrink sm:justify-start sm:gap-2.5 sm:pl-4 sm:pr-1.5"
+                class="group ml-auto flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-pill)] border border-line bg-surface text-[length:var(--text-base)] text-ink-faint transition-colors duration-(--dur-micro) hover:border-line-strong sm:ml-0 sm:mx-auto sm:h-11 sm:w-auto sm:min-w-0 sm:max-w-2xl sm:flex-1 sm:shrink sm:justify-start sm:gap-2.5 sm:pl-4 sm:pr-1.5"
             >
                 <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
                 <span class="hidden min-w-0 flex-1 truncate text-left sm:block">{{ __('Search products, stores…') }}</span>

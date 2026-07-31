@@ -15,9 +15,9 @@ class Banner extends Model implements HasMedia
 {
     use HasFactory, HasTranslations, InteractsWithMedia;
 
-    public array $translatable = ['title'];
+    public array $translatable = ['title', 'subtitle', 'cta_label'];
 
-    protected $fillable = ['title', 'link_url', 'position', 'starts_at', 'ends_at', 'is_active'];
+    protected $fillable = ['title', 'subtitle', 'cta_label', 'link_url', 'position', 'starts_at', 'ends_at', 'is_active'];
 
     protected function casts(): array
     {
