@@ -62,7 +62,15 @@ trait InteractsWithCart
             return [];
         }
 
-        return Wishlist::where('user_id', auth()->id())->pluck('product_id')->all();
+        // Cast to int: every caller tests membership with in_array(..., true), and
+        // a plucked column can arrive as a numeric STRING, in which case the
+        // strict compare is always false and no heart ever fills. Proven on the
+        // preview — the row is written and the toast fires, but the button is
+        // byte-identical afterwards and stays that way through a full reload.
+        return Wishlist::where('user_id', auth()->id())
+            ->pluck('product_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
     }
 
     private function reconcileCart(string $message, bool $error = false, ?string $actionLabel = null, ?string $actionEvent = null): void

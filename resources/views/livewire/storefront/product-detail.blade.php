@@ -330,7 +330,10 @@
                                     {{ mb_substr($store->name, 0, 1) }}
                                 </div>
                             @endif
-                            <div class="min-w-0 flex-1">
+                            {{-- basis-full below sm: flex-1 kept the name on the same
+                                 line as Chat / Visit store and squeezed it until
+                                 "Nusantara Pantry" truncated to "Nusantara Pan...". --}}
+                            <div class="min-w-0 flex-1 basis-full sm:basis-auto">
                                 <p class="flex flex-wrap items-center gap-2">
                                     <a href="{{ $store->storefrontUrl() }}" wire:navigate class="truncate text-sm font-medium text-ink">{{ $store->name }}</a>
                                     @if ($store->isApproved())
@@ -341,19 +344,19 @@
                                     @endif
                                 </p>
                                 <p class="mt-0.5 flex flex-wrap items-center gap-1.5 text-[13px] text-ink-soft">
+                                    {{-- Each separator travels INSIDE the span of the value
+                                         it precedes. As loose flex items they could land at
+                                         the end of a wrapped line, which is how "12 products ·"
+                                         ended a line with Selangor alone on the next. --}}
                                     @if ($store->rating_count > 0)
-                                        <span aria-hidden="true">★</span>
-                                        <span class="tnum">{{ number_format((float) $store->rating_avg, 1) }} ({{ number_format($store->rating_count) }})</span>
-                                        <span aria-hidden="true">·</span>
+                                        <span class="flex items-center gap-1.5"><span aria-hidden="true">★</span><span class="tnum">{{ number_format((float) $store->rating_avg, 1) }} ({{ number_format($store->rating_count) }})</span></span>
                                     @endif
                                     @if ($store->service_rating_count > 0)
-                                        <span>{{ __('Seller service') }} <span aria-hidden="true">★</span><span class="tnum">{{ number_format((float) $store->service_rating_avg, 1) }} ({{ number_format($store->service_rating_count) }})</span></span>
-                                        <span aria-hidden="true">·</span>
+                                        <span class="flex items-center gap-1.5">@if ($store->rating_count > 0)<span aria-hidden="true">·</span>@endif<span>{{ __('Seller service') }} <span aria-hidden="true">★</span><span class="tnum">{{ number_format((float) $store->service_rating_avg, 1) }} ({{ number_format($store->service_rating_count) }})</span></span></span>
                                     @endif
-                                    <span class="tnum">{{ number_format($storeProductsCount) }} {{ __('products') }}</span>
+                                    <span class="flex items-center gap-1.5">@if ($store->rating_count > 0 || $store->service_rating_count > 0)<span aria-hidden="true">·</span>@endif<span class="tnum">{{ number_format($storeProductsCount) }} {{ __('products') }}</span></span>
                                     @if ($store->state)
-                                        <span aria-hidden="true">·</span>
-                                        <span>{{ $store->state }}</span>
+                                        <span class="flex items-center gap-1.5"><span aria-hidden="true">·</span><span>{{ $store->state }}</span></span>
                                     @endif
                                 </p>
                             </div>

@@ -10,7 +10,7 @@
     <button type="button"
             x-on:click="open = !open"
             x-bind:aria-expanded="open ? 'true' : 'false'"
-            class="relative flex size-10 items-center justify-center rounded-[var(--radius-pill)] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald {{ $onDark ? 'text-on-dark hover:bg-on-dark/10' : 'border border-line text-ink-soft hover:border-line-strong hover:text-ink' }}"
+            class="relative flex size-9 items-center justify-center rounded-[var(--radius-pill)] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald sm:size-10 {{ $onDark ? 'text-on-dark hover:bg-on-dark/10' : 'border border-line text-ink-soft hover:border-line-strong hover:text-ink' }}"
             aria-label="{{ $unreadCount > 0 ? __('Notifications — :count unread', ['count' => $unreadCount]) : __('Notifications') }}"
             data-testid="notification-bell">
         <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -25,7 +25,12 @@
     <div x-show="open" x-cloak
          x-on:click.outside="open = false"
          x-transition.origin.top.right.duration.150ms
-         class="absolute right-0 top-12 z-50 w-80 max-w-[calc(100vw-2rem)] rounded-[10px] border border-line bg-surface shadow-lg">
+         {{-- Below sm the panel is pinned to the VIEWPORT, not to the bell.
+              `max-w` only caps the width, it cannot move the box: anchored
+              right-0 to a bell whose right edge sits at 274px, a 320px panel
+              starts at -46px and the first ~46px of every line is cut off the
+              left of the screen (measured at 375px). --}}
+         class="fixed inset-x-4 top-16 z-50 rounded-[10px] border border-line bg-surface shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-80">
         <div class="flex items-center justify-between border-b border-line px-4 py-2.5">
             <p class="text-sm font-semibold text-ink">{{ __('Notifications') }}</p>
             @if ($unreadCount > 0)
