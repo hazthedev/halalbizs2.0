@@ -528,3 +528,11 @@
         --text-mini: 12px;
     }
 }
+
+/* Alpine's x-cloak needs a stylesheet rule to mean anything. It is used in the
+   storefront, seller and admin layouts, the notification bell, the mini-cart
+   badge and the shop assistant — and it was never defined, so every one of them
+   rendered for a frame before Alpine booted and then vanished. */
+[x-cloak] {
+    display: none !important;
+}
