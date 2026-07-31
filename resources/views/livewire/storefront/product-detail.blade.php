@@ -459,7 +459,7 @@
     </div>
 
     {{-- ===== Mobile sticky buy bar (ink frame) ===== --}}
-    <div class="fixed inset-x-0 bottom-0 z-30 border-t border-emerald-edge bg-emerald-night shadow-pop lg:hidden">
+    <div data-hb-bottom-bar class="fixed inset-x-0 bottom-0 z-30 border-t border-emerald-edge bg-emerald-night shadow-pop lg:hidden">
         <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3">
             @if ($store !== null)
                 <a href="{{ auth()->check() ? route('account.messages', ['store' => $store->id, 'product' => $product->id]) : route('login') }}"
