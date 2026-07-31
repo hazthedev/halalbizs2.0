@@ -34,8 +34,8 @@
     <div class="flex">
         {{-- Sidebar --}}
         <aside
-            class="fixed inset-y-0 left-0 z-30 w-60 -translate-x-full border-r border-line bg-surface pt-14 transition-transform duration-150 lg:static lg:translate-x-0 lg:pt-0"
-            x-bind:class="sidebarOpen ? 'translate-x-0' : ''"
+            class="invisible fixed inset-y-0 left-0 z-30 w-60 -translate-x-full border-r border-line bg-surface pt-14 transition-[transform,visibility] duration-150 lg:visible lg:static lg:translate-x-0 lg:pt-0"
+            x-bind:class="sidebarOpen ? 'translate-x-0 visible' : ''"
         >
             <nav class="space-y-0.5 p-3" aria-label="{{ __('Seller navigation') }}">
                 @php
@@ -46,18 +46,18 @@
                 @endphp
                 @foreach ($links as $link)
                     <a href="{{ route($link['route']) }}" wire:navigate
-                       class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ $link['active'] ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                       class="block rounded-[var(--radius-control)] px-3 py-3 text-sm font-medium lg:py-2 {{ $link['active'] ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                         {{ $link['label'] }}
                     </a>
                 @endforeach
 
                 @if (Illuminate\Support\Facades\Route::has('seller.orders.index'))
                     <a href="{{ route('seller.orders.index') }}" wire:navigate
-                       class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.orders.*') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                       class="block rounded-[var(--radius-control)] px-3 py-3 text-sm font-medium lg:py-2 {{ request()->routeIs('seller.orders.*') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                         {{ __('Orders') }}
                     </a>
                 @else
-                    <span class="block cursor-not-allowed rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-ink-faint">{{ __('Orders') }} <span class="text-[11px]">({{ __('soon') }})</span></span>
+                    <span class="block cursor-not-allowed rounded-[var(--radius-control)] px-3 py-3 text-sm font-medium lg:py-2 text-ink-faint">{{ __('Orders') }} <span class="text-[11px]">({{ __('soon') }})</span></span>
                 @endif
 
                 @php
@@ -68,7 +68,7 @@
                         ->count();
                 @endphp
                 <a href="{{ route('seller.messages') }}" wire:navigate
-                   class="flex items-center justify-between gap-2 rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.messages') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                   class="flex items-center justify-between gap-2 rounded-[var(--radius-control)] px-3 py-3 text-sm font-medium lg:py-2 {{ request()->routeIs('seller.messages') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                     <span>{{ __('Messages') }}</span>
                     @if ($sellerUnreadMessages > 0)
                         <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 text-[11px] font-medium text-emerald tnum">{{ $sellerUnreadMessages }}</span>
@@ -86,21 +86,21 @@
                 @foreach ($sellerNavItems as [$routeName, $label])
                     @if (Illuminate\Support\Facades\Route::has($routeName))
                         <a href="{{ route($routeName) }}" wire:navigate
-                           class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ request()->routeIs(str_replace('.index', '.*', $routeName)) ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                           class="block rounded-[var(--radius-control)] px-3 py-3 text-sm font-medium lg:py-2 {{ request()->routeIs(str_replace('.index', '.*', $routeName)) ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                             {{ $label }}
                         </a>
                     @else
-                        <span class="block cursor-not-allowed rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-ink-faint">{{ $label }} <span class="text-[11px]">({{ __('soon') }})</span></span>
+                        <span class="block cursor-not-allowed rounded-[var(--radius-control)] px-3 py-3 text-sm font-medium lg:py-2 text-ink-faint">{{ $label }} <span class="text-[11px]">({{ __('soon') }})</span></span>
                     @endif
                 @endforeach
 
                 <a href="{{ route('seller.settings') }}" wire:navigate
-                   class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium {{ request()->routeIs('seller.settings') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
+                   class="block rounded-[var(--radius-control)] px-3 py-3 text-sm font-medium lg:py-2 {{ request()->routeIs('seller.settings') ? 'bg-brass-tint text-brass-deep' : 'text-ink-soft hover:bg-paper hover:text-ink' }}">
                     {{ __('Shop settings') }}
                 </a>
 
                 <a href="{{ route('help.index') }}" wire:navigate
-                   class="block rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-ink-soft hover:bg-paper hover:text-ink">
+                   class="block rounded-[var(--radius-control)] px-3 py-3 text-sm font-medium lg:py-2 text-ink-soft hover:bg-paper hover:text-ink">
                     {{ __('Get help') }}
                 </a>
             </nav>
