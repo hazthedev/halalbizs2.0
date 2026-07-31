@@ -118,17 +118,21 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <div x-ref="pagination" class="swiper-pagination"></div>
+                            {{-- !bottom-auto + a top offset: the default puts the dots at the
+                                 bottom of the swiper box, which since the copy moved inside the
+                                 slide meant they sat on top of the call-to-action button on a
+                                 phone. calc pins them to the foot of the 3:1 image band. --}}
+                            <div x-ref="pagination" class="swiper-pagination !bottom-auto !top-[calc(33.333vw_-_1.75rem)] sm:!top-auto sm:!bottom-3"></div>
                         </div>
 
                         @if ($data->count() > 1)
                             <button type="button" x-ref="prev"
-                                    class="absolute left-3 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-ink transition-colors hover:bg-surface disabled:opacity-40"
+                                    class="absolute left-3 top-1/2 z-10 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-ink transition-colors hover:bg-surface disabled:opacity-40 sm:flex"
                                     aria-label="{{ __('Previous banner') }}">
                                 <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
                             </button>
                             <button type="button" x-ref="next"
-                                    class="absolute right-3 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-ink transition-colors hover:bg-surface disabled:opacity-40"
+                                    class="absolute right-3 top-1/2 z-10 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-ink transition-colors hover:bg-surface disabled:opacity-40 sm:flex"
                                     aria-label="{{ __('Next banner') }}">
                                 <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
                             </button>
