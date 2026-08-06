@@ -321,32 +321,33 @@ class CheckoutService
                 foreach ($discount?->freeShippingStoreIds ?? [] as $storeId) {
                     $fee = $storeTotals[$storeId]['shipping_fee_sen'];
 
-                    if ($fee <= 0) {
-                        continue; // already waived by an earlier slot — never double-count
+                    // Nothing to waive, or an earlier slot already waived it —
+                    // never double-count. The subsidy check is what catches the
+                    // second slot on a platform-funded waiver, where the fee the
+                    // seller still earns deliberately stays on the sub-order.
+                    if ($fee <= 0 || $storeTotals[$storeId]['shipping_subsidy_sen'] > 0) {
+                        continue;
                     }
 
                     $waivedSen[$slot] += $fee;
                     $shippingTotalSen -= $fee;
                     $storeTotals[$storeId]['shipping_subsidy_sen'] = $fee;
-                    $storeTotals[$storeId]['shipping_fee_sen'] = 0;
+
+                    // Who pays for the waiver. A seller-funded voucher zeroes the
+                    // fee — that IS the seller's cost. A PLATFORM-funded one must
+                    // not be charged to the seller: the buyer stops paying it
+                    // (order shipping_total above), the sub-order keeps it, and
+                    // the ledger credits it as part of the sale.
+                    if (! $discount->voucher->isPlatformFunded()) {
+                        $storeTotals[$storeId]['shipping_fee_sen'] = 0;
+                    }
                 }
             }
 
             // Platform share lives at order level (discount_total_sen); the
             // shop discount lands on its sub-order's shop_discount_sen below.
             $shopDiscountTotalSen = $shopDiscount?->totalDiscountSen ?? 0;
-
-            // The COMBINED item discount can never exceed the items subtotal —
-            // each voucher is only capped to its OWN basis, so a stacked
-            // platform% + shop% could otherwise spill past 100% of the
-            // merchandise and start discounting shipping + tax (money the buyer
-            // still owes). The seller-funded shop voucher (already capped to its
-            // store) is honoured in full; the platform share yields to the room
-            // that leaves.
-            $discountTotalSen = min(
-                $platformDiscount?->totalDiscountSen ?? 0,
-                max(0, $subtotalSen - $shopDiscountTotalSen),
-            );
+            $discountTotalSen = $this->vouchers->platformDiscountSen($platformDiscount, $shopDiscount, $subtotalSen);
 
             // AL-L1: the same voucher ROW can fill two slots at once — e.g. a
             // shop free-shipping code entered as both $shopCode and

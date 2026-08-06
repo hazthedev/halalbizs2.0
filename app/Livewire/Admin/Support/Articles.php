@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Support;
 
 use App\Enums\HelpCategory;
 use App\Models\HelpArticle;
+use App\Support\HtmlSanitizer;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -16,8 +17,6 @@ use Livewire\Component;
 #[Layout('layouts.admin')]
 class Articles extends Component
 {
-    public const ALLOWED_TAGS = '<p><br><h2><h3><ul><ol><li><strong><em><a>';
-
     public bool $showForm = false;
 
     #[Locked]
@@ -138,7 +137,9 @@ class Articles extends Component
     /** Body is stored as HTML — strip everything outside the allowlist. */
     private function sanitize(string $html): string
     {
-        return strip_tags(trim($html), self::ALLOWED_TAGS);
+        // strip_tags() keeps every ATTRIBUTE on the tags it spares, so
+        // onclick=/href="javascript:" survived into a {!! !!} body (C7).
+        return HtmlSanitizer::clean($html, HtmlSanitizer::CMS_TAGS);
     }
 
     private function resetForm(): void

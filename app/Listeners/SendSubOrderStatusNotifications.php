@@ -20,6 +20,10 @@ class SendSubOrderStatusNotifications
         SubOrderStatus::Delivered,
         SubOrderStatus::Completed,
         SubOrderStatus::Cancelled,
+        // The seller confirming the returned item arrived is the buyer's cue
+        // that the refund is next — it was the one transition that told them
+        // nothing (C18).
+        SubOrderStatus::Returned,
         SubOrderStatus::Refunded,
     ];
 

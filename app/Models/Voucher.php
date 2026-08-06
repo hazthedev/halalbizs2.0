@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +16,7 @@ class Voucher extends Model
     use HasFactory;
 
     protected $fillable = [
-        'scope', 'store_id', 'code', 'type', 'funded_by', 'value_sen', 'percent', 'max_discount_sen',
+        'scope', 'store_id', 'user_id', 'code', 'type', 'funded_by', 'value_sen', 'percent', 'max_discount_sen',
         'min_spend_sen', 'quota', 'per_user_limit', 'used_count', 'starts_at', 'ends_at', 'is_active',
     ];
 
@@ -41,6 +43,23 @@ class Voucher extends Model
         return $this->belongsTo(Store::class);
     }
 
+    /** The winner, for a personal voucher (spin prize); null = public. */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Public vouchers plus this user's own personal ones — the single owner
+     * predicate for BOTH the checkout picker and VoucherService::lookup(),
+     * so a spin prize can never be listed to, or redeemed by, a stranger.
+     */
+    #[Scope]
+    protected function visibleTo(Builder $query, User $user): void
+    {
+        $query->where(fn (Builder $inner) => $inner->whereNull('user_id')->orWhere('user_id', $user->id));
+    }
+
     public function usages(): HasMany
     {
         return $this->hasMany(VoucherUsage::class);
@@ -49,6 +68,14 @@ class Voucher extends Model
     public function isWithinWindow(): bool
     {
         return now()->between($this->starts_at, $this->ends_at);
+    }
+
+    /** Who absorbs this voucher's cost — `funded_by` when set, else the scope. */
+    public function isPlatformFunded(): bool
+    {
+        return $this->funded_by !== null
+            ? $this->funded_by === 'platform'
+            : $this->scope === VoucherScope::Platform;
     }
 
     public function hasQuotaRemaining(): bool

@@ -78,6 +78,15 @@ class Form extends Component
     /** @var array<int, TemporaryUploadedFile> */
     public array $newImages = [];
 
+    /**
+     * Uploads dropped on arrival because they aren't images, keyed by the slot
+     * they arrived in — held so the save can name them (see updatedNewImages).
+     *
+     * @var array<int, string>
+     */
+    #[Locked]
+    public array $rejectedImages = [];
+
     /** One optional product video (mp4/webm, ≤30MB) — singleFile collection. */
     public ?TemporaryUploadedFile $newVideo = null;
 
@@ -266,6 +275,38 @@ class Form extends Component
     }
 
     // ── Images ─────────────────────────────────────────────────────────
+
+    /**
+     * The thumbnail strip calls temporaryUrl() on every pending upload, and
+     * Livewire throws for anything outside preview_mimes — so a non-image
+     * renamed .jpg used to 500 this very re-render instead of showing an error
+     * (C12). Such a file can never pass the 'image' rule either, so drop it on
+     * arrival and remember it for the save.
+     */
+    public function updatedNewImages(): void
+    {
+        $this->rejectedImages = [];
+
+        foreach ($this->newImages as $index => $file) {
+            if (! $file->isPreviewable()) {
+                $this->rejectedImages[$index] = $file->getClientOriginalName();
+            }
+        }
+
+        if ($this->rejectedImages === []) {
+            return;
+        }
+
+        $this->newImages = array_values(array_diff_key($this->newImages, $this->rejectedImages));
+        $this->addRejectedImageErrors();
+    }
+
+    private function addRejectedImageErrors(): void
+    {
+        foreach ($this->rejectedImages as $index => $name) {
+            $this->addError("newImages.{$index}", __('":name" is not an image file.', ['name' => $name]));
+        }
+    }
 
     public function removeNewImage(int $index): void
     {
@@ -518,13 +559,13 @@ class Form extends Component
             $option->delete();
         }
 
-        $saleSen = RinggitInput::toSen($this->salePrice);
+        $saleSen = $this->parseSen($this->salePrice);
 
         $payload = [
             'sku' => trim($this->sku) !== '' ? trim($this->sku) : null,
             'options_label' => null,
             'option_value_ids' => null,
-            'price_sen' => RinggitInput::toSen($this->price),
+            'price_sen' => $this->parseSen($this->price),
             'sale_price_sen' => $saleSen,
             'sale_starts_at' => $saleSen !== null ? $this->parseScheduleDate($this->saleStartsAt) : null,
             'sale_ends_at' => $saleSen !== null ? $this->parseScheduleDate($this->saleEndsAt) : null,
@@ -593,14 +634,14 @@ class Form extends Component
 
             $sorted = $valueIds;
             sort($sorted);
-            $saleSen = RinggitInput::toSen($row['sale_price']);
+            $saleSen = $this->parseSen($row['sale_price']);
 
             $targets[implode(',', $sorted)] = [
                 'key' => (string) $key,
                 'payload' => [
                     'options_label' => implode(' / ', $labels),
                     'option_value_ids' => $valueIds,
-                    'price_sen' => RinggitInput::toSen($row['price']),
+                    'price_sen' => $this->parseSen($row['price']),
                     'sale_price_sen' => $saleSen,
                     'sale_starts_at' => $saleSen !== null ? $this->parseScheduleDate($this->saleStartsAt) : null,
                     'sale_ends_at' => $saleSen !== null ? $this->parseScheduleDate($this->saleEndsAt) : null,
@@ -712,6 +753,11 @@ class Form extends Component
             'newVideo' => __('video'),
         ]);
 
+        // validate() clears the error bag, so the uploads dropped on arrival are
+        // reported here — once, then forgotten, or the seller could never save.
+        $this->addRejectedImageErrors();
+        $this->rejectedImages = [];
+
         $this->validateCategory();
         $this->validateImages($publishing);
         $this->validateSchedule();
@@ -787,14 +833,14 @@ class Form extends Component
 
     private function validateSinglePricing(): void
     {
-        $priceSen = RinggitInput::toSen($this->price);
+        $priceSen = $this->parseSen($this->price);
 
         if ($priceSen === null || $priceSen <= 0) {
             $this->addError('price', __('Enter a price above RM 0 — e.g. 19.90.'));
         }
 
         if (trim($this->salePrice) !== '') {
-            $saleSen = RinggitInput::toSen($this->salePrice);
+            $saleSen = $this->parseSen($this->salePrice);
 
             if ($saleSen === null || $saleSen <= 0) {
                 $this->addError('salePrice', __('Enter a valid sale price — e.g. 15.90.'));
@@ -849,14 +895,14 @@ class Form extends Component
         $seenSkus = [];
 
         foreach ($this->matrix as $key => $row) {
-            $priceSen = RinggitInput::toSen($row['price']);
+            $priceSen = $this->parseSen($row['price']);
 
             if ($priceSen === null || $priceSen <= 0) {
                 $this->addError("matrix.{$key}.price", __('Price above RM 0 required.'));
             }
 
             if (trim($row['sale_price']) !== '') {
-                $saleSen = RinggitInput::toSen($row['sale_price']);
+                $saleSen = $this->parseSen($row['sale_price']);
 
                 if ($saleSen === null || $saleSen <= 0) {
                     $this->addError("matrix.{$key}.sale_price", __('Invalid sale price.'));
@@ -919,6 +965,16 @@ class Form extends Component
             ->where('is_filterable', true)
             ->with(['values' => fn ($values) => $values->orderBy('position')])
             ->get() ?? collect();
+    }
+
+    /**
+     * RinggitInput::toSen() strips every non-[0-9.] character, so "-50.00"
+     * would come back as 5000 sen — the seller's input silently reinterpreted.
+     * Treat a signed amount as unparseable so validation rejects it (C17).
+     */
+    private function parseSen(string $value): ?int
+    {
+        return str_contains($value, '-') ? null : RinggitInput::toSen($value);
     }
 
     private function parseScheduleDate(string $value): ?Carbon

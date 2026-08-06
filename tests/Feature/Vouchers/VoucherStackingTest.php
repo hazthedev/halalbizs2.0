@@ -75,7 +75,7 @@ test('a platform discount, a free-shipping voucher and a shop voucher all stack'
     expect($platform->fresh()->used_count)->toBe(1)
         ->and($freeShip->fresh()->used_count)->toBe(1)
         ->and($shop->fresh()->used_count)->toBe(1)
-        ->and($freeShip->usages()->sum('discount_sen'))->toBe(1200); // total waived shipping
+        ->and((int) $freeShip->usages()->sum('discount_sen'))->toBe(1200); // total waived shipping
 });
 
 test('stacked item vouchers over 100% never discount shipping or tax', function () {

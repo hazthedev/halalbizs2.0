@@ -107,7 +107,8 @@ class Dashboard extends Component
         // part of this component's Livewire snapshot, which is serialised into
         // the page whether or not the markup that consumes it renders. Hiding a
         // chart does not stop its numbers reaching the browser.
-        $canSeeFinance = auth()->user()?->can('finance.manage') ?? false;
+        $canSeeFinance = $this->canSeeFinance();
+        $user = auth()->user();
 
         // GMV — paid orders only (the platform's honest number).
         $gmvSen = (int) Order::query()
@@ -129,8 +130,14 @@ class Dashboard extends Component
             ->where('created_at', '>=', $start)
             ->sum('amount_sen');
 
-        $ordersToday = Order::query()->where('placed_at', '>=', now()->startOfDay())->count();
-        $newBuyersToday = User::query()->where('created_at', '>=', now()->startOfDay())->count();
+        // Volume tiles are platform-wide numbers too, so they follow the
+        // permission that owns their section (same rule as queues() below).
+        $ordersToday = ($user?->can('orders.manage') ?? false)
+            ? Order::query()->where('placed_at', '>=', now()->startOfDay())->count()
+            : 0;
+        $newBuyersToday = ($user?->can('sellers.manage') ?? false)
+            ? User::query()->where('created_at', '>=', now()->startOfDay())->count()
+            : 0;
 
         $topStores = SubOrder::query()
             ->where('status', SubOrderStatus::Completed)
@@ -160,30 +167,50 @@ class Dashboard extends Component
             'queues' => $this->queues(),
             'gmvChart' => $canSeeFinance ? $this->gmvChartPayload() : ['series' => [], 'categories' => []],
             'statusChart' => $this->statusChartPayload(),
-            'categoriesChart' => $this->categoriesChartPayload(),
+            // Per-category completed GMV is platform takings sliced another way.
+            'categoriesChart' => $canSeeFinance
+                ? $this->categoriesChartPayload()
+                : ['type' => 'bar', 'series' => [], 'labels' => []],
             'buyersChart' => $this->buyersChartPayload(),
             'topStores' => $canSeeFinance ? $topStores : collect(),
             'm2' => $this->m2Metrics(),
         ])->title(__('Dashboard'));
     }
 
+    /** Platform takings follow finance.manage — see render(). */
+    private function canSeeFinance(): bool
+    {
+        return auth()->user()?->can('finance.manage') ?? false;
+    }
+
     /**
      * Engagement KPIs for the M2 features (coins, subscriptions, affiliate,
      * live, group-buy). Lifetime snapshots — cheap aggregate counts.
+     *
+     * Each number carries the permission that owns its section, exactly like
+     * queues(): these are platform-wide totals (coin liability, subscription
+     * and referral volume), not the viewer's own data, so they are gated here
+     * at the data layer and the count only runs for an admin who may see it.
      *
      * @return array<string, int>
      */
     private function m2Metrics(): array
     {
-        $totalTeams = GroupBuyTeam::count();
-        $unlockedTeams = GroupBuyTeam::where('status', GroupBuyTeamStatus::Unlocked)->count();
+        $user = auth()->user();
+        $gated = fn (string $permission, callable $count): int => ($user?->can($permission) ?? false) ? $count() : 0;
 
         return [
-            'coin_circulation' => (int) CoinWallet::sum('balance'),
-            'active_subscriptions' => Subscription::where('status', SubscriptionStatus::Active)->count(),
-            'affiliate_referrals' => AffiliateReferral::count(),
-            'live_now' => LiveSession::where('status', LiveSessionStatus::Live)->count(),
-            'group_unlock_rate_pct' => $totalTeams > 0 ? intdiv($unlockedTeams * 100, $totalTeams) : 0,
+            'coin_circulation' => $gated('finance.manage', fn () => (int) CoinWallet::sum('balance')),
+            'active_subscriptions' => $gated('orders.manage', fn () => Subscription::where('status', SubscriptionStatus::Active)->count()),
+            'affiliate_referrals' => $gated('finance.manage', fn () => AffiliateReferral::count()),
+            'live_now' => $gated('cms.manage', fn () => LiveSession::where('status', LiveSessionStatus::Live)->count()),
+            'group_unlock_rate_pct' => $gated('orders.manage', function (): int {
+                $totalTeams = GroupBuyTeam::count();
+
+                return $totalTeams > 0
+                    ? intdiv(GroupBuyTeam::where('status', GroupBuyTeamStatus::Unlocked)->count() * 100, $totalTeams)
+                    : 0;
+            }),
         ];
     }
 
@@ -194,17 +221,18 @@ class Dashboard extends Component
      */
     private function dispatchCharts(): void
     {
-        // The GMV series is platform takings, so it follows finance.manage here
-        // too. This is a SEPARATE delivery channel from the rendered chart —
+        // The GMV and top-category series are platform takings, so they follow
+        // finance.manage here too. This is a SEPARATE delivery channel from the
+        // rendered chart —
         // dispatch() puts the payload on the wire whether or not the markup
         // that would consume it exists, so gating the blade alone would still
         // hand the numbers to anyone reading the response.
-        if (auth()->user()?->can('finance.manage')) {
+        if ($this->canSeeFinance()) {
             $this->dispatch('admin-gmv', $this->gmvChartPayload());
+            $this->dispatch('admin-categories', $this->categoriesChartPayload());
         }
 
         $this->dispatch('admin-status', $this->statusChartPayload());
-        $this->dispatch('admin-categories', $this->categoriesChartPayload());
         $this->dispatch('admin-buyers', $this->buyersChartPayload());
     }
 

@@ -35,7 +35,9 @@ class Panel extends Component
             return;
         }
 
-        $deal = GroupBuy::find($dealId);
+        // The id comes from the client, so scope it to what this panel actually
+        // renders — this product's live deals — not to any deal on the site.
+        $deal = GroupBuy::query()->live()->where('product_id', $this->productId)->find($dealId);
 
         if ($deal === null) {
             return;

@@ -282,8 +282,10 @@ test('page body is sanitized to the allowed tag list on save', function () {
 
     $page = Page::where('slug', 'shipping-guide')->sole();
 
+    // The <script> BODY goes with the tag now. strip_tags() used to unwrap it
+    // and leave "alert(1)" behind as text, which is what this asserted (C1/C7).
     expect($page->getTranslation('body', 'en'))
-        ->toBe('alert(1)<p>Ships in <strong>2 days</strong>.</p><h2>Zones</h2>');
+        ->toBe('<p>Ships in <strong>2 days</strong>.</p><h2>Zones</h2>');
 });
 
 // ── Platform vouchers ───────────────────────────────────────────────────

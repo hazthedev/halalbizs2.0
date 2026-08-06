@@ -27,16 +27,21 @@ class OrderService
     public function cancel(SubOrder $subOrder, ActorType $actor, ?int $actorId = null, ?string $reason = null): SubOrder
     {
         return DB::transaction(function () use ($subOrder, $actor, $actorId, $reason) {
-            $subOrder = $this->statusService->transition($subOrder, SubOrderStatus::Cancelled, $actor, $actorId, $reason);
+            return $this->statusService->transition(
+                $subOrder,
+                SubOrderStatus::Cancelled,
+                $actor,
+                $actorId,
+                $reason,
+                function (SubOrder $cancelled) use ($reason) {
+                    if ($reason !== null) {
+                        $cancelled->forceFill(['cancel_reason' => $reason])->save();
+                    }
 
-            if ($reason !== null) {
-                $subOrder->forceFill(['cancel_reason' => $reason])->save();
-            }
-
-            $this->restock($subOrder);
-            $this->refundCoinsIfFullyCancelled($subOrder);
-
-            return $subOrder;
+                    $this->restock($cancelled);
+                    $this->refundCoinsIfFullyCancelled($cancelled);
+                },
+            );
         });
     }
 
@@ -72,27 +77,32 @@ class OrderService
         $becamePaid = false;
 
         $subOrder = DB::transaction(function () use ($subOrder, $actor, $actorId, &$becamePaid) {
-            $subOrder = $this->statusService->transition($subOrder, SubOrderStatus::Delivered, $actor, $actorId);
+            return $this->statusService->transition(
+                $subOrder,
+                SubOrderStatus::Delivered,
+                $actor,
+                $actorId,
+                null,
+                function (SubOrder $delivered) use (&$becamePaid) {
+                    $order = $delivered->order;
 
-            $order = $subOrder->order;
+                    if ($order->payment_method === PaymentMethod::Cod && $order->payment_status === PaymentStatus::Pending) {
+                        $allDeliveredOrBetter = $order->subOrders()
+                            ->whereNotIn('status', [
+                                SubOrderStatus::Cancelled,
+                                SubOrderStatus::Delivered,
+                                SubOrderStatus::Completed,
+                            ])
+                            ->doesntExist();
 
-            if ($order->payment_method === PaymentMethod::Cod && $order->payment_status === PaymentStatus::Pending) {
-                $allDeliveredOrBetter = $order->subOrders()
-                    ->whereNotIn('status', [
-                        SubOrderStatus::Cancelled,
-                        SubOrderStatus::Delivered,
-                        SubOrderStatus::Completed,
-                    ])
-                    ->doesntExist();
-
-                if ($allDeliveredOrBetter) {
-                    $order->update(['payment_status' => PaymentStatus::Paid, 'paid_at' => now()]);
-                    $order->payment?->update(['status' => GatewayPaymentStatus::Success, 'paid_at' => now()]);
-                    $becamePaid = true;
-                }
-            }
-
-            return $subOrder;
+                        if ($allDeliveredOrBetter) {
+                            $order->update(['payment_status' => PaymentStatus::Paid, 'paid_at' => now()]);
+                            $order->payment?->update(['status' => GatewayPaymentStatus::Success, 'paid_at' => now()]);
+                            $becamePaid = true;
+                        }
+                    }
+                },
+            );
         });
 
         // After commit: e-invoicing fires on the verified-paid event.

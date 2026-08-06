@@ -11,6 +11,7 @@ use App\Models\CancellationReason;
 use App\Models\SubOrder;
 use App\Services\OrderService;
 use App\Services\SubOrderStatusService;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -60,7 +61,8 @@ class Detail extends Component
     public function cancelOrder(): void
     {
         $this->validate(
-            ['cancelReasonId' => ['required', 'integer', 'exists:cancellation_reasons,id']],
+            // Same rule as the buyer path: a deactivated reason is not selectable.
+            ['cancelReasonId' => ['required', 'integer', Rule::exists('cancellation_reasons', 'id')->where('is_active', true)]],
             [],
             ['cancelReasonId' => __('cancellation reason')],
         );
@@ -69,7 +71,7 @@ class Detail extends Component
             return;
         }
 
-        $reason = CancellationReason::query()->findOrFail($this->cancelReasonId);
+        $reason = CancellationReason::query()->active()->findOrFail($this->cancelReasonId);
 
         app(OrderService::class)->cancel(
             $this->subOrder,

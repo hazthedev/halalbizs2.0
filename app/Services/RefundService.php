@@ -7,6 +7,7 @@ use App\Enums\LedgerEntryType;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\SubOrderStatus;
+use App\Models\Order;
 use App\Models\SubOrder;
 use App\Services\Payments\PaymentGatewayManager;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,7 @@ class RefundService
         private SubOrderStatusService $status,
         private PaymentGatewayManager $gateways,
         private CoinService $coins,
+        private VoucherService $vouchers,
     ) {}
 
     public function refund(
@@ -99,8 +101,16 @@ class RefundService
             $payment = $subOrder->order->payment;
 
             if ($payment !== null) {
-                $cashRefundable = max(0, (int) $order->grand_total_sen - (int) $payment->refunded_sen);
-                $cashSen = min($amountSen, $cashRefundable);
+                // C11: the order-level cap alone is a CUMULATIVE ceiling, not an
+                // allocation — refunding the first store of a multi-store order
+                // returned its full sub-order total even though the platform
+                // voucher had been prorated across every store, so that buyer got
+                // back cash they never paid and the last store came up short.
+                // Refund this store's own share: its total less the slice of the
+                // order-level discount it carried, scaled for a partial refund.
+                // The order-level cap stays as the backstop.
+                $cashSen = min($amountSen, $this->storeCashShareSen($subOrder, $order, $amountSen));
+                $cashSen = min($cashSen, max(0, (int) $order->grand_total_sen - (int) $payment->refunded_sen));
 
                 if ($online && $cashSen > 0) {
                     $this->gateways->driver($subOrder->order->payment_method?->value)?->refund($payment, $cashSen, $reference);
@@ -143,5 +153,40 @@ class RefundService
                 }
             }
         });
+    }
+
+    /**
+     * The cash THIS store's buyer actually paid toward $amountSen of this
+     * sub-order: its total less its prorated slice of the order-level platform
+     * discount, scaled by the portion being refunded.
+     *
+     * Prorated on items_subtotal_sen through the same VoucherService::prorate()
+     * the checkout used, so the shares add back up to the discount exactly —
+     * re-deriving the split here rather than storing it keeps one implementation
+     * of the rule (the C5 lesson: a duplicated formula is a formula that drifts).
+     */
+    private function storeCashShareSen(SubOrder $subOrder, Order $order, int $amountSen): int
+    {
+        $subOrderTotalSen = (int) $subOrder->total_sen;
+
+        if ($subOrderTotalSen <= 0) {
+            return 0;
+        }
+
+        $discountTotalSen = (int) $order->discount_total_sen;
+        $storeShareSen = 0;
+
+        if ($discountTotalSen > 0) {
+            $storeSubtotals = $order->subOrders
+                ->mapWithKeys(fn (SubOrder $row) => [(int) $row->store_id => (int) $row->items_subtotal_sen])
+                ->all();
+
+            $storeShareSen = $this->vouchers->prorate($discountTotalSen, $storeSubtotals)[(int) $subOrder->store_id] ?? 0;
+        }
+
+        $storeCashSen = max(0, $subOrderTotalSen - $storeShareSen);
+
+        // Scale for a partial refund; exact for a full one.
+        return intdiv($amountSen * $storeCashSen, $subOrderTotalSen);
     }
 }

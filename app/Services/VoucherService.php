@@ -34,7 +34,7 @@ class VoucherService
         ?VoucherScope $scope = null,
         bool $lock = false,
     ): VoucherDiscount {
-        $voucher = $this->lookup($code, $scope, $storeSubtotals, $lock);
+        $voucher = $this->lookup($code, $user, $scope, $storeSubtotals, $lock);
 
         if ($voucher === null) {
             throw new CheckoutException(__("We can't find that voucher — check the code and try again."));
@@ -107,6 +107,25 @@ class VoucherService
     }
 
     /**
+     * The platform share of a stacked pair, in sen. The COMBINED item discount
+     * can never exceed the items subtotal — each voucher is only capped to its
+     * OWN basis, so a stacked platform% + shop% could otherwise spill past 100%
+     * of the merchandise and start discounting shipping + tax (money the buyer
+     * still owes). The seller-funded shop voucher (already capped to its store)
+     * is honoured in full; the platform share yields to the room that leaves.
+     *
+     * ONE implementation for both the checkout preview and the charge — the two
+     * had drifted, and the screen showed a total the transaction did not charge.
+     */
+    public function platformDiscountSen(?VoucherDiscount $platform, ?VoucherDiscount $shop, int $subtotalSen): int
+    {
+        return min(
+            $platform?->totalDiscountSen ?? 0,
+            max(0, $subtotalSen - ($shop?->totalDiscountSen ?? 0)),
+        );
+    }
+
+    /**
      * Allocate a platform discount across sub-orders by items-subtotal share
      * using LARGEST REMAINDER in sen, so the parts sum EXACTLY to the total
      * (docs/09 §B). e.g. 1000 over 3333/3333/3334 → 333 + 333 + 334.
@@ -159,9 +178,9 @@ class VoucherService
      *
      * @param  array<int, int>  $storeSubtotals
      */
-    private function lookup(string $code, ?VoucherScope $scope, array $storeSubtotals, bool $lock): ?Voucher
+    private function lookup(string $code, User $user, ?VoucherScope $scope, array $storeSubtotals, bool $lock): ?Voucher
     {
-        $query = Voucher::query()->where('code', strtoupper(trim($code)));
+        $query = Voucher::query()->visibleTo($user)->where('code', strtoupper(trim($code)));
 
         if ($scope === VoucherScope::Platform) {
             $query->where('scope', VoucherScope::Platform)->whereNull('store_id');

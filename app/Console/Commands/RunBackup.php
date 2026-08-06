@@ -43,6 +43,13 @@ class RunBackup extends Command
         }
 
         if (is_file(base_path('.env'))) {
+            // The .env snapshot is plaintext secrets. On a local disk it lands in
+            // storage/ on the web host itself — say so loudly rather than letting
+            // an unset BACKUP_DISK quietly undo docs/10's private-bucket rule.
+            if ($this->laravel->isProduction() && config("filesystems.disks.{$disk}.driver") === 'local') {
+                $this->warn("BACKUP_DISK is [{$disk}] — the .env snapshot is being written to local storage, not a private bucket.");
+            }
+
             Storage::disk($disk)->put("{$path}/env-{$stamp}.txt", (string) file_get_contents(base_path('.env')));
         }
 
@@ -70,12 +77,13 @@ class RunBackup extends Command
     {
         $cfg = (array) config("database.connections.{$connection}");
 
-        $result = Process::run(sprintf(
-            'mysqldump --host=%s --port=%s --user=%s --password=%s --single-transaction --quick %s',
+        // MYSQL_PWD, not --password=: the command line of every process is
+        // world-readable via `ps` on a shared host.
+        $result = Process::env(['MYSQL_PWD' => (string) ($cfg['password'] ?? '')])->run(sprintf(
+            'mysqldump --host=%s --port=%s --user=%s --single-transaction --quick %s',
             escapeshellarg((string) ($cfg['host'] ?? '127.0.0.1')),
             escapeshellarg((string) ($cfg['port'] ?? '3306')),
             escapeshellarg((string) ($cfg['username'] ?? '')),
-            escapeshellarg((string) ($cfg['password'] ?? '')),
             escapeshellarg((string) ($cfg['database'] ?? '')),
         ));
 

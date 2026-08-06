@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\System;
 
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -27,7 +28,11 @@ class Staff extends Component
     /** @var array<int, string> */
     public array $invitePermissions = [];
 
-    /** Shown once after a successful invite. */
+    /**
+     * Legacy one-time password panel. invite() no longer fills this — the
+     * invitee sets their own password from a reset link — but the blade still
+     * reads it, so the property stays until that panel is removed.
+     */
     public ?string $generatedPassword = null;
 
     public ?string $generatedFor = null;
@@ -64,23 +69,45 @@ class Staff extends Component
             'inviteEmail' => __('email'),
         ]);
 
-        $password = Str::password(16);
+        $requested = array_values(array_intersect($this->invitePermissions, RoleSeeder::ADMIN_PERMISSIONS));
+
+        // Same rule savePermissions() enforces, applied to the CREATE path: an
+        // admin must not end up controlling an account with more access than
+        // their own, or a settings.manage admin simply invites themselves a
+        // finance.manage second account. Only a superadmin (the intended
+        // escalation path, see toggleSuperadmin()) may grant beyond their own
+        // grants. Fail closed — an over-reaching request grants NOTHING rather
+        // than being silently trimmed, which would read as a clean success.
+        $inviter = auth()->user();
+        $overReach = $inviter->is_superadmin
+            ? []
+            : array_diff($requested, $inviter->getDirectPermissions()->pluck('name')->all());
 
         $user = User::create([
             'name' => trim($this->inviteName),
             'email' => strtolower(trim($this->inviteEmail)),
-            'password' => $password,
+            'password' => Str::password(32),
         ]);
         $user->markEmailAsVerified();
 
         $user->assignRole('admin');
-        $user->syncPermissions(array_values(array_intersect($this->invitePermissions, RoleSeeder::ADMIN_PERMISSIONS)));
+        $user->syncPermissions($overReach === [] ? $requested : []);
 
-        $this->generatedPassword = $password;
+        // The random password above is known to nobody: the invitee claims the
+        // account through the standard reset link. Showing the inviter a working
+        // plaintext login for another admin was the other half of the hole.
+        Password::sendResetLink(['email' => $user->email]);
+
         $this->generatedFor = $user->email;
         $this->reset(['showInvite', 'inviteName', 'inviteEmail', 'invitePermissions']);
 
-        $this->dispatch('toast', message: __('Admin invited — share the temporary password securely.'));
+        $this->dispatch(
+            'toast',
+            message: $overReach === []
+                ? __('Admin invited — they will receive an email to set their password.')
+                : __('Admin invited with no permissions — you can only grant permissions you hold yourself.'),
+            type: $overReach === [] ? 'success' : 'error',
+        );
     }
 
     public function dismissPassword(): void
