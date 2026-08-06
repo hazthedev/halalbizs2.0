@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Events\OrderPaid;
 use App\Events\ProductRestocked;
 use App\Events\SubOrderStatusChanged;
+use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureSeller;
 use App\Listeners\DispatchOrderWebhooks;
 use App\Listeners\NotifyBackInStockSubscribers;
 use App\Models\Category;
@@ -40,6 +42,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -96,6 +99,17 @@ class AppServiceProvider extends ServiceProvider
         // emptied. Returning null (not false) for everyone else is deliberate:
         // it means "no opinion", so the normal permission resolution continues.
         Gate::before(fn ($user) => $user->is_superadmin ? true : null);
+
+        // Section guards must survive the Livewire round trip. /livewire/update
+        // re-applies only the middleware on Livewire's persistent list —
+        // Authenticate and Authorize (`can:`) — so a component whose route is
+        // guarded ONLY by EnsureAdmin/EnsureSeller (the admin dashboard and
+        // notifications) stayed drivable from a leaked or stale snapshot after
+        // the role was revoked. Both guards re-run per update from here.
+        Livewire::addPersistentMiddleware([
+            EnsureAdmin::class,
+            EnsureSeller::class,
+        ]);
 
         // /up readiness probe (docs/10): the built-in health route dispatches
         // DiagnosingHealth — fail it if the database is unreachable.

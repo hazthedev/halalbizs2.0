@@ -260,7 +260,9 @@ class Checkout extends Component
         $shippingTotalSen = (int) $groups->sum(fn ($group) => $group->shippingFeeSen ?? 0);
         $taxTotalSen = (int) $groups->sum(fn ($group) => $group->taxSen ?? 0);
 
-        $platformDiscountSen = min($platformDiscount?->totalDiscountSen ?? 0, $subtotalSen);
+        // Same capping rule the transaction charges — shared, so the screen
+        // and the charge cannot drift apart again.
+        $platformDiscountSen = app(VoucherService::class)->platformDiscountSen($platformDiscount, $shopDiscount, $subtotalSen);
         $shopDiscountSen = $shopDiscount?->totalDiscountSen ?? 0;
 
         $preCoinTotalSen = max($subtotalSen + $shippingTotalSen + $taxTotalSen - $platformDiscountSen - $shopDiscountSen, 0);
@@ -433,6 +435,7 @@ class Checkout extends Component
         $storeNames = $groups->mapWithKeys(fn ($group) => [$group->store->id => $group->store->name]);
 
         $options = Voucher::query()
+            ->visibleTo(auth()->user())
             ->where('is_active', true)
             ->where('starts_at', '<=', now())
             ->where('ends_at', '>=', now())

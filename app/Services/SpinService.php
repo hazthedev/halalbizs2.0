@@ -96,7 +96,7 @@ class SpinService
     {
         return match ($slot['type'] ?? 'nothing') {
             'coins' => $this->grantCoins($user, (int) ($slot['coins'] ?? 0)),
-            'voucher' => $this->grantVoucher($slot),
+            'voucher' => $this->grantVoucher($user, $slot),
             default => ['type' => 'nothing', 'label' => __('No prize this time — try again tomorrow!')],
         };
     }
@@ -115,7 +115,7 @@ class SpinService
      * @param  array<string, mixed>  $slot
      * @return array{type: string, label: string, voucher: Voucher}
      */
-    private function grantVoucher(array $slot): array
+    private function grantVoucher(User $user, array $slot): array
     {
         $isFixed = ($slot['voucher'] ?? 'free_shipping') === 'fixed';
         $valueSen = (int) ($slot['value_sen'] ?? 0);
@@ -123,6 +123,9 @@ class SpinService
         $voucher = Voucher::create([
             'scope' => VoucherScope::Platform,
             'store_id' => null,
+            // The prize is personal — an owned row is hidden from every other
+            // buyer's picker and lookup, so the code no longer has to be secret.
+            'user_id' => $user->id,
             'code' => $this->uniqueCode(),
             'type' => $isFixed ? VoucherType::Fixed : VoucherType::FreeShipping,
             'funded_by' => 'platform',

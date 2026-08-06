@@ -150,10 +150,17 @@ class Product extends Model implements HasMedia
         return $this->hasMany(ProductBoost::class);
     }
 
+    /**
+     * Buyer-visible catalogue: a live SKU on an approved store. The store
+     * clause is here, not on each screen, so suspending a store takes its
+     * goods off every read path at once (PDP, listing, search, cart, checkout)
+     * — a suspension reason can be "selling non-halal goods as halal".
+     */
     #[Scope]
     protected function live(Builder $query): void
     {
-        $query->where('status', ProductStatus::Live);
+        $query->where('status', ProductStatus::Live)
+            ->whereHas('store', fn (Builder $store) => $store->approved());
     }
 
     /**
@@ -175,13 +182,17 @@ class Product extends Model implements HasMedia
         // are ordinary VARCHAR and did match, which is what made it look like
         // search "half worked".
         $term = mb_strtolower(trim((string) $term));
-        $like = '%'.$term.'%';
+
+        // A bare "%" or "_" is a LIKE wildcard, so unescaped it matches the whole
+        // catalogue. "!" as the escape char rather than "\": a backslash inside a
+        // SQL string literal means one thing to MySQL and another to SQLite.
+        $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term).'%';
 
         $query->where(function (Builder $q) use ($like): void {
-            $q->whereRaw('LOWER(name) LIKE ?', [$like])
-                ->orWhereRaw('LOWER(description) LIKE ?', [$like])
-                ->orWhereHas('store', fn (Builder $s) => $s->whereRaw('LOWER(name) LIKE ?', [$like]))
-                ->orWhereHas('brand', fn (Builder $b) => $b->whereRaw('LOWER(name) LIKE ?', [$like]));
+            $q->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$like])
+                ->orWhereRaw("LOWER(description) LIKE ? ESCAPE '!'", [$like])
+                ->orWhereHas('store', fn (Builder $s) => $s->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$like]))
+                ->orWhereHas('brand', fn (Builder $b) => $b->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$like]));
         });
     }
 
@@ -207,9 +218,10 @@ class Product extends Model implements HasMedia
         return static::query()->keywordSearch($term)->orderByDesc('sold_count')->pluck('id')->all();
     }
 
+    /** PHP-side twin of the `live` scope above — same rule, same store clause. */
     public function isLive(): bool
     {
-        return $this->status === ProductStatus::Live;
+        return $this->status === ProductStatus::Live && (bool) $this->store?->isApproved();
     }
 
     /** Lowest effective price across variants, in sen. */
@@ -225,7 +237,7 @@ class Product extends Model implements HasMedia
 
     public function shouldBeSearchable(): bool
     {
-        return $this->status === ProductStatus::Live;
+        return $this->isLive();
     }
 
     public function toSearchableArray(): array

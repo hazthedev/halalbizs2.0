@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use DOMCdataSection;
 use DOMComment;
 use DOMDocument;
 use DOMElement;
@@ -10,23 +11,32 @@ use DOMProcessingInstruction;
 
 /**
  * Dependency-free rich-text sanitizer (C2, security audit) built on ext-dom's
- * DOMDocument — no new Composer package. Used for product descriptions, which
- * are the only free-text field allowed to carry markup.
+ * DOMDocument — no new Composer package. Used for product descriptions and,
+ * with the wider CMS_TAGS list, for admin-authored CMS/help bodies.
  *
- * Contract: ONLY <p><br><ul><ol><li><strong><em> survive, and every attribute
- * on them is stripped (the app needs zero attributes on these tags, so "strip
- * everything" is safe and simple — no attribute allow-list to get wrong).
- * Every other tag (including <script>, <style>, event-handler-bearing tags,
- * and anything else) is unwrapped: the tag itself is dropped but its text
- * content is preserved, matching the pre-existing strip_tags() behaviour this
- * class replaces so translations keep reading naturally.
+ * Contract: ONLY the allowed tags survive, and every attribute on them is
+ * stripped (the app needs zero attributes on these tags, so "strip
+ * everything" is safe and simple — no attribute allow-list to get wrong). The
+ * one exception is <a href>, which a CMS body is useless without; its URL is
+ * scheme-checked. Every other tag (including <script>, <style>,
+ * event-handler-bearing tags, and anything else) is unwrapped: the tag itself
+ * is dropped but its text content is preserved, matching the pre-existing
+ * strip_tags() behaviour this class replaces so translations keep reading
+ * naturally. Raw-text elements are the exception — their body goes with them,
+ * see the CDATA note in sanitizeChildren().
  */
 final class HtmlSanitizer
 {
     /** @var list<string> */
     private const ALLOWED_TAGS = ['p', 'br', 'ul', 'ol', 'li', 'strong', 'em'];
 
-    public static function clean(string $html): string
+    /** Admin-authored CMS pages and help articles — headings and links too. */
+    public const CMS_TAGS = ['p', 'br', 'h2', 'h3', 'ul', 'ol', 'li', 'strong', 'em', 'a'];
+
+    /**
+     * @param  list<string>  $allowedTags
+     */
+    public static function clean(string $html, array $allowedTags = self::ALLOWED_TAGS): string
     {
         $html = trim($html);
 
@@ -55,7 +65,7 @@ final class HtmlSanitizer
             return '';
         }
 
-        self::sanitizeChildren($root);
+        self::sanitizeChildren($root, $allowedTags);
 
         $result = '';
 
@@ -66,14 +76,23 @@ final class HtmlSanitizer
         return trim($result);
     }
 
-    private static function sanitizeChildren(DOMNode $node): void
+    /**
+     * @param  list<string>  $allowedTags
+     */
+    private static function sanitizeChildren(DOMNode $node, array $allowedTags): void
     {
         foreach (iterator_to_array($node->childNodes) as $child) {
             if ($child instanceof DOMElement) {
-                self::sanitizeChildren($child);
+                self::sanitizeChildren($child, $allowedTags);
 
-                if (in_array(strtolower($child->tagName), self::ALLOWED_TAGS, true)) {
+                if (in_array(strtolower($child->tagName), $allowedTags, true)) {
+                    $isLink = strtolower($child->tagName) === 'a';
+
                     foreach (iterator_to_array($child->attributes ?? []) as $attribute) {
+                        if ($isLink && strtolower($attribute->name) === 'href' && self::isSafeUrl($attribute->value)) {
+                            continue;
+                        }
+
                         $child->removeAttribute($attribute->name);
                     }
                 } else {
@@ -84,11 +103,25 @@ final class HtmlSanitizer
 
                     $node->removeChild($child);
                 }
-            } elseif ($child instanceof DOMComment || $child instanceof DOMProcessingInstruction) {
+            } elseif ($child instanceof DOMCdataSection || $child instanceof DOMComment || $child instanceof DOMProcessingInstruction) {
                 $node->removeChild($child);
             }
 
-            // DOMText/DOMCharacterData nodes are left untouched — text content is preserved.
+            // DOMText nodes are left untouched — text content is preserved.
+            // CDATA is NOT: libxml parses raw-text element bodies (<script>,
+            // <style>, <noembed>, <plaintext>…) into CDATA, and saveHTML()
+            // serialises CDATA WITHOUT escaping, so unwrapping the tag handed
+            // the payload back as live markup (C1). Dropping the body outright
+            // rather than escaping it also covers the nested <svg><style> case,
+            // where the escaped text would sit in foreign content.
         }
+    }
+
+    /** Browsers strip whitespace/control chars inside a scheme, so "java\tscript:" runs. */
+    private static function isSafeUrl(string $url): bool
+    {
+        $url = preg_replace('/[\s\x00-\x1F\x7F]+/', '', $url) ?? '';
+
+        return preg_match('#^(?:https?://|mailto:|tel:|/|\#)#i', $url) === 1;
     }
 }

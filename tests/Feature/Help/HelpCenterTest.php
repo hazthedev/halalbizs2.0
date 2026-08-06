@@ -163,7 +163,8 @@ test('admin creates a help article with translations and a sanitized body', func
     expect($article->category->value)->toBe('payments')
         ->and($article->getTranslation('title', 'en'))->toBe('COD limits')
         ->and($article->getTranslation('title', 'ms'))->toBe('Had COD')
-        ->and($article->getTranslation('body', 'en'))->toBe('alert(1)<p>Up to <strong>RM500</strong>.</p>')
+        // The <script> body is dropped with the tag now, not left as text (C1/C7).
+        ->and($article->getTranslation('body', 'en'))->toBe('<p>Up to <strong>RM500</strong>.</p>')
         ->and($article->getTranslation('body', 'ms'))->toBe('<p>Sehingga RM500.</p>')
         ->and($article->position)->toBe(4)
         ->and($article->is_active)->toBeTrue();

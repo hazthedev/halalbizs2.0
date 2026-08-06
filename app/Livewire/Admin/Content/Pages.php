@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Content;
 
 use App\Models\Page;
+use App\Support\HtmlSanitizer;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -21,8 +22,6 @@ class Pages extends Component
 
     /** Legally required at all times — deactivation blocked. */
     public const ALWAYS_ACTIVE_SLUGS = ['terms', 'privacy'];
-
-    public const ALLOWED_TAGS = '<p><br><h2><h3><ul><ol><li><strong><em><a>';
 
     public bool $showForm = false;
 
@@ -170,7 +169,9 @@ class Pages extends Component
     /** Body is stored as HTML — strip everything outside the allowlist. */
     private function sanitize(string $html): string
     {
-        return strip_tags(trim($html), self::ALLOWED_TAGS);
+        // strip_tags() keeps every ATTRIBUTE on the tags it spares, so
+        // onclick=/href="javascript:" survived into a {!! !!} body (C7).
+        return HtmlSanitizer::clean($html, HtmlSanitizer::CMS_TAGS);
     }
 
     private function resetForm(): void

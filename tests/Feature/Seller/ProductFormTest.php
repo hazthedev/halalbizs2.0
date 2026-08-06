@@ -409,6 +409,8 @@ test('ms translations are written only when filled and en is always written', fu
 
     expect($product->getTranslation('name', 'en'))->toBe('Bilingual Sambal')
         ->and($product->getTranslation('name', 'ms', false))->toBe('Sambal Dwibahasa')
-        ->and($product->getTranslation('description', 'en'))->toBe('<p>Spicyalert(1)</p>')
+        // The <script> body is dropped with the tag now rather than unwrapped
+        // into the text — unwrapping is what promoted it to live markup (C1).
+        ->and($product->getTranslation('description', 'en'))->toBe('<p>Spicy</p>')
         ->and($product->variants()->firstOrFail()->price_sen)->toBe(750);
 });

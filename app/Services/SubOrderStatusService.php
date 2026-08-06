@@ -7,6 +7,7 @@ use App\Enums\SubOrderStatus;
 use App\Events\SubOrderStatusChanged;
 use App\Models\SubOrder;
 use App\Settings\OrderSettings;
+use Closure;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -43,8 +44,9 @@ class SubOrderStatusService
         ActorType $actorType,
         ?int $actorId = null,
         ?string $note = null,
+        ?Closure $after = null,
     ): SubOrder {
-        return DB::transaction(function () use ($subOrder, $to, $actorType, $actorId, $note) {
+        return DB::transaction(function () use ($subOrder, $to, $actorType, $actorId, $note, $after) {
             // H2/M1 fix: re-fetch and lock the row FIRST, and validate/act on
             // THIS freshly-read status — never the caller's possibly-stale
             // in-memory copy. The buyer's confirmReceived() can race the hourly
@@ -86,6 +88,13 @@ class SubOrderStatusService
             $this->writeHistory($locked, $from, $to, $actorType, $actorId, $note);
 
             SubOrderStatusChanged::dispatch($locked, $from, $to, $actorType);
+
+            // M2 fix: side effects that must fire exactly ONCE per real transition
+            // (restock, COD settlement) belong here, under the same lock — a
+            // duplicate call returns at `$from === $to` above and never reaches
+            // them. A caller running them after transition() returns cannot tell
+            // the two apart and would re-apply them (double restock).
+            $after?->__invoke($locked);
 
             return $locked;
         });

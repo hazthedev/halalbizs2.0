@@ -289,10 +289,25 @@ test('a platform free-shipping voucher zeroes shipping for every store', functio
 
     $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod, 'ALLFREE');
 
+    // The buyer stops paying the shipping either way. What changed with C6 is
+    // WHO absorbs it: a PLATFORM-funded waiver must not be charged to the
+    // seller, so the fee stays on the sub-order (the ledger credits it) and the
+    // platform's share is recorded as shipping_subsidy_sen instead.
     expect($order->shipping_total_sen)->toBe(0)
-        ->and($order->subOrders->sum('shipping_fee_sen'))->toBe(0)
+        ->and($order->subOrders->sum('shipping_fee_sen'))->toBe(1200)
+        ->and($order->subOrders->sum('shipping_subsidy_sen'))->toBe(1200)
         ->and($order->grand_total_sen)->toBe(15000)
         ->and($voucher->usages()->sole()->discount_sen)->toBe(1200); // all the shipping it waived
+
+    // Reconciliation under the new funding model: the platform now absorbs the
+    // subsidy as well as the order-level discount, so both come off the
+    // sub-order totals to reach what the buyer is actually charged.
+    expect(
+        (int) $order->subOrders->sum('total_sen')
+        - (int) $order->discount_total_sen
+        - (int) $order->subOrders->sum('shipping_subsidy_sen')
+    )->toBe((int) $order->grand_total_sen)
+        ->and((int) $order->payment->amount_sen)->toBe((int) $order->grand_total_sen);
 });
 
 test('per-user limit holds across orders even with quota remaining', function () {
