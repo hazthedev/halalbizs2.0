@@ -8,7 +8,12 @@
     $store = $product->store;
 @endphp
 
-<div class="pb-28 lg:pb-0" x-data x-init="window.recentlyViewed?.push({{ $product->id }})">
+<div class="pb-28 lg:pb-0"
+     x-data="{ justAdded: false }"
+     x-init="window.recentlyViewed?.push({{ $product->id }})"
+     {{-- The corner toast is easy to miss; confirm on the control itself so a
+          shopper is never left pressing Add to cart twice and buying two jars. --}}
+     @cart-updated.window="justAdded = true; clearTimeout($el._added); $el._added = setTimeout(() => justAdded = false, 2400)">
     @push('meta')
         <script type="application/ld+json">{!! json_encode($jsonLd, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!}</script>
     @endpush
@@ -85,28 +90,42 @@
                      Mint tint + paired border are the tokens reserved for
                      certificate surfaces. Renders only when the SKU really
                      carries one; there is no placeholder state. --}}
-                @if ($product->halal_cert_number)
-                    @php
-                        $cert = $product->halalCertificate;
-                        $certExpiry = $cert?->valid_to ?? $product->halal_cert_expiry;
-                        $certBody = $cert?->issuing_body ?? \App\Models\HalalCertificate::bodyFromNumber($product->halal_cert_number);
-                        $certLapsed = $certExpiry !== null && $certExpiry->lt(now()->startOfDay());
-                    @endphp
-                    <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--radius-panel)] border px-4 py-3 {{ $certLapsed ? 'border-danger/30 bg-danger-tint' : 'border-emerald-tint-edge bg-emerald-tint' }}">
-                        <svg class="size-4 shrink-0 {{ $certLapsed ? 'text-danger' : 'text-emerald' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $certLapsed ? 'M6 18 18 6M6 6l12 12' : 'm4.5 12.75 6 6 9-13.5' }}"/>
+                {{-- The verdict comes from Product::halalVerdict(), which is the
+                     same predicate the register uses. Never re-derive it here:
+                     a badge that read `valid_to` alone called 134 of 166
+                     products verified that the register refused (2026-08-07). --}}
+                @php
+                    $cert = $product->halalCertificate;
+                    $verdict = $product->halalVerdict();
+                    $certBody = $cert?->issuing_body;
+                    $certTone = match ($verdict) {
+                        'verified' => ['border-emerald-tint-edge bg-emerald-tint', 'text-emerald', 'm4.5 12.75 6 6 9-13.5'],
+                        'lapsed' => ['border-danger/30 bg-danger-tint', 'text-danger', 'M6 18 18 6M6 6l12 12'],
+                        default => ['border-line bg-paper', 'text-ink-soft', 'M12 9v3.75m0 3.75h.008M10.34 3.94 2.6 17.4a1.6 1.6 0 0 0 1.4 2.4h15.98a1.6 1.6 0 0 0 1.4-2.4L13.66 3.94a1.6 1.6 0 0 0-2.8 0Z'],
+                    };
+                @endphp
+                @if ($cert !== null)
+                    <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--radius-panel)] border px-4 py-3 {{ $certTone[0] }}">
+                        <svg class="size-4 shrink-0 {{ $certTone[1] }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $certTone[2] }}"/>
                         </svg>
                         <div class="min-w-0">
-                            <p class="font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] {{ $certLapsed ? 'text-danger' : 'text-emerald' }}">
-                                {{ $certLapsed ? __('Certificate lapsed') : __('Halal certificate verified') }}
+                            <p class="font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] {{ $certTone[1] }}">
+                                {{ match ($verdict) {
+                                    'verified' => __('Halal certificate verified'),
+                                    'lapsed' => __('Certificate lapsed'),
+                                    default => __('Certificate not yet in force'),
+                                } }}
                             </p>
                             <p class="mt-1 text-[length:var(--text-md)] text-ink-head">
                                 @if ($certBody){{ $certBody }} <span aria-hidden="true" class="text-ink-faint">·</span> @endif
-                                <span class="font-mono">{{ $product->halal_cert_number }}</span>
-                                @if ($certExpiry)
-                                    <span aria-hidden="true" class="text-ink-faint">·</span>
-                                    {{ $certLapsed ? __('expired :date', ['date' => $certExpiry->format('j M Y')]) : __('valid to :date', ['date' => $certExpiry->format('j M Y')]) }}
-                                @endif
+                                <span class="font-mono">{{ $cert->number }}</span>
+                                <span aria-hidden="true" class="text-ink-faint">·</span>
+                                {{ match ($verdict) {
+                                    'lapsed' => __('expired :date', ['date' => $cert->valid_to->format('j M Y')]),
+                                    'pending' => __('valid from :date', ['date' => $cert->valid_from->format('j M Y')]),
+                                    default => __('valid to :date', ['date' => $cert->valid_to->format('j M Y')]),
+                                } }}
                             </p>
                         </div>
                         @if ($cert)
@@ -293,7 +312,11 @@
                             wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                             @disabled(! $canBuy)
                             class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-medium text-ink transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-paper active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
-                        {{ __('Add to cart') }}
+                        <span x-show="!justAdded">{{ __('Add to cart') }}</span>
+                        <span x-show="justAdded" x-cloak class="inline-flex items-center gap-1.5">
+                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                            {{ __('Added') }}
+                        </span>
                     </button>
                     <button type="button"
                             wire:click="buyNow"
@@ -489,7 +512,11 @@
                     wire:loading.attr="disabled" wire:target="addToCart, buyNow"
                     @disabled(! $canBuy)
                     class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-paper px-3 text-sm font-medium text-on-dark transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-paper/10 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
-                {{ __('Add to cart') }}
+                <span x-show="!justAdded">{{ __('Add to cart') }}</span>
+                <span x-show="justAdded" x-cloak class="inline-flex items-center gap-1.5">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                    {{ __('Added') }}
+                </span>
             </button>
             <button type="button"
                     wire:click="buyNow"

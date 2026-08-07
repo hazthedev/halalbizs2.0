@@ -71,9 +71,24 @@
              shorten the card in a grid. --}}
         <h3 class="line-clamp-2 min-h-[2.65em] font-display text-[length:var(--text-name)] font-normal leading-[1.32] text-ink-head">{{ $name }}</h3>
 
-        @if ($product->rating_count > 0)
-            <span class="text-[length:var(--text-mini)] text-ink-moss">
+        {{-- Rating line always occupies its row, so "no reviews yet" cannot be
+             mistaken for "didn't load" — three product rows were rendering three
+             different card heights depending on whether a rating existed. --}}
+        <span class="text-[length:var(--text-mini)] text-ink-moss">
+            @if ($product->rating_count > 0)
                 {{ number_format((float) $product->rating_avg, 1) }} &middot; {{ $product->rating_count }} {{ __('reviews') }}
+            @else
+                <span class="text-ink-faint">{{ __('No reviews yet') }}</span>
+            @endif
+        </span>
+
+        {{-- The certificate is the whole proposition, and it appeared on no browse
+             card at all — a shopper only met it after committing to a product page.
+             Same predicate as the PDP, cart and register. --}}
+        @if ($product->halalVerdict() === 'verified')
+            <span class="flex items-center gap-1 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label)] text-emerald">
+                <svg class="size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                {{ __('Halal certified') }}
             </span>
         @endif
 

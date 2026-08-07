@@ -86,10 +86,13 @@
 
                                         <p class="mt-1 font-mono text-[length:var(--text-tiny)] text-ink-soft tnum">@price($line->variant->effectivePriceSen())</p>
 
-                                        @if ($line->variant->product->halal_cert_number)
+                                        {{-- Same predicate as the PDP and the register — see
+                                             Product::halalVerdict(). A green tick here must mean
+                                             the same thing it means everywhere else. --}}
+                                        @if ($line->variant->product->halalVerdict() === 'verified')
                                             <p class="mt-1.5 flex flex-wrap items-center gap-1.5 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label)] text-emerald">
                                                 <svg class="size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
-                                                {{ $line->variant->product->halal_cert_number }}
+                                                {{ $line->variant->product->halalCertificate->number }}
                                             </p>
                                         @endif
 
@@ -142,8 +145,15 @@
                 @endforeach
             </div>
 
-            {{-- ===== Summary (sticky: right column desktop, bottom mobile) ===== --}}
-            <x-ui.card class="sticky bottom-0 z-10 p-4 transition-opacity duration-150 lg:bottom-auto lg:top-24"
+            {{-- ===== Summary — sticky in the right column on desktop only =====
+                 It used to be `sticky bottom-0 z-10` on mobile too, which drew the
+                 white totals card ON TOP of the last item row: the − 1 + stepper was
+                 completely covered and the certificate code sliced in half, so a
+                 phone user could not change a quantity or remove a line at all.
+                 A persistent mobile totals bar is worth having, but not at the cost
+                 of the controls underneath it — desktop keeps the sticky column,
+                 mobile just puts the card after the items where it can be reached. --}}
+            <x-ui.card class="p-4 transition-opacity duration-150 lg:sticky lg:top-24"
                        wire:loading.class="opacity-60"
                        wire:target="updateQty, removeLine, toggleSelected, toggleStoreSelected, toggleAllSelected">
                 <h2 class="sr-only">{{ __('Order summary') }}</h2>

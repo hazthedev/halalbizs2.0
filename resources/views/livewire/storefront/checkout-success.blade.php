@@ -24,6 +24,17 @@
                     <div class="min-w-0">
                         <p class="truncate text-sm font-medium">{{ $subOrder->store->name }}</p>
                         <p class="mt-0.5 font-mono text-xs text-ink-soft">{{ $subOrder->sub_order_no }}</p>
+                        {{-- What you actually bought. A COD buyer is told to have cash at
+                             the door; they need to know what is arriving. --}}
+                        <ul class="mt-2 space-y-0.5">
+                            @foreach ($subOrder->items as $item)
+                                <li class="text-xs text-ink-soft">
+                                    <span class="text-ink">{{ $item->product_name }}</span>
+                                    @if ($item->variant_label)<span class="text-ink-faint">· {{ $item->variant_label }}</span>@endif
+                                    <span class="font-mono tnum">× {{ $item->qty }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
                     </div>
                     <div class="flex shrink-0 items-center gap-3">
                         <x-ui.badge :variant="$this->statusVariant($subOrder->status)">{{ $subOrder->status->label() }}</x-ui.badge>
@@ -51,6 +62,21 @@
     <p class="mt-4 text-center text-sm text-ink-soft">
         @if ($order->payment_method === \App\Enums\PaymentMethod::Cod)
             {{ __('Pay :amount in cash when your order arrives.', ['amount' => \App\Support\Money::format($order->grand_total_sen)]) }}
+        </p>
+
+        {{-- Where it is going. Snapshotted on the order, so it shows what was
+             actually used even if the address book changes later. --}}
+        @php($ship = $order->shipping_address)
+        @if (is_array($ship) && ($ship['line1'] ?? null))
+            <p class="mt-4 text-sm text-ink-soft">
+                <span class="font-medium text-ink">{{ __('Delivering to') }}</span><br>
+                {{ $ship['recipient_name'] ?? '' }}@if (! empty($ship['phone'])) · {{ $ship['phone'] }}@endif<br>
+                {{ collect([$ship['line1'] ?? null, $ship['line2'] ?? null, trim(($ship['postcode'] ?? '').' '.($ship['city'] ?? '')), $ship['state'] ?? null])->filter()->implode(', ') }}
+            </p>
+        @endif
+
+        <p class="mt-3 text-xs text-ink-faint">
+            {{ __('Ordered :date', ['date' => $order->created_at->timezone(config('app.display_timezone', 'Asia/Kuala_Lumpur'))->format('j M Y, g:ia')]) }}
         @else
             {{ $order->payment_method->label() }}
         @endif

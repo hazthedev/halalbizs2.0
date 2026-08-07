@@ -201,6 +201,10 @@
                     </div>
                 @else
                     <a href="{{ route('login') }}" wire:navigate class="rounded-[var(--radius-pill)] px-3 py-2 text-[length:var(--text-xs)] text-ink-soft transition-colors duration-(--dur-micro) hover:text-ink">{{ __('Log in') }}</a>
+                    {{-- There was no Sign up anywhere in the header or footer: a new
+                         customer's only options were Log in and Sell on HalalBizs, so
+                         registration had to be guessed at from behind the login page. --}}
+                    <a href="{{ route('register') }}" wire:navigate class="rounded-[var(--radius-pill)] px-3 py-2 text-[length:var(--text-xs)] font-medium text-ink transition-colors duration-(--dur-micro) hover:text-emerald">{{ __('Sign up') }}</a>
                 @endauth
 
                 {{-- Cart — the reference's dark pill with a brass count. --}}

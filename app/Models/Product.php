@@ -88,6 +88,40 @@ class Product extends Model implements HasMedia
         return $this->belongsTo(HalalCertificate::class, 'halal_certificate_id');
     }
 
+    /**
+     * The ONE owner of the halal verdict. Every surface that renders a badge
+     * must ask this, never re-derive.
+     *
+     * It did not used to be. The PDP badge derived its own answer from
+     * `valid_to` alone while the register called `HalalCertificate::isValid()`,
+     * which checks BOTH bounds — so a certificate whose term had not started
+     * yet read "verified" on the product page and "NOT VALID" in the register.
+     * On the 2026-08-07 preview that was 17 of 24 certificates, badging 134 of
+     * the 166 products showing a green tick.
+     *
+     * It also fails CLOSED now. The old badge keyed off `halal_cert_number` —
+     * a free-text string on the product row — so anything typed there rendered
+     * as verified, and a null expiry made `lapsed` false, i.e. green with no
+     * date. A claim of "verified" requires a certificate RECORD that says so.
+     *
+     * @return 'verified'|'lapsed'|'pending'|'unverified'
+     */
+    public function halalVerdict(): string
+    {
+        $cert = $this->halalCertificate;
+
+        if ($cert === null) {
+            return 'unverified';
+        }
+
+        if ($cert->isValid()) {
+            return 'verified';
+        }
+
+        // Not valid, so it is one of the two edges: lapsed, or not in force yet.
+        return $cert->valid_to->lt(now()->startOfDay()) ? 'lapsed' : 'pending';
+    }
+
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
@@ -215,7 +249,26 @@ class Product extends Model implements HasMedia
             return static::search($term)->keys()->all();
         }
 
-        return static::query()->keywordSearch($term)->orderByDesc('sold_count')->pluck('id')->all();
+        // "Relevance" has to mean relevance. This ordered by `sold_count` alone,
+        // so a product that merely MENTIONS the term in its description outranked
+        // one whose NAME is the term if it sold better: searching "honey" put
+        // Hazelnut Spread with Cocoa first and Manuka Honey UMF10 fifth, which
+        // reads as broken search and costs trust in the whole catalogue.
+        //
+        // Two tiers, then popularity inside each: name matches first, everything
+        // else (description / store / brand matches) after. Same lowered,
+        // escaped LIKE the scope uses — see keywordSearch() for why LOWER() on
+        // both sides is load-bearing on MySQL's binary-collated JSON.
+        $needle = mb_strtolower($term);
+        $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $needle).'%';
+
+        return static::query()
+            ->keywordSearch($term)
+            ->orderByRaw("CASE WHEN LOWER(name) LIKE ? ESCAPE '!' THEN 0 ELSE 1 END", [$like])
+            ->orderByDesc('sold_count')
+            ->orderByDesc('id')
+            ->pluck('id')
+            ->all();
     }
 
     /** PHP-side twin of the `live` scope above — same rule, same store clause. */

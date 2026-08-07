@@ -23,7 +23,10 @@ class CheckoutSuccess extends Component
     {
         abort_unless($order->user_id === auth()->id(), 403);
 
-        $this->order = $order->load(['subOrders.store']);
+        // Items and the delivery address too: a COD buyer is told to have cash
+        // ready at the door and could not tell what they had bought or where it
+        // was going — the page showed only an order number, a shop name and a total.
+        $this->order = $order->load(['subOrders.store', 'subOrders.items']);
     }
 
     public function render(): View

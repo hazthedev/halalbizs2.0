@@ -346,8 +346,38 @@ class Checkout extends Component
     private function selectedGroups(): Collection
     {
         return app(CartService::class)->groupedByStore(auth()->user())
-            ->map(fn (Collection $lines) => $lines->filter(fn ($line) => $line->selected)->values())
+            ->map(fn (Collection $lines) => $lines
+                ->filter(fn ($line) => $line->selected)
+                // A line the basket already marks NO LONGER AVAILABLE must not be
+                // billed for here. It used to: the basket decorated its lines with
+                // availability and checkout read the undecorated ones, so a
+                // withdrawn item showed as a normal payable line (RM 12.30 + RM 5
+                // shipping) and pushed the total to an amount nobody could pay.
+                // `place()` then refused the whole order via a toast that named
+                // nothing and left no control on the page to fix it.
+                ->filter(fn ($line) => $this->lineIsBuyable($line))
+                ->values())
             ->filter(fn (Collection $lines) => $lines->isNotEmpty());
+    }
+
+    /** Mirrors CartPage::presentLine()'s `excluded` — live product, in stock. */
+    private function lineIsBuyable(object $line): bool
+    {
+        return $line->variant?->product?->isLive() === true && $line->variant->stock > 0;
+    }
+
+    /**
+     * Selected lines that CANNOT be bought, so the page can name them instead of
+     * silently dropping them — a total that quietly shrinks is its own bug.
+     *
+     * @return Collection<int, object>
+     */
+    public function blockedLines(): Collection
+    {
+        return app(CartService::class)->groupedByStore(auth()->user())
+            ->flatten(1)
+            ->filter(fn ($line) => $line->selected && ! $this->lineIsBuyable($line))
+            ->values();
     }
 
     /** @return array<int, int> [store_id => items_subtotal_sen] */

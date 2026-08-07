@@ -56,9 +56,18 @@ class HalalCertificateSeeder extends Seeder
             $since = (int) ($legalNames[$store->name]['since'] ?? 2020);
 
             // Validity is derived from the products' own expiry so the record and
-            // the listings cannot disagree.
+            // the listings cannot disagree on the END date.
             $validTo = $products->max('halal_cert_expiry') ?? now()->addYear();
-            $validFrom = (clone $validTo)->subYears(2);
+
+            // ⚠ The start date must be CLAMPED to today. Deriving it as
+            // `$validTo->subYears(2)` guaranteed agreement on the end and
+            // invented a beginning nobody checked: product expiries sit ~2.4
+            // years out, so a two-year term started in the FUTURE. That put 17
+            // of 24 seeded certificates in a not-yet-in-force state, which the
+            // register correctly reported as NOT VALID while the listings
+            // showed a green tick (2026-08-07). A demo certificate that is not
+            // yet in force is not a useful demo of anything.
+            $validFrom = min((clone $validTo)->subYears(2), now()->startOfDay()->subDay());
 
             $certificate = HalalCertificate::updateOrCreate(
                 ['number' => $number],

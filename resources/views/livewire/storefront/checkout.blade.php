@@ -99,6 +99,35 @@
                 @endif
             </x-ui.card>
 
+            {{-- Items that were selected but cannot be bought. They are excluded from
+                 the totals rather than billed for, and NAMED here with a way out —
+                 the old behaviour billed for them and refused the whole order with a
+                 fading toast that named nothing and offered no control. --}}
+            @if ($this->blockedLines()->isNotEmpty())
+                <x-ui.card>
+                    <div class="border-b border-line px-4 py-3">
+                        <p class="text-sm font-medium text-danger">{{ __('Not included in this order') }}</p>
+                        <p class="mt-0.5 text-xs text-ink-soft">{{ __('These are no longer available and have been left out of the total. Remove them from your basket to tidy up.') }}</p>
+                    </div>
+                    <ul class="divide-y divide-line">
+                        @foreach ($this->blockedLines() as $blocked)
+                            <li class="flex items-center gap-3 px-4 py-3" wire:key="blocked-{{ $blocked->variant->id }}">
+                                <div class="min-w-0 flex-1">
+                                    <p class="line-clamp-2 text-[length:var(--text-md)] text-ink-head">{{ $blocked->variant->product->getTranslation('name', app()->getLocale()) }}</p>
+                                    <p class="mt-0.5 text-xs text-ink-soft">
+                                        {{ $blocked->variant->product->isLive() ? __('Out of stock') : __('No longer available') }}
+                                    </p>
+                                </div>
+                                <a href="{{ route('cart') }}" wire:navigate
+                                   class="shrink-0 rounded-[var(--radius-pill)] border border-line bg-surface px-3 py-1.5 text-xs text-ink transition-colors duration-(--dur-micro) hover:border-ink-head hover:text-ink-head">
+                                    {{ __('Edit basket') }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-ui.card>
+            @endif
+
             {{-- (2) Per-seller groups (read-only item rows) --}}
             @foreach ($groups as $group)
                 <x-ui.card wire:key="checkout-store-{{ $group->store->id }}">
@@ -121,6 +150,15 @@
                                         <p class="mt-0.5 truncate text-xs text-ink-soft">{{ $line->variant->options_label }}</p>
                                     @endif
                                     <p class="mt-0.5 font-mono text-[length:var(--text-tiny)] text-ink-soft tnum">@price($line->variant->effectivePriceSen()) <span class="font-mono">× {{ $line->qty }}</span></p>
+                                    {{-- The certificate is the reason to shop here; it was on the
+                                         PDP and the basket and vanished at exactly the moment the
+                                         decision is made. Same predicate as everywhere else. --}}
+                                    @if ($line->variant->product->halalVerdict() === 'verified')
+                                        <p class="mt-1 flex items-center gap-1.5 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label)] text-emerald">
+                                            <svg class="size-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                            {{ $line->variant->product->halalCertificate->number }}
+                                        </p>
+                                    @endif
                                 </div>
                                 <span class="shrink-0 self-center font-mono text-[length:var(--text-price)] font-medium text-ink-head tnum">@price($line->variant->effectivePriceSen() * $line->qty)</span>
                             </li>

@@ -79,7 +79,27 @@
                         @else
                             <p class="font-display text-[22px] font-medium">{{ __('Nothing waiting for payment.') }}</p>
                             <p class="mx-auto mt-1 max-w-md text-sm text-ink-soft">{{ __('Orders paid by FPX, card or e-wallet sit here until payment clears.') }}</p>
-                            <x-ui.button href="{{ route('home') }}" class="mt-6">{{ __('Start shopping') }}</x-ui.button>
+
+                            {{-- Point at the tabs that DO have orders. A COD shopper who had
+                                 just ordered landed here thirty seconds later and read
+                                 "Nothing waiting for payment" with a Start shopping button —
+                                 while To Ship 4 and Completed 2 sat right beside it. Sending
+                                 them to the shop was the worst of the available answers. --}}
+                            @php($elsewhere = collect($counts)->except('to-pay')->filter())
+                            @if ($elsewhere->isNotEmpty())
+                                <p class="mx-auto mt-6 max-w-md text-sm text-ink">{{ __('Your orders are here:') }}</p>
+                                <div class="mt-3 flex flex-wrap justify-center gap-2">
+                                    @foreach ($elsewhere as $key => $count)
+                                        <button type="button" wire:click="setTab('{{ $key }}')"
+                                                class="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-pill)] border border-line-strong bg-surface px-4 text-sm text-ink transition-colors duration-(--dur-micro) hover:border-ink hover:bg-paper">
+                                            {{ $tabs[$key] }}
+                                            <span class="rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium leading-none text-emerald">{{ $count }}</span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @else
+                                <x-ui.button href="{{ route('home') }}" class="mt-6">{{ __('Start shopping') }}</x-ui.button>
+                            @endif
                         @endif
                     </x-ui.card>
                 @endforelse

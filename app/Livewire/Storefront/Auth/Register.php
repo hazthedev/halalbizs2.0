@@ -58,6 +58,11 @@ class Register extends Component
             'terms' => ['accepted'],
         ], [
             'terms.accepted' => __('Please agree to the terms and privacy policy to create an account.'),
+            // Laravel's default for `confirmed` reads "The password field
+            // confirmation does not match." — raw framework grammar sitting in
+            // the middle of otherwise carefully written copy.
+            'password.confirmed' => __('Both password fields need to match.'),
+            'email.unique' => __('That email already has an account — log in instead.'),
         ]);
 
         // Counts every attempt that clears validation — the thing this
