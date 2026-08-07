@@ -62,7 +62,7 @@ final class HtmlSanitizer
         $root = $document->getElementsByTagName('div')->item(0);
 
         if ($root === null) {
-            return '';
+            return self::textFallback($html);
         }
 
         self::sanitizeChildren($root, $allowedTags);
@@ -73,7 +73,43 @@ final class HtmlSanitizer
             $result .= $document->saveHTML($child);
         }
 
-        return trim($result);
+        $result = trim($result);
+
+        // Non-blank in, blank out means the parse lost the content rather than
+        // rejecting it: a body whose first tag is a stray CLOSING tag closes the
+        // wrapper above, and everything after it lands outside $root and is
+        // dropped. That silently overwrote a live CMS page with an empty string
+        // while the admin was told "Page updated" — and `required` could not
+        // catch it, because validation runs on the RAW input, before this.
+        //
+        // No wrapper tag is immune (switching to <body> only moves the trigger
+        // to </body>), so recover instead: keep the author's words as escaped
+        // plain text and lose only the formatting. That matches what this class
+        // already does with a disallowed tag — drop the tag, keep the text.
+        if ($result === '' && self::textFallback($html) !== '') {
+            return self::textFallback($html);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Escaped plain text — no markup at all, so always safe to emit.
+     *
+     * Raw-text element bodies are removed rather than kept, mirroring the main
+     * path: C1's fix drops them WITH their tag on purpose, so a fallback that
+     * handed `<script>alert(1)</script>` back as the visible text "alert(1)"
+     * would quietly undo that decision.
+     */
+    private static function textFallback(string $html): string
+    {
+        $rawText = 'script|style|noembed|noframes|iframe|plaintext|xmp|textarea|title';
+
+        // Closed pairs first, then any unclosed remainder (<plaintext> rarely closes).
+        $html = preg_replace('#<('.$rawText.')\b[^>]*>.*?</\1\s*>#is', '', $html) ?? $html;
+        $html = preg_replace('#<('.$rawText.')\b[^>]*>.*#is', '', $html) ?? $html;
+
+        return trim(htmlspecialchars(strip_tags($html), ENT_QUOTES, 'UTF-8'));
     }
 
     /**
