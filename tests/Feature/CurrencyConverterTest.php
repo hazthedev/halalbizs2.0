@@ -55,6 +55,56 @@ class CurrencyConverterTest extends TestCase
         $this->assertSame($miss, $hit);
     }
 
+    /**
+     * Stored rates are major→major (the admin FX screen's hint is "e.g. 0.21").
+     * A currency with fewer decimals than MYR must be shifted down, or the
+     * figure is out by 10^(difference). IDR is live on the preview dropdown and
+     * rendered RM 100.00 as "Rp 34,500,000" — 100× the real ~Rp 345,000.
+     */
+    public function test_a_zero_decimal_currency_is_not_inflated_by_the_base_scale(): void
+    {
+        Currency::create([
+            'code' => 'IDR',
+            'name' => 'Indonesian Rupiah',
+            'symbol' => 'Rp',
+            'decimal_places' => 0,
+        ]);
+        ExchangeRate::create([
+            'currency_code' => 'IDR',
+            'rate' => '3450.00000000',
+            'margin_percent' => '0.00',
+            'fetched_at' => now(),
+        ]);
+
+        $this->assertSame('≈ Rp 345,000', app(CurrencyConverter::class)->display(10000, 'IDR'));
+    }
+
+    /** The other direction: more decimals than the base must shift UP. */
+    public function test_a_three_decimal_currency_shifts_the_other_way(): void
+    {
+        Currency::create([
+            'code' => 'KWD',
+            'name' => 'Kuwaiti Dinar',
+            'symbol' => 'KD',
+            'decimal_places' => 3,
+        ]);
+        ExchangeRate::create([
+            'currency_code' => 'KWD',
+            'rate' => '0.07000000',
+            'margin_percent' => '0.00',
+            'fetched_at' => now(),
+        ]);
+
+        // RM 100.00 × 0.07 = KD 7.000
+        $this->assertSame('≈ KD 7.000', app(CurrencyConverter::class)->display(10000, 'KWD'));
+    }
+
+    /** Control: the two-decimal case that already worked must not move. */
+    public function test_a_two_decimal_currency_is_unchanged(): void
+    {
+        $this->assertSame('≈ $ 21.00', app(CurrencyConverter::class)->display(10000, 'USD'));
+    }
+
     public function test_myr_needs_no_conversion(): void
     {
         $this->assertSame('RM 100.00', app(CurrencyConverter::class)->display(10000, 'MYR'));

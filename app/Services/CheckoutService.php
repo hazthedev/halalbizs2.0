@@ -76,6 +76,20 @@ class CheckoutService
         int $coinsToRedeem = 0,
         ?array $explicitLines = null,
     ): Order {
+        // Three attempts, because the stock lock at :133 is a genuine collision
+        // point: two buyers checking out the SAME variant in the same instant is
+        // ordinary traffic (a popular SKU, a flash sale), and InnoDB answers the
+        // loser's `SELECT … FOR UPDATE` with 1020 "Record has changed since last
+        // read … try restarting transaction" rather than blocking. With one
+        // attempt that reached the buyer as a raw QueryException at the moment of
+        // paying. Laravel already classifies 1020 as retryable
+        // (ConcurrencyErrorDetector), so it only ever needed asking.
+        //
+        // Retry is side-effect-safe here: this service sends nothing itself, and
+        // the queue is `database` on the SAME connection, so a rolled-back
+        // attempt takes its queued jobs with it and the retry re-inserts exactly
+        // one. A CheckoutException is not a concurrency error, so a genuine
+        // refusal (quota gone, stock gone) still surfaces on the first pass.
         return DB::transaction(function () use ($buyer, $address, $method, $platformCode, $shopCode, $shippingCode, $sellerNotes, $coinsToRedeem, $explicitLines) {
             // 0. AL-M4 idempotency guard (cart-based checkout only — an
             //    explicit-lines/subscription order never touches a cart).
@@ -564,6 +578,6 @@ class CheckoutService
             }
 
             return $order->fresh(['subOrders.items', 'payment']);
-        });
+        }, attempts: 3);
     }
 }
