@@ -72,10 +72,16 @@ class CurrencyConverter
             return Money::format($sen);
         }
 
+        // Cache the two scalars, never the model — cache.serializable_classes is
+        // false (gadget-chain hardening), so a cached object comes back as
+        // __PHP_Incomplete_Class and 500s on the first property read. Key renamed
+        // from "currency:" so already-poisoned entries can't be read back.
         $currency = Cache::remember(
-            "currency:{$displayCurrency}",
+            "currency-fmt:{$displayCurrency}",
             now()->addHour(),
-            fn () => Currency::where('code', $displayCurrency)->first()
+            fn () => Currency::where('code', $displayCurrency)
+                ->first(['symbol', 'decimal_places'])
+                ?->only(['symbol', 'decimal_places'])
         );
 
         $converted = $currency !== null ? $this->convert($sen, $displayCurrency) : null;
@@ -84,6 +90,6 @@ class CurrencyConverter
             return Money::format($sen);
         }
 
-        return '≈ '.Money::format($converted, $currency->symbol, $currency->decimal_places);
+        return '≈ '.Money::format($converted, $currency['symbol'], $currency['decimal_places']);
     }
 }
