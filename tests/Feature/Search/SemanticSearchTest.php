@@ -42,9 +42,26 @@ test('creating a live product builds its embedding; a draft gets none', function
         ->and(ProductEmbedding::where('product_id', $draft->id)->exists())->toBeFalse();
 });
 
+/**
+ * ⚠ The descriptions are pinned deliberately. `embeddingText()` folds name +
+ * description + category + metafields into one string, and LocalHashEmbedder
+ * buckets every token with `crc32($token) % 256`. A random factory description
+ * therefore throws ~40 extra tokens into a 256-slot space, and often enough one
+ * collides with a "honey"/"jar" bucket and lifts the WALLET above the honey —
+ * measured at ~2% of runs, which is exactly the intermittent failure recorded
+ * as F-001 (and it is not parallel-only, as first thought). Pinning the text
+ * removes the randomness this assertion was never about; the collision floor
+ * itself is a property of the local embedder, not a bug in this test.
+ */
 test('semantic search ranks a relevant product first', function () {
-    $honey = Product::factory()->create(['name' => ['en' => 'Organic Acacia Honey Jar', 'ms' => 'Madu Acacia']]);
-    Product::factory()->create(['name' => ['en' => 'Leather Bifold Wallet', 'ms' => 'Dompet Kulit']]);
+    $honey = Product::factory()->create([
+        'name' => ['en' => 'Organic Acacia Honey Jar', 'ms' => 'Madu Acacia'],
+        'description' => ['en' => 'Honey jar.', 'ms' => 'Balang madu.'],
+    ]);
+    Product::factory()->create([
+        'name' => ['en' => 'Leather Bifold Wallet', 'ms' => 'Dompet Kulit'],
+        'description' => ['en' => 'Leather wallet.', 'ms' => 'Dompet kulit.'],
+    ]);
 
     $ids = app(VectorSearchService::class)->semanticSearch('honey jar');
 
