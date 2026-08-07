@@ -264,9 +264,14 @@
                                     ? $product->halal_batch_code.($product->halal_packed_on ? ' · '.__('packed :date', ['date' => $product->halal_packed_on->format('j M Y')]) : '')
                                     : null,
                                 __('Certificate') => $trace ? $trace->issuing_body.' · '.$trace->number : $product->halal_cert_number,
-                                __('Expiry') => $certExpiry
-                                    ? $certExpiry->format('j M Y').($certLapsed ? ' · '.__('lapsed') : ' · '.trans_choice('{1} :count day remaining|[2,*] :count days remaining', (int) now()->startOfDay()->diffInDays($certExpiry, false), ['count' => (int) now()->startOfDay()->diffInDays($certExpiry, false)]))
-                                    : null,
+                                {{-- Reads the same $verdict as the badge above, so this row can
+                                     never say "884 days remaining" about a certificate the
+                                     badge is calling not-yet-in-force. --}}
+                                __('Expiry') => $cert === null ? null : match ($verdict) {
+                                    'lapsed' => $cert->valid_to->format('j M Y').' · '.__('lapsed'),
+                                    'pending' => $cert->valid_to->format('j M Y').' · '.__('not in force until :date', ['date' => $cert->valid_from->format('j M Y')]),
+                                    default => $cert->valid_to->format('j M Y').' · '.trans_choice('{1} :count day remaining|[2,*] :count days remaining', $cert->daysRemaining(), ['count' => $cert->daysRemaining()]),
+                                },
                             ]) as $label => $value)
                                 <div class="flex flex-wrap gap-x-6 gap-y-1">
                                     <dt class="w-28 shrink-0 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] text-ink-faint">{{ $label }}</dt>
