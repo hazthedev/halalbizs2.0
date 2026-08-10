@@ -15,7 +15,8 @@ class AffiliateReferral extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
-        'affiliate_id', 'sub_order_id', 'buyer_id', 'items_subtotal_sen', 'commission_sen', 'status', 'created_at',
+        'affiliate_id', 'sub_order_id', 'buyer_id', 'items_subtotal_sen', 'commission_sen',
+        'reversed_sen', 'status', 'locks_at', 'created_at',
     ];
 
     protected function casts(): array
@@ -24,8 +25,16 @@ class AffiliateReferral extends Model
             'status' => AffiliateReferralStatus::class,
             'items_subtotal_sen' => 'integer',
             'commission_sen' => 'integer',
+            'reversed_sen' => 'integer',
+            'locks_at' => 'datetime',
             'created_at' => 'datetime',
         ];
+    }
+
+    /** What this referral is actually worth after any refund reduction. */
+    public function payableSen(): int
+    {
+        return max(0, (int) $this->commission_sen - (int) $this->reversed_sen);
     }
 
     public function affiliate(): BelongsTo

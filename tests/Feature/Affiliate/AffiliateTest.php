@@ -106,10 +106,15 @@ test('completing a referred sub-order books commission exactly once', function (
     app(OrderService::class)->markDelivered($sub->fresh(), ActorType::System);
     app(OrderService::class)->confirmReceived($sub->fresh(), $buyer->id);
 
+    // Booked at the full 5%, but HELD: commission is pending until the return
+    // window plus buffer has passed, so confirmed (payable) earnings are still
+    // zero and the amount sits in pending. See AffiliateRefundClawbackTest for
+    // the hold expiring and for refunds landing inside it.
     $referral = AffiliateReferral::where('sub_order_id', $sub->id)->first();
     expect($referral)->not->toBeNull()
         ->and($referral->commission_sen)->toBe(500) // 5% of RM100
-        ->and(app(AffiliateService::class)->confirmedEarningsSen($affiliate))->toBe(500);
+        ->and(app(AffiliateService::class)->confirmedEarningsSen($affiliate))->toBe(0)
+        ->and(app(AffiliateService::class)->pendingEarningsSen($affiliate))->toBe(500);
 
     // Re-running the booking is a no-op.
     app(AffiliateService::class)->recordCommission($sub->fresh());

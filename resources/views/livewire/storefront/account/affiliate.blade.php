@@ -22,9 +22,20 @@
         @else
             {{-- Stats --}}
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {{-- Pending sits FIRST, ahead of available: it is the number a
+                     creator sees change after a sale, and naming its unlock date
+                     here is what stops a later refund reduction feeling like a
+                     clawback. Commission holds until the return window closes. --}}
                 <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
-                    <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">{{ __('Confirmed earnings') }}</p>
-                    <p class="mt-1 font-display text-2xl font-medium text-emerald tnum">@money($earningsSen)</p>
+                    <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">{{ __('Pending') }}</p>
+                    <p class="mt-1 font-display text-2xl font-medium tnum">@money($pendingSen)</p>
+                    <p class="mt-1 text-[11px] text-ink-faint">
+                        @if ($nextUnlockAt)
+                            {{ __('Unlocks :date', ['date' => $nextUnlockAt->translatedFormat('j M Y')]) }}
+                        @else
+                            {{ __('Held until the return window closes') }}
+                        @endif
+                    </p>
                 </div>
                 <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
                     <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">{{ __('Available to withdraw') }}</p>

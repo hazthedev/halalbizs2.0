@@ -15,6 +15,11 @@ Schedule::command('carts:remind-abandoned')->hourly();
 Schedule::command('seller:compute-health')->dailyAt('02:00');
 // M2.1 — expire lapsed Loyalty Coin lots.
 Schedule::command('coins:expire')->dailyAt('01:00');
+
+// Affiliate commission comes off hold once the return window + buffer has
+// passed. Hourly rather than daily so "unlocks 22 Aug" on the creator's
+// dashboard is true within the hour rather than up to a day late.
+Schedule::command('affiliates:lock-commissions')->hourly();
 // M2.6 — close group-buy teams whose recruiting window lapsed.
 Schedule::command('group-buy:expire')->everyFifteenMinutes();
 // M2.8 — place orders for due subscribe-and-save schedules.
