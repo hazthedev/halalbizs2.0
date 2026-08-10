@@ -15,7 +15,18 @@ class PageSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->pages() as $slug => $page) {
-            Page::updateOrCreate(
+            // firstOrCreate, NOT updateOrCreate. These are CMS pages an admin
+            // edits in the panel; updateOrCreate reverted every one of those
+            // edits each time the seeder ran, which is precisely why this
+            // seeder was kept out of deploy.sh — and that exclusion then meant a
+            // NEW page (affiliate-terms, 2026-08-10) 404'd in production while
+            // passing every local test.
+            //
+            // Create-if-missing fixes both ends: new pages land on deploy, and
+            // nothing a human wrote is ever overwritten. Baseline copy changes
+            // in this file therefore do NOT propagate to an existing page — edit
+            // it in the admin panel, which is where it now lives.
+            Page::firstOrCreate(
                 ['slug' => $slug],
                 [
                     'title' => ['en' => $page['title_en'], 'ms' => $page['title_ms']],
