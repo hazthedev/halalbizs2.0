@@ -49,14 +49,19 @@ it('now carries the storefront chrome, which the previous design deliberately hi
         ->assertSee('open-mini-cart', false);
 });
 
-it('labels the expiry watch as unbuilt instead of claiming it', function () {
-    // The page must not promise a check that does not run. Step 04 carries an
-    // "In build" chip; if someone removes that chip without building the watch,
-    // this fails.
+it('claims the expiry watch only because it is now built', function () {
+    // This test used to assert the OPPOSITE — that step 04 carried an "In build"
+    // chip — so the page could not promise a check that did not run. The watch
+    // shipped 2026-08-10 (`certificates:watch-expiry`, scheduled daily), so the
+    // chip came off and the assertion inverted with it. The pairing is the
+    // point: the claim on the page and the job that backs it retire together.
+    expect(collect(app(Illuminate\Contracts\Console\Kernel::class)->all()))
+        ->toHaveKey('certificates:watch-expiry');
+
     $this->get('/welcome')
         ->assertOk()
         ->assertSee('Expiry watch')
-        ->assertSee('In build');
+        ->assertDontSee('In build');
 });
 
 it('shows real top-level departments when they are seeded', function () {

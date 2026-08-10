@@ -46,6 +46,9 @@ class Product extends Model implements HasMedia
             'cod_enabled' => 'boolean',
             'halal_cert_expiry' => 'date',
             'halal_packed_on' => 'date',
+            // Set by certificates:watch-expiry when it takes a product down, so
+            // renewal restores exactly those and not seller-delisted stock.
+            'halal_delisted_at' => 'datetime',
             'published_at' => 'datetime',
             'rating_avg' => 'decimal:2',
         ];
