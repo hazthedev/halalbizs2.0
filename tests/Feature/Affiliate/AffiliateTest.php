@@ -140,3 +140,29 @@ test('the creator dashboard 404s when the program is disabled', function () {
         ->test(AffiliatePage::class)
         ->assertStatus(404);
 });
+
+/**
+ * The programme terms. Slice 4's finding was that nothing in the affiliate
+ * programme was binding — no page, no document — while the code had opinions
+ * about holds, pro-rata reductions and carry-forward balances. This page is the
+ * record of shipped behaviour, so it must exist and be reachable.
+ */
+it('publishes the creator programme terms and links them before anyone joins', function () {
+    $this->seed(Database\Seeders\PageSeeder::class);
+
+    $this->get(route('page.show', 'affiliate-terms'))
+        ->assertOk()
+        ->assertSee('Creator Programme Terms')
+        // The two clauses that exist because of what shipped today. If either
+        // stops being true in code, this page is lying and must change with it.
+        ->assertSee('never invoice you', false)
+        ->assertSee('reduced in proportion', false);
+
+    // Reachable from the enrol screen, not just by URL — the hold only reads as
+    // fair if it was visible before signing up.
+    $buyer = App\Models\User::factory()->create();
+
+    Livewire::actingAs($buyer)
+        ->test(App\Livewire\Storefront\Account\Affiliate::class)
+        ->assertSee('Read the programme terms');
+});

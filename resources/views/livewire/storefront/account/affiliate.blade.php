@@ -12,6 +12,14 @@
                         <p class="mt-1 text-[13px] text-ink-soft">
                             {{ __('Join the creator program for your own share link. Earn :rate% commission whenever a shopper you referred completes an order.', ['rate' => rtrim(rtrim(number_format(config('affiliate.commission_rate_bp', 500) / 100, 2), '0'), '.')]) }}
                         </p>
+                        {{-- Shown BEFORE joining, not buried in a footer. The
+                             hold period and the carry-forward only feel fair if
+                             they were visible at the point of signing up. --}}
+                        <p class="mt-2 text-[13px]">
+                            <a href="{{ route('page.show', 'affiliate-terms') }}" wire:navigate
+                               class="font-medium text-emerald underline underline-offset-2 hover:text-emerald-deep">{{ __('Read the programme terms') }}</a>
+                            <span class="text-ink-faint">{{ __('— commission is held until the return window closes.') }}</span>
+                        </p>
                     </div>
                 </div>
                 <button type="button" wire:click="enroll" wire:loading.attr="disabled" wire:target="enroll"
@@ -48,7 +56,10 @@
                     </p>
                     <p class="mt-1 font-display text-2xl font-medium tnum {{ $availableSen < 0 ? 'text-ink-soft' : '' }}">@money(abs($availableSen))</p>
                     @if ($availableSen < 0)
-                        <p class="mt-1 text-[11px] text-ink-faint">{{ __('From a refunded order — your next commissions cover it. Nothing to pay.') }}</p>
+                        <p class="mt-1 text-[11px] text-ink-faint">
+                            {{ __('From a refunded order — your next commissions cover it. Nothing to pay.') }}
+                            <a href="{{ route('page.show', 'affiliate-terms') }}" wire:navigate class="underline underline-offset-2 hover:text-ink">{{ __('Terms') }}</a>
+                        </p>
                     @endif
                 </div>
                 <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
