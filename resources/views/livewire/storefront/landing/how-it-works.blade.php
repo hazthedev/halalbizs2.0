@@ -32,7 +32,11 @@
                 ['n' => '03', 'title' => __('Scope binding'),
                  'body' => __('The certificate is attached to the SKU it names. A shop-wide badge never covers a product the annex leaves out.'), 'soon' => false],
                 ['n' => '04', 'title' => __('Expiry watch'),
-                 'body' => __('Automatic de-listing the moment a certificate lapses, with a renewal reminder to the seller before it does.'), 'soon' => true],
+                 // BUILT 2026-08-10 — `certificates:watch-expiry`, daily 00:20.
+                 // The chip and the job retire together; LandingPageTest now
+                 // asserts the chip is GONE, so re-adding "soon => true" here
+                 // without a reason will fail.
+                 'body' => __('Automatic de-listing the moment a certificate lapses, with a renewal reminder to the seller before it does.'), 'soon' => false],
             ] as $step)
                 <li class="flex gap-4 rounded-[var(--radius-panel)] border border-emerald-edge bg-emerald-card p-5">
                     <span class="font-mono text-[length:var(--text-base)] font-medium text-brass" aria-hidden="true">{{ $step['n'] }}</span>

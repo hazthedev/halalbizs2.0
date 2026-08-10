@@ -16,6 +16,12 @@ Schedule::command('seller:compute-health')->dailyAt('02:00');
 // M2.1 — expire lapsed Loyalty Coin lots.
 Schedule::command('coins:expire')->dailyAt('01:00');
 
+// Halal certificate expiry watch: delist products under an expired certificate,
+// restore them on renewal, nudge sellers 60 days out. Early, before the day's
+// trading — a product must not be on sale under a lapsed certificate for a
+// working day because the job runs at noon.
+Schedule::command('certificates:watch-expiry')->dailyAt('00:20');
+
 // Affiliate commission comes off hold once the return window + buffer has
 // passed. Hourly rather than daily so "unlocks 22 Aug" on the creator's
 // dashboard is true within the hour rather than up to a day late.
