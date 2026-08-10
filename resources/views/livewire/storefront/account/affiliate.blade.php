@@ -37,9 +37,19 @@
                         @endif
                     </p>
                 </div>
+                {{-- Available can be NEGATIVE: a refund on a sale whose
+                     commission was already withdrawn carries the shortfall
+                     forward. Say that in words. A bare "-RM5.00" reads like a
+                     bill, and the whole policy is that nobody is ever billed —
+                     they just earn back to zero first. --}}
                 <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
-                    <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">{{ __('Available to withdraw') }}</p>
-                    <p class="mt-1 font-display text-2xl font-medium tnum">@money($availableSen)</p>
+                    <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">
+                        {{ $availableSen < 0 ? __('Balance to clear') : __('Available to withdraw') }}
+                    </p>
+                    <p class="mt-1 font-display text-2xl font-medium tnum {{ $availableSen < 0 ? 'text-ink-soft' : '' }}">@money(abs($availableSen))</p>
+                    @if ($availableSen < 0)
+                        <p class="mt-1 text-[11px] text-ink-faint">{{ __('From a refunded order — your next commissions cover it. Nothing to pay.') }}</p>
+                    @endif
                 </div>
                 <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
                     <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">{{ __('Link clicks') }}</p>
@@ -129,12 +139,37 @@
                 @else
                     <ul class="divide-y divide-line">
                         @foreach ($referrals as $referral)
+                            {{-- Per-sale detail. The amount shown is payableSen()
+                                 — commission LESS anything a refund voided — not
+                                 commission_sen, which would keep displaying the
+                                 original figure after a partial refund and make
+                                 the total look wrong for no visible reason.
+
+                                 Each row says what state it is in and when that
+                                 changes, because almost all clawback resentment
+                                 comes from a number moving with no explanation
+                                 attached to the sale that moved it. --}}
+                            @php
+                                $payable = $referral->payableSen();
+                                $partly = $referral->reversed_sen > 0 && $payable > 0;
+                            @endphp
                             <li class="flex items-center justify-between gap-3 px-5 py-3">
                                 <div class="min-w-0">
                                     <p class="truncate text-sm font-medium text-ink">{{ $referral->subOrder?->sub_order_no ?? __('Order') }}</p>
-                                    <p class="text-xs text-ink-faint">{{ $referral->created_at?->format('d M Y') }} · {{ $referral->status->label() }}</p>
+                                    <p class="text-xs text-ink-faint">
+                                        {{ $referral->created_at?->format('d M Y') }} · {{ $referral->status->label() }}
+                                        @if ($referral->status === \App\Enums\AffiliateReferralStatus::Pending && $referral->locks_at)
+                                            · {{ __('available :date', ['date' => $referral->locks_at->format('d M Y')]) }}
+                                        @elseif ($partly)
+                                            · {{ __('reduced by :amount after a refund', ['amount' => \App\Support\Money::format($referral->reversed_sen)]) }}
+                                        @elseif ($referral->status === \App\Enums\AffiliateReferralStatus::Reversed)
+                                            · {{ __('order refunded') }}
+                                        @endif
+                                    </p>
                                 </div>
-                                <span class="shrink-0 text-sm font-medium text-emerald tnum">+@money($referral->commission_sen)</span>
+                                <span class="shrink-0 text-sm font-medium tnum {{ $payable > 0 ? 'text-emerald' : 'text-ink-faint' }}">
+                                    {{ $payable > 0 ? '+' : '' }}@money($payable)
+                                </span>
                             </li>
                         @endforeach
                     </ul>
