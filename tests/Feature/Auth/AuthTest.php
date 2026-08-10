@@ -9,9 +9,19 @@ use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Livewire\Livewire;
+
+/**
+ * The breach check is a live k-anonymity lookup, so it is faked here: the suffix
+ * below is the SHA-1 of "12345678" minus its 5-char prefix. Faking it means the
+ * assertion holds with no network and cannot go quiet in CI — `uncompromised()`
+ * FAILS OPEN when the API is unreachable, so a test that relied on the real
+ * endpoint would silently stop testing anything the day CI lost egress.
+ */
+const PWNED_12345678 = 'FB2927D828AF22F592134E8932480637C0D:24230577';
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -27,8 +37,8 @@ test('register creates a buyer and redirects to the verification notice', functi
     Livewire::test(Register::class)
         ->set('name', 'Aisha binti Ali')
         ->set('email', 'aisha@example.com')
-        ->set('password', 'password123')
-        ->set('password_confirmation', 'password123')
+        ->set('password', 'kx7-mangosteen-quay-2026')
+        ->set('password_confirmation', 'kx7-mangosteen-quay-2026')
         ->set('phone', '012-345 6789')
         ->set('terms', true)
         ->call('register')
@@ -46,12 +56,45 @@ test('register creates a buyer and redirects to the verification notice', functi
     Notification::assertSentTo($user, VerifyEmail::class);
 });
 
+test('register refuses a password that has appeared in a breach', function () {
+    Http::fake(['api.pwnedpasswords.com/*' => Http::response(PWNED_12345678)]);
+
+    Livewire::test(Register::class)
+        ->set('name', 'Aisha binti Ali')
+        ->set('email', 'aisha@example.com')
+        ->set('password', '12345678')
+        ->set('password_confirmation', '12345678')
+        ->set('phone', '012-345 6789')
+        ->set('terms', true)
+        ->call('register')
+        ->assertHasErrors(['password']);
+
+    expect(User::where('email', 'aisha@example.com')->exists())->toBeFalse();
+    $this->assertGuest();
+});
+
+test('reset password refuses a password that has appeared in a breach', function () {
+    Http::fake(['api.pwnedpasswords.com/*' => Http::response(PWNED_12345678)]);
+
+    $user = User::factory()->create(['email' => 'aisha@example.com']);
+    $token = Password::createToken($user);
+
+    Livewire::test(ResetPassword::class, ['token' => $token, 'email' => $user->email])
+        ->set('password', '12345678')
+        ->set('password_confirmation', '12345678')
+        ->call('resetPassword')
+        ->assertHasErrors(['password']);
+
+    // The rule is only worth anything if it stops the WRITE, not just the render.
+    expect(Hash::check('12345678', $user->fresh()->password))->toBeFalse();
+});
+
 test('register requires ToS consent', function () {
     Livewire::test(Register::class)
         ->set('name', 'Aisha binti Ali')
         ->set('email', 'aisha@example.com')
-        ->set('password', 'password123')
-        ->set('password_confirmation', 'password123')
+        ->set('password', 'kx7-mangosteen-quay-2026')
+        ->set('password_confirmation', 'kx7-mangosteen-quay-2026')
         ->set('terms', false)
         ->call('register')
         ->assertHasErrors(['terms']);
