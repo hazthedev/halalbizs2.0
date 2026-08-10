@@ -18,25 +18,28 @@
                 :error="$errors->first('email')"
             />
 
-            <div>
-                <x-ui.input
-                    :label="__('Password')"
-                    name="password"
-                    type="password"
-                    wire:model="password"
-                    autocomplete="current-password"
-                    required
-                    :error="$errors->first('password')"
-                />
-                <div class="mt-1.5 text-right">
-                    <a href="{{ route('password.request') }}" wire:navigate class="text-[13px] font-medium text-emerald hover:text-emerald-deep">{{ __('Forgot password?') }}</a>
-                </div>
-            </div>
+            <x-ui.input
+                :label="__('Password')"
+                name="password"
+                type="password"
+                wire:model="password"
+                autocomplete="current-password"
+                required
+                :error="$errors->first('password')"
+            />
 
-            <label class="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm text-ink">
-                <input type="checkbox" wire:model="remember" class="size-4 rounded accent-emerald">
-                {{ __('Keep me logged in') }}
-            </label>
+            {{-- One row: both are "before you log in" choices, and stacking them
+                 pushed the submit button an extra row down at 375. `flex-wrap`
+                 matters — the BM strings are longer, and wrapping is the correct
+                 failure mode here, not overlap. `min-h-11` stays on BOTH so each
+                 keeps its own 44px tap target now they sit side by side. --}}
+            <div class="flex flex-wrap items-center justify-between gap-x-4">
+                <label class="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm text-ink">
+                    <input type="checkbox" wire:model="remember" class="size-4 rounded accent-emerald">
+                    {{ __('Keep me logged in') }}
+                </label>
+                <a href="{{ route('password.request') }}" wire:navigate class="flex min-h-11 items-center text-[13px] font-medium text-emerald hover:text-emerald-deep">{{ __('Forgot password?') }}</a>
+            </div>
 
             <x-turnstile :error="$errors->first('turnstileToken')" />
 
