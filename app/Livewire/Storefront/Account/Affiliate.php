@@ -76,8 +76,12 @@ class Affiliate extends Component
         return view('livewire.storefront.account.affiliate', [
             'affiliate' => $affiliate,
             'link' => $affiliate ? $affiliates->referralLink($affiliate) : null,
-            'earningsSen' => $affiliate ? $affiliates->confirmedEarningsSen($affiliate) : 0,
             'availableSen' => $affiliate ? $affiliates->availableForPayoutSen($affiliate) : 0,
+            // Pending is shown BESIDE available, with its date. A creator who is
+            // told "RM5 pending, available 24 Aug" treats a refund reducing it as
+            // a non-event; one who was told "earned" watches a balance drop.
+            'pendingSen' => $affiliate ? $affiliates->pendingEarningsSen($affiliate) : 0,
+            'nextUnlockAt' => $affiliate ? $affiliates->nextUnlockAt($affiliate) : null,
             'payouts' => $affiliate ? $affiliate->payouts()->latest('id')->limit(10)->get() : collect(),
             'minPayoutSen' => (int) config('affiliate.min_payout_sen', 5000),
             'referrals' => $referrals,

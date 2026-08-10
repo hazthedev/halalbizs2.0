@@ -31,7 +31,9 @@ class RecordAffiliateCommissionOnCompletion implements ShouldQueue
             $referral = $this->affiliates->recordCommission($event->subOrder);
 
             if ($referral !== null) {
-                $referral->affiliate->user?->notify(new AffiliateCommissionNotification($referral->commission_sen));
+                $referral->affiliate->user?->notify(
+                    new AffiliateCommissionNotification($referral->commission_sen, $referral->locks_at),
+                );
             }
         } catch (Throwable $e) {
             Log::error('Affiliate commission booking failed.', [

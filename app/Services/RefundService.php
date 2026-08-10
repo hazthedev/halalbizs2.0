@@ -31,6 +31,7 @@ class RefundService
         private PaymentGatewayManager $gateways,
         private CoinService $coins,
         private VoucherService $vouchers,
+        private AffiliateService $affiliates,
     ) {}
 
     public function refund(
@@ -126,6 +127,13 @@ class RefundService
 
             // 2b. Record the refund against the sub-order (idempotency source of truth).
             $subOrder->increment('refunded_sen', $amountSen);
+
+            // 2c. Void the affiliate's matching slice while the commission is
+            //     still held. This sits here rather than on a status listener
+            //     because a PARTIAL refund never changes the sub-order status —
+            //     a listener would only ever catch the full-refund case, and
+            //     partials are exactly where pro-rata matters.
+            $this->affiliates->reduceForRefund($subOrder, $amountSen);
 
             // 3. Only a genuinely FULL refund moves the sub-order to the terminal
             //    Refunded state — a partial must not mislabel a half-refunded order
