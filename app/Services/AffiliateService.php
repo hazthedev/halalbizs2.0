@@ -143,10 +143,14 @@ class AffiliateService
      * RefundService step 1 — using the items subtotal as the denominator would
      * over-cut, because a shipping-only refund would eat item commission.
      *
-     * ⚠ Only reduces while PENDING. Once locked, the money has been presented to
-     * the creator as available and reversing it silently is the thing the hold
-     * exists to avoid — that case needs the carry-forward ledger (slice 2) and
-     * is deliberately left alone here rather than half-done.
+     * Applies whether the commission is still PENDING or already locked.
+     *
+     * Pending is the quiet case the hold exists to create: the creator was told
+     * the money was not theirs yet, so a reduction is a non-event. Locked is the
+     * exception — the money was presented as available and may already have been
+     * withdrawn, so the reduction can push the balance NEGATIVE. That is the
+     * intended behaviour: the shortfall carries forward and is absorbed by later
+     * commissions (see availableForPayoutSen). Nobody is ever invoiced.
      */
     public function reduceForRefund(SubOrder $subOrder, int $refundedSen): int
     {
@@ -155,7 +159,7 @@ class AffiliateService
         }
 
         $referral = AffiliateReferral::where('sub_order_id', $subOrder->id)
-            ->where('status', AffiliateReferralStatus::Pending)
+            ->whereIn('status', [AffiliateReferralStatus::Pending, AffiliateReferralStatus::Confirmed])
             ->lockForUpdate()
             ->first();
 
@@ -182,8 +186,10 @@ class AffiliateService
 
         $referral->increment('reversed_sen', $slice);
 
-        // Fully clawed back inside the window: mark it, so the creator's list
-        // shows a reversed row rather than a silent RM0.00 pending one.
+        // Fully clawed back: mark it, so the creator's list shows a reversed row
+        // rather than a silent RM0.00 one. Applies to a locked commission too —
+        // it leaves the payable set, which is what drives the balance negative
+        // if it had already been withdrawn.
         if ($referral->fresh()->payableSen() === 0) {
             $referral->update(['status' => AffiliateReferralStatus::Reversed]);
         }
@@ -218,14 +224,33 @@ class AffiliateService
         return $at === null ? null : \Illuminate\Support\Carbon::parse($at);
     }
 
-    /** Confirmed earnings minus what's already requested/paid out. */
+    /**
+     * Locked earnings minus what's already requested/paid out. CAN BE NEGATIVE,
+     * and that is the whole carry-forward mechanism.
+     *
+     * It used to be clamped with max(0, …). That clamp silently forgave any
+     * shortfall: withdraw RM5, have the sale refunded afterwards, and the debt
+     * evaporated at the clamp. Letting it go negative makes the balance carry —
+     * later commissions absorb it, and a withdrawal is only possible once the
+     * balance is positive again, because requestPayout() caps on this figure.
+     *
+     * That is "net against future earnings, never invoice": the creator is never
+     * asked for money, they simply earn back to zero first. A creator who is
+     * owed RM8 and carries a RM5 shortfall can withdraw RM3.
+     *
+     * ponytail: the "ledger" here is derived, not a table — referral rows carry
+     * commission_sen/reversed_sen and payouts are rows, so the history is fully
+     * reconstructable. Build a real affiliate_ledger only if manual adjustments,
+     * write-offs or multi-currency arrive; today a table would duplicate what
+     * these two already record.
+     */
     public function availableForPayoutSen(Affiliate $affiliate): int
     {
         $earmarked = (int) $affiliate->payouts()
             ->whereIn('status', [AffiliatePayoutStatus::Requested, AffiliatePayoutStatus::Paid])
             ->sum('amount_sen');
 
-        return max(0, $this->confirmedEarningsSen($affiliate) - $earmarked);
+        return $this->confirmedEarningsSen($affiliate) - $earmarked;
     }
 
     /**

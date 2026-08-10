@@ -9,10 +9,12 @@
  * before, RM5.00 after). Its own comment said "if a clawback is implemented,
  * THIS TEST SHOULD FAIL — update it then". It did, and this is that update.
  *
- * The shipped policy is a HOLD, not a clawback: commission is `pending` until
+ * The shipped policy is a HOLD first: commission is `pending` until
  * delivered_at + return_window_days + lock_buffer_days, and a refund inside
- * that window reduces it pro-rata. Reversing money a creator was already shown
- * as available is the exceptional path, and is deliberately not built here.
+ * that window reduces it pro-rata — quietly, because the creator was told the
+ * money was not theirs yet. Slice 2 added the tail: a refund arriving AFTER the
+ * hold reverses too, and if the money was already withdrawn the balance carries
+ * a shortfall that later commissions absorb. Nobody is ever invoiced.
  */
 
 use App\Enums\ActorType;
@@ -176,7 +178,20 @@ test('the hold expires on schedule and the commission becomes payable', function
         ->and($service->confirmedEarningsSen($affiliate))->toBe(500);
 });
 
-test('a refund AFTER the hold expires is left alone — that is slice 2, not silently half-done', function () {
+// (The slice-1 marker test that pinned "a refund after the hold is left alone"
+//  lived here. It said it SHOULD change when slice 2 shipped, and it did — the
+//  post-lock behaviour is now covered by the slice 2 block at the end of this
+//  file. Removed rather than left contradicting its successor.)
+
+/**
+ * SLICE 2 — the tail the hold cannot catch: a refund arriving AFTER the
+ * commission unlocked, possibly after it was withdrawn.
+ *
+ * Policy: net against future earnings, never invoice. The creator is never
+ * asked for money; their balance simply carries a shortfall that later
+ * commissions absorb.
+ */
+test('a refund after the hold expires now reverses the commission', function () {
     $service = app(AffiliateService::class);
     $affiliate = $service->enroll(User::factory()->create());
 
@@ -186,14 +201,86 @@ test('a refund AFTER the hold expires is left alone — that is slice 2, not sil
     $this->travelTo(\Illuminate\Support\Carbon::parse($locksAt)->addMinute());
     $service->lockDueCommissions();
 
+    expect($service->confirmedEarningsSen($affiliate))->toBe(500);
+
     app(RefundService::class)->refund($sub->fresh(), (int) $sub->total_sen, ActorType::Seller, null);
 
     $referral = AffiliateReferral::where('sub_order_id', $sub->id)->first();
 
-    // Documented, not accidental: once presented as available, reversing it
-    // needs the carry-forward ledger. This test is the marker for slice 2 and
-    // SHOULD change when that ships.
-    expect($referral->status)->toBe(AffiliateReferralStatus::Confirmed)
-        ->and($referral->reversed_sen)->toBe(0)
-        ->and($service->confirmedEarningsSen($affiliate))->toBe(500);
+    expect($referral->status)->toBe(AffiliateReferralStatus::Reversed)
+        ->and($referral->reversed_sen)->toBe(500)
+        ->and($service->confirmedEarningsSen($affiliate))->toBe(0);
+});
+
+test('a shortfall on already-withdrawn commission carries forward as a negative balance', function () {
+    // COD is capped at RM500, so a single referred order tops out at RM25
+    // commission — below the RM50 default payout floor. Lower the floor: what is
+    // under test here is the netting, not the minimum.
+    config(['affiliate.min_payout_sen' => 100]);
+    $service = app(AffiliateService::class);
+    $affiliate = $service->enroll(User::factory()->create());
+
+    [$sub] = arcCompletedReferredOrder($service, $affiliate, 40_000); // RM400 -> RM20 commission
+
+    $locksAt = AffiliateReferral::where('sub_order_id', $sub->id)->value('locks_at');
+    $this->travelTo(\Illuminate\Support\Carbon::parse($locksAt)->addMinute());
+    $service->lockDueCommissions();
+
+    // They withdraw the lot.
+    $service->requestPayout($affiliate, 2_000);
+    expect($service->availableForPayoutSen($affiliate))->toBe(0);
+
+    // Then the sale comes back.
+    app(RefundService::class)->refund($sub->fresh(), (int) $sub->total_sen, ActorType::Seller, null);
+
+    // THE POINT: the debt persists instead of being forgiven. availableForPayout
+    // used to be clamped with max(0, …), which silently wrote this off.
+    expect($service->availableForPayoutSen($affiliate))->toBe(-2_000);
+});
+
+test('future commissions absorb the shortfall, and nobody is ever billed', function () {
+    // COD is capped at RM500, so a single referred order tops out at RM25
+    // commission — below the RM50 default payout floor. Lower the floor: what is
+    // under test here is the netting, not the minimum.
+    config(['affiliate.min_payout_sen' => 100]);
+    $service = app(AffiliateService::class);
+    $affiliate = $service->enroll(User::factory()->create());
+
+    [$sub] = arcCompletedReferredOrder($service, $affiliate, 40_000); // RM400 -> RM20 commission
+    $locksAt = AffiliateReferral::where('sub_order_id', $sub->id)->value('locks_at');
+    $this->travelTo(\Illuminate\Support\Carbon::parse($locksAt)->addMinute());
+    $service->lockDueCommissions();
+    $service->requestPayout($affiliate, 2_000);
+    app(RefundService::class)->refund($sub->fresh(), (int) $sub->total_sen, ActorType::Seller, null);
+
+    expect($service->availableForPayoutSen($affiliate))->toBe(-2_000);
+
+    // A later, larger sale.
+    [$sub2] = arcCompletedReferredOrder($service, $affiliate, 45_000); // RM450 -> RM22.50 commission
+    $locks2 = AffiliateReferral::where('sub_order_id', $sub2->id)->value('locks_at');
+    $this->travelTo(\Illuminate\Support\Carbon::parse($locks2)->addMinute());
+    $service->lockDueCommissions();
+
+    // RM150 earned less the RM100 shortfall = RM50 withdrawable. Netted, not billed.
+    expect($service->availableForPayoutSen($affiliate))->toBe(250); // RM22.50 earned - RM20 shortfall
+});
+
+test('a withdrawal is refused while the balance is still negative', function () {
+    // COD is capped at RM500, so a single referred order tops out at RM25
+    // commission — below the RM50 default payout floor. Lower the floor: what is
+    // under test here is the netting, not the minimum.
+    config(['affiliate.min_payout_sen' => 100]);
+    $service = app(AffiliateService::class);
+    $affiliate = $service->enroll(User::factory()->create());
+
+    [$sub] = arcCompletedReferredOrder($service, $affiliate, 40_000);
+    $locksAt = AffiliateReferral::where('sub_order_id', $sub->id)->value('locks_at');
+    $this->travelTo(\Illuminate\Support\Carbon::parse($locksAt)->addMinute());
+    $service->lockDueCommissions();
+    $service->requestPayout($affiliate, 2_000);
+    app(AffiliateService::class)->markPayoutPaid($affiliate->payouts()->first());
+    app(RefundService::class)->refund($sub->fresh(), (int) $sub->total_sen, ActorType::Seller, null);
+
+    expect(fn () => $service->requestPayout($affiliate, 1_000))
+        ->toThrow(App\Exceptions\CheckoutException::class);
 });
