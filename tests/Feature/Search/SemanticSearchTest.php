@@ -69,6 +69,72 @@ test('semantic search ranks a relevant product first', function () {
         ->and($ids[0])->toBe($honey->id);
 });
 
+/**
+ * The guards below exist because the dot product used to truncate to
+ * min(count(a), count(b)). That made two different failures produce confident,
+ * meaningless rankings with nothing in the logs:
+ *
+ *   1. a dimension change without re-running `search:embed`, and
+ *   2. RemoteEmbedder falling back to the local hash embedder on a timeout,
+ *      scoring a hash vector against stored semantic vectors.
+ *
+ * Both now exclude the row instead. An empty result is recoverable; a wrong
+ * order nobody can detect is not.
+ */
+test('a stale index (wrong dimensions) is excluded rather than scored on a truncated prefix', function () {
+    $product = Product::factory()->create(['name' => ['en' => 'Madu Tulen', 'ms' => 'Madu Tulen']]);
+
+    // Simulate the index built before a dimension change: right model, old size.
+    //
+    // ⚠ The query term is "tulen" ON PURPOSE. crc32('tulen') % 4096 = 69, i.e.
+    // inside the first 256 entries — so the OLD truncating dot() really does
+    // score this row above zero. An earlier version of this test used a
+    // 256-length stub and a 'honey jar' query whose live buckets all sat above
+    // index 255; the dot came to 0.0, the row was dropped by the score > 0
+    // filter, and the test passed against the unguarded code. It proved nothing.
+    $embedder = app(EmbeddingProvider::class);
+    $stale = array_fill(0, 256, 0.0);
+    $stale[69] = 1.0;
+
+    ProductEmbedding::where('product_id', $product->id)->update([
+        'text_vector' => $stale,
+        'dimensions' => 256,
+        'model' => $embedder->model(),
+    ]);
+
+    expect($embedder->dimensions())->not->toBe(256) // guard the guard
+        ->and(app(VectorSearchService::class)->semanticSearch('tulen'))->toBe([]);
+});
+
+test('vectors from a different model are excluded even at the same dimensions', function () {
+    $product = Product::factory()->create(['name' => ['en' => 'Organic Acacia Honey Jar', 'ms' => 'Madu Acacia']]);
+
+    $embedder = app(EmbeddingProvider::class);
+    ProductEmbedding::where('product_id', $product->id)->update([
+        'model' => 'voyage-3', // as if embedded remotely, then the query fell back to local
+    ]);
+
+    expect(app(VectorSearchService::class)->semanticSearch('honey jar'))->toBe([]);
+});
+
+test('visual search still works — the model filter must not leak onto the image column', function () {
+    // Regression guard: `model`/`dimensions` describe the TEXT embedder, so
+    // applying that filter to image_vector would exclude every row and silently
+    // kill visual search while every text test stayed green.
+    $red = Product::factory()->create(['name' => ['en' => 'Red Kurma Pack', 'ms' => 'Kurma Merah']]);
+    $blue = Product::factory()->create(['name' => ['en' => 'Blue Kurma Pack', 'ms' => 'Kurma Biru']]);
+
+    ProductEmbedding::where('product_id', $red->id)
+        ->update(['image_vector' => app(ImageEmbedder::class)->embed(tmpImage(255, 0, 0))]);
+    ProductEmbedding::where('product_id', $blue->id)
+        ->update(['image_vector' => app(ImageEmbedder::class)->embed(tmpImage(0, 0, 255))]);
+
+    $ids = app(VectorSearchService::class)->visualSearch(tmpImage(250, 10, 10));
+
+    expect($ids)->not->toBeEmpty()
+        ->and($ids[0])->toBe($red->id);
+});
+
 test('the listing smart mode renders semantic results', function () {
     config(['scout.driver' => 'collection']);
     $honey = Product::factory()->create(['name' => ['en' => 'Pure Honey Delight', 'ms' => 'Madu Tulen']]);
