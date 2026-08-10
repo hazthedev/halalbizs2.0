@@ -160,6 +160,109 @@ class PageSeeder extends Seeder
                 'body_en' => '<h2>Frequently Asked Questions</h2><p>Find answers about ordering, payment, delivery, returns, Loyalty Coins, and selling on the platform in our Help Centre.</p>',
                 'body_ms' => '<h2>Soalan Lazim</h2><p>Cari jawapan tentang pesanan, pembayaran, penghantaran, pemulangan, Syiling Kesetiaan, dan menjual di platform dalam Pusat Bantuan kami.</p>',
             ],
+
+            // ⚠ EVERY CLAUSE BELOW DESCRIBES CODE THAT ALREADY RUNS. It is a
+            // record of shipped behaviour, not new policy — written after the
+            // commission hold and carry-forward shipped (PRs #97, #101) so that
+            // creators have something binding to point at. If any of these
+            // numbers change, they change in config first and here second:
+            //
+            //   5%              config('affiliate.commission_rate_bp') = 500
+            //   30-day cookie   config('affiliate.cookie_days')
+            //   14-day hold     OrderSettings::return_window_days (7)
+            //                   + config('affiliate.lock_buffer_days') (7)
+            //   RM50 minimum    config('affiliate.min_payout_sen') = 5000
+            //
+            // The hold is stated as "about two weeks" rather than a hard number
+            // because the return window is an admin setting; the precise unlock
+            // date is shown per-sale on the creator's own dashboard, which is
+            // the figure that is always true.
+            'affiliate-terms' => [
+                'title_en' => 'Creator Programme Terms',
+                'title_ms' => 'Terma Program Kreator',
+                'body_en' => <<<HTML
+                <h2>Creator Programme Terms</h2>
+                <p>These terms cover how commission is earned, held and paid on {$brand}. They describe exactly how the system behaves — nothing here is applied by hand.</p>
+
+                <h3>1. Joining</h3>
+                <p>Any account holder can enrol and receive a unique share link. We may suspend a creator account at any time; suspension stops new commission being earned but does not remove commission already earned.</p>
+
+                <h3>2. How a sale is credited to you</h3>
+                <p>When someone opens your link we store a referral cookie for 30 days. If they order within that period, the sale is credited to you. Last link wins: if the shopper later clicks another creator's link, the later one is credited. Credit is fixed when the order is placed and does not change afterwards.</p>
+
+                <p><strong>You cannot earn commission on your own purchases.</strong> An order placed by the same account that owns the share link earns nothing.</p>
+
+                <h3>3. What you earn</h3>
+                <p>5% of the value of the items in a referred order. Shipping, tax and any platform discounts are excluded. Commission is calculated per shop: an order split across two shops produces one commission per shop, and each follows its own delivery and return timeline.</p>
+
+                <p>Commission is earned when an order is completed, not when it is placed.</p>
+
+                <h3>4. The holding period</h3>
+                <p>Newly earned commission is <strong>Pending</strong>, not yet available to withdraw. It becomes available roughly two weeks after delivery — once the buyer's return window has closed, plus a short buffer for late disputes.</p>
+
+                <p>Your dashboard always shows the exact unlock date for each sale. Pending and available amounts are listed separately so you can see what is genuinely yours.</p>
+
+                <h3>5. Returns and refunds</h3>
+                <p>Commission follows the sale. If a referred order is refunded, the matching commission is removed.</p>
+
+                <ul>
+                  <li><strong>Refunded while pending</strong> — the commission is reduced or removed before it ever became available. Nothing is taken from you.</li>
+                  <li><strong>Partly refunded</strong> — the commission is reduced in proportion. A buyer returning part of an order does not cost you the whole commission.</li>
+                  <li><strong>Refunded after it became available</strong> — the commission is reversed. If you had already withdrawn it, the shortfall is carried on your balance and covered by your next commissions.</li>
+                </ul>
+
+                <p><strong>We will never invoice you or ask you to send money back.</strong> A negative balance simply means your next earnings clear it first. If you never refer again, nothing is pursued.</p>
+
+                <h3>6. Withdrawals</h3>
+                <p>You can request a withdrawal once your available balance reaches RM50. One request at a time; we pay to the bank details you supply with the request. A rejected request returns the amount to your available balance.</p>
+
+                <h3>7. Changes</h3>
+                <p>We may change the commission rate, the holding period or the minimum withdrawal. Changes apply to sales referred after the change, never retrospectively to commission already earned.</p>
+
+                <p><em>These terms are a plain-language description of how the programme currently operates and should be reviewed by Malaysian counsel before public launch.</em></p>
+                HTML,
+                'body_ms' => <<<HTML
+                <h2>Terma Program Kreator</h2>
+                <p>Terma ini menerangkan cara komisen diperoleh, ditahan dan dibayar di {$brand}. Ia menerangkan dengan tepat cara sistem berfungsi — tiada apa-apa di sini yang dikendalikan secara manual.</p>
+
+                <h3>1. Menyertai</h3>
+                <p>Mana-mana pemegang akaun boleh mendaftar dan menerima pautan kongsi yang unik. Kami boleh menggantung akaun kreator pada bila-bila masa; penggantungan menghentikan komisen baharu tetapi tidak menghapuskan komisen yang telah diperoleh.</p>
+
+                <h3>2. Bagaimana jualan dikreditkan kepada anda</h3>
+                <p>Apabila seseorang membuka pautan anda, kami menyimpan kuki rujukan selama 30 hari. Jika mereka membuat pesanan dalam tempoh itu, jualan dikreditkan kepada anda. Pautan terakhir menang: jika pembeli kemudian mengklik pautan kreator lain, pautan yang lebih lewat itu yang dikreditkan. Kredit ditetapkan semasa pesanan dibuat dan tidak berubah selepas itu.</p>
+
+                <p><strong>Anda tidak boleh memperoleh komisen atas pembelian anda sendiri.</strong> Pesanan yang dibuat oleh akaun yang sama dengan pemilik pautan tidak memperoleh apa-apa.</p>
+
+                <h3>3. Apa yang anda peroleh</h3>
+                <p>5% daripada nilai barang dalam pesanan yang dirujuk. Penghantaran, cukai dan sebarang diskaun platform dikecualikan. Komisen dikira mengikut kedai: pesanan yang merangkumi dua kedai menghasilkan satu komisen bagi setiap kedai, dan setiap satu mengikut jadual penghantaran dan pemulangannya sendiri.</p>
+
+                <p>Komisen diperoleh apabila pesanan selesai, bukan semasa ia dibuat.</p>
+
+                <h3>4. Tempoh tahanan</h3>
+                <p>Komisen yang baharu diperoleh berstatus <strong>Belum Tersedia</strong> dan belum boleh dikeluarkan. Ia menjadi tersedia kira-kira dua minggu selepas penghantaran — setelah tempoh pemulangan pembeli ditutup, ditambah tempoh penampan yang singkat untuk pertikaian lewat.</p>
+
+                <p>Papan pemuka anda sentiasa menunjukkan tarikh tepat setiap jualan menjadi tersedia. Jumlah belum tersedia dan jumlah tersedia disenaraikan secara berasingan.</p>
+
+                <h3>5. Pemulangan dan bayaran balik</h3>
+                <p>Komisen mengikut jualan. Jika pesanan yang dirujuk dibayar balik, komisen yang berkaitan dikeluarkan.</p>
+
+                <ul>
+                  <li><strong>Dibayar balik semasa belum tersedia</strong> — komisen dikurangkan atau dikeluarkan sebelum ia menjadi tersedia. Tiada apa-apa diambil daripada anda.</li>
+                  <li><strong>Dibayar balik sebahagian</strong> — komisen dikurangkan secara berkadar. Pembeli yang memulangkan sebahagian pesanan tidak menyebabkan anda kehilangan keseluruhan komisen.</li>
+                  <li><strong>Dibayar balik selepas ia tersedia</strong> — komisen diterbalikkan. Jika anda telah mengeluarkannya, kekurangan itu dibawa dalam baki anda dan ditampung oleh komisen anda yang seterusnya.</li>
+                </ul>
+
+                <p><strong>Kami tidak akan sesekali menghantar invois atau meminta anda memulangkan wang.</strong> Baki negatif bermakna pendapatan anda yang seterusnya akan menjelaskannya dahulu. Jika anda tidak pernah merujuk lagi, tiada tindakan diambil.</p>
+
+                <h3>6. Pengeluaran</h3>
+                <p>Anda boleh memohon pengeluaran apabila baki tersedia anda mencapai RM50. Satu permohonan pada satu masa; kami membayar ke butiran bank yang anda berikan bersama permohonan. Permohonan yang ditolak akan mengembalikan jumlah itu ke baki tersedia anda.</p>
+
+                <h3>7. Perubahan</h3>
+                <p>Kami boleh mengubah kadar komisen, tempoh tahanan atau jumlah pengeluaran minimum. Perubahan terpakai bagi jualan yang dirujuk selepas perubahan itu, dan tidak sesekali dikenakan ke atas komisen yang telah diperoleh.</p>
+
+                <p><em>Terma ini ialah penerangan bahasa mudah tentang cara program ini beroperasi pada masa ini dan perlu disemak oleh peguam Malaysia sebelum pelancaran umum.</em></p>
+                HTML,
+            ],
         ];
     }
 }
