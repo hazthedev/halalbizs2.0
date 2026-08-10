@@ -63,14 +63,22 @@ class RecommendedProducts extends Component
     {
         $service = app(RecommendationService::class);
 
+        // On the home page "Popular now" sits directly below this strip, and a
+        // cold-start recommendation IS that same query (popular() orders by
+        // sold_count then id and says so in its own docblock). So here the
+        // popularity fallback is refused and the strip hides itself instead of
+        // repeating the section under a personalised heading. The PDP and the
+        // buyer dashboard keep the fallback — nothing duplicates it there.
+        $fallbackToPopular = $this->context !== 'home';
+
         if (auth()->check()) {
-            $products = $service->forUser(auth()->user(), $this->limit, $this->excludeProductId);
+            $products = $service->forUser(auth()->user(), $this->limit, $this->excludeProductId, $fallbackToPopular);
         } elseif ($this->hydrated && $this->viewedIds !== []) {
-            $products = $service->forViewedIds($this->viewedIds, $this->limit, $this->excludeProductId);
+            $products = $service->forViewedIds($this->viewedIds, $this->limit, $this->excludeProductId, $fallbackToPopular);
         } else {
             // First guest paint: wait for the Alpine hydrate before showing
             // popular, so the localStorage signal isn't missed.
-            $products = $this->hydrated
+            $products = $this->hydrated && $fallbackToPopular
                 ? $service->popular($this->limit, $this->excludeProductId !== null ? [$this->excludeProductId] : [])
                 : new Collection;
         }

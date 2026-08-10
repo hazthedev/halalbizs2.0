@@ -41,17 +41,30 @@ class RecommendationService
     /**
      * Personalised picks for a buyer. Cached for 30 min, keyed by a cheap
      * behaviour signature so it busts when they buy/view/wishlist something.
+     *
+     * $fallbackToPopular = false makes a cold start return NOTHING instead of
+     * the popularity list. The home page needs that: "Recommended for you" sat
+     * directly above "Popular now" and, for anyone without history, ran the
+     * identical query — popular() orders by sold_count then id, and its own
+     * docblock says it "mirrors Home 'top'". Two headings, one list, same
+     * order. An empty strip that hides itself is more honest than a
+     * personalised label over unpersonalised content.
      */
-    public function forUser(User $user, int $limit = 12, ?int $excludeProductId = null): Collection
+    public function forUser(User $user, int $limit = 12, ?int $excludeProductId = null, bool $fallbackToPopular = true): Collection
     {
         $signature = $this->behaviourSignature($user);
 
         // Cache only the ranked ids — caching Eloquent models breaks under
         // cache.serializable_classes=false (they return __PHP_Incomplete_Class).
+        // The fallback flag is part of the key: the same buyer legitimately gets
+        // a list on the PDP and nothing on the home page.
         $ids = Cache::remember(
-            "recs:user:{$user->id}:{$signature}:{$limit}:".($excludeProductId ?? 0),
+            "recs:user:{$user->id}:{$signature}:{$limit}:".($excludeProductId ?? 0).':'.(int) $fallbackToPopular,
             now()->addMinutes(30),
-            fn () => $this->buildForUser($user, $limit, $excludeProductId)->modelKeys()
+            // pluck('id'), not modelKeys(): the refused-fallback path returns a
+            // plain Support\Collection, which has no modelKeys(). Same result
+            // for a collection of models, and it cannot blow up on an empty one.
+            fn () => $this->buildForUser($user, $limit, $excludeProductId, $fallbackToPopular)->pluck('id')->all()
         );
 
         return $this->hydrate($ids);
@@ -81,12 +94,14 @@ class RecommendationService
      * Guest path: affinity from the passed (localStorage) viewed product ids,
      * else popular. Not cached — the id set is request-specific.
      */
-    public function forViewedIds(array $productIds, int $limit = 12, ?int $excludeProductId = null): Collection
+    public function forViewedIds(array $productIds, int $limit = 12, ?int $excludeProductId = null, bool $fallbackToPopular = true): Collection
     {
         $productIds = array_values(array_unique(array_filter(array_map('intval', $productIds))));
 
         if ($productIds === []) {
-            return $this->popular($limit, $excludeProductId !== null ? [$excludeProductId] : []);
+            return $fallbackToPopular
+                ? $this->popular($limit, $excludeProductId !== null ? [$excludeProductId] : [])
+                : new Collection;
         }
 
         $viewed = Product::query()->whereIn('id', $productIds)->get(['id', 'category_id', 'store_id']);
@@ -101,7 +116,7 @@ class RecommendationService
         return $this->rank($categoryWeights, $storeWeights, $exclude, $limit);
     }
 
-    private function buildForUser(User $user, int $limit, ?int $excludeProductId): Collection
+    private function buildForUser(User $user, int $limit, ?int $excludeProductId, bool $fallbackToPopular = true): Collection
     {
         // ── Purchase signal: paid orders → completed/delivered sub-orders ──
         $purchased = OrderItem::query()
@@ -161,7 +176,9 @@ class RecommendationService
             ->all();
 
         if ($categoryWeights === [] && $storeWeights === []) {
-            return $this->popular($limit, $exclude); // cold start
+            // Cold start. Callers that already show a popularity section can
+            // refuse this fallback — see $fallbackToPopular.
+            return $fallbackToPopular ? $this->popular($limit, $exclude) : new Collection;
         }
 
         return $this->rank($categoryWeights, $storeWeights, $exclude, $limit);

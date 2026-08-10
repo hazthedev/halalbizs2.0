@@ -166,3 +166,39 @@ test('ProductView upsert dedupes on repeat views and bumps recency', function ()
 
     expect(ProductView::where('user_id', $buyer->id)->where('product_id', $product->id)->count())->toBe(1);
 });
+
+/**
+ * The home page ran "Recommended for you" directly above "Popular now" and, for
+ * anyone without history, both resolved to the SAME query — popular() orders by
+ * sold_count then id and its own docblock says it "mirrors Home 'top'". Two
+ * headings, one list, identical order (2026-08-07 walkthrough).
+ *
+ * The strip now refuses the popularity fallback where a popularity section
+ * already exists, and hides itself instead.
+ */
+it('returns nothing on a cold start when the caller refuses the popularity fallback', function () {
+    Product::factory()->count(5)->create(['status' => ProductStatus::Live, 'sold_count' => 10]);
+    $newBuyer = User::factory()->create(); // no purchases, views or wishlist
+
+    $service = app(RecommendationService::class);
+
+    // Default behaviour (PDP, dashboard) is unchanged: popularity still fills it.
+    expect($service->forUser($newBuyer, 12))->not->toBeEmpty()
+        // Home passes false, so the section collapses rather than duplicating.
+        ->and($service->forUser($newBuyer, 12, null, false))->toBeEmpty();
+});
+
+it('still personalises when there IS a signal, even with the fallback refused', function () {
+    $category = Category::factory()->create();
+    $target = Product::factory()->create(['status' => ProductStatus::Live, 'category_id' => $category->id]);
+    $viewed = Product::factory()->create(['status' => ProductStatus::Live, 'category_id' => $category->id]);
+    Product::factory()->count(3)->create(['status' => ProductStatus::Live, 'sold_count' => 99]);
+
+    $buyer = User::factory()->create();
+    ProductView::create(['user_id' => $buyer->id, 'product_id' => $viewed->id, 'viewed_at' => now()]);
+
+    // Refusing the fallback must not disable personalisation — only the
+    // cold-start case collapses.
+    expect(app(RecommendationService::class)->forUser($buyer, 12, null, false)->pluck('id'))
+        ->toContain($target->id);
+});

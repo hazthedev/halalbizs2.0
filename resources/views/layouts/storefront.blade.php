@@ -151,7 +151,7 @@
                     <button type="button" x-on:click="$dispatch('open-concierge')"
                             class="flex size-9 items-center justify-center rounded-[var(--radius-pill)] text-emerald hover:bg-emerald-tint sm:hidden"
                             aria-label="{{ __('Ask the concierge') }}">
-                        <x-ui.star-mark :size="20" />
+                        <x-ui.chat-mark :size="20" />
                     </button>
                 @endif
 

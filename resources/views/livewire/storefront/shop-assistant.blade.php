@@ -27,7 +27,7 @@
         aria-label="{{ __('Open shopping assistant') }}"
     >
         <span class="flex size-8 items-center justify-center rounded-full bg-brass/15 text-brass">
-            <x-ui.star-mark :size="18" />
+            <x-ui.chat-mark :size="18" />
         </span>
         <span class="max-w-0 overflow-hidden whitespace-nowrap text-[length:var(--text-base)] font-medium opacity-0 transition-all duration-(--dur-standard) ease-(--ease-out-soft) group-hover:max-w-[12rem] group-hover:pr-1.5 group-hover:opacity-100 group-focus-visible:max-w-[12rem] group-focus-visible:pr-1.5 group-focus-visible:opacity-100 motion-reduce:transition-none" aria-hidden="true">{{ __('Ask the concierge') }}</span>
     </button>
