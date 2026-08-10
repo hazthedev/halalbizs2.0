@@ -81,6 +81,11 @@ echo "→ seed idempotent reference data"
 # to function. Add more reference seeders here only after confirming idempotency.
 "$PHP_BIN" artisan db:seed --class=RoleSeeder --force || echo "  ! role seed reported errors — continuing"
 "$PHP_BIN" artisan db:seed --class=CurrencySeeder --force || echo "  ! currency seed reported errors — continuing"
+# PageSeeder: CREATE-ONLY (firstOrCreate) since 2026-08-10, so it publishes any
+# new CMS page without touching one an admin has edited. It was excluded here
+# while it used updateOrCreate — which meant a new page shipped in a PR simply
+# never existed in production, silently, with every local test green.
+"$PHP_BIN" artisan db:seed --class=PageSeeder --force || echo "  ! page seed reported errors — continuing"
 
 # DEMO DATA (non-production only) — populates the reviews feature with demo
 # ratings on first run (idempotent: skips once any review exists; faker-free so
