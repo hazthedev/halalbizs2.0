@@ -300,8 +300,8 @@ test('registration is rate limited after the threshold', function () {
         Livewire::test(Register::class)
             ->set('name', 'Rate Limit Test')
             ->set('email', "rate-limit-{$i}@example.com")
-            ->set('password', 'password123')
-            ->set('password_confirmation', 'password123')
+            ->set('password', 'kx7-mangosteen-quay-2026')
+            ->set('password_confirmation', 'kx7-mangosteen-quay-2026')
             ->set('terms', true)
             ->call('register')
             ->assertHasNoErrors();
@@ -315,8 +315,8 @@ test('registration is rate limited after the threshold', function () {
     Livewire::test(Register::class)
         ->set('name', 'One Too Many')
         ->set('email', 'rate-limit-6@example.com')
-        ->set('password', 'password123')
-        ->set('password_confirmation', 'password123')
+        ->set('password', 'kx7-mangosteen-quay-2026')
+        ->set('password_confirmation', 'kx7-mangosteen-quay-2026')
         ->set('terms', true)
         ->call('register')
         ->assertHasErrors(['email']);

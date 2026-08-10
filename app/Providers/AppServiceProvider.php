@@ -41,6 +41,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 
@@ -91,6 +92,22 @@ class AppServiceProvider extends ServiceProvider
         // Public API rate limit (docs/10): 60 req/min per IP. Auth login already
         // self-throttles in the Login component (5 attempts).
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
+
+        // Register and ResetPassword both validate with Password::defaults(), but
+        // nothing ever CONFIGURED the defaults — so the whole marketplace's rule
+        // was `min(8)` and the reset form accepted `12345678` (found 2026-08-10
+        // on the live preview's superadmin). Length alone stops nothing: the
+        // common-password lists are all 8+ characters.
+        //
+        // uncompromised() is a k-anonymity check — only the first 5 characters of
+        // the SHA-1 leave the server, never the password — and it FAILS OPEN if
+        // the API is unreachable, so it can never lock a customer out.
+        //
+        // ponytail: uses the framework's default 30s HTTP timeout. Outbound HTTPS
+        // is known good on this host (iPay88, EasyParcel, WhatsApp all call out),
+        // so a hang is unlikely; if registration ever stalls, bind
+        // UncompromisedVerifier to a NotPwnedVerifier with a short timeout.
+        Password::defaults(fn () => Password::min(8)->uncompromised());
 
         // Superadmin bypass (bug #1). The `admin` role carries NO permissions —
         // it only gets you past EnsureAdmin — so every admin section is gated on

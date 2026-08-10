@@ -111,8 +111,8 @@ test('registering via /seller/register heads to email verification then the appl
     Livewire::test(Register::class, ['context' => 'seller'])
         ->set('name', 'Nadia Seller')
         ->set('email', 'nadia@example.com')
-        ->set('password', 'password123')
-        ->set('password_confirmation', 'password123')
+        ->set('password', 'kx7-mangosteen-quay-2026')
+        ->set('password_confirmation', 'kx7-mangosteen-quay-2026')
         ->set('terms', true)
         ->call('register')
         ->assertRedirect(route('verification.notice'));
@@ -127,8 +127,8 @@ test('registering via the plain storefront does not park the seller application'
     Livewire::test(Register::class) // storefront context (default)
         ->set('name', 'Omar Shopper')
         ->set('email', 'omar@example.com')
-        ->set('password', 'password123')
-        ->set('password_confirmation', 'password123')
+        ->set('password', 'kx7-mangosteen-quay-2026')
+        ->set('password_confirmation', 'kx7-mangosteen-quay-2026')
         ->set('terms', true)
         ->call('register')
         ->assertRedirect(route('verification.notice'));
