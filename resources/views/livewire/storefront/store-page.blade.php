@@ -1,10 +1,29 @@
 @php
     $logo = $store->getFirstMediaUrl('logo');
+    // The seller settings form has always accepted a banner and promised it is
+    // "shown on your store page" — nothing ever rendered it. The `banner` media
+    // collection and its 1200px `card` conversion existed the whole time
+    // (Store::registerMediaConversions), so this is the missing reader, not a
+    // new feature. Fall back to the original when the conversion has not been
+    // generated yet: the queue can lag an upload, and an empty src would give
+    // the seller the same "my banner did nothing" experience twice.
+    $banner = $store->getFirstMediaUrl('banner', 'card') ?: $store->getFirstMediaUrl('banner');
 @endphp
 
 <div>
     {{-- ===== Header ===== --}}
     <section class="border-b border-line bg-surface">
+        @if ($banner)
+            {{-- Fixed aspect box rather than a free-height img: sellers upload
+                 anything from a square photo to a 4:1 strip, and letting the
+                 image dictate height would shove the whole shop below the fold
+                 on the tall ones. object-cover crops to the band instead. --}}
+            <div class="aspect-[4/1] w-full overflow-hidden bg-paper sm:aspect-[5/1]">
+                <img src="{{ $banner }}" alt="" loading="lazy" decoding="async"
+                     class="size-full object-cover">
+            </div>
+        @endif
+
         <div class="mx-auto max-w-7xl px-4 py-6">
             <div class="flex flex-wrap items-center gap-4">
                 @if ($logo)
