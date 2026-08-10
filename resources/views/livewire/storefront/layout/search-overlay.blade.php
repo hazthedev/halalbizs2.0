@@ -66,6 +66,19 @@
                             </div>
                         @endif
 
+                        {{-- Shown only when Trending is too thin to carry the
+                             empty state on its own. Separate heading on purpose:
+                             these are destinations, not popular searches. --}}
+                        @if ($browseCategories->isNotEmpty())
+                            <p class="mb-2 {{ $trending->isNotEmpty() ? 'mt-4' : '' }} text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Browse categories') }}</p>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($browseCategories as $slug => $name)
+                                    <a href="{{ route('category.show', $slug) }}" wire:navigate x-on:click="close()"
+                                       class="rounded-full border border-line px-3 py-1.5 text-[13px] text-ink-soft hover:border-ink hover:text-ink">{{ $name }}</a>
+                                @endforeach
+                            </div>
+                        @endif
+
                         @if (config('search.enabled', true))
                             <a href="{{ route('search.visual') }}" wire:navigate x-on:click="close()"
                                class="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[13px] font-medium text-ink-soft hover:border-ink hover:text-ink">

@@ -30,3 +30,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Local-only: runs the suite against real MariaDB (see the file header). Names
+# local database handles, so it is wrong on any other machine and in CI.
+/phpunit.mariadb.xml
+/.env.sqlite.bak

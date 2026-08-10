@@ -178,3 +178,38 @@ test('changing the period recomputes the spend series and dispatches the chart',
     expect($twelveMonth['series'][0]['data'])->toHaveCount(12)
         ->and(array_sum($twelveMonth['series'][0]['data']))->toBe(600.0); // all three → RM
 });
+
+/**
+ * axe `nested-interactive` (serious), found at 375 on /account/dashboard.
+ *
+ * <x-ui.chart> wrapped its canvas in role="img" — "this subtree is one flat
+ * graphic" — while the charting library renders a focusable svg[tabindex=0]
+ * inside it, and donuts add a focusable legend item per slice. Assistive tech
+ * is told to ignore exactly what a keyboard user can still tab into.
+ *
+ * role="group" keeps the aria-label naming the region and permits interactive
+ * descendants. Fixing it with tabindex="-1" on the children would have silenced
+ * axe by removing keyboard access to the data — the wrong direction.
+ *
+ * The component is shared by the buyer, seller and admin dashboards, so this
+ * guards all three.
+ */
+it('does not put focusable chart internals inside a role="img"', function () {
+    // ⚠ Must be a buyer WITH orders. The dashboard is `@if (! $hasOrders)` /
+    // `@else`, so an order-less buyer renders the empty state, no chart exists
+    // to assert on, and the test passes while proving nothing. That is exactly
+    // how the first version of this test behaved.
+    $buyer = dashboardBuyer();
+    dashboardPaidOrder($buyer, 12_000);
+
+    $html = $this->actingAs($buyer)->get(route('account.dashboard'))->assertOk()->getContent();
+
+    // Scoped to the chart by its own label. A blanket "no role=img on the page"
+    // would be wrong — role="img" on a decorative graphic with NO focusable
+    // children is correct, and /account/coins uses it properly for the streak
+    // dots. The defect is specifically role="img" wrapping focusable content.
+    $label = 'Monthly spend on paid orders';
+
+    expect($html)->toContain('role="group" aria-label="'.$label.'"')
+        ->and($html)->not->toContain('role="img" aria-label="'.$label.'"');
+});
