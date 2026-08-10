@@ -44,7 +44,7 @@ test('backup:clean removes only backups older than the retention window', functi
     Storage::disk('local')->assertExists('backups/db-new.sqlite');
 });
 
-test('backup:run writes a database + env snapshot', function () {
+test('backup:run writes the database dump but NOT the .env snapshot on a local disk', function () {
     Storage::fake('local');
     config(['backup.disk' => 'local', 'backup.path' => 'backups']);
 
@@ -68,7 +68,7 @@ test('backup:run writes a database + env snapshot', function () {
 
     $files = collect(Storage::disk('local')->files('backups'));
     expect($files->filter(fn ($f) => str_contains($f, 'db-'))->count())->toBe(1)
-        ->and($files->filter(fn ($f) => str_contains($f, 'env-'))->count())->toBe(1);
+        ->and($files->filter(fn ($f) => str_contains($f, 'env-'))->count())->toBe(0);
 
     if ($tmp !== null) {
         @unlink($tmp);
@@ -105,21 +105,49 @@ test('backup:run dumps mysql without putting the password on the command line', 
     });
 
     expect(Storage::disk('local')->files('backups'))
-        ->toHaveCount(2); // the dump + the .env snapshot
+        ->toHaveCount(1); // the dump only — the .env snapshot is skipped on a local disk
 });
 
-test('backup:run warns in production when the .env snapshot lands on a local disk', function () {
+test('backup:run skips the .env snapshot on a local disk and says so', function () {
     Storage::fake('local');
     config(['backup.disk' => 'local', 'backup.path' => 'backups']);
     Process::fake(['mysqldump*' => Process::result('-- dump')]);
 
     $connection = (string) config('database.default');
     config(["database.connections.{$connection}.driver" => 'mysql']);
-    $this->app['env'] = 'production';
 
     $this->artisan('backup:run')
-        ->expectsOutputToContain('not a private bucket')
+        ->expectsOutputToContain('skipping the .env snapshot')
         ->assertSuccessful();
+
+    expect(collect(Storage::disk('local')->files('backups'))
+        ->filter(fn ($f) => str_contains($f, 'env-'))->count())->toBe(0);
+});
+
+/**
+ * The other half of the rule, and the one that stops a future cleanup from just
+ * deleting the branch: on a REMOTE disk the snapshot is still taken, because
+ * that is where docs/10 wants it. Skipping is about where it lands, not about
+ * whether config is worth backing up.
+ */
+test('backup:run DOES write the .env snapshot to a non-local disk', function () {
+    Storage::fake('backups-remote');
+    // Storage::fake registers a local-driver disk, so name the driver explicitly:
+    // the command branches on the driver, which is exactly what is under test.
+    config([
+        'filesystems.disks.backups-remote.driver' => 's3',
+        'backup.disk' => 'backups-remote',
+        'backup.path' => 'backups',
+    ]);
+    Process::fake(['mysqldump*' => Process::result('-- dump')]);
+
+    $connection = (string) config('database.default');
+    config(["database.connections.{$connection}.driver" => 'mysql']);
+
+    $this->artisan('backup:run')->assertSuccessful();
+
+    expect(collect(Storage::disk('backups-remote')->files('backups'))
+        ->filter(fn ($f) => str_contains($f, 'env-'))->count())->toBe(1);
 });
 
 test('the demo seeder refuses to run in production', function () {

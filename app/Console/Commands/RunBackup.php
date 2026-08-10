@@ -43,14 +43,19 @@ class RunBackup extends Command
         }
 
         if (is_file(base_path('.env'))) {
-            // The .env snapshot is plaintext secrets. On a local disk it lands in
-            // storage/ on the web host itself — say so loudly rather than letting
-            // an unset BACKUP_DISK quietly undo docs/10's private-bucket rule.
-            if ($this->laravel->isProduction() && config("filesystems.disks.{$disk}.driver") === 'local') {
-                $this->warn("BACKUP_DISK is [{$disk}] — the .env snapshot is being written to local storage, not a private bucket.");
+            // The .env snapshot is plaintext secrets — DB password, APP_KEY, SMTP
+            // password, DEPLOY_TOKEN. On a LOCAL disk it is written to storage/ on
+            // the very host it is meant to protect: it survives nothing the host
+            // does not, so it buys no recovery, and on shared hosting it sits
+            // beside other tenants. Warning about it was not enough — 14 rolling
+            // copies accumulated on the preview. Only a remote disk gets it;
+            // pointing BACKUP_DISK at docs/10's private bucket restores it with
+            // no other change.
+            if (config("filesystems.disks.{$disk}.driver") === 'local') {
+                $this->warn("BACKUP_DISK is [{$disk}] — skipping the .env snapshot. Point it at a private bucket to include it.");
+            } else {
+                Storage::disk($disk)->put("{$path}/env-{$stamp}.txt", (string) file_get_contents(base_path('.env')));
             }
-
-            Storage::disk($disk)->put("{$path}/env-{$stamp}.txt", (string) file_get_contents(base_path('.env')));
         }
 
         $this->info("Backup written to [{$disk}] {$path} ({$stamp}).");
