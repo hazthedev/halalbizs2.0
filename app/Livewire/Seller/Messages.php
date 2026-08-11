@@ -13,6 +13,8 @@ use Livewire\Component;
  * Seller inbox — strictly scoped to the current store (CurrentStore):
  * every conversation query filters on store_id. Deep-linkable with
  * ?conversation={id} (chat notifications point here).
+ *
+ * @property-read Conversation|null $activeConversation
  */
 #[Layout('layouts.seller')]
 class Messages extends Component

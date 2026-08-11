@@ -13,7 +13,7 @@ class LocalHashEmbedder implements EmbeddingProvider
 {
     public function dimensions(): int
     {
-        return max(16, (int) config('search.dimensions', 256));
+        return max(16, (int) config('search.dimensions', 4096));
     }
 
     public function model(): string

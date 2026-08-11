@@ -28,15 +28,6 @@ class Staff extends Component
     /** @var array<int, string> */
     public array $invitePermissions = [];
 
-    /**
-     * Legacy one-time password panel. invite() no longer fills this — the
-     * invitee sets their own password from a reset link — but the blade still
-     * reads it, so the property stays until that panel is removed.
-     */
-    public ?string $generatedPassword = null;
-
-    public ?string $generatedFor = null;
-
     // ── Edit permissions ───────────────────────────────────────────────
     #[Locked]
     public ?int $editingId = null;
@@ -46,7 +37,7 @@ class Staff extends Component
 
     public function startInvite(): void
     {
-        $this->reset(['showInvite', 'inviteName', 'inviteEmail', 'invitePermissions', 'generatedPassword', 'generatedFor']);
+        $this->reset(['showInvite', 'inviteName', 'inviteEmail', 'invitePermissions']);
         $this->resetErrorBag();
         $this->showInvite = true;
     }
@@ -98,7 +89,6 @@ class Staff extends Component
         // plaintext login for another admin was the other half of the hole.
         Password::sendResetLink(['email' => $user->email]);
 
-        $this->generatedFor = $user->email;
         $this->reset(['showInvite', 'inviteName', 'inviteEmail', 'invitePermissions']);
 
         $this->dispatch(
@@ -108,11 +98,6 @@ class Staff extends Component
                 : __('Admin invited with no permissions — you can only grant permissions you hold yourself.'),
             type: $overReach === [] ? 'success' : 'error',
         );
-    }
-
-    public function dismissPassword(): void
-    {
-        $this->reset(['generatedPassword', 'generatedFor']);
     }
 
     public function editPermissions(int $userId): void
