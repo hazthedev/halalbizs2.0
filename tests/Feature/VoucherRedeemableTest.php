@@ -50,7 +50,6 @@ test('per-user limit blocks repeat redemption', function () {
     $voucher->usages()->create([
         'user_id' => $user->id,
         'discount_sen' => 500,
-        'created_at' => now(),
     ]);
 
     expect($voucher->isRedeemableBy($user, 1000))->toBeFalse()

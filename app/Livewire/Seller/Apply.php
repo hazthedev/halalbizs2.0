@@ -118,11 +118,11 @@ class Apply extends Component
         $user = auth()->user();
 
         DB::transaction(function () use ($user) {
-            $store = Store::create([
-                'user_id' => $user->id,
+            // user_id and status are guarded (audit L3) — the applicant must
+            // not be able to smuggle an approved status into their own store.
+            $store = new Store([
                 'name' => $this->name,
                 'description' => $this->description,
-                'status' => StoreStatus::Pending,
                 'state' => $this->state,
                 'sst_registered' => $this->sstRegistered,
                 'sst_number' => $this->sstRegistered ? $this->sstNumber : null,
@@ -132,6 +132,9 @@ class Apply extends Component
                     'account_number' => $this->accountNumber,
                 ],
             ]);
+            $store->user_id = $user->id;
+            $store->status = StoreStatus::Pending;
+            $store->save();
 
             foreach (['ssm' => $this->ssmFile, 'ic' => $this->icFile] as $type => $file) {
                 $document = StoreDocument::create([

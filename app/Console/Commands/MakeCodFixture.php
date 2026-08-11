@@ -37,20 +37,19 @@ class MakeCodFixture extends Command
         $seller->forceFill(['email_verified_at' => now()])->save();
         $seller->assignRole('seller');
 
-        $store = Store::withTrashed()->firstOrCreate(
-            ['user_id' => $seller->id],
-            [
-                'name' => 'COD Journey Store',
-                'description' => 'Fixture store for browser journeys.',
-                'status' => StoreStatus::Approved,
-                'state' => 'Selangor',
-                'approved_at' => now(),
-                'shipping_flat_fee_sen' => 500,
-                'bank_details' => ['bank_name' => 'Maybank', 'account_name' => 'COD Journey Store', 'account_number' => '1234567890'],
-            ],
-        );
+        $store = Store::withTrashed()->firstOrNew(['user_id' => $seller->id]);
+        $store->user_id = $seller->id;
+        $store->fill([
+            'name' => 'COD Journey Store',
+            'description' => 'Fixture store for browser journeys.',
+            'state' => 'Selangor',
+            'approved_at' => now(),
+            'shipping_flat_fee_sen' => 500,
+            'bank_details' => ['bank_name' => 'Maybank', 'account_name' => 'COD Journey Store', 'account_number' => '1234567890'],
+        ]);
+        $store->save();
         $store->restore();
-        $store->update(['status' => StoreStatus::Approved, 'holiday_mode' => false]);
+        $store->forceFill(['status' => StoreStatus::Approved, 'holiday_mode' => false])->save();
 
         $product = Product::withTrashed()->where('store_id', $store->id)->first();
 

@@ -145,7 +145,7 @@ test('the audit log shows a store activity row with causer and diff data', funct
     test()->actingAs($admin);
 
     $store = Store::factory()->create();
-    $store->update(['commission_rate' => '7.50']); // logged: LogsActivity on Store
+    $store->forceFill(['commission_rate' => '7.50'])->save(); // logged: LogsActivity on Store
 
     Livewire::actingAs($admin)
         ->test(AuditLog::class)

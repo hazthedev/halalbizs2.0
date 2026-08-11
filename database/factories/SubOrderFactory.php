@@ -45,7 +45,6 @@ class SubOrderFactory extends Factory
                     'from_status' => null,
                     'to_status' => $subOrder->status->value,
                     'actor_type' => ActorType::System,
-                    'created_at' => now(),
                 ]);
             }
         });

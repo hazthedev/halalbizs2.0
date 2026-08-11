@@ -33,6 +33,7 @@ use App\Services\Sms\SmsSender;
 use App\Services\Sms\WhatsAppSender;
 use App\Support\Money;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
@@ -41,8 +42,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
@@ -88,6 +89,14 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isProduction()) {
             URL::forceScheme('https');
         }
+
+        // A mass-assigned key missing from $fillable is silently dropped by
+        // default — the failure mode that makes shrinking $fillable dangerous
+        // (the write "succeeds" and the column never changes). Outside
+        // production a discarded key throws instead, so the suite catches any
+        // writer the L3 fillable trim missed. Production stays lenient: better
+        // a stale column than a 500 on a path no test covered.
+        Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
 
         // Public API rate limit (docs/10): 60 req/min per IP. Auth login already
         // self-throttles in the Login component (5 attempts).

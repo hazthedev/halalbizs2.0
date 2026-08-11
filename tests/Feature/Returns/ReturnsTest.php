@@ -106,7 +106,8 @@ function returnsCompletedSubOrder(PaymentMethod $method = PaymentMethod::Ipay88)
     $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor']);
 
     $product = Product::factory()->create(['cod_enabled' => true]);
-    $product->store->update(['commission_rate' => 5.0, 'shipping_flat_fee_sen' => 500]);
+    $product->store->forceFill(['commission_rate' => 5.0])->save();
+    $product->store->update(['shipping_flat_fee_sen' => 500]);
     $product->variants->first()->update(['price_sen' => 10000, 'sale_price_sen' => null, 'stock' => 10]);
 
     app(CartService::class)->addItem($buyer, $product->variants->first(), 2);

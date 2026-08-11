@@ -37,7 +37,6 @@ function boostsFund(Store $store, int $amountSen): void
         'amount_sen' => $amountSen,
         'status' => LedgerEntryStatus::Available,
         'description' => 'Test sale',
-        'created_at' => now(),
     ]);
 }
 

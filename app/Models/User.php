@@ -24,7 +24,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone_verified_at',
         'preferred_locale',
         'preferred_currency',
-        'status',
+        // status (active/suspended) is deliberately NOT fillable (audit L3) —
+        // suspension moves only through explicit forceFill in the admin path.
         'google_id',
         'tin',
     ];

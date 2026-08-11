@@ -33,9 +33,9 @@ function refundCompletedSubOrder(bool $registered = false): SubOrder
         'cod_enabled' => true,
         'tax_class' => $registered ? TaxClass::Standard : TaxClass::Exempt,
     ]);
+    $product->store->forceFill(['commission_rate' => 5.00])->save();
     $product->store->update([
         'sst_registered' => $registered,
-        'commission_rate' => 5.00,
         'shipping_mode' => 'flat',
         'shipping_flat_fee_sen' => 500,
         'free_shipping_over_sen' => null,
@@ -148,9 +148,9 @@ test('refunding every sub-order of a voucher order never returns more cash than 
 
     $makeProduct = function () {
         $product = Product::factory()->create(['cod_enabled' => true, 'tax_class' => TaxClass::Exempt]);
+        $product->store->forceFill(['commission_rate' => 5.00])->save();
         $product->store->update([
             'sst_registered' => false,
-            'commission_rate' => 5.00,
             'shipping_mode' => 'flat',
             'shipping_flat_fee_sen' => 0,
             'free_shipping_over_sen' => null,
