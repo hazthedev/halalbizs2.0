@@ -11,21 +11,6 @@
         @endunless
     </x-ui.section-heading>
 
-    {{-- One-time temp password panel --}}
-    @if ($generatedPassword !== null)
-        <div class="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-emerald bg-emerald-tint px-4 py-3 shadow-soft">
-            <div class="flex-1 text-[13px] text-ink">
-                <p class="font-medium">{{ __('Temporary password for :email', ['email' => $generatedFor]) }}</p>
-                <p class="mt-0.5 font-mono text-sm">{{ $generatedPassword }}</p>
-                <p class="mt-0.5 text-ink-soft">{{ __('Shown once — share it securely and ask them to change it after first login.') }}</p>
-            </div>
-            <button type="button" wire:click="dismissPassword"
-                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                {{ __('Dismiss') }}
-            </button>
-        </div>
-    @endif
-
     {{-- Invite form --}}
     @if ($showInvite)
         <x-ui.card class="p-4">

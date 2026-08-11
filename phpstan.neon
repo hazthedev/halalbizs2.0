@@ -1,0 +1,9 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    # Level 1 is the highest level that is clean today. Raise deliberately;
+    # do not baseline errors away — fix or annotate at the source.
+    level: 1
+    paths:
+        - app

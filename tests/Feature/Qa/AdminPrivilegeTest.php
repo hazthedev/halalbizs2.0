@@ -329,14 +329,15 @@ test('QA10: a settings.manage admin cannot mint themselves a fully-privileged ac
         ->call('invite');
 
     $minted = User::where('email', 'second.me@example.test')->first();
-    $password = $component->get('generatedPassword');
 
     // The attacker holds settings.manage only. If invite() hands them a working
     // login for an account holding finance.manage, the "no self-service grants"
     // control in editPermissions()/savePermissions() is bypassable in one step.
+    // The plaintext-password panel was deleted outright (2026-08-11); the
+    // property_exists check pins that no such credential surface returns.
     expect([
         'minted_permissions' => $minted?->getDirectPermissions()->pluck('name')->sort()->values()->all(),
-        'password_handed_to_attacker' => $password !== null,
+        'password_handed_to_attacker' => property_exists(Staff::class, 'generatedPassword'),
         'minted_can_finance' => (bool) $minted?->can('finance.manage'),
     ])->toBe([
         'minted_permissions' => [],

@@ -14,6 +14,8 @@ use Livewire\Component;
  * Buyer inbox — two-pane chat inside the account shell. Entry points
  * (PDP chat button, order detail, notifications) deep-link with
  * ?store={id} (+ optional ?product={id} for the context chip).
+ *
+ * @property-read Conversation|null $activeConversation
  */
 #[Layout('layouts.storefront')]
 class Messages extends Component

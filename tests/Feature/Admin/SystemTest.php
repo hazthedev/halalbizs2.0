@@ -85,8 +85,7 @@ test('inviting a staff member assigns the admin role and the chosen permission s
         ->set('inviteEmail', 'aisha@halalbizs.test')
         ->set('invitePermissions', ['cms.manage', 'vouchers.manage'])
         ->call('invite')
-        ->assertHasNoErrors()
-        ->assertSet('generatedFor', 'aisha@halalbizs.test');
+        ->assertHasNoErrors();
 
     $user = User::where('email', 'aisha@halalbizs.test')->sole();
 

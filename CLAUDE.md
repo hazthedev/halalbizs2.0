@@ -6,7 +6,7 @@ Full specs live in `marketplace-docs/docs/` — **read `marketplace-docs/docs/00
 
 ## Stack
 
-- Laravel 13.x · PHP 8.4 · SQLite locally (schema MySQL-compatible) · sync queue locally
+- Laravel 13.x · PHP 8.4 · MariaDB locally (`hbiz2_qa`; since 2026-08-06 — tests still default to SQLite in-memory) · database queue drained by the scheduler
 - Livewire 4 + Alpine.js + Blade · Tailwind CSS v4 (tokens in `resources/css/app.css`) · Vite
 - Scout (`collection` driver locally; Meilisearch in prod) · spatie: permission, medialibrary, translatable (v5 namespaces: `Models\Concerns\LogsActivity`, `Support\LogOptions`), sluggable, activitylog, settings
 - brick/money · Pest · Pint · Larastan
@@ -14,11 +14,13 @@ Full specs live in `marketplace-docs/docs/` — **read `marketplace-docs/docs/00
 ## Commands
 
 ```bash
-php artisan migrate:fresh --seed   # full demo dataset (local only)
-php artisan test                   # Pest — must pass before any commit
+php artisan migrate:fresh --seed   # full demo dataset (local only — NEVER against hbiz2_qa's preview mirror data you care about)
+php artisan test                   # Pest on SQLite — one engine-guard test FAILS by design (it exists to flag this config)
+php artisan test -c phpunit.mariadb.xml   # the real gate: full suite on MariaDB (local-only config, gitignored — see .gitignore)
 vendor/bin/pint --dirty            # run before any commit
+composer analyse                   # Larastan level 1 — must be clean before any commit
 npm run build                      # Vite/Tailwind
-npx playwright test                # browser journeys against http://halalbizs2.0.test
+npx playwright test                # ⚠ dormant since 2026-06-24 — specs predate every UI rewrite since; do not treat as a gate
 ```
 
 Site served by Herd at **http://halalbizs2.0.test**. Demo logins (local seed): `admin@halalbizs.test`,
@@ -81,8 +83,9 @@ M1–M8 complete (June 2026). **Design: "Souk" (Emerald & Brass) redesign
 applied across storefront, seller and admin (June 2026)** — warm ivory canvas,
 Fraunces + Plus Jakarta Sans, brass = premium/ornament, soft elevation +
 Islamic geometric ornament; see `marketplace-docs/docs/03-design-system.md`.
-Local adaptations vs the docs: SQLite, sync
-queue (no Horizon on Windows), Scout `collection` driver, Turnstile dormant
+Local adaptations vs the docs: MariaDB local DB (`hbiz2_qa`, was SQLite until
+2026-08-06), database queue drained by the scheduler (no Horizon on shared
+hosting), Scout `collection` driver, Turnstile dormant
 without keys, iPay88 verified against simulated callbacks — see plan notes.
 Remaining for production: real iPay88 sandbox/production cutover (docs/10
 checklist), Meilisearch + Redis + MySQL infra, ZH locale, Phase-4 features.

@@ -71,7 +71,8 @@ fi
 echo "→ php artisan migrate --force"
 # Non-fatal: a benign "table already exists" (out-of-sync migrations record)
 # must not block the cache rebuild below. Real errors still print above.
-"$PHP_BIN" artisan migrate --force || echo "  ! migrate reported errors (see above) — continuing to cache rebuild"
+MIGRATE_FAILED=0
+"$PHP_BIN" artisan migrate --force || { MIGRATE_FAILED=1; echo "  ! migrate reported errors (see above) — continuing to cache rebuild"; }
 
 echo "→ seed idempotent reference data"
 # Only idempotent seeders belong here, safe to re-run every deploy. NOT the full
@@ -146,4 +147,11 @@ echo "→ rebuild caches"
 "$PHP_BIN" artisan view:cache
 
 echo
+if [ "$MIGRATE_FAILED" = "1" ]; then
+    # The benign case (out-of-sync migrations record, "table already exists")
+    # still finishes the deploy above — but the last line must not say ✓ when
+    # the schema step reported errors, or a real failure reads as success.
+    echo "⚠ deploy finished WITH MIGRATE ERRORS — scroll up to the migrate step; the schema may be behind the code"
+    exit 1
+fi
 echo "✓ deploy done — hard-refresh your browser (Ctrl+F5) to bust old CSS / JS"
