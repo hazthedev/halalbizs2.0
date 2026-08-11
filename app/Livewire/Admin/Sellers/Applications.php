@@ -44,11 +44,11 @@ class Applications extends Component
         $store = $this->pending()->with('user')->findOrFail($storeId);
 
         DB::transaction(function () use ($store) {
-            $store->update([
+            $store->forceFill([
                 'status' => StoreStatus::Approved,
                 'approved_at' => now(),
                 'rejection_reason' => null,
-            ]);
+            ])->save();
 
             $store->user->assignRole('seller');
         });
@@ -70,10 +70,10 @@ class Applications extends Component
 
         $store = $this->pending()->with('user')->findOrFail($storeId);
 
-        $store->update([
+        $store->forceFill([
             'status' => StoreStatus::Rejected,
             'rejection_reason' => $this->rejectionReason,
-        ]);
+        ])->save();
 
         $store->user->notify(new SellerApplicationDecision($store, 'rejected', $this->rejectionReason));
 

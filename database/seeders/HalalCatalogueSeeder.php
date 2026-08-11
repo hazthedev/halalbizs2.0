@@ -131,13 +131,16 @@ class HalalCatalogueSeeder extends Seeder
             // seller (which is exactly what a slug key did when the display
             // names were shortened to the brand).
             $store = Store::withTrashed()->firstOrNew(['user_id' => $user->id]);
+            // user_id/status are guarded — matching above is fine, but a NEW
+            // row would be created without them, so both are set explicitly.
+            $store->user_id = $user->id;
+            $store->status = 'approved';
             $store->fill([
                 'slug' => $slug,
                 'name' => $row['name'],
                 // Display name is the short brand (as the reference's cards and
                 // storefront show it); the legal entity lives in the description.
                 'description' => ($row['legal_name'] ?? $row['name']).' · '.$row['specialty'].' · '.__('audited seller since').' '.$row['since'],
-                'status' => 'approved',
                 'approved_at' => $store->approved_at ?? now(),
                 'state' => $this->stateFor($row['city']),
                 'deleted_at' => null,

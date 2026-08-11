@@ -449,7 +449,6 @@ class CheckoutService
                     'user_id' => $buyer->id,
                     'order_id' => $order->id,
                     'discount_sen' => $discountTotalSen + $waivedSen['platform'],
-                    'created_at' => now(),
                 ]);
             }
 
@@ -459,7 +458,6 @@ class CheckoutService
                     'user_id' => $buyer->id,
                     'order_id' => $order->id,
                     'discount_sen' => $waivedSen['shipping'],
-                    'created_at' => now(),
                 ]);
             }
 
@@ -506,7 +504,6 @@ class CheckoutService
                         'order_id' => $order->id,
                         'sub_order_id' => $subOrder->id,
                         'discount_sen' => $shopDiscountSen + $waivedSen['shop'],
-                        'created_at' => now(),
                     ]);
                 }
 

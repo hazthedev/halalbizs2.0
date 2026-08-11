@@ -175,7 +175,7 @@ test('a seller suspended after render can no longer drive their own snapshot', f
     $html = test()->actingAs($seller)->get('/seller/products')->getContent();
     $snapshot = saSnapshot($html, 'seller.products');
 
-    $seller->store->update(['status' => StoreStatus::Suspended]);
+    $seller->store->forceFill(['status' => StoreStatus::Suspended])->save();
 
     saReplay($snapshot, 'delist', [$product->id]);
 

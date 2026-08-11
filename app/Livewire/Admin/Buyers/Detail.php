@@ -36,7 +36,7 @@ class Detail extends Component
             'suspendReason.min' => __('Give a reason — it is kept in the audit log.'),
         ]);
 
-        $this->user->update(['status' => 'suspended']);
+        $this->user->forceFill(['status' => 'suspended'])->save();
 
         activity()
             ->causedBy(auth()->user())
@@ -50,7 +50,7 @@ class Detail extends Component
 
     public function unsuspend(): void
     {
-        $this->user->update(['status' => 'active']);
+        $this->user->forceFill(['status' => 'active'])->save();
 
         activity()
             ->causedBy(auth()->user())

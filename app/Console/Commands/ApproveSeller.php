@@ -22,11 +22,11 @@ class ApproveSeller extends Command
             return self::FAILURE;
         }
 
-        $user->store->update([
+        $user->store->forceFill([
             'status' => StoreStatus::Approved,
             'approved_at' => now(),
             'rejection_reason' => null,
-        ]);
+        ])->save();
 
         $user->assignRole('seller');
 

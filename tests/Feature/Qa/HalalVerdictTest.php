@@ -10,6 +10,8 @@
  * certificates on the preview were in that state, badging 134 of 166 products.
  */
 
+use App\Enums\ProductStatus;
+use App\Enums\StoreStatus;
 use App\Models\HalalCertificate;
 use App\Models\Product;
 use App\Models\Store;
@@ -88,9 +90,9 @@ it('renders the product page for every certificate state', function (string $lab
     $cert = hvCert(['valid_from' => $from, 'valid_to' => $to]);
     $product = Product::factory()->create([
         'halal_certificate_id' => $cert->id,
-        'status' => \App\Enums\ProductStatus::Live,
+        'status' => ProductStatus::Live,
     ]);
-    $product->store->update(['status' => \App\Enums\StoreStatus::Approved]);
+    $product->store->forceFill(['status' => StoreStatus::Approved])->save();
 
     test()->get('/p/'.$product->slug)->assertOk();
 })->with([
@@ -103,9 +105,9 @@ it('renders the product page when there is no certificate at all', function () {
     $product = Product::factory()->create([
         'halal_certificate_id' => null,
         'halal_cert_number' => 'MY-JKM-0000-000',
-        'status' => \App\Enums\ProductStatus::Live,
+        'status' => ProductStatus::Live,
     ]);
-    $product->store->update(['status' => \App\Enums\StoreStatus::Approved]);
+    $product->store->forceFill(['status' => StoreStatus::Approved])->save();
 
     test()->get('/p/'.$product->slug)
         ->assertOk()

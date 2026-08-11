@@ -27,9 +27,14 @@ class Store extends Model implements HasMedia
 {
     use HasFactory, HasSlug, InteractsWithMedia, LogsActivity, SoftDeletes;
 
+    // user_id, status and commission_rate are deliberately NOT fillable
+    // (audit L3): ownership, approval state and the platform's cut move only
+    // through explicit forceFill/property writes in the admin/service paths,
+    // so a future ->update($request->all()) cannot self-approve a store or
+    // set its own commission.
     protected $fillable = [
-        'user_id', 'name', 'slug', 'description', 'status', 'rejection_reason',
-        'holiday_mode', 'commission_rate', 'state', 'sst_registered', 'sst_number', 'tin',
+        'name', 'slug', 'description', 'rejection_reason',
+        'holiday_mode', 'state', 'sst_registered', 'sst_number', 'tin',
         'bank_details', 'approved_at',
         'shipping_mode', 'shipping_flat_fee_sen', 'shipping_matrix', 'free_shipping_over_sen',
         'shipping_origin_postcode',

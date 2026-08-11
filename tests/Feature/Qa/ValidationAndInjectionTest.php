@@ -271,8 +271,9 @@ it('escapes a buyer return-request description on the seller order screen', func
         'store_id' => $seller->store->id,
     ]);
 
+    // No 'code' key: return_reasons has no such column (it was silently
+    // dropped by mass assignment until the discard guard surfaced it).
     $reason = ReturnReason::query()->create([
-        'code' => 'qa-'.uniqid(),
         'label' => ['en' => 'Damaged', 'ms' => 'Rosak'],
         'is_active' => true,
     ]);

@@ -25,7 +25,8 @@ test('held escrow balance reflects in-flight paid orders net of commission', fun
     $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor']);
 
     $product = Product::factory()->create(['cod_enabled' => true]);
-    $product->store->update(['commission_rate' => 5.00, 'shipping_mode' => 'flat', 'shipping_flat_fee_sen' => 0, 'free_shipping_over_sen' => null]);
+    $product->store->forceFill(['commission_rate' => 5.00])->save();
+    $product->store->update(['shipping_mode' => 'flat', 'shipping_flat_fee_sen' => 0, 'free_shipping_over_sen' => null]);
     $product->variants->first()->update(['price_sen' => 10000, 'sale_price_sen' => null, 'stock' => 10]);
     app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
 

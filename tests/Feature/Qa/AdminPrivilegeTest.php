@@ -27,6 +27,7 @@ use App\Models\StoreDocument;
 use App\Models\SubOrder;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -271,14 +272,24 @@ test('QA5: the dashboard withholds lifetime order/user counts from an admin with
 test('QA6: is_superadmin cannot be mass-assigned through any model write path', function () {
     $user = User::factory()->create();
 
-    $user->update(['name' => 'x', 'is_superadmin' => true]);
-    $user->fill(['is_superadmin' => true])->save();
-    $created = User::create([
-        'name' => 'y', 'email' => 'y@example.test', 'password' => 'secret', 'is_superadmin' => true,
-    ]);
+    // preventSilentlyDiscardingAttributes is on outside production, so a
+    // guarded key now THROWS instead of silently dropping — the same
+    // invariant, stated loudly. (In production the key is discarded.)
+    expect(fn () => $user->update(['name' => 'x', 'is_superadmin' => true]))->toThrow(MassAssignmentException::class)
+        ->and(fn () => $user->fill(['is_superadmin' => true]))->toThrow(MassAssignmentException::class)
+        ->and(fn () => User::create([
+            'name' => 'y', 'email' => 'y@example.test', 'password' => 'secret', 'is_superadmin' => true,
+        ]))->toThrow(MassAssignmentException::class);
 
-    expect($user->fresh()->is_superadmin)->toBeFalse()
-        ->and($created->fresh()->is_superadmin)->toBeFalse();
+    expect($user->fresh()->is_superadmin)->toBeFalse();
+});
+
+test('L3: store ownership, approval state and commission are not mass-assignable', function () {
+    $store = Store::factory()->create();
+
+    foreach (['user_id' => 999, 'status' => StoreStatus::Approved, 'commission_rate' => '0.01'] as $key => $value) {
+        expect(fn () => $store->fill([$key => $value]))->toThrow(MassAssignmentException::class);
+    }
 });
 
 test('QA7: a settings.manage admin cannot flip is_superadmin by tampering with the Staff component', function () {
@@ -521,7 +532,7 @@ test('QA17: a suspended store\'s products vanish from the catalogue listing', fu
         'name' => ['en' => 'Suspendium Kurma', 'ms' => 'Suspendium Kurma'],
     ]);
 
-    $store->update(['status' => StoreStatus::Suspended]);
+    $store->forceFill(['status' => StoreStatus::Suspended])->save();
 
     $html = test()->get(route('search', ['q' => 'Suspendium']))->getContent();
 

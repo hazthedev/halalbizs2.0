@@ -30,7 +30,8 @@ function completedSubOrder(PaymentMethod $method = PaymentMethod::Cod, int $pric
     $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor']);
 
     $product = Product::factory()->create(['cod_enabled' => true]);
-    $product->store->update(['commission_rate' => $commission, 'shipping_flat_fee_sen' => 500]);
+    $product->store->forceFill(['commission_rate' => $commission])->save();
+    $product->store->update(['shipping_flat_fee_sen' => 500]);
     $product->variants->first()->update(['price_sen' => $priceSen, 'sale_price_sen' => null, 'stock' => 10]);
 
     app(CartService::class)->addItem($buyer, $product->variants->first(), 2);

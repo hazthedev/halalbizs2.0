@@ -44,10 +44,10 @@ class StoreDetail extends Component
             'suspendReason.min' => __('Give a reason — it is emailed to the owner and kept on record.'),
         ]);
 
-        $this->store->update([
+        $this->store->forceFill([
             'status' => StoreStatus::Suspended,
             'rejection_reason' => $this->suspendReason,
-        ]);
+        ])->save();
 
         $this->store->user->notify(new StoreSuspended($this->store, $this->suspendReason));
 
@@ -57,10 +57,10 @@ class StoreDetail extends Component
 
     public function reinstate(): void
     {
-        $this->store->update([
+        $this->store->forceFill([
             'status' => StoreStatus::Approved,
             'rejection_reason' => null,
-        ]);
+        ])->save();
 
         $this->dispatch('toast', message: __('Store reinstated — it is live again.'));
     }
@@ -79,7 +79,7 @@ class StoreDetail extends Component
             ? $this->commissionRate
             : null;
 
-        $this->store->update(['commission_rate' => $rate]);
+        $this->store->forceFill(['commission_rate' => $rate])->save();
         $this->commissionRate = $this->store->commission_rate;
 
         $this->dispatch('toast', message: $rate === null

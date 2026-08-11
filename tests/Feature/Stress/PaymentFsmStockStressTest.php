@@ -386,6 +386,5 @@ test('H7 backstop: settlement_key uniqueness rejects a second direct recordCompl
         'amount_sen' => 1,
         'status' => 'available',
         'settlement_key' => "sale:{$subOrder->id}",
-        'created_at' => now(),
     ]))->toThrow(QueryException::class);
 });

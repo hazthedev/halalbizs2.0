@@ -211,7 +211,6 @@ class LedgerService
                 'amount_sen' => -$amountSen,
                 'status' => LedgerEntryStatus::Available,
                 'description' => __('Payout :no requested', ['no' => $payout->payout_no]),
-                'created_at' => now(),
             ]);
 
             return $payout;

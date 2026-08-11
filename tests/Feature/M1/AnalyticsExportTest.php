@@ -35,7 +35,7 @@ test('a seller can export their earnings ledger as CSV', function () {
 
     StoreLedgerEntry::create([
         'store_id' => $store->id, 'type' => LedgerEntryType::Sale, 'amount_sen' => 12000,
-        'status' => LedgerEntryStatus::Available, 'description' => 'Sale SO1', 'created_at' => now(),
+        'status' => LedgerEntryStatus::Available, 'description' => 'Sale SO1',
     ]);
 
     Livewire::actingAs($seller)

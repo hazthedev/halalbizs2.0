@@ -134,13 +134,14 @@ class SubOrderStatusService
         ?int $actorId,
         ?string $note,
     ): void {
+        // No created_at here: the model auto-stamps it (only UPDATED_AT is
+        // disabled), and a non-fillable key now throws outside production.
         $subOrder->statusHistories()->create([
             'from_status' => $from?->value,
             'to_status' => $to->value,
             'actor_type' => $actorType,
             'actor_id' => $actorId,
             'note' => $note,
-            'created_at' => now(),
         ]);
     }
 }
