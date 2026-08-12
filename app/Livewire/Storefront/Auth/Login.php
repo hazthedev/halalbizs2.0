@@ -9,6 +9,7 @@ use App\Services\DeviceGuard;
 use App\Services\DeviceTrust;
 use App\Services\OtpService;
 use App\Services\Turnstile;
+use App\Support\ClientIp;
 use App\Support\PostLoginRedirect;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -46,20 +47,32 @@ class Login extends Component
         $ipKey = $this->ipThrottleKey();
         $emailKey = $this->emailThrottleKey();
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $this->addError('email', __('Too many login attempts. Try again in :seconds seconds.', [
-                'seconds' => RateLimiter::availableIn($key),
-            ]));
+        // PRIMARY gate: the ACCOUNT under attack, with no address in the key.
+        // The (email, IP) composite below used to be the tight one, and it is
+        // the weakest thing here — the address is attacker-chosen (H-1b), so a
+        // rotated one bought a fresh bucket of 5. Even with a correct address it
+        // would be weak: residential proxies and rotating IPv6 are cheap. Throttle
+        // what is being attacked, not who is attacking.
+        //
+        // Two tiers so a fat-fingered password costs a minute, not an hour, while
+        // sustained guessing against one account still runs out of road.
+        $burstKey = 'login-email-burst:'.Str::lower($this->email);
 
-            return;
+        foreach ([[$burstKey, 5], [$emailKey, 20]] as [$accountKey, $max]) {
+            if (RateLimiter::tooManyAttempts($accountKey, $max)) {
+                $this->addError('email', __('Too many login attempts. Try again in :seconds seconds.', [
+                    'seconds' => RateLimiter::availableIn($accountKey),
+                ]));
+
+                return;
+            }
         }
 
-        // Coarser, second limiter alongside the (email, IP) composite above:
-        // that composite gives a fresh bucket per email, so spraying one
-        // password across many addresses from one IP (or against one
-        // address from many IPs) never trips it. This one does.
-        if (RateLimiter::tooManyAttempts($ipKey, 20) || RateLimiter::tooManyAttempts($emailKey, 20)) {
-            $seconds = max(RateLimiter::availableIn($ipKey), RateLimiter::availableIn($emailKey));
+        // SECONDARY, deliberately loose: catches one password sprayed across many
+        // emails from a single source. Keyed on ClientIp::bucket() so an IPv6
+        // allocation is one bucket rather than millions.
+        if (RateLimiter::tooManyAttempts($key, 5) || RateLimiter::tooManyAttempts($ipKey, 20)) {
+            $seconds = max(RateLimiter::availableIn($key), RateLimiter::availableIn($ipKey));
 
             $this->addError('email', __('Too many login attempts. Try again in :seconds seconds.', [
                 'seconds' => $seconds,
@@ -75,9 +88,10 @@ class Login extends Component
         }
 
         if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+            RateLimiter::hit($burstKey, 60);
+            RateLimiter::hit($emailKey, 3600);
             RateLimiter::hit($key);
             RateLimiter::hit($ipKey, 3600);
-            RateLimiter::hit($emailKey, 3600);
 
             $this->addError('email', __('These details don\'t match our records — check your email and password.'));
 
@@ -96,9 +110,10 @@ class Login extends Component
             return;
         }
 
+        RateLimiter::clear($burstKey);
+        RateLimiter::clear($emailKey);
         RateLimiter::clear($key);
         RateLimiter::clear($ipKey);
-        RateLimiter::clear($emailKey);
 
         // 2FA gate: password alone doesn't log you in. Park the attempt in
         // the session and finish on the challenge screen — UNLESS this exact
@@ -138,13 +153,13 @@ class Login extends Component
 
     private function throttleKey(): string
     {
-        return 'login:'.Str::lower($this->email).'|'.request()->ip();
+        return 'login:'.Str::lower($this->email).'|'.ClientIp::bucket();
     }
 
     /** Per-IP bucket — catches one password sprayed across many emails. */
     private function ipThrottleKey(): string
     {
-        return 'login-ip:'.request()->ip();
+        return 'login-ip:'.ClientIp::bucket();
     }
 
     /** Per-email bucket regardless of IP — catches one email attacked from many IPs. */

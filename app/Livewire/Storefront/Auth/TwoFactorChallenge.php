@@ -9,6 +9,7 @@ use App\Services\CartService;
 use App\Services\DeviceGuard;
 use App\Services\DeviceTrust;
 use App\Services\OtpService;
+use App\Support\ClientIp;
 use App\Support\PostLoginRedirect;
 use App\Support\Totp;
 use Illuminate\Support\Facades\Auth;
@@ -51,7 +52,7 @@ class TwoFactorChallenge extends Component
             return;
         }
 
-        $throttleKey = 'two-factor:'.$user->id.'|'.request()->ip();
+        $throttleKey = 'two-factor:'.$user->id.'|'.ClientIp::bucket();
         // Per-user and IP-INDEPENDENT. The key above contains request()->ip(),
         // which is attacker-chosen behind the trusted X-Forwarded-For proxy —
         // so a new spoofed address bought a fresh bucket of 5, and nothing

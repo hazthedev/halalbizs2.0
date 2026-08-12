@@ -3,6 +3,7 @@
 namespace App\Livewire\Storefront\Auth;
 
 use App\Services\Turnstile;
+use App\Support\ClientIp;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -26,7 +27,7 @@ class ForgotPassword extends Component
             'email' => ['required', 'email'],
         ]);
 
-        $key = 'forgot-password:'.Str::lower($this->email).'|'.request()->ip();
+        $key = 'forgot-password:'.Str::lower($this->email).'|'.ClientIp::bucket();
 
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $this->addError('email', __('Too many requests. Try again in :seconds seconds.', [

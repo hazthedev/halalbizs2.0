@@ -2,10 +2,12 @@
 
 use App\Livewire\Storefront\Account\Profile;
 use App\Models\User;
+use App\Services\OtpService;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -128,4 +130,33 @@ test('changing the phone number in account details resets verification', functio
 
     expect($user->fresh()->phone)->toBe('0198765432')
         ->and($user->fresh()->phone_verified_at)->toBeNull();
+});
+
+// H-2 follow-on: OtpService had a 1-per-minute cooldown and no ceiling, so
+// anyone who knew an email could send 60 codes an hour to that inbox (or SMS
+// bill) indefinitely. The cap is keyed on the DESTINATION account — the person
+// being pumped — not on whoever is asking.
+test('OTP sends are capped per hour on the destination account', function () {
+    $recorder = recordSms();
+    $user = User::factory()->create(['phone' => '0123456789']);
+    $otp = app(OtpService::class);
+
+    // The 1-per-minute cooldown is a separate, deliberate limit; clearing it
+    // between sends is what a patient attacker does by waiting.
+    $skipCooldown = fn () => RateLimiter::clear(
+        'otp-issue:'.OtpService::PURPOSE_PHONE_VERIFY.':'.$user->id
+    );
+
+    for ($i = 0; $i < 5; $i++) {
+        $skipCooldown();
+        expect($otp->issue($user, OtpService::PURPOSE_PHONE_VERIFY))->toBeTrue();
+    }
+
+    $skipCooldown();
+
+    expect($otp->issue($user, OtpService::PURPOSE_PHONE_VERIFY))->toBeFalse()
+        ->and($recorder->messages)->toHaveCount(5)
+        // And the wait quoted back is the HOUR, not the 60s cooldown that is no
+        // longer what is holding them up.
+        ->and($otp->availableIn($user, OtpService::PURPOSE_PHONE_VERIFY))->toBeGreaterThan(60);
 });

@@ -4,6 +4,7 @@ namespace App\Livewire\Storefront;
 
 use App\Models\Product;
 use App\Services\ConciergeService;
+use App\Support\ClientIp;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
@@ -51,7 +52,7 @@ class ShopAssistant extends Component
         // Rate limit on the authenticated user id when present, else IP — this
         // component renders for guests on every storefront page, and each send()
         // can trigger up to MAX_TURNS+1 Anthropic API calls (AL-M1).
-        $identifier = auth()->id() ?? request()->ip() ?? 'unknown';
+        $identifier = auth()->id() ?? ClientIp::bucket();
         $minuteKey = "concierge-send-minute:{$identifier}";
         $hourKey = "concierge-send-hour:{$identifier}";
 
