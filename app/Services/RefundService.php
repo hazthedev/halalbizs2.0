@@ -165,13 +165,23 @@ class RefundService
 
     /**
      * The cash THIS store's buyer actually paid toward $amountSen of this
-     * sub-order: its total less its prorated slice of the order-level platform
-     * discount, scaled by the portion being refunded.
+     * sub-order, scaled by the portion being refunded.
      *
-     * Prorated on items_subtotal_sen through the same VoucherService::prorate()
-     * the checkout used, so the shares add back up to the discount exactly —
-     * re-deriving the split here rather than storing it keeps one implementation
-     * of the rule (the C5 lesson: a duplicated formula is a formula that drifts).
+     * THREE order-level reductions sit between SUM(sub_orders.total_sen) and the
+     * cash that reached the gateway. C11 handled the first; H-4 found the other
+     * two still missing, so a store was refunded money the buyer never paid:
+     *   1. the platform voucher (`discount_total_sen`)
+     *   2. coins (`coin_redemption_sen`) — grand_total is computed AFTER them
+     *   3. platform-funded free shipping, which deliberately stays in the
+     *      sub-order total because the seller still earns it
+     * The order-level `grand_total - refunded` check at the call site is a
+     * cumulative CEILING, not an allocation — on a multi-store order the first
+     * store refunded fits under it easily and the last store comes up short.
+     *
+     * Prorated through the same VoucherService::prorate() the checkout used, so
+     * the shares add back up exactly — re-deriving the split here rather than
+     * storing it keeps one implementation of the rule (the C5 lesson: a
+     * duplicated formula is a formula that drifts).
      */
     private function storeCashShareSen(SubOrder $subOrder, Order $order, int $amountSen): int
     {
@@ -181,20 +191,50 @@ class RefundService
             return 0;
         }
 
-        $discountTotalSen = (int) $order->discount_total_sen;
-        $storeShareSen = 0;
+        $storeId = (int) $subOrder->store_id;
 
-        if ($discountTotalSen > 0) {
-            $storeSubtotals = $order->subOrders
-                ->mapWithKeys(fn (SubOrder $row) => [(int) $row->store_id => (int) $row->items_subtotal_sen])
-                ->all();
+        // 1. Platform voucher, on items_subtotal_sen — the weights checkout used.
+        $discountShares = [];
 
-            $storeShareSen = $this->vouchers->prorate($discountTotalSen, $storeSubtotals)[(int) $subOrder->store_id] ?? 0;
+        if ((int) $order->discount_total_sen > 0) {
+            $discountShares = $this->vouchers->prorate(
+                (int) $order->discount_total_sen,
+                $order->subOrders->mapWithKeys(fn (SubOrder $row) => [(int) $row->store_id => (int) $row->items_subtotal_sen])->all(),
+            );
         }
 
-        $storeCashSen = max(0, $subOrderTotalSen - $storeShareSen);
+        // 2. What each store's buyer owed after the voucher and after removing
+        //    shipping that was never charged.
+        $bases = $order->subOrders->mapWithKeys(fn (SubOrder $row) => [
+            (int) $row->store_id => max(0, (int) $row->total_sen
+                - ($discountShares[(int) $row->store_id] ?? 0)
+                - $this->unpaidShippingSen($row)),
+        ])->all();
+
+        // 3. Coins came off the whole post-voucher bill (CheckoutService's
+        //    $preCoinTotalSen), so they prorate on those bases, not on subtotals.
+        $coinShareSen = (int) $order->coin_redemption_sen > 0
+            ? ($this->vouchers->prorate((int) $order->coin_redemption_sen, $bases)[$storeId] ?? 0)
+            : 0;
+
+        $storeCashSen = max(0, ($bases[$storeId] ?? 0) - $coinShareSen);
 
         // Scale for a partial refund; exact for a full one.
         return intdiv($amountSen * $storeCashSen, $subOrderTotalSen);
+    }
+
+    /**
+     * Shipping sitting in this sub-order's total that the buyer was not charged.
+     *
+     * A PLATFORM-funded waiver leaves `shipping_fee_sen` on the sub-order (the
+     * seller still earns it) while the ORDER's shipping_total drops — so the
+     * buyer paid nothing and this must come out. A SELLER-funded waiver zeroes
+     * `shipping_fee_sen` instead, so it was never in `total_sen` and removing it
+     * again would under-refund. min() separates the two without re-reading the
+     * voucher: platform-funded leaves fee == subsidy, seller-funded leaves 0.
+     */
+    private function unpaidShippingSen(SubOrder $subOrder): int
+    {
+        return min((int) $subOrder->shipping_fee_sen, (int) $subOrder->shipping_subsidy_sen);
     }
 }

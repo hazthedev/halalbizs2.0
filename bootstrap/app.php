@@ -88,6 +88,25 @@ return Application::configure(basePath: dirname(__DIR__))
                 | Request::HEADER_X_FORWARDED_PROTO,
         );
 
+        // ...and because HEADER_X_FORWARDED_HOST is trusted above, the Host a
+        // request claims is attacker-controlled unless it is checked HERE. It
+        // was not, so `route('password.reset')` happily generated a link on
+        // http://evil.example.com/ — a reset token delivered to the real user's
+        // inbox pointing at someone else's server (audit H-1).
+        //
+        // No argument = the APP_URL host and its subdomains, which is exactly
+        // what this app serves ({store}.<app host> is a real route). Verified
+        // against the preview's own APP_URL (https://halalbizs2.0.weststar-dev.com,
+        // read off the CLI-generated sitemap, so it is the configured value and
+        // not a request echo). Laravel skips this in `local` and under tests, so
+        // Herd's halalbizs2.0.test is unaffected.
+        //
+        // ⚠ This does NOT close the other half of H-1: `at: '*'` above still
+        // lets a direct caller spoof X-Forwarded-For, so $request->ip() — and
+        // every limiter keyed on it — stays untrustworthy until the CIDR above
+        // is narrowed. Different fix, needs the host topology.
+        $middleware->trustHosts();
+
         // Gateway callbacks are signature-gated, not CSRF-gated (docs/10:
         // never exempt anything else).
         $middleware->validateCsrfTokens(except: [

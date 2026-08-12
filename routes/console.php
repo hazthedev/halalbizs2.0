@@ -39,7 +39,16 @@ Schedule::command('backup:clean')->dailyAt('02:30');
 // database queue and exits. Pinned to the `database` connection so it's a harmless
 // no-op while QUEUE_CONNECTION=sync and starts working the instant that flips.
 // ponytail: no second cron, no daemon — the one schedule:run cron covers everything.
-Schedule::command('queue:work database --stop-when-empty --max-time=50 --tries=3')
+//
+// ⚠ --queue IS NOT OPTIONAL. Without it a worker takes `default` and ONLY
+// `default`, so every job that names its own queue sits unclaimed forever —
+// which is what happened: ConfirmIpay88PaymentJob is on `payments`, so paid
+// orders were never fulfilled. Highest-value first (Laravel drains this list in
+// order); `search` is last because it is bulk and the slowest.
+//
+// Adding a queue name anywhere in app/ means adding it HERE too. The test
+// tests/Feature/Ops/QueueWorkerCoversEveryQueueTest.php fails if you don't.
+Schedule::command('queue:work database --queue=payments,einvoice,webhooks,coins,affiliate,default,search --stop-when-empty --max-time=50 --tries=3')
     ->everyMinute()
     ->withoutOverlapping(5)
     ->runInBackground();
