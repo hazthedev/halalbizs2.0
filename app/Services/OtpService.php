@@ -23,6 +23,8 @@ class OtpService
 
     private const MAX_ATTEMPTS = 5;
 
+    private const MAX_SENDS_PER_HOUR = 5;
+
     public function __construct(private SmsSender $sms) {}
 
     /**
@@ -32,12 +34,20 @@ class OtpService
     public function issue(User $user, string $purpose): bool
     {
         $key = $this->throttleKey($user, $purpose);
+        $hourKey = $this->hourlyThrottleKey($user, $purpose);
 
-        if (RateLimiter::tooManyAttempts($key, 1)) {
+        // Two caps, both keyed on the DESTINATION account rather than the
+        // requester: one per minute so a double-click doesn't send twice, and a
+        // ceiling per hour. Without the second, a cooldown alone lets anyone who
+        // knows an email send 60 codes an hour to that person's inbox (or SMS
+        // bill) forever. Profile.php already did this for phone sends by hand —
+        // it belongs here so every caller gets it.
+        if (RateLimiter::tooManyAttempts($key, 1) || RateLimiter::tooManyAttempts($hourKey, self::MAX_SENDS_PER_HOUR)) {
             return false;
         }
 
         RateLimiter::hit($key, 60);
+        RateLimiter::hit($hourKey, 3600);
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
@@ -70,8 +80,15 @@ class OtpService
     public function availableIn(User $user, string $purpose): int
     {
         $key = $this->throttleKey($user, $purpose);
+        $hourKey = $this->hourlyThrottleKey($user, $purpose);
 
-        return RateLimiter::tooManyAttempts($key, 1) ? RateLimiter::availableIn($key) : 0;
+        // Report whichever cap is actually holding them up — quoting the 60s
+        // cooldown to someone who has hit the hourly ceiling is a lie the UI
+        // then repeats every minute.
+        return max(
+            RateLimiter::tooManyAttempts($key, 1) ? RateLimiter::availableIn($key) : 0,
+            RateLimiter::tooManyAttempts($hourKey, self::MAX_SENDS_PER_HOUR) ? RateLimiter::availableIn($hourKey) : 0,
+        );
     }
 
     /**
@@ -121,5 +138,10 @@ class OtpService
     private function throttleKey(User $user, string $purpose): string
     {
         return "otp-issue:{$purpose}:{$user->id}";
+    }
+
+    private function hourlyThrottleKey(User $user, string $purpose): string
+    {
+        return "otp-issue-hour:{$purpose}:{$user->id}";
     }
 }

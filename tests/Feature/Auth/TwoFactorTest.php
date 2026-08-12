@@ -7,10 +7,12 @@ use App\Livewire\Storefront\Auth\Register;
 use App\Livewire\Storefront\Auth\TwoFactorChallenge;
 use App\Models\User;
 use App\Notifications\TwoFactorCodeNotification;
+use App\Support\ClientIp;
 use App\Support\Totp;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -373,4 +375,43 @@ test('TOTP 2FA: guesses are capped per USER even when the source IP changes', fu
     // The screen itself is gone: it no longer even mounts, so a correct code has
     // nowhere to be entered until they get past the login form again.
     Livewire::test(TwoFactorChallenge::class)->assertRedirect(route('login'));
+});
+
+// H-2 follow-on: the tight login gate used to be keyed on (email, IP), and the
+// IP is attacker-chosen — so a rotated address bought a fresh bucket of 5
+// against the same account. The account-keyed bucket is now the primary gate.
+test('login guesses are capped per ACCOUNT even when the source IP changes', function () {
+    $user = User::factory()->create();
+    $email = $user->email;
+
+    // Each iteration = a request from a new source address. Clearing the two
+    // IP-bearing keys is how that is expressed with one test client; it leaves
+    // the account-keyed buckets, which are the subject here, untouched.
+    $rotateIp = function () use ($email) {
+        RateLimiter::clear('login:'.Str::lower($email).'|'.ClientIp::bucket());
+        RateLimiter::clear('login-ip:'.ClientIp::bucket());
+    };
+
+    for ($i = 0; $i < 5; $i++) {
+        $rotateIp();
+
+        Livewire::test(Login::class)
+            ->set('email', $email)
+            ->set('password', 'not-the-password')
+            ->call('login')
+            ->assertHasErrors('email');
+    }
+
+    $rotateIp();
+
+    // The 6th is refused by the burst cap on the account — and the CORRECT
+    // password is refused too, which is the point: the account is protected,
+    // not the address.
+    Livewire::test(Login::class)
+        ->set('email', $email)
+        ->set('password', 'password')
+        ->call('login')
+        ->assertHasErrors('email');
+
+    $this->assertGuest();
 });

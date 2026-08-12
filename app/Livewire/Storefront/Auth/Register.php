@@ -6,6 +6,7 @@ use App\Enums\AuthContext;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\Turnstile;
+use App\Support\ClientIp;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -104,7 +105,7 @@ class Register extends Component
 
     private function throttleKey(): string
     {
-        return 'register:'.request()->ip();
+        return 'register:'.ClientIp::bucket();
     }
 
     public function render()
