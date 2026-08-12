@@ -10,6 +10,7 @@ use App\Notifications\TwoFactorCodeNotification;
 use App\Support\Totp;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -322,4 +323,54 @@ test('registration is rate limited after the threshold', function () {
         ->assertHasErrors(['email']);
 
     expect(User::where('email', 'rate-limit-6@example.com')->exists())->toBeFalse();
+});
+
+// H-2: the only 2FA limiter was keyed on ('two-factor:'.$id.'|'.$ip), and the
+// IP is attacker-chosen behind the trusted X-Forwarded-For proxy — so a rotated
+// address bought a fresh bucket of 5 and nothing ever counted failures against
+// the ACCOUNT. TOTP had no other ceiling: unlike the email branch, a wrong code
+// costs the attacker nothing.
+test('TOTP 2FA: guesses are capped per USER even when the source IP changes', function () {
+    $totp = new Totp;
+    $secret = $totp->generateSecret();
+
+    $user = User::factory()->create([
+        'two_factor_method' => 'totp',
+        'two_factor_secret' => $secret,
+    ]);
+
+    Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'password')
+        ->call('login');
+
+    // Each iteration = a request from a NEW source address. The test client has
+    // one IP, so clearing the per-IP bucket is how that is expressed here — it
+    // neutralises the OTHER limiter so this asserts on the per-user one only.
+    for ($i = 0; $i < 20; $i++) {
+        RateLimiter::clear('two-factor:'.$user->id.'|'.request()->ip());
+
+        Livewire::test(TwoFactorChallenge::class)
+            ->set('code', '000000')
+            ->call('verify')
+            ->assertHasErrors('code');
+
+        expect(session('two_factor:user_id'))->toBe($user->id);
+    }
+
+    // The 21st is refused by the account-wide ceiling, and the parked challenge
+    // is ended rather than left open to wait out the window.
+    RateLimiter::clear('two-factor:'.$user->id.'|'.request()->ip());
+
+    Livewire::test(TwoFactorChallenge::class)
+        ->set('code', '000000')
+        ->call('verify')
+        ->assertRedirect(route('login'));
+
+    expect(session()->has('two_factor:user_id'))->toBeFalse();
+    $this->assertGuest();
+
+    // The screen itself is gone: it no longer even mounts, so a correct code has
+    // nowhere to be entered until they get past the login form again.
+    Livewire::test(TwoFactorChallenge::class)->assertRedirect(route('login'));
 });

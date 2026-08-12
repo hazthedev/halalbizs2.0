@@ -220,3 +220,86 @@ test('a refund before completion writes no ledger adjustment but tracks the paym
         ->and($subOrder->fresh()->ledgerEntries()->count())->toBe(0)
         ->and($subOrder->fresh()->order->payment->refunded_sen)->toBe($total);
 });
+
+/** Two identical stores, one product each, flat shipping $shippingSen per store. */
+function twoStoreOrder(User $buyer, Address $address, int $shippingSen = 0, int $coins = 0, ?string $code = null): App\Models\Order
+{
+    foreach ([1, 2] as $ignored) {
+        $product = Product::factory()->create(['cod_enabled' => true, 'tax_class' => TaxClass::Exempt]);
+        $product->store->forceFill(['commission_rate' => 5.00])->save();
+        $product->store->update([
+            'sst_registered' => false,
+            'shipping_mode' => 'flat',
+            'shipping_flat_fee_sen' => $shippingSen,
+            'free_shipping_over_sen' => null,
+        ]);
+        $product->variants->first()->update(['price_sen' => 10000, 'sale_price_sen' => null, 'stock' => 10]);
+        app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+    }
+
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Ipay88, $code, coinsToRedeem: $coins);
+    $order->forceFill(['payment_status' => App\Enums\PaymentStatus::Paid, 'paid_at' => now()])->save();
+
+    return $order;
+}
+
+function completeAndRefund(SubOrder $subOrder, User $buyer): void
+{
+    $status = app(SubOrderStatusService::class);
+    $status->transition($subOrder->fresh(), SubOrderStatus::Confirmed, ActorType::System);
+    $status->transition($subOrder->fresh(), SubOrderStatus::Processing, ActorType::Seller);
+    $status->transition($subOrder->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
+    app(OrderService::class)->markDelivered($subOrder->fresh(), ActorType::System);
+    app(OrderService::class)->confirmReceived($subOrder->fresh(), $buyer->id);
+    app(RefundService::class)->refund($subOrder->fresh(), (int) $subOrder->fresh()->total_sen, ActorType::Admin, null, 'RF-'.$subOrder->id, markRefunded: true);
+}
+
+// H-4: the order-level `grand_total − refunded` check is a cumulative CEILING,
+// not an allocation. Refund the FIRST store of a multi-store order and it fits
+// under that ceiling easily, so the buyer got back cash they never paid and the
+// last store would have come up short. C11 fixed this for the platform voucher;
+// coins and platform-funded shipping were left out of the same sum.
+test('coins come out of the refunded cash — the first store refunded gets its share, not its total', function () {
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor', 'country' => 'MY']);
+
+    // The audit's worked example: 2 × RM100, no vouchers, RM20 of coins.
+    app(App\Services\CoinService::class)->credit($buyer, 2000, App\Enums\CoinTransactionType::Earn);
+    $order = twoStoreOrder($buyer, $address, coins: 2000);
+
+    expect($order->coin_redemption_sen)->toBe(2000)
+        ->and($order->grand_total_sen)->toBe(18000);            // 20000 − RM20 coins
+
+    completeAndRefund($order->subOrders->first(), $buyer);
+
+    // RM90, not the RM100 sub-order total: the buyer paid RM90 cash toward it.
+    expect((int) $order->fresh()->payment->refunded_sen)->toBe(9000);
+});
+
+test('platform-funded free shipping stays with the seller but is not refunded as cash', function () {
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor', 'country' => 'MY']);
+
+    Voucher::create([
+        'scope' => VoucherScope::Platform, 'store_id' => null, 'code' => 'PLATSHIP',
+        'type' => VoucherType::FreeShipping, 'percent' => 0, 'value_sen' => 0, 'min_spend_sen' => 0,
+        'quota' => null, 'per_user_limit' => 5, 'used_count' => 0,
+        'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'is_active' => true,
+    ]);
+
+    $order = twoStoreOrder($buyer, $address, shippingSen: 500, code: 'PLATSHIP');
+    $first = $order->subOrders->first();
+
+    // The fee stays ON the sub-order (the seller still earns it) while the buyer
+    // is not charged — which is precisely why total_sen overstates cash paid.
+    expect((int) $first->shipping_subsidy_sen)->toBeGreaterThan(0)
+        ->and((int) $first->shipping_fee_sen)->toBe((int) $first->shipping_subsidy_sen)
+        ->and((int) $order->grand_total_sen)->toBeLessThan((int) $order->subOrders->sum('total_sen'));
+
+    completeAndRefund($first, $buyer);
+
+    expect((int) $order->fresh()->payment->refunded_sen)
+        ->toBe((int) $first->total_sen - (int) $first->shipping_subsidy_sen);
+});

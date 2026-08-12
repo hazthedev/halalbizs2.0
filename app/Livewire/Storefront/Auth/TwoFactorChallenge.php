@@ -52,6 +52,15 @@ class TwoFactorChallenge extends Component
         }
 
         $throttleKey = 'two-factor:'.$user->id.'|'.request()->ip();
+        // Per-user and IP-INDEPENDENT. The key above contains request()->ip(),
+        // which is attacker-chosen behind the trusted X-Forwarded-For proxy —
+        // so a new spoofed address bought a fresh bucket of 5, and nothing
+        // counted failures against the account itself. TOTP has no other
+        // ceiling either: the email branch self-destructs its code after 5
+        // misses (OtpService), but Totp::verify accepts any guess forever and
+        // rememberTotpCodeUnused only records a code once it has ALREADY
+        // verified. 20/hour matches the broad buckets in Login::login().
+        $userKey = 'two-factor-user:'.$user->id;
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $this->addError('code', __('Too many attempts. Try again in :seconds seconds.', [
@@ -61,13 +70,26 @@ class TwoFactorChallenge extends Component
             return;
         }
 
+        if (RateLimiter::tooManyAttempts($userKey, 20)) {
+            // Don't just refuse — end the parked challenge. Otherwise whoever
+            // holds the stolen password keeps this screen open indefinitely and
+            // simply waits out each window; sending them back to /login puts
+            // them behind that form's own per-email hourly bucket.
+            session()->flash('status', __('Too many two-factor attempts. Log in again to start a new check.'));
+            $this->abandon();
+
+            return;
+        }
+
         if (! $this->attemptVerification($user)) {
             RateLimiter::hit($throttleKey);
+            RateLimiter::hit($userKey, 3600);
 
             return;
         }
 
         RateLimiter::clear($throttleKey);
+        RateLimiter::clear($userKey);
 
         $remember = (bool) session('two_factor:remember', false);
         $context = AuthContext::fromValue(session('two_factor:context'));
