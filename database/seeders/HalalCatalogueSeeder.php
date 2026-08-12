@@ -39,6 +39,20 @@ class HalalCatalogueSeeder extends Seeder
      *  (69 MB as PNG). */
     private const PACKSHOT_DIR = 'seeders/data/packshots';
 
+    /** One random password shared by this run's demo sellers, printed once below.
+     *  It used to be the literal string 'password' -- and because seedStores()
+     *  fill()s an EXISTING user, every deploy reset all 19 accounts back to it.
+     *  The store names are printed on the storefront and the email is derived
+     *  from them, so that was nineteen published logins into an approved seller
+     *  centre. Random-per-run keeps the demo signable-in (read the line below)
+     *  and makes the next deploy rotate whatever leaked. */
+    private ?string $demoPassword = null;
+
+    private function demoPassword(): string
+    {
+        return $this->demoPassword ??= Str::password(20, symbols: false);
+    }
+
     public function run(): void
     {
         $path = database_path('seeders/data/halalbizs-catalogue.json');
@@ -99,6 +113,7 @@ class HalalCatalogueSeeder extends Seeder
         Cache::forget('landing:stats');
 
         $this->command?->info("Stores: {$stores->count()} · products: {$seeded} · with packshot: {$withImage} · retired demo: {$retired}");
+        $this->command?->warn('Demo seller password THIS RUN (rotates on every seed): '.$this->demoPassword());
 
         if ($missingImages !== []) {
             $this->command?->warn(count($missingImages).' packshots not on disk yet (re-run this seeder once the batch finishes)');
@@ -116,7 +131,7 @@ class HalalCatalogueSeeder extends Seeder
             $user = User::withTrashed()->firstOrNew(['email' => $email]);
             $user->fill([
                 'name' => $row['name'],
-                'password' => bcrypt('password'),
+                'password' => bcrypt($this->demoPassword()),
                 'email_verified_at' => $user->email_verified_at ?? now(),
                 'deleted_at' => null,
             ])->save();
