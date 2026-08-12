@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class AdminUserSeeder extends Seeder
 {
@@ -13,7 +14,10 @@ class AdminUserSeeder extends Seeder
             ['email' => env('ADMIN_EMAIL', 'admin@halalbizs.test')],
             [
                 'name' => 'Platform Admin',
-                'password' => env('ADMIN_PASSWORD', 'password'),
+                // No literal fallback in production: a host that forgets
+                // ADMIN_PASSWORD gets an unguessable one it must reset, not the
+                // string 'password' on the account that can reach every screen.
+                'password' => env('ADMIN_PASSWORD') ?: (app()->isProduction() ? Str::password(20, symbols: false) : 'password'),
                 'email_verified_at' => now(),
             ],
         );
