@@ -79,6 +79,18 @@ class CurrencyConverterTest extends TestCase
         $this->assertSame('≈ Rp 345,000', app(CurrencyConverter::class)->display(10000, 'IDR'));
     }
 
+    /**
+     * The same trap, on the row we actually ship. VND is zero-decimal like IDR,
+     * so this asserts the SEEDED value rather than a hand-built row — set
+     * decimal_places to 2 in CurrencySeeder and RM 100 renders as 590,000,000.
+     */
+    public function test_the_seeded_vnd_row_renders_at_zero_decimals(): void
+    {
+        $this->seed(\Database\Seeders\CurrencySeeder::class);
+
+        $this->assertSame('≈ VND 590,000', app(CurrencyConverter::class)->display(10000, 'VND'));
+    }
+
     /** The other direction: more decimals than the base must shift UP. */
     public function test_a_three_decimal_currency_shifts_the_other_way(): void
     {

@@ -83,19 +83,20 @@
             </p>
 
             <div class="flex shrink-0 items-center gap-4">
-                {{-- Locale: shown as a segmented pair like the reference, driven by
-                     the same POST + `locale` field as before. --}}
+                {{-- Locale: a segmented set like the reference, driven by the same
+                     POST + `locale` field as before. Each button now CARRIES its own
+                     locale — the old hidden input held a single en↔ms flip value,
+                     which silently stops working at the third language. --}}
                 <form method="POST" action="{{ route('preferences.locale') }}" class="flex items-center rounded-[var(--radius-pill)] bg-emerald-card p-0.5">
                     @csrf
-                    <input type="hidden" name="locale" value="{{ app()->getLocale() === 'en' ? 'ms' : 'en' }}">
-                    @foreach (['en' => 'EN', 'ms' => 'BM'] as $code => $label)
+                    @foreach (app(\App\Settings\GeneralSettings::class)->enabled_locales as $code)
                         {{-- py-1.5 not py-0.5: at 35x20px these pills were under the
                              24px WCAG 2.5.8 floor. 28px tall clears it without
                              turning the bar back into the thing we just shrank. --}}
                         @if (app()->getLocale() === $code)
-                            <span class="rounded-[var(--radius-pill)] bg-on-dark px-3 py-1.5 font-mono text-[length:var(--text-micro)] font-medium tracking-[var(--tracking-label)] text-emerald-night">{{ $label }}</span>
+                            <span class="rounded-[var(--radius-pill)] bg-on-dark px-3 py-1.5 font-mono text-[length:var(--text-micro)] font-medium tracking-[var(--tracking-label)] text-emerald-night">{{ config("locales.{$code}.short", strtoupper($code)) }}</span>
                         @else
-                            <button type="submit" class="rounded-[var(--radius-pill)] px-3 py-1.5 font-mono text-[length:var(--text-micro)] tracking-[var(--tracking-label)] text-on-dark-faint transition-colors duration-(--dur-micro) hover:text-on-dark" aria-label="{{ __('Switch language') }}">{{ $label }}</button>
+                            <button type="submit" name="locale" value="{{ $code }}" class="rounded-[var(--radius-pill)] px-3 py-1.5 font-mono text-[length:var(--text-micro)] tracking-[var(--tracking-label)] text-on-dark-faint transition-colors duration-(--dur-micro) hover:text-on-dark" aria-label="{{ __('Switch to :language', ['language' => config("locales.{$code}.name", $code)]) }}">{{ config("locales.{$code}.short", strtoupper($code)) }}</button>
                         @endif
                     @endforeach
                 </form>

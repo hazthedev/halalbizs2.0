@@ -23,19 +23,44 @@ function localizationAdmin(): User
 
 // ── Languages ───────────────────────────────────────────────────────────
 
-test('toggling ms updates GeneralSettings.enabled_locales with en always present', function () {
+test('toggling a locale updates GeneralSettings.enabled_locales with en always present', function () {
     test()->seed(CurrencySeeder::class);
     $admin = localizationAdmin();
 
-    expect(app(GeneralSettings::class)->enabled_locales)->toBe(['en', 'ms']);
+    expect(app(GeneralSettings::class)->enabled_locales)->toBe(['en', 'ms', 'vi']);
 
-    Livewire::actingAs($admin)->test(Index::class)->call('toggleMs');
+    Livewire::actingAs($admin)->test(Index::class)->call('toggleLocale', 'ms');
 
-    expect(app(GeneralSettings::class)->refresh()->enabled_locales)->toBe(['en']);
+    expect(app(GeneralSettings::class)->refresh()->enabled_locales)->toBe(['en', 'vi']);
 
-    Livewire::actingAs($admin)->test(Index::class)->call('toggleMs');
+    Livewire::actingAs($admin)->test(Index::class)->call('toggleLocale', 'ms');
 
-    expect(app(GeneralSettings::class)->refresh()->enabled_locales)->toBe(['en', 'ms']);
+    expect(app(GeneralSettings::class)->refresh()->enabled_locales)->toBe(['en', 'ms', 'vi']);
+});
+
+/**
+ * The revert-proof for the bug the generic toggle replaced: writing ['en', $code]
+ * wholesale was correct with exactly one optional language and deleted every
+ * other one from the second onwards. Turning ms OFF must leave vi alone.
+ */
+test('disabling one locale leaves the other enabled locales alone', function () {
+    test()->seed(CurrencySeeder::class);
+    $admin = localizationAdmin();
+
+    Livewire::actingAs($admin)->test(Index::class)->call('toggleLocale', 'ms');
+
+    expect(app(GeneralSettings::class)->refresh()->enabled_locales)->toContain('vi');
+});
+
+test('en cannot be toggled off and an unknown locale is ignored', function () {
+    test()->seed(CurrencySeeder::class);
+    $admin = localizationAdmin();
+
+    Livewire::actingAs($admin)->test(Index::class)
+        ->call('toggleLocale', 'en')
+        ->call('toggleLocale', 'zz');
+
+    expect(app(GeneralSettings::class)->refresh()->enabled_locales)->toBe(['en', 'ms', 'vi']);
 });
 
 // ── Currencies ──────────────────────────────────────────────────────────

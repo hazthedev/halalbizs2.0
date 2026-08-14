@@ -14,19 +14,21 @@
                     </div>
                     <x-ui.badge variant="verified">{{ __('Always on') }}</x-ui.badge>
                 </li>
-                <li class="flex items-center gap-3 px-4 py-2">
-                    <div class="flex-1">
-                        <p class="text-[13px] font-medium text-ink">{{ __('Bahasa Melayu') }} <span class="font-mono text-[12px] text-ink-faint">ms</span></p>
-                        <p class="text-[12px] text-ink-soft">{{ __('Buyers can switch to BM when enabled.') }}</p>
-                    </div>
-                    <button type="button" role="switch" aria-checked="{{ $msEnabled ? 'true' : 'false' }}"
-                            wire:click="toggleMs" aria-label="{{ __('Toggle Bahasa Melayu') }}"
-                            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                        <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $msEnabled ? 'bg-emerald' : 'bg-line-strong' }}">
-                            <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $msEnabled ? 'translate-x-6' : 'translate-x-1' }}"></span>
-                        </span>
-                    </button>
-                </li>
+                @foreach ($optionalLocales as $locale)
+                    <li class="flex items-center gap-3 px-4 py-2" wire:key="locale-{{ $locale['code'] }}">
+                        <div class="flex-1">
+                            <p class="text-[13px] font-medium text-ink">{{ $locale['name'] }} <span class="font-mono text-[12px] text-ink-faint">{{ $locale['code'] }}</span></p>
+                            <p class="text-[12px] text-ink-soft">{{ __('Buyers can switch to :language when enabled.', ['language' => $locale['name']]) }}</p>
+                        </div>
+                        <button type="button" role="switch" aria-checked="{{ $locale['enabled'] ? 'true' : 'false' }}"
+                                wire:click="toggleLocale('{{ $locale['code'] }}')" aria-label="{{ __('Toggle :language', ['language' => $locale['name']]) }}"
+                                class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                            <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $locale['enabled'] ? 'bg-emerald' : 'bg-line-strong' }}">
+                                <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $locale['enabled'] ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                            </span>
+                        </button>
+                    </li>
+                @endforeach
                 <li class="flex items-center gap-3 px-4 py-2 opacity-50">
                     <div class="flex-1">
                         <p class="text-[13px] font-medium text-ink">{{ __('Chinese (Simplified)') }} <span class="font-mono text-[12px] text-ink-faint">zh</span></p>

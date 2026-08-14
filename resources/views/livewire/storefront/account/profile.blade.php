@@ -46,7 +46,7 @@
                         <select id="preferred_locale" wire:model="preferred_locale"
                                 class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('preferred_locale') ? 'border-danger' : 'border-line-strong' }}">
                             @foreach ($locales as $locale)
-                                <option value="{{ $locale }}">{{ $locale === 'ms' ? 'Bahasa Melayu' : 'English' }}</option>
+                                <option value="{{ $locale }}">{{ config("locales.{$locale}.name", $locale) }}</option>
                             @endforeach
                         </select>
                         @error('preferred_locale')
