@@ -45,11 +45,44 @@ class Landing extends Component
      *  scalars get cached on this page. */
     protected function topCategories(): Collection
     {
-        return Category::active()
+        $categories = Category::active()
             ->whereNull('parent_id')
             ->orderBy('position')
             ->take(6)
             ->get();
+
+        // M-21: the tile blade used to run FOUR queries per category inside its
+        // @foreach — two child-id lookups, an ORDER BY RAND() sample and a count
+        // — so six departments cost 24 queries, six of them random-sorts, on an
+        // uncached page. Resolved here in two: one grouped count, and one pass
+        // for the sample images.
+        $childToParent = Category::query()
+            ->whereIn('parent_id', $categories->pluck('id'))
+            ->pluck('parent_id', 'id');
+
+        $countsByChild = Product::live()
+            ->whereIn('category_id', $childToParent->keys())
+            ->selectRaw('category_id, COUNT(*) as aggregate')
+            ->groupBy('category_id')
+            ->pluck('aggregate', 'category_id');
+
+        // One image per department. ORDER BY RAND() over the whole catalogue was
+        // the expensive half and buys nothing on a tile — the newest listing with
+        // artwork is a better shop window anyway, and it is index-ordered.
+        $samples = Product::live()
+            ->whereIn('category_id', $childToParent->keys())
+            ->has('media')
+            ->with('media')
+            ->orderByDesc('id')
+            ->get(['id', 'category_id'])
+            ->groupBy(fn (Product $p) => $childToParent[$p->category_id] ?? null);
+
+        return $categories->each(function (Category $category) use ($childToParent, $countsByChild, $samples): void {
+            $childIds = $childToParent->filter(fn ($parentId) => $parentId === $category->id)->keys();
+
+            $category->setAttribute('tile_count', (int) $countsByChild->only($childIds)->sum());
+            $category->setAttribute('tile_sample', $samples->get($category->id)?->first());
+        });
     }
 
     /**
@@ -77,7 +110,7 @@ class Landing extends Component
     protected function newlyVerified(): Collection
     {
         return Product::live()
-            ->with(['variants', 'store'])
+            ->with(['halalCertificate', 'variants', 'store'])
             ->whereNotNull('published_at')
             ->orderByDesc('published_at')
             ->orderByDesc('id')

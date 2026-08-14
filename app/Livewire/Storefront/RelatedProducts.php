@@ -63,7 +63,7 @@ class RelatedProducts extends Component
                 ->live()
                 ->whereKeyNot($this->product->id)
                 ->where('category_id', $this->product->category_id)
-                ->with(['variants', 'media', 'store'])
+                ->with(['halalCertificate', 'variants', 'media', 'store'])
                 ->orderByDesc('published_at')
                 ->take(6)
                 ->get(),

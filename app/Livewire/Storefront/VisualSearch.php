@@ -47,7 +47,7 @@ class VisualSearch extends Component
     {
         $products = $this->resultIds === []
             ? collect()
-            : Product::query()->live()->with(['media', 'variants', 'store'])
+            : Product::query()->live()->with(['halalCertificate', 'media', 'variants', 'store'])
                 ->whereIn('id', $this->resultIds)
                 ->get()
                 ->sortBy(fn (Product $p) => array_search($p->id, $this->resultIds, true))

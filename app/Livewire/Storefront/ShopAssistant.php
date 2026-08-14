@@ -148,7 +148,7 @@ class ShopAssistant extends Component
         /** @var Collection<int, Product> $products */
         $products = $ids === []
             ? collect()
-            : Product::query()->live()->with(['media', 'variants'])->whereIn('id', $ids)->get()->keyBy('id');
+            : Product::query()->live()->with(['halalCertificate', 'media', 'variants'])->whereIn('id', $ids)->get()->keyBy('id');
 
         return view('livewire.storefront.shop-assistant', [
             'products' => $products,

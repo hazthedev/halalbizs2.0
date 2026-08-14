@@ -83,7 +83,7 @@ class RecommendationService
 
         $products = Product::query()
             ->whereIn('id', $ids)
-            ->with(['variants', 'media', 'store'])
+            ->with(['halalCertificate', 'variants', 'media', 'store'])
             ->get()
             ->keyBy('id');
 
@@ -204,7 +204,7 @@ class RecommendationService
                     $q->orWhereIn('store_id', array_keys($storeWeights));
                 }
             })
-            ->with(['variants', 'media', 'store'])
+            ->with(['halalCertificate', 'variants', 'media', 'store'])
             ->limit(self::CANDIDATE_POOL)
             ->get();
 
@@ -269,7 +269,7 @@ class RecommendationService
             ->live()
             ->whereIn('id', $coIds)
             ->whereHas('variants', fn (Builder $query) => $query->where('stock', '>', 0))
-            ->with(['variants', 'media', 'store'])
+            ->with(['halalCertificate', 'variants', 'media', 'store'])
             ->get()
             ->keyBy('id');
 
@@ -289,7 +289,7 @@ class RecommendationService
 
         return $this->liveInStock()
             ->whereNotIn('products.id', $exclude ?: [0])
-            ->with(['variants', 'media', 'store'])
+            ->with(['halalCertificate', 'variants', 'media', 'store'])
             ->orderByDesc('sold_count')
             ->orderByDesc('id')
             ->limit($limit)

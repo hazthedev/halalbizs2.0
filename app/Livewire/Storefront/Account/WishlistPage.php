@@ -26,7 +26,7 @@ class WishlistPage extends Component
             ->latest()
             ->pluck('product_id');
 
-        $products = Product::with(['variants', 'store', 'media'])
+        $products = Product::with(['halalCertificate', 'variants', 'store', 'media'])
             ->whereIn('id', $productIds)
             ->get()
             ->sortBy(fn (Product $product) => $productIds->search($product->id))

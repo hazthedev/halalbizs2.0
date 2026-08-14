@@ -323,7 +323,7 @@ class Listing extends Component
     /** Filtered (unsorted) query for the current entry — shared by organic + sponsored. */
     private function filteredQuery(bool $applyAttrs = true): Builder
     {
-        $query = Product::query()->live()->with(['media', 'variants', 'store']);
+        $query = Product::query()->live()->with(['halalCertificate', 'media', 'variants', 'store']);
 
         if ($this->isSearch()) {
             if ($this->hasSearchTerm()) {
