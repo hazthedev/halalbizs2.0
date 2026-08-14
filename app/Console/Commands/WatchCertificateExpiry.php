@@ -6,6 +6,7 @@ use App\Enums\ProductStatus;
 use App\Models\HalalCertificate;
 use App\Notifications\HalalCertificateWatch;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -35,10 +36,10 @@ class WatchCertificateExpiry extends Command
 
     public function handle(): int
     {
-        // 60 days matches HalalCertificate::isExpiringSoon()'s own default —
-        // deliberately the same number in one place, so the nudge window and
-        // the "expiring soon" badge can never disagree.
-        $window = (int) ($this->option('days') ?: 60);
+        // The window lives on the model as RENEWAL_WINDOW_DAYS, so the nudge
+        // and the "expiring soon" badge cannot disagree. It used to say that
+        // while hardcoding 60 here as well — two places claiming to be one.
+        $window = (int) ($this->option('days') ?: HalalCertificate::RENEWAL_WINDOW_DAYS);
         $today = now()->startOfDay();
 
         $lapsed = $this->sweepLapsed($today);
@@ -51,7 +52,7 @@ class WatchCertificateExpiry extends Command
     }
 
     /** Terms that have ended: take their live products down. */
-    private function sweepLapsed(\Illuminate\Support\Carbon $today): int
+    private function sweepLapsed(Carbon $today): int
     {
         $delisted = 0;
 
@@ -94,7 +95,7 @@ class WatchCertificateExpiry extends Command
     }
 
     /** Renewed (or corrected) terms: put back exactly what the watch took. */
-    private function sweepRestored(\Illuminate\Support\Carbon $today): int
+    private function sweepRestored(Carbon $today): int
     {
         $restored = 0;
 
@@ -124,7 +125,7 @@ class WatchCertificateExpiry extends Command
     }
 
     /** Inside the renewal window and not yet warned: warn once. */
-    private function sweepRenewalNudge(\Illuminate\Support\Carbon $today, int $window): int
+    private function sweepRenewalNudge(Carbon $today, int $window): int
     {
         $nudged = 0;
 

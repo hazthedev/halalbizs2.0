@@ -33,11 +33,11 @@
      filter that makes the catalogue a HALAL catalogue rather than a grocery
      one, so it sits directly under the department list.
      The authority is read from the certificate number's prefix; see
-     Listing::CERTIFIER_PREFIX. --}}
+     Listing::certifierCodes(), which reads HalalCertificate::BODIES. --}}
 <div>
     <p class="mb-3 border-b border-line pb-2 font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-ink-faint">{{ __('Certifying body') }}</p>
     <div class="flex flex-wrap gap-1.5">
-        @foreach (array_keys(\App\Livewire\Storefront\Listing::CERTIFIER_PREFIX) as $body)
+        @foreach (\App\Livewire\Storefront\Listing::certifierCodes() as $body)
             @php $on = in_array($body, $certifiers, true); @endphp
             <button
                 type="button"

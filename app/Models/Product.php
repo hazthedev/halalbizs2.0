@@ -107,6 +107,11 @@ class Product extends Model implements HasMedia
      * as verified, and a null expiry made `lapsed` false, i.e. green with no
      * date. A claim of "verified" requires a certificate RECORD that says so.
      *
+     * A certificate awaiting review reads as 'pending', not 'verified'. Binding
+     * only offers approved certificates, so this should be unreachable — which
+     * is exactly why it is here: the badge is the trust claim, and it must fail
+     * closed if any other writer ever binds an unapproved record (H-6).
+     *
      * @return 'verified'|'lapsed'|'pending'|'unverified'
      */
     public function halalVerdict(): string
@@ -115,6 +120,10 @@ class Product extends Model implements HasMedia
 
         if ($cert === null) {
             return 'unverified';
+        }
+
+        if (! $cert->isApproved()) {
+            return 'pending';
         }
 
         if ($cert->isValid()) {
