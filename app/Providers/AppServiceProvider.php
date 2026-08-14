@@ -38,11 +38,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -104,8 +102,6 @@ class AppServiceProvider extends ServiceProvider
         // Public API rate limit (docs/10): 60 req/min per IP. Auth login already
         // self-throttles in the Login component (5 attempts).
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by(ClientIp::bucket($request->ip())));
-
-        $this->logProxyPeer();
 
         // Register and ResetPassword both validate with Password::defaults(), but
         // nothing ever CONFIGURED the defaults — so the whole marketplace's rule
@@ -179,42 +175,5 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('price', function (string $expression) {
             return "<?php echo app(\App\Services\CurrencyConverter::class)->display($expression); ?>";
         });
-    }
-
-    /**
-     * TEMPORARY, for H-1b — delete once trustProxies() names a real CIDR.
-     *
-     * REMOTE_ADDR is the TCP peer: no header can forge it, so whatever appears
-     * here IS the proxy that fronts this app. `trustProxies(at: '*')` currently
-     * trusts anything, which makes $request->ip() a free-text field the caller
-     * chooses. We cannot narrow it without knowing the real address, and nobody
-     * can read that off the outside of the box — so record it.
-     *
-     * One line per distinct peer per day (cache-deduped), so this is a handful
-     * of lines, not a firehose. Headers are logged alongside because they answer
-     * the other half: whether the proxy strips an inbound X-Forwarded-For or
-     * appends to it.
-     */
-    private function logProxyPeer(): void
-    {
-        if ($this->app->runningInConsole() || ! $this->app->bound('request')) {
-            return;
-        }
-
-        $peer = request()->server('REMOTE_ADDR');
-
-        if ($peer === null || Cache::has('proxy-peer:'.$peer)) {
-            return;
-        }
-
-        Cache::put('proxy-peer:'.$peer, true, now()->addDay());
-
-        Log::info('H-1b proxy peer', [
-            'remote_addr' => $peer,
-            'x_forwarded_for' => request()->header('X-Forwarded-For'),
-            'x_real_ip' => request()->header('X-Real-IP'),
-            'cf_connecting_ip' => request()->header('CF-Connecting-IP'),
-            'resolved_ip' => request()->ip(),
-        ]);
     }
 }

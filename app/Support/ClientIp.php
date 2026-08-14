@@ -10,11 +10,11 @@ namespace App\Support;
  * millions of distinct buckets — the limit is then decorative. IPv4 has no
  * equivalent problem and is used as-is.
  *
- * ⚠ This makes an IP limiter honest, it does not make it strong. Behind
- * `trustProxies(at: '*')` the address is still attacker-chosen (audit H-1b), and
- * even with a correct address real attackers hold real addresses. Anything worth
- * protecting is keyed on the ACCOUNT being attacked; an IP bucket is only ever
- * the looser secondary.
+ * ⚠ This makes an IP limiter honest, it does not make it strong. The address
+ * itself became trustworthy when trustProxies() was narrowed to loopback (audit
+ * H-1b, closed 2026-08-14), but real attackers hold real addresses. Anything
+ * worth protecting is keyed on the ACCOUNT being attacked; an IP bucket is only
+ * ever the looser secondary.
  */
 final class ClientIp
 {
