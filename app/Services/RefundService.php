@@ -150,8 +150,28 @@ class RefundService
                         ? __('Refunded via iPay88 portal — ref :ref', ['ref' => $reference])
                         : __('COD refund recorded as a ledger adjustment'),
                 );
+            }
 
+            // 4. The order stops claiming to be Paid once every sub-order has
+            //    reached a settled end state.
+            //
+            //    This used to live INSIDE the block above, which made it
+            //    unreachable for the case it matters most in (H-3): a paid
+            //    sub-order cancelled by the buyer is already terminal, so
+            //    canTransition(…, Refunded) is false and the status change is
+            //    skipped — taking the payment_status update with it. The order
+            //    then read Paid with refunded_sen == total_sen, which is the
+            //    reconciliation lie the finding is about. The rule belongs to
+            //    the refund, not to the status change.
+            //
+            //    Settled means Refunded OR Cancelled — unchanged semantics, and
+            //    deliberately not "payment.refunded_sen >= grand_total_sen":
+            //    coins and platform-funded shipping mean the cash returned is
+            //    legitimately less than the order total, so an amount test
+            //    would stop flipping orders that flip correctly today.
+            if ($fullyRefunded) {
                 $order = $subOrder->order;
+
                 $allSettled = $order->subOrders()
                     ->whereNotIn('status', [SubOrderStatus::Refunded, SubOrderStatus::Cancelled])
                     ->doesntExist();
