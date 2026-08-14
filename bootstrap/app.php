@@ -63,25 +63,32 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleUrlRedirects::class,
         ]);
 
-        // Reverse-proxy trust (AL-C4): AppServiceProvider forces the https
-        // scheme for URL generation on the assumption that a TLS-terminating
-        // proxy (cPanel/LiteSpeed) sits in front of this app, but nothing
-        // told Laravel to trust the X-Forwarded-* headers that carry that
-        // fact — so $request->secure() was false in prod (the HSTS branch in
-        // SecurityHeaders never fired) and the `api` rate limiter keyed on
-        // $request->ip() saw the proxy's address instead of the real client.
+        // Reverse-proxy trust (AL-C4, then H-1b). This was `at: '*'` on the
+        // assumption that a TLS-terminating proxy fronts the app and that
+        // $request->secure() was therefore false in production. MEASURED on
+        // the live host 2026-08-14 and the assumption was wrong on both counts:
         //
-        // ⚠ NEEDS VERIFICATION ON THE PRODUCTION HOST — the exact
-        // cPanel/LiteSpeed topology (whether the app port is ever reachable
-        // directly, bypassing the proxy/CDN) is unknown from here. `at: '*'`
-        // trusts whichever host makes the TCP connection to PHP-FPM, which is
-        // correct ONLY if that connection always originates from the
-        // LiteSpeed/CDN edge. NARROW THIS to the real proxy/CDN CIDR
-        // block(s) once that topology is confirmed — trusting '*' when the
-        // app is directly reachable lets any caller spoof their IP via
-        // X-Forwarded-For.
+        //   REMOTE_ADDR  210.186.7.249   <- the real client (my own egress IP)
+        //   SERVER_ADDR  103.191.76.66   <- the host itself
+        //
+        // There is no reverse proxy and no CDN. LiteSpeed terminates TLS and
+        // hands the request to PHP in-process, so REMOTE_ADDR is already the
+        // client and $_SERVER['HTTPS'] is already set — HSTS fires on a request
+        // carrying no forwarded headers at all. Every X-Forwarded-* header that
+        // arrives here is therefore attacker-supplied, and `at: '*'` trusted
+        // all of them: X-Forwarded-For made $request->ip() a free-text field
+        // the caller chooses, and X-Forwarded-Proto: http was enough to strip
+        // the HSTS header off a response.
+        //
+        // Loopback rather than an empty list: nothing today connects from
+        // 127.0.0.1, so this trusts nobody. But if a local reverse proxy is
+        // ever added in front (Engintron and friends bind there), the failure
+        // mode of NOT trusting it is that every visitor resolves to the proxy's
+        // address and shares one rate-limit bucket — i.e. one attacker locks
+        // out the whole site. Trusting loopback costs nothing now and forecloses
+        // that. A public address must never go in this list.
         $middleware->trustProxies(
-            at: '*',
+            at: ['127.0.0.1', '::1'],
             headers: Request::HEADER_X_FORWARDED_FOR
                 | Request::HEADER_X_FORWARDED_HOST
                 | Request::HEADER_X_FORWARDED_PORT
@@ -101,10 +108,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // not a request echo). Laravel skips this in `local` and under tests, so
         // Herd's halalbizs2.0.test is unaffected.
         //
-        // ⚠ This does NOT close the other half of H-1: `at: '*'` above still
-        // lets a direct caller spoof X-Forwarded-For, so $request->ip() — and
-        // every limiter keyed on it — stays untrustworthy until the CIDR above
-        // is narrowed. Different fix, needs the host topology.
+        // This closed one half of H-1; the other half — X-Forwarded-For making
+        // $request->ip() attacker-chosen — was closed by narrowing trustProxies
+        // above, once the host topology had actually been measured.
         $middleware->trustHosts();
 
         // Gateway callbacks are signature-gated, not CSRF-gated (docs/10:
