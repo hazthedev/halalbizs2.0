@@ -59,6 +59,20 @@ test('the persistent-strings list keeps the framework strings the exporter canno
     }
 });
 
+/**
+ * The lang/<locale>/*.php files come from `php artisan lang:add`. Nothing else
+ * in the suite touches them, so deleting the directory — or a future lang:reset
+ * — would go unnoticed until a Malay shopper saw an English validation error.
+ */
+test('framework messages resolve per locale, not just in English', function (string $locale) {
+    expect(trans('validation.required', ['attribute' => 'email'], $locale))
+        ->not->toBe(trans('validation.required', ['attribute' => 'email'], 'en'))
+        ->and(trans('auth.failed', [], $locale))->not->toBe(trans('auth.failed', [], 'en'))
+        ->and(trans('passwords.sent', [], $locale))->not->toBe(trans('passwords.sent', [], 'en'))
+        // A missing file makes trans() echo the key back — catch that explicitly.
+        ->and(trans('validation.required', [], $locale))->not->toContain('validation.');
+})->with(['ms', 'vi']);
+
 test('placeholder detection reads names, not punctuation', function () {
     expect(Translation::placeholders('Current streak: :n days'))->toBe(['n'])
         ->and(Translation::placeholders('Closes at 12:30'))->toBe([])
