@@ -12,6 +12,8 @@ Route::get('/products/create', Seller\Products\Form::class)->name('products.crea
 Route::get('/products/import', Seller\Products\BulkImport::class)->name('products.import');
 Route::get('/products/{product}/edit', Seller\Products\Form::class)->name('products.edit');
 
+Route::get('/certificates', Seller\Certificates::class)->name('certificates');
+
 Route::get('/orders', Seller\Orders\Index::class)->name('orders.index');
 Route::get('/orders/{subOrder}', Seller\Orders\Detail::class)->name('orders.show');
 Route::get('/orders/{subOrder}/packing-slip', [InvoiceController::class, 'seller'])->name('orders.packing-slip');
