@@ -172,7 +172,13 @@ class Vouchers extends Component
     public function render()
     {
         return view('livewire.admin.content.vouchers', [
+            // M-25: every spin-to-win prize is created with scope=Platform AND a
+            // user_id (SpinService), so without this the screen listed every prize
+            // anyone had ever won alongside the real platform vouchers — and it is
+            // unpaginated. The buyer-facing side was scoped when user_id arrived;
+            // the admin side was not.
             'vouchers' => Voucher::where('scope', VoucherScope::Platform)
+                ->whereNull('user_id')
                 ->orderByDesc('starts_at')
                 ->orderByDesc('id')
                 ->get(),
@@ -238,7 +244,9 @@ class Vouchers extends Component
 
     private function platformVoucher(int $voucherId): Voucher
     {
-        return Voucher::where('scope', VoucherScope::Platform)->findOrFail($voucherId);
+        // Same scoping on the write path: an admin must not be able to edit or
+        // delete a buyer's won prize through this screen.
+        return Voucher::where('scope', VoucherScope::Platform)->whereNull('user_id')->findOrFail($voucherId);
     }
 
     private function resetForm(): void
