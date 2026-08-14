@@ -40,12 +40,20 @@ async function assertChartAndPeriodSwitch(page: Page, name: string) {
     await expect(page.locator('.apexcharts-canvas').first()).toBeVisible({ timeout: 15000 });
     await page.screenshot({ path: `e2e/screenshots/dash-${name}-${test.info().project.name}.png`, fullPage: true });
 
-    const periodButtons = page.locator('button[wire\\:click*="period"]');
-    if (await periodButtons.count() > 1) {
-        await jsClick(periodButtons.last());
-        await page.waitForTimeout(700); // Livewire roundtrip + chart updateOptions
-        await expect(page.locator('.apexcharts-canvas').first()).toBeVisible();
-    }
+    // Key, not click: the three dashboards write the action differently —
+    // buyer and seller use wire:click="$set('period', …)", admin uses
+    // wire:click="setPeriod(…)". Attribute-value matching is case-sensitive, so
+    // the old *="period" selector missed `setPeriod` and found nothing on the
+    // admin dashboard; an `if (count > 1)` guard then turned that into a pass,
+    // so the admin period switch was never actually exercised. All three do
+    // share wire:key="period-…", and a missing picker must fail, not no-op.
+    const periodButtons = page.locator('button[wire\\:key^="period-"]');
+    await expect(periodButtons.first()).toBeVisible();
+    expect(await periodButtons.count()).toBeGreaterThan(1);
+
+    await jsClick(periodButtons.last());
+    await page.waitForTimeout(700); // Livewire roundtrip + chart updateOptions
+    await expect(page.locator('.apexcharts-canvas').first()).toBeVisible();
 }
 
 test.describe('Interactive dashboards', () => {

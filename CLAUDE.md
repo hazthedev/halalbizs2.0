@@ -20,11 +20,20 @@ php artisan test -c phpunit.mariadb.xml   # the real gate: full suite on MariaDB
 vendor/bin/pint --dirty            # run before any commit
 composer analyse                   # Larastan level 1 — must be clean before any commit
 npm run build                      # Vite/Tailwind
-npx playwright test                # ⚠ dormant since 2026-06-24 — specs predate every UI rewrite since; do not treat as a gate
+npm run e2e                        # 15 Playwright journey specs — NOT a gate (not in CI, unrun since 2026-06-24). See the note below
 ```
 
 Site served by Herd at **http://halalbizs2.0.test**. Demo logins (local seed): `admin@halalbizs.test`,
 `seller@halalbizs.test`, `buyer@halalbizs.test` — all password `password`.
+
+**On the e2e specs (corrected 2026-08-14).** This file used to say they "predate every UI rewrite
+since". That was not true and it kept them shelved: a static re-check found every `page.goto()`
+target still resolves to a live route, all four `data-testid`s still in blade, and all eight
+`e2e:*` fixture commands still present. Dormant here means **unrun, not unrunnable** — nothing
+in CI invokes them and `halalbizs2.0.test` does not resolve on every dev machine (the subdomain
+instructions below are Windows/Valet-era), so nobody has had a working host to point them at.
+They were last executed 2026-06-24 and have NOT been re-run since, so treat them as unproven
+rather than broken. One real rot was found and fixed in that check — see `13-dashboards.spec.ts`.
 
 **Store subdomains** (`{slug}.halalbizs2.0.test`): served via the wildcard nginx
 `server_name` plus a `Sites\0` junction (Valet's wildcard lookup resolves the

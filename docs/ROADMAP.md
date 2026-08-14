@@ -92,7 +92,7 @@ is config-gated with a deterministic local fallback (test-safe with no keys).
 7. **Metafields (halal-cert/SIRIM/ingredients/expiry)** ✅ — `product_metafields` + config registry (`config/metafields.php`), seller form section, PDP trust panel (brass badges), searchable values folded into `toSearchableArray`.
 8. **Subscribe-and-save / predictive replenishment** ✅ — `SubscriptionService` + `subscriptions:process` (lock-then-advance idempotency) reusing `place(explicitLines:)` (backward-compatible optional param), PDP subscribe panel + `/account/subscriptions` (`config/subscriptions.php`).
 
-**Verified:** 688 Pest tests green (run twice), `migrate:fresh --seed` clean, Pint clean repo-wide, Vite build clean, Playwright journeys green. M2.0 shared foundations (ClaudeClient, wallet/ledger discipline, post-commit `OrderPaid`/completion listener convention) underpin the above.
+**Verified:** 688 Pest tests green (run twice), `migrate:fresh --seed` clean, Pint clean repo-wide, Vite build clean, Playwright journeys green. *(Historical, as at 2026-06-24. The suite is now 1151 tests and the real gate is MariaDB, not SQLite — see CLAUDE.md. "Playwright journeys green" has not been true-by-measurement since that date: the specs are unrun, not known-broken.)* M2.0 shared foundations (ClaudeClient, wallet/ledger discipline, post-commit `OrderPaid`/completion listener convention) underpin the above.
 
 ---
 
