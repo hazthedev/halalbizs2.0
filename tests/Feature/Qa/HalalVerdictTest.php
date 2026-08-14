@@ -39,15 +39,32 @@ function hvCert(array $attrs = []): HalalCertificate
     return $cert;
 }
 
+/**
+ * A product covered by $cert, IN THE SAME STORE.
+ *
+ * It used to be a bare Product::factory(), which mints its own store — so every
+ * case here was quietly binding one shop's certificate to another shop's
+ * product. Nothing enforced it until the H-6 binding guard landed, and then it
+ * turned out our own fixtures were doing the exact thing the audit warned a UI
+ * would eventually let a seller do.
+ */
+function hvProduct(HalalCertificate $cert, array $attrs = []): Product
+{
+    return Product::factory()->create(array_merge([
+        'store_id' => $cert->store_id,
+        'halal_certificate_id' => $cert->id,
+    ], $attrs));
+}
+
 it('calls a certificate verified only when it is in force', function () {
-    $product = Product::factory()->create(['halal_certificate_id' => hvCert()->id]);
+    $product = hvProduct(hvCert());
 
     expect($product->halalVerdict())->toBe('verified');
 });
 
 it('does NOT call a not-yet-started certificate verified', function () {
     $cert = hvCert(['valid_from' => now()->addMonths(6), 'valid_to' => now()->addYears(3)]);
-    $product = Product::factory()->create(['halal_certificate_id' => $cert->id]);
+    $product = hvProduct($cert);
 
     expect($cert->isValid())->toBeFalse()          // the register's answer
         ->and($product->halalVerdict())->toBe('pending'); // and now the badge agrees
@@ -55,7 +72,7 @@ it('does NOT call a not-yet-started certificate verified', function () {
 
 it('calls a lapsed certificate lapsed', function () {
     $cert = hvCert(['valid_from' => now()->subYears(3), 'valid_to' => now()->subDay()]);
-    $product = Product::factory()->create(['halal_certificate_id' => $cert->id]);
+    $product = hvProduct($cert);
 
     expect($product->halalVerdict())->toBe('lapsed');
 });
@@ -77,7 +94,7 @@ it('refuses to verify a bare certificate NUMBER with no record behind it', funct
 
 it('the badge and the register never disagree, across every window', function (string $label, $from, $to, string $expected) {
     $cert = hvCert(['valid_from' => $from, 'valid_to' => $to]);
-    $product = Product::factory()->create(['halal_certificate_id' => $cert->id]);
+    $product = hvProduct($cert);
 
     expect($product->halalVerdict())->toBe($expected)
         ->and($cert->isValid())->toBe($expected === 'verified');
@@ -98,10 +115,7 @@ it('the badge and the register never disagree, across every window', function (s
  */
 it('renders the product page for every certificate state', function (string $label, $from, $to) {
     $cert = hvCert(['valid_from' => $from, 'valid_to' => $to]);
-    $product = Product::factory()->create([
-        'halal_certificate_id' => $cert->id,
-        'status' => ProductStatus::Live,
-    ]);
+    $product = hvProduct($cert, ['status' => ProductStatus::Live]);
     $product->store->forceFill(['status' => StoreStatus::Approved])->save();
 
     test()->get('/p/'.$product->slug)->assertOk();

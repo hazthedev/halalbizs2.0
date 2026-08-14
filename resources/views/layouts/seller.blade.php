@@ -42,6 +42,7 @@
                     $links = [
                         ['route' => 'seller.dashboard', 'label' => __('Dashboard'), 'active' => request()->routeIs('seller.dashboard')],
                         ['route' => 'seller.products.index', 'label' => __('Products'), 'active' => request()->routeIs('seller.products.*')],
+                        ['route' => 'seller.certificates', 'label' => __('Halal certificates'), 'active' => request()->routeIs('seller.certificates')],
                     ];
                 @endphp
                 @foreach ($links as $link)

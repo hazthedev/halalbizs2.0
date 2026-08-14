@@ -22,7 +22,7 @@ function lifecycleCert(array $attrs = []): HalalCertificate
     unset($attrs['status']);
 
     $cert = HalalCertificate::create(array_merge([
-        'store_id' => Store::factory()->create()->id,
+        'store_id' => Store::factory()->approved()->create()->id,
         'number' => 'MY-JKM-'.fake()->unique()->numberBetween(1000, 9999).'-200',
         'issuing_body' => 'JAKIM',
         'issuing_body_name' => 'JAKIM',
@@ -36,6 +36,15 @@ function lifecycleCert(array $attrs = []): HalalCertificate
     return $cert;
 }
 
+/** A product covered by $cert, in the SAME store — the binding guard requires it. */
+function lifecycleProduct(HalalCertificate $cert, array $attrs = []): Product
+{
+    return Product::factory()->create(array_merge([
+        'store_id' => $cert->store_id,
+        'halal_certificate_id' => $cert->id,
+    ], $attrs));
+}
+
 // ⚠ The one that matters at deploy. Every existing row IS the live catalogue,
 // so the column's default decides whether the storefront keeps its badges.
 test('an existing certificate is approved, not pending', function () {
@@ -45,7 +54,7 @@ test('an existing certificate is approved, not pending', function () {
 
 test('a certificate awaiting review does not badge a product as verified', function () {
     $cert = lifecycleCert();
-    $product = Product::factory()->create(['halal_certificate_id' => $cert->id]);
+    $product = lifecycleProduct($cert);
 
     expect($product->halalVerdict())->toBe('verified');
 
@@ -58,7 +67,7 @@ test('a certificate awaiting review does not badge a product as verified', funct
 
 test('a rejected certificate does not badge a product either', function () {
     $cert = lifecycleCert(['status' => CertificateStatus::Rejected]);
-    $product = Product::factory()->create(['halal_certificate_id' => $cert->id]);
+    $product = lifecycleProduct($cert);
 
     expect($product->halalVerdict())->toBe('pending');
 });
@@ -82,10 +91,7 @@ test('the public register will not publish an unreviewed claim', function () {
 // free-text column halalVerdict()'s docblock names as the original bug.
 test('the certifier facet reads the certificate record, not the free-text column', function () {
     $real = lifecycleCert(['issuing_body' => 'JAKIM']);
-    $backed = Product::factory()->create([
-        'halal_certificate_id' => $real->id,
-        'halal_cert_number' => $real->number,
-    ]);
+    $backed = lifecycleProduct($real, ['halal_cert_number' => $real->number]);
 
     // A seller can type anything into halal_cert_number. Before this it was
     // enough to appear under the JAKIM facet with no certificate behind it.

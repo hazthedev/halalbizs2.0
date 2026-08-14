@@ -19,6 +19,7 @@ use App\Models\ReturnRequest;
 use App\Models\Store;
 use App\Observers\AdminAlertObserver;
 use App\Observers\AffiliateAttributionObserver;
+use App\Observers\HalalCertificateBindingObserver;
 use App\Observers\ProductEmbeddingObserver;
 use App\Observers\ProductMetafieldObserver;
 use App\Observers\SlugRedirectObserver;
@@ -153,6 +154,12 @@ class AppServiceProvider extends ServiceProvider
         // Search embeddings stay fresh on product + metafield changes (M2.3).
         Product::observe(ProductEmbeddingObserver::class);
         ProductMetafield::observe(ProductMetafieldObserver::class);
+
+        // A product may only cite its OWN store's halal certificate (H-6).
+        // On the model, not in the form: the seller screen, the bulk importer
+        // and every seeder reach the same column, and a rule enforced at one
+        // call site is not an invariant.
+        Product::observe(HalalCertificateBindingObserver::class);
 
         // Slug changes leave a 301 behind (docs/09 §F).
         Product::observe(SlugRedirectObserver::class);

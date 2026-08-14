@@ -366,7 +366,12 @@ class Listing extends Component
         }
 
         if ($this->assurances !== []) {
+            // approved() on both halal facets: a submitted certificate is a
+            // claim, and filtering by it would let an unreviewed one place a
+            // product in front of a buyer who asked for certified goods.
             $query->whereHas('halalCertificate', function (Builder $cert): void {
+                $cert->approved();
+
                 foreach ($this->assurances as $assurance) {
                     match ($assurance) {
                         // "valid 12 months+" is about REMAINING life, not the
@@ -392,7 +397,7 @@ class Listing extends Component
             // via whereHas('halalCertificate'). Same shape now.
             $codes = array_values(array_intersect($this->certifiers, self::certifierCodes()));
 
-            $query->whereHas('halalCertificate', fn (Builder $cert) => $cert->whereIn('issuing_body', $codes));
+            $query->whereHas('halalCertificate', fn (Builder $cert) => $cert->approved()->whereIn('issuing_body', $codes));
         }
 
         if ($applyAttrs && $this->attrs !== []) {
