@@ -153,8 +153,14 @@ final class HtmlSanitizer
         }
     }
 
-    /** Browsers strip whitespace/control chars inside a scheme, so "java\tscript:" runs. */
-    private static function isSafeUrl(string $url): bool
+    /**
+     * Browsers strip whitespace/control chars inside a scheme, so "java\tscript:" runs.
+     *
+     * PUBLIC since M-17: the admin banner form renders link_url straight into a
+     * live storefront href, and this is already the correct check — a second
+     * copy of a scheme allowlist is how the two drift apart.
+     */
+    public static function isSafeUrl(string $url): bool
     {
         $url = preg_replace('/[\s\x00-\x1F\x7F]+/', '', $url) ?? '';
 

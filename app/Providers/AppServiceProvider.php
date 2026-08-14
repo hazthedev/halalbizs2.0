@@ -34,6 +34,7 @@ use App\Services\Sms\SmsSender;
 use App\Services\Sms\WhatsAppSender;
 use App\Support\ClientIp;
 use App\Support\Money;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\DiagnosingHealth;
@@ -137,6 +138,12 @@ class AppServiceProvider extends ServiceProvider
         Livewire::addPersistentMiddleware([
             EnsureAdmin::class,
             EnsureSeller::class,
+            // M-1: Livewire re-applies only its persistent list on
+            // POST /livewire/update. Authenticate and Authorize are on its
+            // defaults, so every `can:` survives — EnsureEmailIsVerified is not,
+            // so an unverified user bounced at the page door could still drive
+            // every action on it.
+            EnsureEmailIsVerified::class,
         ]);
 
         // /up readiness probe (docs/10): the built-in health route dispatches

@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin\Content;
 
 use App\Models\Banner;
+use App\Support\HtmlSanitizer;
+use Closure;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -92,7 +94,15 @@ class Banners extends Component
             'subtitle.ms' => ['nullable', 'string', 'max:255'],
             'ctaLabel.en' => ['nullable', 'string', 'max:60'],
             'ctaLabel.ms' => ['nullable', 'string', 'max:60'],
-            'linkUrl' => ['nullable', 'string', 'max:255'],
+            // M-17: this lands in a live <a href> on the storefront hero, so a
+            // cms.manage admin could otherwise plant `javascript:`. Blade escapes
+            // the quotes but not the scheme. Relative paths must stay legal —
+            // home.blade.php branches on them for wire:navigate.
+            'linkUrl' => ['nullable', 'string', 'max:255', function (string $attribute, mixed $value, Closure $fail) {
+                if (is_string($value) && trim($value) !== '' && ! HtmlSanitizer::isSafeUrl(trim($value))) {
+                    $fail(__('Use a full https:// address or a path starting with /.'));
+                }
+            }],
             'startsAt' => ['nullable', 'date'],
             'endsAt' => ['nullable', 'date'],
             'image' => [$this->editingId === null ? 'required' : 'nullable', 'image', 'max:4096'],
