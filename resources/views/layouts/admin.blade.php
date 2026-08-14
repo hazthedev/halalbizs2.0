@@ -54,6 +54,7 @@
                             ['admin.catalog.attributes', __('Attributes'), 'admin.catalog.attributes'],
                             ['admin.catalog.brands', __('Brands'), 'admin.catalog.brands'],
                             ['admin.catalog.moderation', __('Moderation'), 'admin.catalog.moderation'],
+                            ['admin.catalog.certificates', __('Halal certificates'), 'admin.catalog.certificates'],
                             ['admin.catalog.reviews', __('Reviews'), 'admin.catalog.reviews'],
                         ],
                         __('Orders') => [
