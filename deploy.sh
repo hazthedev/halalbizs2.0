@@ -40,7 +40,11 @@ git config --global --add safe.directory "$(pwd)" 2>/dev/null || true
 # CRLF, which made SEED_DEMO_CATALOGUE read as "true\r" and silently never match
 # — the deploy reported success while seeding nothing. Applies to every value
 # read here, APP_ENV and APP_DEBUG included.
-read_env() { grep -E "^[[:space:]]*$1=" .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d " \"'\r"; }
+# M-28: tail -1, not head -1. phpdotenv takes the LAST occurrence of a
+# duplicated key, so head -1 made this script and the application disagree
+# about the same variable — including APP_DEBUG, whose fail-closed abort just
+# below would then be reading the line Laravel ignores.
+read_env() { grep -E "^[[:space:]]*$1=" .env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d " \"'\r"; }
 APP_ENV="$(read_env APP_ENV)";   APP_ENV="${APP_ENV:-production}"
 APP_DEBUG="$(read_env APP_DEBUG | tr '[:upper:]' '[:lower:]')"
 echo "→ environment: $APP_ENV (debug=${APP_DEBUG:-unset})"
@@ -59,6 +63,14 @@ git fetch origin
 git reset --hard origin/main
 echo "  now at $(git rev-parse --short HEAD)"
 
+# M-26: clear the caches HERE, before migrate and the seeders — not after them.
+# LoadEnvironmentVariables returns early when the config is cached, so every
+# schema and data step below used to read the PREVIOUS deploy's environment.
+# Rebuilding at the end (which still happens) never fixed the steps that had
+# already run against a stale config.
+echo "→ clear caches (before migrate: stale config must not reach the schema step)"
+"$PHP_BIN" artisan optimize:clear
+
 echo "→ composer install --no-dev --optimize-autoloader"
 if command -v composer >/dev/null 2>&1; then
     composer install --no-dev --optimize-autoloader
@@ -72,6 +84,9 @@ echo "→ php artisan migrate --force"
 # Non-fatal: a benign "table already exists" (out-of-sync migrations record)
 # must not block the cache rebuild below. Real errors still print above.
 MIGRATE_FAILED=0
+# M-27: seeder failures were swallowed — nine `|| echo … continuing` lines with
+# nothing recording that they happened, so the deploy printed ✓ over them.
+STEP_FAILED=0
 "$PHP_BIN" artisan migrate --force || { MIGRATE_FAILED=1; echo "  ! migrate reported errors (see above) — continuing to cache rebuild"; }
 
 echo "→ seed idempotent reference data"
@@ -80,20 +95,20 @@ echo "→ seed idempotent reference data"
 # RoleSeeder (roles + admin permissions via firstOrCreate) and CurrencySeeder
 # (currencies via updateOrCreate) are both idempotent and required for the app
 # to function. Add more reference seeders here only after confirming idempotency.
-"$PHP_BIN" artisan db:seed --class=RoleSeeder --force || echo "  ! role seed reported errors — continuing"
-"$PHP_BIN" artisan db:seed --class=CurrencySeeder --force || echo "  ! currency seed reported errors — continuing"
+"$PHP_BIN" artisan db:seed --class=RoleSeeder --force || { STEP_FAILED=1; echo "  ! role seed reported errors — continuing"; }
+"$PHP_BIN" artisan db:seed --class=CurrencySeeder --force || { STEP_FAILED=1; echo "  ! currency seed reported errors — continuing"; }
 # PageSeeder: CREATE-ONLY (firstOrCreate) since 2026-08-10, so it publishes any
 # new CMS page without touching one an admin has edited. It was excluded here
 # while it used updateOrCreate — which meant a new page shipped in a PR simply
 # never existed in production, silently, with every local test green.
-"$PHP_BIN" artisan db:seed --class=PageSeeder --force || echo "  ! page seed reported errors — continuing"
+"$PHP_BIN" artisan db:seed --class=PageSeeder --force || { STEP_FAILED=1; echo "  ! page seed reported errors — continuing"; }
 
 # DEMO DATA (non-production only) — populates the reviews feature with demo
 # ratings on first run (idempotent: skips once any review exists; faker-free so
 # it runs under the web user with no dev deps). Auto-skipped when APP_ENV=production
 # so real prod never gets demo content — no manual edit needed at cutover.
 if [ "$APP_ENV" != "production" ]; then
-    "$PHP_BIN" artisan db:seed --class=DemoReviewsSeeder --force || echo "  ! demo reviews seed reported errors — continuing"
+    "$PHP_BIN" artisan db:seed --class=DemoReviewsSeeder --force || { STEP_FAILED=1; echo "  ! demo reviews seed reported errors — continuing"; }
 
 else
     echo "→ skip demo data (production)"
@@ -120,25 +135,22 @@ if [ "$SEED_DEMO_CATALOGUE" = "true" ] || [ "$SEED_DEMO_CATALOGUE" = "1" ]; then
     # first run. It also deactivates categories outside its tree, which is why
     # it lives behind this flag rather than with the reference seeders above:
     # real production must not have its own categories retired by a deploy.
-    "$PHP_BIN" artisan db:seed --class=CategorySeeder --force || echo "  ! category seed reported errors — continuing"
-    "$PHP_BIN" artisan db:seed --class=HalalCatalogueSeeder --force || echo "  ! catalogue seed reported errors — continuing"
-    "$PHP_BIN" artisan db:seed --class=HalalCertificateSeeder --force || echo "  ! certificate seed reported errors — continuing"
+    "$PHP_BIN" artisan db:seed --class=CategorySeeder --force || { STEP_FAILED=1; echo "  ! category seed reported errors — continuing"; }
+    "$PHP_BIN" artisan db:seed --class=HalalCatalogueSeeder --force || { STEP_FAILED=1; echo "  ! catalogue seed reported errors — continuing"; }
+    "$PHP_BIN" artisan db:seed --class=HalalCertificateSeeder --force || { STEP_FAILED=1; echo "  ! certificate seed reported errors — continuing"; }
     # Banner + category artwork. After CategorySeeder, which is what creates the
     # five top-level categories these images attach to.
-    "$PHP_BIN" artisan db:seed --class=ArtworkSeeder --force || echo "  ! artwork seed reported errors — continuing"
+    "$PHP_BIN" artisan db:seed --class=ArtworkSeeder --force || { STEP_FAILED=1; echo "  ! artwork seed reported errors — continuing"; }
 
     # Re-index after a bulk seed. Products seeded straight into the database do
     # not necessarily reach the search index — the preview browsed 94 products in
     # a department while /search?q=beras returned nothing, which is the signature
     # of a stale index rather than missing data. Harmless on the collection
     # driver (no external engine to update); rebuilds the index on Meilisearch.
-    "$PHP_BIN" artisan scout:import "App\\Models\\Product" || echo "  ! product re-index reported errors — continuing"
+    "$PHP_BIN" artisan scout:import "App\\Models\\Product" || { STEP_FAILED=1; echo "  ! product re-index reported errors — continuing"; }
 else
     echo "→ skip demo catalogue (SEED_DEMO_CATALOGUE='${SEED_DEMO_CATALOGUE:-unset}' — set it to true to enable)"
 fi
-
-echo "→ clear caches"
-"$PHP_BIN" artisan optimize:clear
 
 echo "→ rebuild caches"
 "$PHP_BIN" artisan config:cache
@@ -147,6 +159,11 @@ echo "→ rebuild caches"
 "$PHP_BIN" artisan view:cache
 
 echo
+if [ "$STEP_FAILED" = "1" ] && [ "$MIGRATE_FAILED" = "0" ]; then
+    echo "⚠ deploy finished WITH SEED/INDEX ERRORS — scroll up; the code is live but its data steps did not all succeed"
+    exit 1
+fi
+
 if [ "$MIGRATE_FAILED" = "1" ]; then
     # The benign case (out-of-sync migrations record, "table already exists")
     # still finishes the deploy above — but the last line must not say ✓ when

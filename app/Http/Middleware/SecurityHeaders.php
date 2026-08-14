@@ -51,6 +51,14 @@ class SecurityHeaders
             );
         }
 
+        // M-31: the preview is a real, publicly reachable site carrying demo
+        // sellers and demo inventory, and robots.txt is an explicit allow-all.
+        // Behind a flag and defaulting OFF, so real production is unaffected —
+        // set SITE_NOINDEX=true in the preview's .env.
+        if (config('app.noindex')) {
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+        }
+
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');

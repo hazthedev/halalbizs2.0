@@ -13,6 +13,17 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Search-engine indexing (audit M-31)
+    |--------------------------------------------------------------------------
+    | true sends `X-Robots-Tag: noindex, nofollow` on every response. Meant for
+    | the preview, which is publicly reachable and full of demo sellers and demo
+    | inventory. Defaults FALSE so a real production deploy is never accidentally
+    | de-indexed by inheriting this file.
+    */
+    'noindex' => (bool) env('SITE_NOINDEX', false),
+
     'name' => env('APP_NAME', 'Laravel'),
 
     /*

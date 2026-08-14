@@ -3,6 +3,7 @@
 namespace App\Services\EInvoice;
 
 use App\Enums\EInvoiceStatus;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -72,6 +73,22 @@ class MyInvoisProvider implements EInvoiceProvider
                 uin: $uin,
                 validationUrl: $uin !== null ? $this->validationUrl($uin, $document['longId'] ?? '') : null,
             );
+        } catch (ConnectionException $e) {
+            // M-13: a TRANSPORT failure is not a rejection. Returning
+            // EInvoiceResult::failed() here made a network blip indistinguishable
+            // from LHDN saying no — and the document row then wrote itself into a
+            // terminal `failed` state that every retry surface filters out
+            // (issueIndividual returns the existing row regardless of status,
+            // consolidate skips anything with a document). There is no retry
+            // command, so that invoice was simply lost.
+            //
+            // Rethrowing lets the QUEUED listener retry it, which is the recovery
+            // path M-12 just restored. A genuine rejection still returns failed()
+            // below and stays terminal, which is correct — LHDN will not change
+            // its mind on a re-send.
+            Log::warning('MyInvois submission could not reach the gateway — retrying.', ['error' => $e->getMessage()]);
+
+            throw $e;
         } catch (Throwable $e) {
             Log::error('MyInvois submission failed.', ['error' => $e->getMessage()]);
 
