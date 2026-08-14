@@ -36,6 +36,28 @@ test('every translation keeps the placeholders its English source declared', fun
     expect($offenders)->toBe([]);
 });
 
+test('every plural translation keeps its choice selectors', function () {
+    $offenders = [];
+
+    foreach (localeJsonFiles() as $path) {
+        foreach (json_decode(file_get_contents($path), true) as $source => $translation) {
+            if (! Translation::choiceSelectorsMatch($source, $translation)) {
+                $offenders[] = sprintf('%s: "%s" → "%s"', basename($path), $source, $translation);
+            }
+        }
+    }
+
+    expect($offenders)->toBe([]);
+});
+
+test('choice selectors are read in order, and an ordinary line has none', function () {
+    expect(Translation::choiceSelectors('{1} :count listing|[2,*] :count listings'))->toBe(['{1}', '[2,*]'])
+        ->and(Translation::choiceSelectors('Add to cart'))->toBe([])
+        ->and(Translation::choiceSelectorsMatch('{1}:count star|[2,*]:count stars', '{1}:count sao|[2,*]:count sao'))->toBeTrue()
+        // The failure this exists for: a translator drops the second branch.
+        ->and(Translation::choiceSelectorsMatch('{1}:count star|[2,*]:count stars', ':count sao'))->toBeFalse();
+});
+
 test('no translation file is missing keys the others have', function () {
     $sets = collect(localeJsonFiles())
         ->mapWithKeys(fn (string $p) => [basename($p) => array_keys(json_decode(file_get_contents($p), true))]);
