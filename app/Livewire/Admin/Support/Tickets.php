@@ -111,7 +111,7 @@ class Tickets extends Component
         return view('livewire.admin.support.tickets', [
             'counts' => SupportTicket::statusCounts(),
             'tickets' => SupportTicket::query()
-                ->status(TicketStatus::from($this->tab))
+                ->status((TicketStatus::tryFrom($this->tab) ?? TicketStatus::Open))
                 ->with('user')
                 ->withCount('replies')
                 ->orderByRaw("case when priority = 'urgent' then 0 else 1 end")

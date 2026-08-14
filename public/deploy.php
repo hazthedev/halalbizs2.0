@@ -11,8 +11,12 @@ declare(strict_types=1);
 | Auth: a secret token. Set DEPLOY_TOKEN in the project .env (a long random
 | string). The endpoint fails closed if it's unset.
 |
-|   GET  https://<host>/deploy.php?token=YOURTOKEN
-|   or   header  X-Deploy-Token: YOURTOKEN
+|   curl -H 'X-Deploy-Token: YOURTOKEN' https://<host>/deploy.php
+|
+| HEADER ONLY (M-5). Presenting this token runs deploy.sh, which does a
+| `git reset --hard` then migrations and seeders — it is RCE-equivalent, and a
+| ?token= form lands it in access logs, referrers and browser history. The
+| query-string branch was removed 2026-08-14; update any bookmark.
 |
 | Returns deploy.sh's combined output as plain text. If the host disables
 | shell_exec (common on shared hosting) it says so — run deploy.sh via the
@@ -50,7 +54,7 @@ if ($secret === null || $secret === '') {
     exit("Deploy webhook disabled — set DEPLOY_TOKEN in .env to enable it.\n");
 }
 
-$provided = $_GET['token'] ?? $_SERVER['HTTP_X_DEPLOY_TOKEN'] ?? '';
+$provided = $_SERVER['HTTP_X_DEPLOY_TOKEN'] ?? '';
 
 if (! is_string($provided) || ! hash_equals($secret, $provided)) {
     http_response_code(403);

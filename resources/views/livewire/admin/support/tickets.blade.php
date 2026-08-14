@@ -99,7 +99,7 @@
 
         <x-ui.card class="overflow-x-auto">
             @if ($tickets->isEmpty())
-                <x-ui.empty-state :title="__('Queue clear')" :message="__('No :status tickets right now.', ['status' => TicketStatus::from($tab)->label()])" />
+                <x-ui.empty-state :title="__('Queue clear')" :message="__('No :status tickets right now.', ['status' => (TicketStatus::tryFrom($tab) ?? TicketStatus::Open)->label()])" />
             @else
                 <table class="w-full min-w-[720px] text-[13px]">
                     <thead>

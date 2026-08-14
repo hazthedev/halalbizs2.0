@@ -7,6 +7,7 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\Csv;
+use App\Support\HtmlSanitizer;
 use App\Support\RinggitInput;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -78,7 +79,10 @@ class BulkImport extends Component
                 'store_id' => $store->id,
                 'category_id' => $categoryId,
                 'name' => ['en' => $nameEn, 'ms' => trim((string) ($data['name_ms'] ?? '')) ?: $nameEn],
-                'description' => ['en' => trim((string) ($data['description_en'] ?? '')), 'ms' => ''],
+                // M-16: the PDP renders this column with {!! !!}, so Form.php runs
+                // every description through the sanitizer. This writer is the
+                // second one the C2 fix never reached — same column, same risk.
+                'description' => ['en' => HtmlSanitizer::clean(trim((string) ($data['description_en'] ?? ''))), 'ms' => ''],
                 'condition' => 'new',
                 'status' => ProductStatus::Draft, // never auto-publish
                 'cod_enabled' => true,

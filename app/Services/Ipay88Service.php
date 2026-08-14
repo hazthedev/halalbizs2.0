@@ -43,11 +43,28 @@ class Ipay88Service implements PaymentGateway
      * via IPAY88_ALLOW_MOCK. This prevents a real production boot with an
      * unconfigured merchant code from marking orders paid with no gateway.
      * Production MUST set a merchant code (isMock() is false then regardless).
+     *
+     * M-4, and the audit's own fix is NOT applied here on purpose. It proposed
+     * `&& ! app()->isProduction()`. Grepping the readers first shows what that
+     * costs: isMock() gates the entire simulator (Ipay88Controller:46,68 and
+     * ConfirmIpay88PaymentJob:55), and the PREVIEW declares APP_ENV=production
+     * while deliberately running on the simulator — so that one clause 404s
+     * checkout on the only deployed environment we have.
+     *
+     * The residual risk it was aimed at needs TWO mistakes at once: setting
+     * IPAY88_ALLOW_MOCK in real production AND blanking the merchant code. So
+     * this makes that state loud instead of silent, which costs nothing.
      */
     public function isMock(): bool
     {
-        return blank($this->settings->merchant_code)
+        $mock = blank($this->settings->merchant_code)
             && (app()->environment('local') || (bool) config('services.ipay88.allow_mock'));
+
+        if ($mock && app()->isProduction()) {
+            Log::warning('iPay88 SIMULATOR is active in a production-flagged environment — orders settle with no gateway. Set a merchant code, or clear IPAY88_ALLOW_MOCK.');
+        }
+
+        return $mock;
     }
 
     public function entryUrl(): string
