@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HalalCertificateDocumentController;
 use App\Http\Controllers\StoreDocumentController;
 use App\Livewire\Admin;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +16,13 @@ Route::middleware('can:sellers.manage')->group(function () {
     Route::get('/sellers/documents/{storeDocument}', [StoreDocumentController::class, 'show'])->name('sellers.documents.show');
     Route::get('/buyers', Admin\Buyers\Index::class)->name('buyers.index');
     Route::get('/buyers/{user}', Admin\Buyers\Detail::class)->name('buyers.show');
+});
+
+Route::middleware('can:certificates.manage')->group(function () {
+    Route::get('/catalog/certificates', Admin\Catalog\Certificates::class)->name('catalog.certificates');
+    // The uploaded scan — private disk, admin-only, never linked publicly.
+    Route::get('/catalog/certificates/{halalCertificate}/document', [HalalCertificateDocumentController::class, 'show'])
+        ->name('catalog.certificates.document');
 });
 
 Route::middleware('can:products.moderate')->group(function () {

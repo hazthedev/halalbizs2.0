@@ -12,6 +12,7 @@ class RoleSeeder extends Seeder
     public const ADMIN_PERMISSIONS = [
         'sellers.manage',
         'products.moderate',
+        'certificates.manage',
         'orders.manage',
         'finance.manage',
         'vouchers.manage',
