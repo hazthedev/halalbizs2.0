@@ -32,8 +32,36 @@ class SubscriptionService
         return (bool) config('subscriptions.enabled', true);
     }
 
+    /**
+     * M-15: this was a bare create(), and the panel shows a success toast with no
+     * redirect — so the button stays clickable and N clicks were N recurring COD
+     * subscriptions on the same variant. Idempotent on the ACTIVE row: a paused
+     * or cancelled subscription is deliberately not resurrected here, because
+     * resume() is the action for that and it keeps the original schedule.
+     *
+     * ⚠ No DB-level unique index behind this, deliberately. "Unique among ACTIVE
+     * rows" is a partial index: MySQL has none, and the generated-column trick
+     * that fakes it is a STORED column SQLite cannot ALTER in, so it would split
+     * the two engines the suite runs on. A plain unique on
+     * (user_id, product_variant_id, status) looks right and is wrong — it would
+     * also forbid a second CANCELLED row, so subscribe → cancel → subscribe →
+     * cancel would collide. Residual: two genuinely concurrent clicks can still
+     * both pass this check. That is a far smaller problem than the one it
+     * replaces (every click made a new subscription) and is recoverable by
+     * cancelling one.
+     */
     public function subscribe(User $user, ProductVariant $variant, Address $address, SubscriptionInterval $interval, int $qty = 1): Subscription
     {
+        $existing = Subscription::query()
+            ->where('user_id', $user->id)
+            ->where('product_variant_id', $variant->id)
+            ->where('status', SubscriptionStatus::Active)
+            ->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
         return Subscription::create([
             'user_id' => $user->id,
             'product_variant_id' => $variant->id,

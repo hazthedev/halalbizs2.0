@@ -3,12 +3,11 @@
 namespace App\Livewire\Admin\Orders;
 
 use App\Enums\ActorType;
-use App\Enums\PaymentStatus;
 use App\Enums\SubOrderStatus;
 use App\Models\SubOrder;
 use App\Services\OrderService;
+use App\Services\RefundService;
 use App\Services\SubOrderStatusService;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -87,19 +86,23 @@ class Detail extends Component
 
         $reference = trim($this->refundReference);
 
-        DB::transaction(function () use ($reference) {
-            app(SubOrderStatusService::class)->transition(
-                $this->subOrder,
-                SubOrderStatus::Refunded,
-                ActorType::Admin,
-                auth()->id(),
-                __('Refunded via iPay88 portal — ref :ref', ['ref' => $reference]),
-            );
-
-            $order = $this->subOrder->order;
-            $order->update(['payment_status' => PaymentStatus::Refunded]);
-            $order->payment?->update(['requery_result' => 'refunded: '.$reference]);
-        });
+        // M-6: this used to be a parallel refund implementation — it transitioned
+        // the sub-order, then flipped the WHOLE order to Refunded unconditionally,
+        // and wrote the portal reference into requery_result. It touched none of
+        // refunded_sen, the ledger, coins, the affiliate clawback or the gateway.
+        // On a multi-store order it reported a partial refund as complete while
+        // the cumulative cap still believed nothing had been refunded.
+        //
+        // RefundService already does all of that correctly and already takes the
+        // manual portal reference. Admin\Orders\Returns has always called it;
+        // this screen was the one money path that went around it.
+        app(RefundService::class)->refund(
+            $this->subOrder,
+            (int) $this->subOrder->total_sen,
+            ActorType::Admin,
+            auth()->id(),
+            $reference,
+        );
 
         $this->refreshSubOrder();
 

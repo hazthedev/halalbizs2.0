@@ -177,9 +177,15 @@ test('mark refunded transitions return_requested → refunded and flips the orde
         ->assertHasNoErrors();
 
     $subOrder->refresh();
+    // M-6: this used to assert requery_result === 'refunded: IP88-RFND-4521',
+    // i.e. the portal reference stuffed into a free-text GATEWAY column, which
+    // is the workaround the finding was about. It now goes through
+    // RefundService, so the reference lands in the status history (asserted just
+    // below) and the money columns actually move — which is what to check.
     expect($subOrder->status)->toBe(SubOrderStatus::Refunded)
         ->and($subOrder->order->payment_status)->toBe(PaymentStatus::Refunded)
-        ->and($payment->refresh()->requery_result)->toBe('refunded: IP88-RFND-4521');
+        ->and($subOrder->refunded_sen)->toBe((int) $subOrder->total_sen)
+        ->and($payment->refresh()->refunded_sen)->toBeGreaterThan(0);
 
     $history = $subOrder->statusHistories()->get()->last();
     expect($history->to_status)->toBe('refunded')

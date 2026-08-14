@@ -6,6 +6,7 @@ use App\Models\FlashSale;
 use App\Models\FlashSaleItem;
 use App\Models\ProductVariant;
 use App\Support\RinggitInput;
+use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -69,7 +70,16 @@ class FlashSales extends Component
     {
         $this->validate([
             'itemVariantId' => ['required', Rule::exists('product_variants', 'id')],
-            'itemPromo' => ['required', 'string'],
+            // M-14: 'string' alone let anything through, and RinggitInput::toSen()
+            // returns null for what it cannot parse — so `(int) null` was 0 and a
+            // typo shipped a free product. Parse first, refuse null.
+            'itemPromo' => ['required', 'string', function (string $attribute, mixed $value, Closure $fail) {
+                $sen = RinggitInput::toSen($value);
+
+                if ($sen === null || $sen <= 0) {
+                    $fail(__('Enter the promo price as a number, e.g. 19.90.'));
+                }
+            }],
             'itemAllocated' => ['required', 'integer', 'min:1'],
             'itemPerBuyer' => ['required', 'integer', 'min:1'],
         ]);
