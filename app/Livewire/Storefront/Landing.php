@@ -56,12 +56,39 @@ class Landing extends Component
         // — so six departments cost 24 queries, six of them random-sorts, on an
         // uncached page. Resolved here in two: one grouped count, and one pass
         // for the sample images.
-        $childToParent = Category::query()
-            ->whereIn('parent_id', $categories->pluck('id'))
-            ->pluck('parent_id', 'id');
+        //
+        // ⚠ descendantIds(), not direct children. The old blade counted only
+        // immediate children, so on a three-level tree — which is what the real
+        // catalogue has — every tile read "No listings yet" while the department
+        // page it links to showed 94 products. Category::descendantIds() is what
+        // Listing uses for exactly this question, and a tile that disagrees with
+        // the page behind it is worse than no tile.
+        // The whole tree in ONE query, then walked in PHP. Calling
+        // descendantIds() directly here would be correct but lazy-loads
+        // `children` at every level, which put the queries back up — the same
+        // shape of bug this method exists to remove. The test asserts this
+        // agrees with descendantIds() so the two cannot drift.
+        $childrenByParent = Category::query()
+            ->whereNotNull('parent_id')
+            ->get(['id', 'parent_id'])
+            ->groupBy('parent_id');
 
-        $countsByChild = Product::live()
-            ->whereIn('category_id', $childToParent->keys())
+        $descendants = [];
+
+        $walk = function (int $categoryId, int $departmentId) use (&$walk, $childrenByParent, &$descendants): void {
+            $descendants[$categoryId] = $departmentId;
+
+            foreach ($childrenByParent->get($categoryId, collect()) as $child) {
+                $walk((int) $child->id, $departmentId);
+            }
+        };
+
+        foreach ($categories as $category) {
+            $walk((int) $category->id, (int) $category->id);
+        }
+
+        $countsByCategory = Product::live()
+            ->whereIn('category_id', array_keys($descendants))
             ->selectRaw('category_id, COUNT(*) as aggregate')
             ->groupBy('category_id')
             ->pluck('aggregate', 'category_id');
@@ -70,17 +97,25 @@ class Landing extends Component
         // the expensive half and buys nothing on a tile — the newest listing with
         // artwork is a better shop window anyway, and it is index-ordered.
         $samples = Product::live()
-            ->whereIn('category_id', $childToParent->keys())
+            ->whereIn('category_id', array_keys($descendants))
             ->has('media')
             ->with('media')
             ->orderByDesc('id')
             ->get(['id', 'category_id'])
-            ->groupBy(fn (Product $p) => $childToParent[$p->category_id] ?? null);
+            ->groupBy(fn (Product $p) => $descendants[$p->category_id] ?? null);
 
-        return $categories->each(function (Category $category) use ($childToParent, $countsByChild, $samples): void {
-            $childIds = $childToParent->filter(fn ($parentId) => $parentId === $category->id)->keys();
+        $totals = [];
 
-            $category->setAttribute('tile_count', (int) $countsByChild->only($childIds)->sum());
+        foreach ($countsByCategory as $categoryId => $count) {
+            $department = $descendants[$categoryId] ?? null;
+
+            if ($department !== null) {
+                $totals[$department] = ($totals[$department] ?? 0) + (int) $count;
+            }
+        }
+
+        return $categories->each(function (Category $category) use ($totals, $samples): void {
+            $category->setAttribute('tile_count', $totals[$category->id] ?? 0);
             $category->setAttribute('tile_sample', $samples->get($category->id)?->first());
         });
     }
