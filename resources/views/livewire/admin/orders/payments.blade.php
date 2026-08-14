@@ -39,6 +39,11 @@
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Order') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Gateway') }}</th>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Amount') }}</th>
+                        {{-- H-3: refunded_sen was written by RefundService and read by
+                             nothing in the whole app, so a refund — including cash owed
+                             on a cancelled-after-payment order — appeared on no
+                             reconciliation surface. This grid is that surface. --}}
+                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Refunded') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Trans ID') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Signature') }}</th>
@@ -71,6 +76,16 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $payment->gateway->label() }}</td>
                             <td class="px-3 py-2 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($payment->amount_sen)</td>
+                            <td class="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap {{ (int) $payment->refunded_sen > 0 ? 'text-danger' : 'text-ink-soft' }}">
+                                @if ((int) $payment->refunded_sen > 0)
+                                    −@money($payment->refunded_sen)
+                                    @if ($payment->refunded_at)
+                                        <span class="block text-[11px] font-sans text-ink-soft">{{ $payment->refunded_at->format('d M Y') }}</span>
+                                    @endif
+                                @else
+                                    —
+                                @endif
+                            </td>
                             <td class="px-3 py-2"><x-ui.badge :variant="$pillVariant">{{ $payment->status->label() }}</x-ui.badge></td>
                             <td class="px-3 py-2 whitespace-nowrap font-mono text-ink-soft">{{ $payment->ipay88_trans_id ?? '—' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap">
