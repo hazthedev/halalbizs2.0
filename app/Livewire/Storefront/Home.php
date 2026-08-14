@@ -102,7 +102,7 @@ class Home extends Component
         // then fills the remaining slots organically by sold_count.
         $boosted = $source === 'top' ? $this->boostedProducts($limit) : new Collection;
 
-        $query = Product::live()->with(['media', 'variants', 'store']);
+        $query = Product::live()->with(['halalCertificate', 'media', 'variants', 'store']);
 
         if ($boosted->isNotEmpty()) {
             $query->whereNotIn('id', $boosted->modelKeys());
@@ -135,7 +135,7 @@ class Home extends Component
             ->limit(1);
 
         return Product::live()
-            ->with(['media', 'variants', 'store'])
+            ->with(['halalCertificate', 'media', 'variants', 'store'])
             ->whereHas('boosts', fn (Builder $boosts) => $boosts->active())
             ->orderByDesc($latestBoostStart)
             ->orderByDesc('id')
@@ -152,7 +152,7 @@ class Home extends Component
         }
 
         return Product::live()
-            ->with(['media', 'variants', 'store'])
+            ->with(['halalCertificate', 'media', 'variants', 'store'])
             ->whereIn('id', $this->recentlyViewedIds)
             ->get()
             ->sortBy(fn (Product $product) => array_search($product->id, $this->recentlyViewedIds))

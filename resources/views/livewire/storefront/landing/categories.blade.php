@@ -12,16 +12,10 @@
 
         <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             @foreach ($categories as $category)
-                @php
-                    $sample = \App\Models\Product::live()
-                        ->whereIn('category_id', \App\Models\Category::where('parent_id', $category->id)->pluck('id'))
-                        ->has('media')
-                        ->inRandomOrder()
-                        ->first();
-                    $count = \App\Models\Product::live()
-                        ->whereIn('category_id', \App\Models\Category::where('parent_id', $category->id)->pluck('id'))
-                        ->count();
-                @endphp
+                {{-- M-21: these were four queries per iteration, resolved in
+                     Landing::topCategories() now. Scalars in, no Eloquent here. --}}
+                @php($sample = $category->tile_sample)
+                @php($count = $category->tile_count)
                 <a href="{{ route('category.show', $category->slug) }}" wire:navigate
                    class="group rounded-[var(--radius-card)] border border-line bg-surface transition-colors duration-(--dur-micro) hover:border-line-strong">
                     <div class="aspect-square overflow-hidden rounded-t-[var(--radius-card)] bg-cream">

@@ -60,7 +60,7 @@ class StorePage extends Component
             ->whereColumn('product_variants.product_id', 'products.id');
 
         $products = $base
-            ->with(['variants', 'media', 'store'])
+            ->with(['halalCertificate', 'variants', 'media', 'store'])
             ->when($this->sort === 'latest', fn ($query) => $query->orderByDesc('published_at'))
             ->when($this->sort === 'top', fn ($query) => $query->orderByDesc('sold_count'))
             ->when($this->sort === 'price_asc', fn ($query) => $query->orderBy($minPriceSub))
