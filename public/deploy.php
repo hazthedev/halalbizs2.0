@@ -28,11 +28,20 @@ $root = dirname(__DIR__);
 header('Content-Type: text/plain; charset=UTF-8');
 header('Cache-Control: no-store');
 
-/** Read a single key out of the project .env (no framework boot needed). */
+/**
+ * Read a single key out of the project .env (no framework boot needed).
+ *
+ * M-28: keeps scanning and returns the LAST match, because that is what
+ * phpdotenv does. Returning on the first one made this script disagree with the
+ * application about the value of a duplicated key.
+ */
 $envValue = static function (string $envPath, string $key): ?string {
     if (! is_readable($envPath)) {
         return null;
     }
+
+    $found = null;
+
     foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
         $line = trim($line);
         if ($line === '' || $line[0] === '#' || ! str_contains($line, '=')) {
@@ -40,11 +49,11 @@ $envValue = static function (string $envPath, string $key): ?string {
         }
         [$k, $v] = explode('=', $line, 2);
         if (trim($k) === $key) {
-            return trim(trim($v), "\"'");
+            $found = trim(trim($v), "\"'");
         }
     }
 
-    return null;
+    return $found;
 };
 
 $secret = $envValue($root.'/.env', 'DEPLOY_TOKEN');
