@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\HalalStatus;
 use App\Enums\ProductStatus;
 use App\Models\Category;
+use App\Models\HalalCertificate;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
@@ -225,13 +226,8 @@ class HalalCatalogueSeeder extends Seeder
 
     private function certNumber(string $certifier, string $slug): string
     {
-        $prefix = match ($certifier) {
-            'JAKIM' => 'MY-JKM',
-            'MUIS' => 'SG-MUIS',
-            'BPJPH' => 'ID-BPJPH',
-            'ESMA' => 'AE-ESMA',
-            default => 'XX',
-        };
+        // Third copy of the body table, retired: HalalCertificate::BODIES owns it.
+        $prefix = HalalCertificate::BODIES[$certifier]['prefix'] ?? 'XX';
 
         return $prefix.'-'.substr((string) crc32($slug), 0, 4).'-'.substr((string) crc32(strrev($slug)), 0, 3);
     }

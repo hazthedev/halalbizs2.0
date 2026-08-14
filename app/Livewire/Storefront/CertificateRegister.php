@@ -34,7 +34,12 @@ class CertificateRegister extends Component
     {
         $query = strtoupper(preg_replace('/\s+/', '', $this->number));
 
+        // approved() only. This register is a PUBLIC trust surface — a
+        // certificate a seller has merely submitted is a claim, and rendering
+        // it here with its validity dates and assurance pills would publish
+        // that claim as though we had checked it (H-6).
         $certificate = $query === '' ? null : HalalCertificate::query()
+            ->approved()
             ->with(['events', 'store'])
             ->withCount('products')
             ->whereRaw('UPPER(number) = ?', [$query])

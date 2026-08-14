@@ -149,6 +149,11 @@ class Store extends Model implements HasMedia
         return $this->hasMany(Payout::class);
     }
 
+    public function halalCertificates(): HasMany
+    {
+        return $this->hasMany(HalalCertificate::class)->latest('id');
+    }
+
     public function documents(): HasMany
     {
         return $this->hasMany(StoreDocument::class);

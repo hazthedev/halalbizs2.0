@@ -10,6 +10,7 @@
  * certificates on the preview were in that state, badging 134 of 166 products.
  */
 
+use App\Enums\CertificateStatus;
 use App\Enums\ProductStatus;
 use App\Enums\StoreStatus;
 use App\Models\HalalCertificate;
@@ -18,7 +19,7 @@ use App\Models\Store;
 
 function hvCert(array $attrs = []): HalalCertificate
 {
-    return HalalCertificate::create(array_merge([
+    $cert = HalalCertificate::create(array_merge([
         'store_id' => Store::factory()->create()->id,
         'number' => 'MY-JKM-'.fake()->unique()->numberBetween(1000, 9999).'-100',
         'issuing_body' => 'JAKIM',
@@ -27,6 +28,15 @@ function hvCert(array $attrs = []): HalalCertificate
         'valid_from' => now()->subYear(),
         'valid_to' => now()->addYear(),
     ], $attrs));
+
+    // These cases are about the DATE window, not the review state, so the
+    // fixture has to say which one it is. Since H-6 a certificate is created
+    // Pending by default and only an approved one can badge a product — this
+    // file predates that, and every case here means "an approved certificate,
+    // dated like so".
+    $cert->forceFill(['status' => CertificateStatus::Approved])->save();
+
+    return $cert;
 }
 
 it('calls a certificate verified only when it is in force', function () {

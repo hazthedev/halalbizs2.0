@@ -7,6 +7,7 @@ use App\Livewire\Concerns\InteractsWithCart;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Category;
+use App\Models\HalalCertificate;
 use App\Models\Product;
 use App\Models\ProductBoost;
 use App\Models\ProductVariant;
@@ -90,13 +91,20 @@ class Listing extends Component
     #[Url(as: 'cert', except: [])]
     public array $certifiers = [];
 
-    /** Certificate-number prefix per authority, as written by the seeder. */
-    public const CERTIFIER_PREFIX = [
-        'JAKIM' => 'MY-JKM',
-        'MUIS' => 'SG-MUIS',
-        'BPJPH' => 'ID-BPJPH',
-        'ESMA' => 'AE-ESMA',
-    ];
+    /**
+     * The recognised bodies, keyed as the facet writes them into the URL.
+     *
+     * Reads HalalCertificate::BODIES rather than restating it. There used to be
+     * three copies of this table — here, on the model, and inline in
+     * HalalCatalogueSeeder — and the copies are what let the facet below drift
+     * onto the wrong column for months.
+     *
+     * @return list<string>
+     */
+    public static function certifierCodes(): array
+    {
+        return array_keys(HalalCertificate::BODIES);
+    }
 
     /**
      * Assurance facets, from the reference's sidebar. Each maps to a real
@@ -177,7 +185,7 @@ class Listing extends Component
     /** Toggle one certifying body on or off. */
     public function toggleCertifier(string $body): void
     {
-        if (! array_key_exists($body, self::CERTIFIER_PREFIX)) {
+        if (! in_array($body, self::certifierCodes(), true)) {
             return;
         }
 
@@ -374,14 +382,17 @@ class Listing extends Component
         }
 
         if ($this->certifiers !== []) {
-            $prefixes = array_values(array_intersect_key(self::CERTIFIER_PREFIX, array_flip($this->certifiers)));
+            // Reads the certificate RECORD, not products.halal_cert_number.
+            //
+            // That free-text column is the exact bug halalVerdict()'s docblock
+            // was written to kill, and this facet was the last reader still
+            // trusting it: a seller typing "MY-JKM-anything" into the product
+            // row filtered as JAKIM-certified with no certificate behind it,
+            // while the assurance facet immediately above already did it right
+            // via whereHas('halalCertificate'). Same shape now.
+            $codes = array_values(array_intersect($this->certifiers, self::certifierCodes()));
 
-            // OR within the group, like every other multi-select facet here.
-            $query->where(function (Builder $q) use ($prefixes): void {
-                foreach ($prefixes as $prefix) {
-                    $q->orWhere('halal_cert_number', 'like', $prefix.'-%');
-                }
-            });
+            $query->whereHas('halalCertificate', fn (Builder $cert) => $cert->whereIn('issuing_body', $codes));
         }
 
         if ($applyAttrs && $this->attrs !== []) {
