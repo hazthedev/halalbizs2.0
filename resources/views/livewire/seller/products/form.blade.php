@@ -550,6 +550,20 @@
         </x-ui.card>
 
         {{-- ── Actions ────────────────────────────────────────────── --}}
+        {{-- H-6: a blocking failure needs an inline exit next to the control
+             that failed, naming the remedy — a corner toast is not an error
+             message for something that stops the primary action. --}}
+        @error('halalGate')
+            <div class="rounded-[var(--radius-card)] border border-danger/40 bg-danger-tint px-4 py-3">
+                <p class="text-[13px] font-medium text-danger">{{ __('This product cannot go live yet') }}</p>
+                <p class="mt-1 text-[13px] text-danger">{{ $message }}</p>
+                <a href="{{ route('seller.certificates') }}" wire:navigate
+                   class="mt-2 inline-flex min-h-11 items-center text-[13px] font-medium text-danger underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-emerald">
+                    {{ __('Go to Halal certificates') }}
+                </a>
+            </div>
+        @enderror
+
         <div class="flex flex-wrap items-center justify-end gap-2">
             <button type="button" wire:click="saveDraft" wire:loading.attr="disabled"
                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-ink px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald">

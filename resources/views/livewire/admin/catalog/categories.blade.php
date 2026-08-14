@@ -96,6 +96,21 @@
                             <x-ui.input :label="__('Commission rate (%)')" wire:model="commissionRate" inputmode="decimal" placeholder="—"
                                         :error="$errors->first('commissionRate')" :hint="__('Leave empty to inherit from the parent or the global rate.')" />
 
+                            {{-- H-6: gate food, badge the rest. Three-valued on
+                                 purpose — Inherit is what lets the rule be set
+                                 once on a top-level branch. --}}
+                            <div>
+                                <label for="requiresHalalCertificate" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Halal certificate') }}</label>
+                                <select id="requiresHalalCertificate" wire:model="requiresHalalCertificate"
+                                        class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald">
+                                    <option value="">{{ __('Inherit from parent') }}</option>
+                                    <option value="1">{{ __('Required to list') }}</option>
+                                    <option value="0">{{ __('Not required') }}</option>
+                                </select>
+                                <p class="mt-1 text-[13px] text-ink-soft">{{ __('Required means a seller cannot list here without an approved certificate covering the product.') }}</p>
+                                @error('requiresHalalCertificate') <p class="mt-1 text-[13px] text-danger">{{ $message }}</p> @enderror
+                            </div>
+
                             <div>
                                 <span class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Image') }}</span>
                                 <div class="flex items-center gap-3">

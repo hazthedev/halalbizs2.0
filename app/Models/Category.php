@@ -22,13 +22,14 @@ class Category extends Model implements HasMedia
 
     public array $translatable = ['name', 'description'];
 
-    protected $fillable = ['parent_id', 'name', 'slug', 'description', 'commission_rate', 'is_active', 'position'];
+    protected $fillable = ['parent_id', 'name', 'slug', 'description', 'commission_rate', 'is_active', 'position', 'requires_halal_certificate'];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
             'commission_rate' => 'decimal:2',
+            'requires_halal_certificate' => 'boolean',
         ];
     }
 
@@ -73,6 +74,23 @@ class Category extends Model implements HasMedia
     protected function active(Builder $query): void
     {
         $query->where('is_active', true);
+    }
+
+    /**
+     * Walk up the tree: own flag, else nearest ancestor's (audit H-6).
+     *
+     * Same shape as effectiveCommissionRate() directly below, deliberately —
+     * set it once on Groceries & Pantry and every leaf inherits, while a single
+     * node can override its branch either way. Null all the way up means the
+     * category is unflagged and nothing is gated.
+     */
+    public function requiresHalalCertificate(): ?bool
+    {
+        if ($this->requires_halal_certificate !== null) {
+            return (bool) $this->requires_halal_certificate;
+        }
+
+        return $this->parent?->requiresHalalCertificate();
     }
 
     /** Walk up the tree: own rate, else nearest ancestor's. */

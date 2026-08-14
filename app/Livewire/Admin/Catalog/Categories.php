@@ -37,6 +37,15 @@ class Categories extends Component
 
     public string $commissionRate = '';
 
+    /**
+     * '' inherit · '1' require · '0' exempt (audit H-6).
+     *
+     * A string, not a bool, because the meaningful state here is THREE-valued:
+     * null inherits from the nearest flagged ancestor, which is what lets the
+     * rule be set once on Groceries & Pantry. A checkbox cannot say "inherit".
+     */
+    public string $requiresHalalCertificate = '';
+
     public bool $isActive = true;
 
     public ?TemporaryUploadedFile $image = null;
@@ -81,6 +90,9 @@ class Categories extends Component
             'en' => $category->getTranslation('description', 'en', false) ?? '',
             'ms' => $category->getTranslation('description', 'ms', false) ?? '',
         ];
+        $this->requiresHalalCertificate = $category->requires_halal_certificate === null
+            ? ''
+            : ($category->requires_halal_certificate ? '1' : '0');
         $this->commissionRate = $category->commission_rate === null
             ? ''
             : rtrim(rtrim(number_format((float) $category->commission_rate, 2, '.', ''), '0'), '.');
@@ -102,6 +114,7 @@ class Categories extends Component
             'description.en' => ['nullable', 'string', 'max:2000'],
             'description.ms' => ['nullable', 'string', 'max:2000'],
             'commissionRate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'requiresHalalCertificate' => ['in:,1,0'],
             'image' => ['nullable', 'image', 'max:2048'],
             'selectedAttributeIds' => ['array'],
             'selectedAttributeIds.*' => [Rule::exists('attributes', 'id')],
@@ -133,6 +146,7 @@ class Categories extends Component
             ]);
 
         $category->commission_rate = trim($this->commissionRate) === '' ? null : $this->commissionRate;
+        $category->requires_halal_certificate = $this->requiresHalalCertificate === '' ? null : (bool) (int) $this->requiresHalalCertificate;
         $category->is_active = $this->isActive;
 
         // en is ALWAYS written (fallback locale); ms only when filled.
@@ -258,7 +272,7 @@ class Categories extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['formOpen', 'editingId', 'parentId', 'commissionRate', 'isActive', 'image', 'selectedAttributeIds']);
+        $this->reset(['formOpen', 'editingId', 'parentId', 'commissionRate', 'requiresHalalCertificate', 'isActive', 'image', 'selectedAttributeIds']);
         $this->name = ['en' => '', 'ms' => ''];
         $this->description = ['en' => '', 'ms' => ''];
         $this->resetErrorBag();
