@@ -4,6 +4,7 @@ namespace App\Livewire\Storefront\Help;
 
 use App\Enums\HelpCategory;
 use App\Models\HelpArticle;
+use App\Support\JsonSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -27,15 +28,18 @@ class Index extends Component
         $term = trim($this->search);
 
         if ($term !== '') {
-            $like = '%'.$term.'%';
+            // M-19: title/body are translatable JSON, so on MySQL the arrow
+            // operator returns a BINARY-collated value and every lowercase
+            // query matched nothing. This is the only search box on /help.
+            $like = JsonSearch::pattern($term);
 
             $query->where(function (Builder $q) use ($like, $locale) {
-                $q->where("title->{$locale}", 'like', $like)
-                    ->orWhere("body->{$locale}", 'like', $like);
+                $q->whereRaw(JsonSearch::clause("title->{$locale}"), [$like])
+                    ->orWhereRaw(JsonSearch::clause("body->{$locale}"), [$like]);
 
                 if ($locale !== 'en') {
-                    $q->orWhere('title->en', 'like', $like)
-                        ->orWhere('body->en', 'like', $like);
+                    $q->orWhereRaw(JsonSearch::clause('title->en'), [$like])
+                        ->orWhereRaw(JsonSearch::clause('body->en'), [$like]);
                 }
             });
         }
