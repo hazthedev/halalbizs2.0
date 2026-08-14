@@ -100,6 +100,11 @@ class WatchCertificateExpiry extends Command
         $restored = 0;
 
         HalalCertificate::query()
+            // approved() added with H-6: a certificate the seller has merely
+            // re-submitted must not restore listings on its own say-so. The
+            // grace window in ProductPublishPolicy covers the seller during
+            // review; this sweep is what makes it permanent, and it waits.
+            ->approved()
             ->whereDate('valid_from', '<=', $today)
             ->whereDate('valid_to', '>=', $today)
             ->chunkById(100, function ($certificates) use (&$restored) {

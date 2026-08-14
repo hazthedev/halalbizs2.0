@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductVariant;
 use App\Services\ListingCopyService;
+use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
 use App\Support\HtmlSanitizer;
 use App\Support\RinggitInput;
@@ -405,6 +406,19 @@ class Form extends Component
         $status = app(ModerationSettings::class)->require_product_approval
             ? ProductStatus::PendingReview
             : ProductStatus::Live;
+
+        // H-6: a product in a category that requires halal certification needs
+        // an approved certificate covering it. Asked BEFORE the save, so the
+        // seller keeps their draft and sees why.
+        if ($status === ProductStatus::Live && $this->productId !== null) {
+            $reason = app(ProductPublishPolicy::class)->blockedReason(Product::findOrFail($this->productId));
+
+            if ($reason !== null) {
+                $this->addError('halalGate', $reason);
+
+                return;
+            }
+        }
 
         $this->save($status, publishing: true);
     }

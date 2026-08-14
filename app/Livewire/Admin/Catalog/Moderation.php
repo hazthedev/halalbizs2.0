@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Catalog;
 use App\Enums\ProductStatus;
 use App\Models\Product;
 use App\Notifications\ProductModerationNotification;
+use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -171,7 +172,16 @@ class Moderation extends Component
     /** @param  Collection<int, Product>  $products */
     private function approveProducts(Collection $products): int
     {
+        $policy = app(ProductPublishPolicy::class);
+
         foreach ($products as $product) {
+            // H-6: moderation approval is a publish. Skipping the gate here
+            // would let the one route that BYPASSES the seller's screen also
+            // bypass the certificate rule.
+            if (! $policy->allows($product)) {
+                continue;
+            }
+
             $product->status = ProductStatus::Live;
 
             if ($product->published_at === null) {

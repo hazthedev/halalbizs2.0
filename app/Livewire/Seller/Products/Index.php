@@ -6,6 +6,7 @@ use App\Enums\ProductStatus;
 use App\Livewire\Concerns\CurrentStore;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -143,8 +144,21 @@ class Index extends Component
         }
 
         $needsApproval = app(ModerationSettings::class)->require_product_approval;
+        $status = $needsApproval ? ProductStatus::PendingReview : ProductStatus::Live;
 
-        $product->update(['status' => $needsApproval ? ProductStatus::PendingReview : ProductStatus::Live]);
+        // H-6, same gate as the product form — a rule enforced at one call site
+        // is not a rule.
+        if ($status === ProductStatus::Live) {
+            $reason = app(ProductPublishPolicy::class)->blockedReason($product);
+
+            if ($reason !== null) {
+                $this->dispatch('toast', message: $reason);
+
+                return;
+            }
+        }
+
+        $product->update(['status' => $status]);
 
         $this->dispatch('toast', message: $needsApproval
             ? __('Submitted for review — it goes live once approved.')

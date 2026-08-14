@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CertificateStatus;
 use App\Enums\ProductStatus;
 use App\Models\HalalCertificate;
 use App\Models\Product;
@@ -18,7 +19,7 @@ function watchCert(array $attrs = []): HalalCertificate
 {
     $store = Store::factory()->approved()->create(['user_id' => User::factory()->create()->id]);
 
-    return HalalCertificate::create(array_merge([
+    $cert = HalalCertificate::create(array_merge([
         'store_id' => $store->id,
         'number' => 'MY-JKM-'.fake()->unique()->numberBetween(1000, 9999).'-100',
         'issuing_body' => 'JAKIM',
@@ -27,6 +28,13 @@ function watchCert(array $attrs = []): HalalCertificate
         'valid_from' => now()->subYear()->toDateString(),
         'valid_to' => now()->addYear()->toDateString(),
     ], $attrs));
+
+    // These cases are about EXPIRY, not review state. Since H-6 a certificate
+    // is created Pending by default and the restore sweep only acts on approved
+    // ones — every case here means "a verified certificate, dated like so".
+    $cert->forceFill(['status' => CertificateStatus::Approved])->save();
+
+    return $cert;
 }
 
 function watchProduct(HalalCertificate $cert, ProductStatus $status = ProductStatus::Live): Product

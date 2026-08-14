@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\HalalStatus;
 use App\Enums\ProductCondition;
 use App\Enums\ProductStatus;
 use App\Enums\TaxClass;
@@ -44,6 +45,7 @@ class Product extends Model implements HasMedia
             'status' => ProductStatus::class,
             'tax_class' => TaxClass::class,
             'cod_enabled' => 'boolean',
+            'halal_status' => HalalStatus::class,
             'halal_cert_expiry' => 'date',
             'halal_packed_on' => 'date',
             // Set by certificates:watch-expiry when it takes a product down, so
