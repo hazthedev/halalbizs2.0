@@ -354,16 +354,36 @@ class CoinService
         return $txn;
     }
 
+    /**
+     * M-7: WALLET FIRST, THEN THE LOT — the house order, and this method used to
+     * be the one exception.
+     *
+     * Every other path takes the wallet lock first (redeemForCheckout →
+     * consumeLocked; adminAdjust / checkIn / credit via lockWallet). This one
+     * locked the coin_transactions row and then reached for the wallet, which is
+     * a textbook deadlock pair: an expiry sweep running while a buyer redeems at
+     * checkout, each holding what the other is waiting for.
+     *
+     * The wallet id has to be read before the lot is locked, so the read is
+     * unlocked — but it is an immutable FK, so nothing can move it underneath us,
+     * and $lot is re-fetched under the lock afterwards regardless.
+     */
     private function expireLot(int $lotId): int
     {
         return DB::transaction(function () use ($lotId) {
+            $walletId = CoinTransaction::whereKey($lotId)->value('coin_wallet_id');
+
+            if ($walletId === null) {
+                return 0;
+            }
+
+            $wallet = $this->lockWallet((int) $walletId);
             $lot = CoinTransaction::whereKey($lotId)->lockForUpdate()->first();
 
             if ($lot === null || $lot->remaining <= 0) {
                 return 0;
             }
 
-            $wallet = $this->lockWallet($lot->coin_wallet_id);
             $amount = (int) $lot->remaining;
 
             $lot->forceFill(['remaining' => 0])->save();

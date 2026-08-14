@@ -158,7 +158,20 @@ class LedgerService
      */
     public function adjustment(Store $store, int $amountSen, string $reason, ?SubOrder $subOrder = null): void
     {
-        $this->write($store->id, LedgerEntryType::Adjustment, $amountSen, $subOrder?->id, $reason);
+        // M-8: the store lock was asymmetric. requestPayout and chargeBoost both
+        // take it before reading the derived SUM(amount_sen) balance; this
+        // writer — the one that REDUCES a balance, reached from
+        // RefundService::refund — took neither a lock nor a transaction. A
+        // refund landing between a payout's balance read and its write let the
+        // payout pay out money the refund had already clawed back.
+        //
+        // Locking here rather than at the two call sites covers both of them,
+        // and anything that reaches this method later.
+        DB::transaction(function () use ($store, $amountSen, $subOrder, $reason) {
+            Store::whereKey($store->id)->lockForUpdate()->first();
+
+            $this->write($store->id, LedgerEntryType::Adjustment, $amountSen, $subOrder?->id, $reason);
+        });
     }
 
     public function availableBalanceSen(Store $store): int
