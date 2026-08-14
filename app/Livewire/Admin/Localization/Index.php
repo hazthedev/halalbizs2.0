@@ -37,18 +37,41 @@ class Index extends Component
 
     // ── Languages ──────────────────────────────────────────────────────
 
-    public function toggleMs(): void
+    /**
+     * Enable or disable one optional locale. `en` is the fallback and never
+     * leaves. (zh is still "coming later" — it has no config/locales.php row,
+     * so it gets no toggle.)
+     *
+     * Rebuilding the list from config/locales.php in one pass is what keeps en
+     * pinned, dedupes, and holds a stable pill order. The old version wrote
+     * ['en', 'ms'] or ['en'] wholesale — correct while there was exactly one
+     * optional language, and silently deleting every other one the moment a
+     * second arrived.
+     */
+    public function toggleLocale(string $code): void
     {
-        $settings = app(GeneralSettings::class);
-        $enabling = ! in_array('ms', $settings->enabled_locales, true);
+        if ($code === 'en' || ! array_key_exists($code, config('locales', []))) {
+            return;
+        }
 
-        // en is always present; ms toggles. (zh is "coming later" — no toggle.)
-        $settings->enabled_locales = $enabling ? ['en', 'ms'] : ['en'];
+        $settings = app(GeneralSettings::class);
+        $enabling = ! in_array($code, $settings->enabled_locales, true);
+
+        $enabled = $enabling
+            ? [...$settings->enabled_locales, $code]
+            : array_diff($settings->enabled_locales, [$code]);
+
+        $settings->enabled_locales = array_values(array_filter(
+            array_keys(config('locales')),
+            fn (string $locale) => $locale === 'en' || in_array($locale, $enabled, true),
+        ));
         $settings->save();
 
+        $language = config("locales.{$code}.name", $code);
+
         $this->dispatch('toast', message: $enabling
-            ? __('Bahasa Melayu enabled')
-            : __('Bahasa Melayu disabled'));
+            ? __(':language enabled', ['language' => $language])
+            : __(':language disabled', ['language' => $language]));
     }
 
     // ── Currencies ─────────────────────────────────────────────────────
@@ -148,7 +171,14 @@ class Index extends Component
         $nonBase = $currencies->where('is_base', false)->values();
 
         return view('livewire.admin.localization.index', [
-            'msEnabled' => in_array('ms', $settings->enabled_locales, true),
+            'optionalLocales' => collect(config('locales'))
+                ->except('en')
+                ->map(fn (array $meta, string $code) => [
+                    'code' => $code,
+                    'name' => $meta['name'],
+                    'enabled' => in_array($code, $settings->enabled_locales, true),
+                ])
+                ->values(),
             'currencies' => $currencies,
             'rateRows' => $nonBase->map(fn (Currency $currency) => [
                 'currency' => $currency,
