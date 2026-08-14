@@ -6,6 +6,7 @@ use App\Enums\HalalStatus;
 use App\Enums\ProductCondition;
 use App\Enums\ProductStatus;
 use App\Enums\TaxClass;
+use App\Support\JsonSearch;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -229,18 +230,16 @@ class Product extends Model implements HasMedia
         // "Beras" returned 8 results, "beras" returned 0. Store and brand names
         // are ordinary VARCHAR and did match, which is what made it look like
         // search "half worked".
-        $term = mb_strtolower(trim((string) $term));
-
-        // A bare "%" or "_" is a LIKE wildcard, so unescaped it matches the whole
-        // catalogue. "!" as the escape char rather than "\": a backslash inside a
-        // SQL string literal means one thing to MySQL and another to SQLite.
-        $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term).'%';
+        // The escaping and lowercasing now live in JsonSearch (M-19), because
+        // three other readers needed the same recipe and hand-rolling it a
+        // fourth time is how the next copy drifts.
+        $like = JsonSearch::pattern($term);
 
         $query->where(function (Builder $q) use ($like): void {
-            $q->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$like])
-                ->orWhereRaw("LOWER(description) LIKE ? ESCAPE '!'", [$like])
-                ->orWhereHas('store', fn (Builder $s) => $s->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$like]))
-                ->orWhereHas('brand', fn (Builder $b) => $b->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$like]));
+            $q->whereRaw(JsonSearch::clause('name'), [$like])
+                ->orWhereRaw(JsonSearch::clause('description'), [$like])
+                ->orWhereHas('store', fn (Builder $s) => $s->whereRaw(JsonSearch::clause('name'), [$like]))
+                ->orWhereHas('brand', fn (Builder $b) => $b->whereRaw(JsonSearch::clause('name'), [$like]));
         });
     }
 

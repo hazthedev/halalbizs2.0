@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
+use App\Support\JsonSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -235,8 +236,16 @@ class Index extends Component
 
         if ($term !== '') {
             $query->where(function (Builder $q) use ($term) {
-                $q->where('name', 'like', "%{$term}%")
-                    ->orWhereHas('variants', fn (Builder $variants) => $variants->where('sku', 'like', "%{$term}%"));
+                // M-19: `name` is a translatable JSON column, so a bare LIKE is
+                // case-SENSITIVE on MySQL and a seller searching their own
+                // catalogue in lowercase got nothing. `sku` is plain VARCHAR and
+                // always matched, which hid it.
+                $like = JsonSearch::pattern($term);
+
+                $q->whereRaw(JsonSearch::clause('name'), [$like])
+                    // sku is plain VARCHAR so collation is not its problem, but an
+                    // unescaped needle is: typing "%" returned the whole catalogue.
+                    ->orWhereHas('variants', fn (Builder $variants) => $variants->whereRaw(JsonSearch::clause('sku'), [$like]));
             });
         }
 

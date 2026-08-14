@@ -42,7 +42,11 @@ class CertificateRegister extends Component
             ->approved()
             ->with(['events', 'store'])
             ->withCount('products')
-            ->whereRaw('UPPER(number) = ?', [$query])
+            // The input is already uppercased at :35 and `number` is a plain
+            // uniquely-indexed VARCHAR with a case-insensitive collation, so the
+            // SQL-side UPPER() only defeated the index — on an unauthenticated
+            // route anyone can hit.
+            ->where('number', $query)
             ->first();
 
         return view('livewire.storefront.certificate-register', [

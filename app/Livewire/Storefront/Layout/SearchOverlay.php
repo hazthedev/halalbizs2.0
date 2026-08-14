@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\SearchLog;
 use App\Models\Store;
+use App\Support\JsonSearch;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
@@ -35,8 +36,12 @@ class SearchOverlay extends Component
                 ->take(3)
                 ->get();
 
+            // M-19: `categories.name` is JSON, so every lowercase query dropped
+            // every category suggestion from the overlay. `stores.name` above is
+            // ordinary VARCHAR, which is why stores kept appearing and this
+            // looked like "no matching categories" rather than a bug.
             $categories = Category::active()
-                ->where('name', 'like', "%{$term}%")
+                ->whereRaw(JsonSearch::clause('name'), [JsonSearch::pattern($term)])
                 ->take(3)
                 ->get();
         }
