@@ -76,17 +76,32 @@ test('the landing department tiles do not query per category', function () {
     expect($queries)->toBeLessThan(22);
 });
 
-test('the tiles still show a count and a sample', function () {
+// ⚠ THREE LEVELS, and that depth is the whole point of this test.
+//
+// My first version of it had parent → child → products, which is what the old
+// blade counted (direct children only) — so it passed while the LIVE page said
+// "No listings yet" on all five departments, because the real catalogue is
+// parent → child → grandchild. The tile disagreed with the department page it
+// links to, which counts with Category::descendantIds().
+test('a department counts products anywhere beneath it, like the page it links to', function () {
     $store = Store::factory()->approved()->create();
-    $parent = Category::factory()->create(['parent_id' => null, 'position' => 1]);
-    $child = Category::factory()->create(['parent_id' => $parent->id]);
-    Product::factory()->count(3)->create([
+
+    $department = Category::factory()->create(['parent_id' => null, 'position' => 1]);
+    $child = Category::factory()->create(['parent_id' => $department->id]);
+    $grandchild = Category::factory()->create(['parent_id' => $child->id]);
+
+    Product::factory()->count(2)->create([
         'store_id' => $store->id, 'category_id' => $child->id, 'status' => ProductStatus::Live,
     ]);
+    Product::factory()->count(3)->create([
+        'store_id' => $store->id, 'category_id' => $grandchild->id, 'status' => ProductStatus::Live,
+    ]);
 
-    $tile = Livewire::test(Landing::class)->viewData('categories')->firstWhere('id', $parent->id);
+    $tile = Livewire::test(Landing::class)->viewData('categories')->firstWhere('id', $department->id);
 
-    expect($tile->tile_count)->toBe(3);
+    // 5, not 2: the same total Listing would show for this department.
+    expect($tile->tile_count)->toBe(5)
+        ->and($tile->tile_count)->toBe(Product::live()->whereIn('category_id', $department->descendantIds())->count());
 });
 
 // ── M-22/23/24 · the three missing indexes ───────────────────────────────
