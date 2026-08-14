@@ -9,6 +9,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\StockMovementType;
 use App\Enums\SubOrderStatus;
 use App\Events\OrderPaid;
+use App\Models\Order;
 use App\Models\SubOrder;
 use Illuminate\Support\Facades\DB;
 
@@ -128,7 +129,14 @@ class OrderService
                 $actorId,
                 null,
                 function (SubOrder $delivered) use (&$becamePaid) {
-                    $order = $delivered->order;
+                    // M-9: lock the parent ORDER before deciding COD settlement.
+                    // transition() locks this sub-order, but the question below
+                    // is about its SIBLINGS — and it was asked unlocked. Two
+                    // sub-orders of the same order delivered concurrently could
+                    // both see "everything else is terminal", both flip
+                    // payment_status, and both dispatch OrderPaid, which is what
+                    // triggers e-invoicing.
+                    $order = Order::whereKey($delivered->order_id)->lockForUpdate()->first();
 
                     if ($order->payment_method === PaymentMethod::Cod && $order->payment_status === PaymentStatus::Pending) {
                         $allDeliveredOrBetter = $order->subOrders()
