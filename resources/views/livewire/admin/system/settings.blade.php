@@ -122,7 +122,32 @@
         {{-- ── iPay88 ────────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveIpay88" class="space-y-4">
-                <h2 class="font-display text-lg font-medium">{{ __('iPay88') }}</h2>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h2 class="font-display text-lg font-medium">{{ __('iPay88') }}</h2>
+                    @if ($ipay88Mock)
+                        <x-ui.badge variant="warn">{{ __('Simulator active') }}</x-ui.badge>
+                    @elseif ($ipay88Configured)
+                        <x-ui.badge variant="verified">{{ $sandbox ? __('Sandbox configured') : __('Live configured') }}</x-ui.badge>
+                    @else
+                        <x-ui.badge variant="danger">{{ __('Not configured') }}</x-ui.badge>
+                    @endif
+                </div>
+
+                @if ($ipay88Mock)
+                    <p class="rounded-[var(--radius-control)] border border-warn/30 bg-warn-tint p-3 text-[13px] text-warn">
+                        {{ __('The payment simulator is available for preview testing. It does not charge real money.') }}
+                    </p>
+                @elseif (! $ipay88Configured)
+                    <p class="rounded-[var(--radius-control)] border border-danger/30 bg-danger-tint p-3 text-[13px] text-danger">
+                        {{ __('Online payment is hidden from buyers until both credentials are saved.') }}
+                    </p>
+                @else
+                    <p class="rounded-[var(--radius-control)] border border-emerald/30 bg-emerald-tint p-3 text-[13px] text-emerald">
+                        {{ $sandbox
+                            ? __('Credentials are complete. Run the connection test before sandbox checkout testing.')
+                            : __('Live credentials are complete. Confirm a small live payment and refund before launch.') }}
+                    </p>
+                @endif
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <x-ui.input :label="__('Merchant code')" wire:model="merchantCode" :error="$errors->first('merchantCode')" />
@@ -138,7 +163,8 @@
 
                 <div class="flex flex-wrap items-center gap-2">
                     <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="saveIpay88">{{ __('Save iPay88') }}</x-ui.button>
-                    <x-ui.button variant="secondary" wire:click="testIpay88Connection" wire:loading.attr="disabled" wire:target="testIpay88Connection">
+                    <x-ui.button variant="secondary" wire:click="testIpay88Connection" wire:loading.attr="disabled" wire:target="testIpay88Connection"
+                                 :disabled="! $ipay88Configured">
                         {{ __('Test connection') }}
                     </x-ui.button>
                 </div>

@@ -6,6 +6,7 @@ use App\Livewire\Admin\System\Staff;
 use App\Models\Store;
 use App\Models\User;
 use App\Settings\CodSettings;
+use App\Settings\Ipay88Settings;
 use App\Settings\ModerationSettings;
 use App\Settings\OrderSettings;
 use Database\Seeders\CurrencySeeder;
@@ -73,6 +74,31 @@ test('an invalid RM amount blocks the order settings save', function () {
         ->set('payoutMin', 'not-money')
         ->call('saveOrder')
         ->assertHasErrors(['payoutMin']);
+});
+
+test('iPay88 readiness is fail-closed until both credentials are saved', function () {
+    $component = Livewire::actingAs(systemAdmin())
+        ->test(Settings::class)
+        ->assertSee('Not configured')
+        ->assertSee('Online payment is hidden from buyers until both credentials are saved.')
+        ->set('merchantCode', 'M00001')
+        ->call('saveIpay88')
+        ->assertSee('Not configured');
+
+    expect(app(Ipay88Settings::class)->refresh()->merchant_code)->toBe('M00001');
+
+    $component
+        ->set('merchantKey', 'TestKey123')
+        ->call('saveIpay88')
+        ->assertSee('Sandbox configured')
+        ->assertSee('Credentials are complete. Run the connection test before sandbox checkout testing.');
+});
+
+test('iPay88 connection test refuses to run without complete credentials', function () {
+    Livewire::actingAs(systemAdmin())
+        ->test(Settings::class)
+        ->call('testIpay88Connection')
+        ->assertDispatched('toast', type: 'error');
 });
 
 // ── Staff & roles ───────────────────────────────────────────────────────

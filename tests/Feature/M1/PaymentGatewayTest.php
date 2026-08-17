@@ -4,6 +4,7 @@ use App\Models\Payment;
 use App\Services\Ipay88Service;
 use App\Services\Payments\PaymentGatewayManager;
 use App\Services\Payments\StripeGateway;
+use App\Settings\Ipay88Settings;
 use Illuminate\Support\Facades\Http;
 
 test('the gateway manager resolves drivers by name', function () {
@@ -16,11 +17,38 @@ test('the gateway manager resolves drivers by name', function () {
 });
 
 test('available gateways respect configuration', function () {
+    $settings = app(Ipay88Settings::class);
+    $settings->merchant_code = '';
+    $settings->merchant_key = '';
+    $settings->save();
+
     config(['services.stripe.secret' => null]);
+    expect(array_keys(app(PaymentGatewayManager::class)->available()))->toBe([]);
+
+    $settings->merchant_code = 'M00001';
+    $settings->save();
+    expect(array_keys(app(PaymentGatewayManager::class)->available()))->toBe([]);
+
+    $settings->merchant_key = 'TestKey123';
+    $settings->save();
     expect(array_keys(app(PaymentGatewayManager::class)->available()))->toBe(['ipay88']);
 
     config(['services.stripe.secret' => 'sk_test_x']);
     expect(array_keys(app(PaymentGatewayManager::class)->available()))->toContain('stripe');
+});
+
+test('the explicitly enabled simulator counts as an available preview gateway', function () {
+    $settings = app(Ipay88Settings::class);
+    $settings->merchant_code = '';
+    $settings->merchant_key = '';
+    $settings->save();
+
+    config([
+        'services.ipay88.allow_mock' => true,
+        'services.stripe.secret' => null,
+    ]);
+
+    expect(array_keys(app(PaymentGatewayManager::class)->available()))->toBe(['ipay88']);
 });
 
 test('the Stripe driver refunds via the Stripe API when configured', function () {

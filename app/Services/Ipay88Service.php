@@ -27,10 +27,20 @@ class Ipay88Service implements PaymentGateway
         return 'ipay88';
     }
 
-    /** A launch rail — always enabled (sandbox/prod toggled in Ipay88Settings). */
+    /**
+     * The buyer rail is available only with a complete credential pair, or
+     * when the explicitly opted-in simulator is active. A merchant code on
+     * its own must never expose a checkout path that cannot sign requests.
+     */
     public function isEnabled(): bool
     {
-        return true;
+        return $this->hasCredentials() || $this->isMock();
+    }
+
+    public function hasCredentials(): bool
+    {
+        return filled($this->settings->merchant_code)
+            && filled($this->settings->merchant_key);
     }
 
     /**
@@ -58,6 +68,7 @@ class Ipay88Service implements PaymentGateway
     public function isMock(): bool
     {
         $mock = blank($this->settings->merchant_code)
+            && blank($this->settings->merchant_key)
             && (app()->environment('local') || (bool) config('services.ipay88.allow_mock'));
 
         if ($mock && app()->isProduction()) {

@@ -394,16 +394,17 @@
             <fieldset class="mt-4">
                 <legend class="text-[13px] font-medium">{{ __('Payment method') }}</legend>
                 <div class="mt-2 space-y-2">
-                    <label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-[var(--radius-control)] border p-3 {{ $paymentMethod === 'ipay88' ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
-                        <input type="radio" name="payment-method" value="ipay88" wire:model.live="paymentMethod"
-                               @checked($paymentMethod === 'ipay88')
-                               class="mt-0.5 size-4 shrink-0 cursor-pointer accent-emerald">
-                        <span class="min-w-0">
-                            <span class="block text-sm font-medium">{{ __('Online payment — FPX, cards, e-wallets') }}</span>
-                            {{-- Gateway logos land with the M5 iPay88 bridge — text marks until then. --}}
-                            <span class="mt-0.5 block text-[11px] uppercase tracking-[0.04em] text-ink-soft">FPX · Visa · Mastercard · TnG · GrabPay · Boost · ShopeePay</span>
-                        </span>
-                    </label>
+                    @if ($ipay88Enabled)
+                        <label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-[var(--radius-control)] border p-3 {{ $paymentMethod === 'ipay88' ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
+                            <input type="radio" name="payment-method" value="ipay88" wire:model.live="paymentMethod"
+                                   @checked($paymentMethod === 'ipay88')
+                                   class="mt-0.5 size-4 shrink-0 cursor-pointer accent-emerald">
+                            <span class="min-w-0">
+                                <span class="block text-sm font-medium">{{ __('Online payment — FPX, cards, e-wallets') }}</span>
+                                <span class="mt-0.5 block text-[11px] uppercase tracking-[0.04em] text-ink-soft">FPX · Visa · Mastercard · TnG · GrabPay · Boost</span>
+                            </span>
+                        </label>
+                    @endif
 
                     @if ($codUnavailableReason === null)
                         <label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-[var(--radius-control)] border p-3 {{ $paymentMethod === 'cod' ? 'border-emerald bg-emerald-tint' : 'border-line-strong hover:border-ink' }}">
@@ -418,6 +419,12 @@
                             <span class="mt-0.5 block text-[13px] text-ink-soft">{{ $codUnavailableReason }}</span>
                         </div>
                     @endif
+
+                    @if (! $paymentMethodAvailable)
+                        <div class="rounded-[var(--radius-control)] border border-danger/30 bg-danger-tint p-3 text-[13px] text-danger" role="alert">
+                            {{ __('No payment method is available for this order. Please contact support.') }}
+                        </div>
+                    @endif
                 </div>
             </fieldset>
 
@@ -426,6 +433,7 @@
                  server re-validates everything inside the transaction anyway. --}}
             <x-ui.button type="button" wire:click="placeOrder"
                          wire:loading.attr="disabled" wire:loading.class="opacity-50"
+                         :disabled="! $paymentMethodAvailable"
                          class="mt-4 w-full">
                 {{ __('Place order') }}
             </x-ui.button>

@@ -12,6 +12,7 @@ use App\Models\Voucher;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\CoinService;
+use App\Services\Ipay88Service;
 use App\Services\ShippingCalculator;
 use App\Services\TaxService;
 use App\Services\VoucherService;
@@ -79,6 +80,10 @@ class Checkout extends Component
             ->orderByDesc('is_default')
             ->orderByDesc('id')
             ->value('id');
+
+        if (! app(Ipay88Service::class)->isEnabled()) {
+            $this->paymentMethod = PaymentMethod::Cod->value;
+        }
     }
 
     public function selectAddress(int $addressId): void
@@ -170,11 +175,19 @@ class Checkout extends Component
             ->map(fn ($note) => trim((string) $note))
             ->all();
 
+        $method = PaymentMethod::tryFrom($this->paymentMethod);
+
+        if ($method === null || ($method === PaymentMethod::Ipay88 && ! app(Ipay88Service::class)->isEnabled())) {
+            $this->dispatch('toast', message: __('The selected payment method is currently unavailable.'), type: 'error');
+
+            return;
+        }
+
         try {
             $order = $checkout->place(
                 auth()->user(),
                 $address,
-                PaymentMethod::tryFrom($this->paymentMethod) ?? PaymentMethod::Ipay88,
+                $method,
                 $this->appliedPlatformCode,
                 $this->appliedShopCode,
                 $sellerNotes,
@@ -276,10 +289,17 @@ class Checkout extends Component
         $grandTotalSen = $preCoinTotalSen - $coinRedemptionSen;
 
         $codUnavailableReason = $this->codUnavailableReason($groups, $grandTotalSen);
+        $ipay88Enabled = app(Ipay88Service::class)->isEnabled();
+
+        if (! $ipay88Enabled && $this->paymentMethod === PaymentMethod::Ipay88->value) {
+            $this->paymentMethod = PaymentMethod::Cod->value;
+        }
 
         if ($codUnavailableReason !== null && $this->paymentMethod === PaymentMethod::Cod->value) {
-            $this->paymentMethod = PaymentMethod::Ipay88->value;
+            $this->paymentMethod = $ipay88Enabled ? PaymentMethod::Ipay88->value : '';
         }
+
+        $paymentMethodAvailable = $ipay88Enabled || $codUnavailableReason === null;
 
         [$platformVoucherOptions, $shopVoucherOptions, $bestPlatformVoucherId] = $this->voucherOptions($storeSubtotals, $groups);
 
@@ -300,6 +320,8 @@ class Checkout extends Component
             'bestPlatformVoucherId' => $bestPlatformVoucherId,
             'grandTotalSen' => $grandTotalSen,
             'codUnavailableReason' => $codUnavailableReason,
+            'ipay88Enabled' => $ipay88Enabled,
+            'paymentMethodAvailable' => $paymentMethodAvailable,
             'displayCurrency' => session('display_currency', 'MYR'),
             'coinsEnabled' => $coinsEnabled,
             'coinBalance' => $coinBalance,
