@@ -11,6 +11,20 @@
 
                 <x-ui.input :label="__('Site name')" wire:model="siteName" :error="$errors->first('siteName')" />
 
+                <div class="rounded-[var(--radius-card)] border border-line bg-paper p-3">
+                    <label class="inline-flex min-h-11 cursor-pointer items-center gap-3 text-[13px] font-medium text-ink">
+                        <input type="checkbox" wire:model="purchasingEnabled"
+                               class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                        {{ __('Allow buyers to add to cart and checkout') }}
+                    </label>
+                    <p class="mt-1 text-[13px] text-ink-faint">
+                        {{ __('Turn this off for listing-only mode. Products, search, wishlists and buyer enquiries stay available, while cart additions, recurring purchases, group buys and checkout are blocked.') }}
+                    </p>
+                    @unless ($purchasingEnabled)
+                        <x-ui.badge variant="warn" class="mt-2">{{ __('Listing-only mode selected') }}</x-ui.badge>
+                    @endunless
+                </div>
+
                 <fieldset>
                     <legend class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Display currencies') }}</legend>
                     <div class="flex flex-wrap gap-2">

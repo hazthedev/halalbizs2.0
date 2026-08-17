@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Storefront\Layout;
 
+use App\Exceptions\CheckoutException;
 use App\Models\ProductVariant;
 use App\Services\CartService;
 use Livewire\Attributes\On;
@@ -14,7 +15,13 @@ class MiniCart extends Component
         $variant = ProductVariant::find($variantId);
 
         if ($variant !== null) {
-            app(CartService::class)->updateQty(auth()->user(), $variant, $qty);
+            try {
+                app(CartService::class)->updateQty(auth()->user(), $variant, $qty);
+            } catch (CheckoutException $exception) {
+                $this->dispatch('toast', message: __($exception->getMessage()), type: 'error');
+
+                return;
+            }
         }
 
         $this->dispatch('cart-updated', count: app(CartService::class)->itemCount(auth()->user()));
@@ -40,7 +47,13 @@ class MiniCart extends Component
         // CartPage listens for the same event and restores the original qty —
         // only re-add here when no other listener already has.
         if ($variant !== null && ! app(CartService::class)->hasItem(auth()->user(), $variantId)) {
-            app(CartService::class)->addItem(auth()->user(), $variant, 1);
+            try {
+                app(CartService::class)->addItem(auth()->user(), $variant, 1);
+            } catch (CheckoutException $exception) {
+                $this->dispatch('toast', message: __($exception->getMessage()), type: 'error');
+
+                return;
+            }
         }
 
         $this->dispatch('cart-updated', count: app(CartService::class)->itemCount(auth()->user()));

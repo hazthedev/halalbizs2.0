@@ -4,7 +4,7 @@
     $video = $product->getFirstMedia('videos');
     $variantImage = $variant?->getFirstMediaUrl('image') ?: null;
     $mainImage = $variantImage ?: $images->first()?->getAvailableUrl(['card']);
-    $canBuy = $variant !== null && $variant->stock > 0;
+    $canBuy = $purchasingEnabled && $variant !== null && $variant->stock > 0;
     $store = $product->store;
 @endphp
 
@@ -309,6 +309,7 @@
                 @endif
 
                 {{-- Actions --}}
+                @if ($purchasingEnabled)
                 <div class="mt-6 hidden gap-3 lg:flex">
                     <button type="button"
                             data-testid="pdp-add-to-cart"
@@ -331,15 +332,21 @@
                         {{ __('Buy now') }}
                     </button>
                 </div>
+                @else
+                    <div class="mt-6 rounded-[var(--radius-card)] border border-brass/40 bg-brass/10 p-4">
+                        <p class="font-display text-[length:var(--text-h4)] text-ink-head">{{ __('Listing only') }}</p>
+                        <p class="mt-1 text-[13px] text-ink-soft">{{ __('Purchasing is currently unavailable. Browse the product details or contact the seller for more information.') }}</p>
+                    </div>
+                @endif
                 {{-- Mobile actions live in the sticky buy bar below --}}
 
                 {{-- Group-buy / share-to-unlock (M2.6) --}}
-                @if (config('groupbuy.enabled', true))
+                @if ($purchasingEnabled && config('groupbuy.enabled', true))
                     <livewire:storefront.group-buy.panel :product="$product" :wire:key="'gb-'.$product->id" />
                 @endif
 
                 {{-- Subscribe & save (M2.8) --}}
-                @if (config('subscriptions.enabled', true))
+                @if ($purchasingEnabled && config('subscriptions.enabled', true))
                     <livewire:storefront.subscribe.panel :product="$product" :wire:key="'sub-'.$product->id" />
                 @endif
 
@@ -510,6 +517,7 @@
                     <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
                 </a>
             @endif
+            @if ($purchasingEnabled)
             <button type="button"
                     data-testid="pdp-add-to-cart"
                     x-on:click="$store.cart.bump()"
@@ -530,6 +538,17 @@
                     class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-3 text-sm font-medium text-white transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-emerald-deep active:scale-[0.98] active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
                 {{ __('Buy now') }}
             </button>
+            @else
+                @if ($store !== null)
+                    <a href="{{ $store->storefrontUrl() }}" wire:navigate
+                       class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-paper px-3 text-sm font-medium text-on-dark hover:bg-paper/10">
+                        {{ __('Visit store') }}
+                    </a>
+                @endif
+                <span class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-paper/10 px-3 text-center text-sm font-medium text-on-dark">
+                    {{ __('Listing only') }}
+                </span>
+            @endif
         </div>
     </div>
 </div>

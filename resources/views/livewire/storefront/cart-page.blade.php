@@ -1,5 +1,11 @@
 <div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12">
     <x-ui.section-heading as="h1" :title="__('Your basket')" />
+    @unless ($purchasingEnabled)
+        <div class="mt-4 rounded-[var(--radius-card)] border border-brass/40 bg-brass/10 p-4">
+            <p class="font-display text-[length:var(--text-h4)] text-ink-head">{{ __('Listing-only mode') }}</p>
+            <p class="mt-1 text-[13px] text-ink-soft">{{ __('Purchasing is currently unavailable. Your existing basket is preserved and will be available if purchasing is enabled again.') }}</p>
+        </div>
+    @endunless
     @if ($selectedCount > 0)
         {{-- mt-1.5 matches x-ui.section-heading's own subtitle spacing. The old
              -mt-4 assumed a gap the heading does not have: at 390px the heading
@@ -110,13 +116,13 @@
                                                 <div class="flex items-center rounded-full border border-line-strong">
                                                     <button type="button"
                                                             wire:click="updateQty({{ $line->variant->id }}, {{ $line->qty - 1 }})"
-                                                            @disabled($line->qty <= 1)
+                                                            @disabled(! $purchasingEnabled || $line->qty <= 1)
                                                             class="flex size-11 items-center justify-center rounded-full text-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
                                                             aria-label="{{ __('Decrease quantity') }}">−</button>
                                                     <span class="min-w-8 text-center font-mono text-sm">{{ $line->qty }}</span>
                                                     <button type="button"
                                                             wire:click="updateQty({{ $line->variant->id }}, {{ $line->qty + 1 }})"
-                                                            @disabled($line->qty >= $line->variant->stock)
+                                                            @disabled(! $purchasingEnabled || $line->qty >= $line->variant->stock)
                                                             class="flex size-11 items-center justify-center rounded-full text-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
                                                             aria-label="{{ __('Increase quantity') }}">+</button>
                                                 </div>
@@ -170,6 +176,10 @@
                 </div>
 
                 <div class="mt-4">
+                    @unless ($purchasingEnabled)
+                        <x-ui.button disabled class="w-full">{{ __('Checkout unavailable') }}</x-ui.button>
+                        <p class="mt-2 text-center text-[13px] text-ink-soft">{{ __('This marketplace is currently for product listings and enquiries only.') }}</p>
+                    @else
                     @guest
                         <x-ui.button :href="route('login')" class="w-full">{{ __('Checkout') }}</x-ui.button>
                         <p class="mt-2 text-center text-[13px] text-ink-soft">{{ __('Log in to check out') }}</p>
@@ -183,6 +193,7 @@
                             <x-ui.button :href="url('/checkout')" class="w-full">{{ __('Checkout') }}</x-ui.button>
                         @endif
                     @endguest
+                    @endunless
                 </div>
             </x-ui.card>
         </div>

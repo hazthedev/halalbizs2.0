@@ -21,6 +21,7 @@ use App\Models\Store;
 use App\Models\SubOrder;
 use App\Models\User;
 use App\Settings\CodSettings;
+use App\Settings\GeneralSettings;
 use App\Settings\OrderSettings;
 use App\Support\CoinRedemptionResult;
 use App\Support\Money;
@@ -47,6 +48,7 @@ class CheckoutService
         private GroupBuyService $groupBuy,
         private CodSettings $codSettings,
         private OrderSettings $orderSettings,
+        private GeneralSettings $generalSettings,
     ) {}
 
     /**
@@ -76,6 +78,10 @@ class CheckoutService
         int $coinsToRedeem = 0,
         ?array $explicitLines = null,
     ): Order {
+        if (! $this->generalSettings->purchasing_enabled) {
+            throw new CheckoutException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
+        }
+
         // Three attempts, because the stock lock at :133 is a genuine collision
         // point: two buyers checking out the SAME variant in the same instant is
         // ordinary traffic (a popular SKU, a flash sale), and InnoDB answers the

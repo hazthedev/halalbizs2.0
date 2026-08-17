@@ -5,12 +5,14 @@ namespace App\Services;
 use App\Enums\PaymentMethod;
 use App\Enums\SubscriptionInterval;
 use App\Enums\SubscriptionStatus;
+use App\Exceptions\CheckoutException;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Notifications\SubscriptionOrderPlacedNotification;
+use App\Settings\GeneralSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -25,11 +27,15 @@ use Throwable;
  */
 class SubscriptionService
 {
-    public function __construct(private CheckoutService $checkout) {}
+    public function __construct(
+        private CheckoutService $checkout,
+        private GeneralSettings $generalSettings,
+    ) {}
 
     public function enabled(): bool
     {
-        return (bool) config('subscriptions.enabled', true);
+        return $this->generalSettings->purchasing_enabled
+            && (bool) config('subscriptions.enabled', true);
     }
 
     /**
@@ -52,6 +58,10 @@ class SubscriptionService
      */
     public function subscribe(User $user, ProductVariant $variant, Address $address, SubscriptionInterval $interval, int $qty = 1): Subscription
     {
+        if (! $this->generalSettings->purchasing_enabled) {
+            throw new CheckoutException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
+        }
+
         $existing = Subscription::query()
             ->where('user_id', $user->id)
             ->where('product_variant_id', $variant->id)
@@ -131,6 +141,12 @@ class SubscriptionService
     /** Process every due subscription (scheduled). Returns the orders placed. */
     public function processDue(): int
     {
+        // Do not advance schedules or create backlog side effects while the
+        // marketplace is intentionally operating as a product directory.
+        if (! $this->generalSettings->purchasing_enabled) {
+            return 0;
+        }
+
         $placed = 0;
 
         Subscription::due()->orderBy('id')->pluck('id')->each(function ($id) use (&$placed) {

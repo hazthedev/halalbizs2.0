@@ -8,6 +8,7 @@ use App\Models\ProductVariant;
 use App\Models\ProductView;
 use App\Models\StockSubscription;
 use App\Settings\CodSettings;
+use App\Settings\GeneralSettings;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -112,9 +113,9 @@ class ProductDetail extends Component
             return;
         }
 
-        $this->addToCart($variant->id, $this->qty);
-
-        $this->redirectRoute('cart', navigate: true);
+        if ($this->addToCart($variant->id, $this->qty)) {
+            $this->redirectRoute('cart', navigate: true);
+        }
     }
 
     public function render()
@@ -125,10 +126,13 @@ class ProductDetail extends Component
             'variant' => $this->resolvedVariant(),
             'availability' => $this->availabilityMap(),
             'wishlistedIds' => $this->wishlistedIds(),
-            'codAvailable' => $this->product->cod_enabled && app(CodSettings::class)->enabled,
+            'codAvailable' => app(GeneralSettings::class)->purchasing_enabled
+                && $this->product->cod_enabled
+                && app(CodSettings::class)->enabled,
             'storeProductsCount' => $this->product->store?->products()->live()->count() ?? 0,
             'jsonLd' => $this->jsonLd(),
             'subscribedVariantIds' => $this->subscribedVariantIds(),
+            'purchasingEnabled' => app(GeneralSettings::class)->purchasing_enabled,
         ])->title($this->product->getTranslation('name', app()->getLocale()));
     }
 

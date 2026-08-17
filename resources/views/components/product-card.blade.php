@@ -8,6 +8,7 @@
     $singleVariant = $product->variants->count() === 1;
     $inStock = $product->variants->sum('stock') > 0;
     $name = $product->getTranslation('name', app()->getLocale());
+    $purchasingEnabled = app(\App\Settings\GeneralSettings::class)->purchasing_enabled;
     // Certifier badge is OPT-IN on real data. The reference design shows a JAKIM
     // pill on every card, but per-SKU certificate binding is a phase-2 feature —
     // rendering a hardcoded badge would claim a check the app cannot perform.
@@ -102,7 +103,7 @@
                 <span class="font-mono text-[length:var(--text-tiny)] font-medium uppercase tracking-[var(--tracking-label)] text-brass-deep">{{ __('Save') }} {{ $maxDiscount }}%</span>
             @endif
 
-            @if ($singleVariant && $inStock && $defaultVariant)
+            @if ($purchasingEnabled && $singleVariant && $inStock && $defaultVariant)
                 {{-- Add pill. Label crossfades to a tick for 1.2s; both share one
                      grid cell so the pill never resizes.
                      ponytail: flips optimistically on click; a failed add just

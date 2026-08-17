@@ -16,6 +16,8 @@ class GeneralSettings extends Settings
 
     public array $display_currencies;
 
+    public bool $purchasing_enabled;
+
     public static function group(): string
     {
         return 'general';

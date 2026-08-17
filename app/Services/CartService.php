@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Exceptions\CheckoutException;
 use App\Models\Cart;
 use App\Models\ProductVariant;
 use App\Models\User;
+use App\Settings\GeneralSettings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Session;
 
@@ -16,6 +18,13 @@ class CartService
 {
     private const SESSION_KEY = 'guest_cart';
 
+    public function __construct(private GeneralSettings $generalSettings) {}
+
+    public function purchasingEnabled(): bool
+    {
+        return $this->generalSettings->purchasing_enabled;
+    }
+
     public function cartFor(User $user): Cart
     {
         return Cart::firstOrCreate(['user_id' => $user->id]);
@@ -23,6 +32,8 @@ class CartService
 
     public function addItem(?User $user, ProductVariant $variant, int $qty = 1): void
     {
+        $this->ensurePurchasingEnabled();
+
         $qty = max(1, min($qty, $variant->stock));
 
         if ($user === null) {
@@ -52,6 +63,8 @@ class CartService
 
             return;
         }
+
+        $this->ensurePurchasingEnabled();
 
         $qty = min($qty, $variant->stock);
 
@@ -98,6 +111,12 @@ class CartService
 
     public function mergeSessionCart(User $user): void
     {
+        // Keep the browser cart untouched while the marketplace is a directory.
+        // It can be merged normally if purchasing is enabled again later.
+        if (! $this->purchasingEnabled()) {
+            return;
+        }
+
         $sessionItems = $this->sessionItems();
 
         if ($sessionItems === []) {
@@ -156,5 +175,12 @@ class CartService
         return $lines
             ->filter(fn ($line) => $line->variant?->product !== null)
             ->groupBy(fn ($line) => $line->variant->product->store_id);
+    }
+
+    private function ensurePurchasingEnabled(): void
+    {
+        if (! $this->purchasingEnabled()) {
+            throw new CheckoutException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
+        }
     }
 }

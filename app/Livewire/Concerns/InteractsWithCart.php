@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Concerns;
 
+use App\Exceptions\CheckoutException;
 use App\Models\ProductVariant;
 use App\Models\Wishlist;
 use App\Services\CartService;
@@ -13,25 +14,39 @@ use App\Services\CartService;
  */
 trait InteractsWithCart
 {
-    public function addToCart(int $variantId, int $qty = 1): void
+    public function addToCart(int $variantId, int $qty = 1): bool
     {
+        if (! app(CartService::class)->purchasingEnabled()) {
+            $this->reconcileCart(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'), error: true);
+
+            return false;
+        }
+
         $variant = ProductVariant::with('product')->find($variantId);
 
         if ($variant === null || ! $variant->product->isLive() || $variant->product->store?->holiday_mode) {
             $this->reconcileCart(__('This product is not available right now.'), error: true);
 
-            return;
+            return false;
         }
 
         if ($variant->stock < 1) {
             $this->reconcileCart(__('Sorry — this item just sold out.'), error: true);
 
-            return;
+            return false;
         }
 
-        app(CartService::class)->addItem(auth()->user(), $variant, $qty);
+        try {
+            app(CartService::class)->addItem(auth()->user(), $variant, $qty);
+        } catch (CheckoutException $e) {
+            $this->reconcileCart($e->getMessage(), error: true);
+
+            return false;
+        }
 
         $this->reconcileCart(__('Added to cart'), actionLabel: __('View cart'), actionEvent: 'view-cart');
+
+        return true;
     }
 
     public function toggleWishlist(int $productId): void

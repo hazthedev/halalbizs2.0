@@ -20,6 +20,7 @@
          shopping chrome — category strip + concierge are noise there. Extend this
          route list if other non-shopping pages should go bare too. --}}
     @php($bareChrome = request()->routeIs('login', 'register', 'password.request', 'password.reset', 'verification.notice'))
+    @php($purchasingEnabled = app(\App\Settings\GeneralSettings::class)->purchasing_enabled)
 
     {{-- ===== Occasion announcement bar (colors from ThemeSettings — never recolors actions) ===== --}}
     @php($themeSettings = app(\App\Settings\ThemeSettings::class))
@@ -208,7 +209,8 @@
                     <a href="{{ route('register') }}" wire:navigate class="rounded-[var(--radius-pill)] px-3 py-2 text-[length:var(--text-xs)] font-medium text-ink transition-colors duration-(--dur-micro) hover:text-emerald">{{ __('Sign up') }}</a>
                 @endauth
 
-                {{-- Cart — the reference's dark pill with a brass count. --}}
+                {{-- Cart — absent in listing-only mode; existing cart data is preserved. --}}
+                @if ($purchasingEnabled)
                 <button type="button" x-on:click="$dispatch('open-mini-cart')" class="flex items-center gap-2 rounded-[var(--radius-pill)] bg-emerald-night px-2.5 py-2 text-[length:var(--text-xs)] font-medium text-on-dark transition-colors duration-(--dur-micro) hover:bg-emerald-deep sm:px-4" aria-label="{{ __('Cart') }}">
                     <svg class="size-4 shrink-0 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
                     <span class="hidden sm:block">{{ __('Cart') }}</span>
@@ -217,6 +219,7 @@
                           class="flex h-5 min-w-5 items-center justify-center rounded-[var(--radius-pill)] bg-brass px-1 font-mono text-[length:var(--text-tiny)] font-medium text-emerald-night"
                           x-text="$store.cart.count"></span>
                 </button>
+                @endif
             </div>
         </div>
     </header>
@@ -374,7 +377,9 @@
 
     {{-- Global overlays --}}
     <livewire:storefront.layout.search-overlay />
-    <livewire:storefront.layout.mini-cart />
+    @if ($purchasingEnabled)
+        <livewire:storefront.layout.mini-cart />
+    @endif
     @if (config('services.concierge.enabled', true) && ! $bareChrome)
         <livewire:storefront.shop-assistant />
     @endif

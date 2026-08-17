@@ -2598,5 +2598,15 @@
     "Delivery exception": "Masalah penghantaran",
     "Tracking expired": "Penjejakan tamat tempoh",
     "Track on courier website": "Jejak di laman web kurier",
-    "Shipment journey": "Perjalanan penghantaran"
+    "Shipment journey": "Perjalanan penghantaran",
+    "Allow buyers to add to cart and checkout": "Benarkan pembeli menambah ke troli dan membuat pembayaran",
+    "Checkout unavailable": "Pembayaran tidak tersedia",
+    "Listing only": "Penyenaraian sahaja",
+    "Listing-only mode": "Mod penyenaraian sahaja",
+    "Listing-only mode selected": "Mod penyenaraian sahaja dipilih",
+    "Purchasing is currently unavailable. Browse the product details or contact the seller for more information.": "Pembelian tidak tersedia buat masa ini. Lihat butiran produk atau hubungi penjual untuk maklumat lanjut.",
+    "Purchasing is currently unavailable. Your existing basket is preserved and will be available if purchasing is enabled again.": "Pembelian tidak tersedia buat masa ini. Bakul sedia ada anda dikekalkan dan akan tersedia jika pembelian diaktifkan semula.",
+    "This marketplace is currently for product listings and enquiries only.": "Pasaran ini kini hanya untuk penyenaraian produk dan pertanyaan.",
+    "This marketplace is currently in listing-only mode. Purchasing is unavailable.": "Pasaran ini kini dalam mod penyenaraian sahaja. Pembelian tidak tersedia.",
+    "Turn this off for listing-only mode. Products, search, wishlists and buyer enquiries stay available, while cart additions, recurring purchases, group buys and checkout are blocked.": "Matikan pilihan ini untuk mod penyenaraian sahaja. Produk, carian, senarai hajat dan pertanyaan pembeli kekal tersedia, manakala penambahan troli, pembelian berulang, belian berkumpulan dan pembayaran disekat."
 }

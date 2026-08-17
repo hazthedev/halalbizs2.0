@@ -12,6 +12,7 @@ use App\Models\GroupBuyTeam;
 use App\Models\SubOrder;
 use App\Models\User;
 use App\Notifications\GroupBuyUnlockedNotification;
+use App\Settings\GeneralSettings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -26,9 +27,12 @@ use Illuminate\Support\Str;
  */
 class GroupBuyService
 {
+    public function __construct(private GeneralSettings $generalSettings) {}
+
     public function enabled(): bool
     {
-        return (bool) config('groupbuy.enabled', true);
+        return $this->generalSettings->purchasing_enabled
+            && (bool) config('groupbuy.enabled', true);
     }
 
     /** The live deal for a variant, if any (PDP). */
@@ -44,6 +48,8 @@ class GroupBuyService
     /** Start a new team for a deal and join the initiator. */
     public function startTeam(User $user, GroupBuy $deal): GroupBuyTeam
     {
+        $this->ensurePurchasingEnabled();
+
         if (! $deal->isLive()) {
             throw new CheckoutException(__('This group-buy deal is not available right now.'));
         }
@@ -67,6 +73,8 @@ class GroupBuyService
     /** Join an existing forming team (idempotent for an existing member). */
     public function joinTeam(User $user, GroupBuyTeam $team): GroupBuyMember
     {
+        $this->ensurePurchasingEnabled();
+
         return DB::transaction(function () use ($user, $team) {
             $locked = GroupBuyTeam::whereKey($team->id)->lockForUpdate()->first();
 
@@ -180,5 +188,12 @@ class GroupBuyService
         } while (GroupBuyTeam::where('code', $code)->exists());
 
         return $code;
+    }
+
+    private function ensurePurchasingEnabled(): void
+    {
+        if (! $this->generalSettings->purchasing_enabled) {
+            throw new CheckoutException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
+        }
     }
 }
