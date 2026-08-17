@@ -32,6 +32,12 @@
                         class="-mb-px min-h-11 border-b-2 px-4 text-sm font-medium focus-visible:ring-2 focus-visible:ring-emerald">
                     BM
                 </button>
+                <button type="button" role="tab" x-on:click="lang = 'vi'"
+                        x-bind:aria-selected="lang === 'vi'"
+                        x-bind:class="lang === 'vi' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
+                        class="-mb-px min-h-11 border-b-2 px-4 text-sm font-medium focus-visible:ring-2 focus-visible:ring-emerald">
+                    VI
+                </button>
             </div>
 
             <div x-show="lang === 'en'" class="mt-4 space-y-4">
@@ -73,6 +79,24 @@
                     <textarea id="description.ms" wire:model="description.ms" rows="6"
                               class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
                     <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('Optional — falls back to English when empty.') }}</p>
+                </div>
+            </div>
+
+            <div x-show="lang === 'vi'" x-cloak class="mt-4 space-y-4">
+                <x-ui.input
+                    :label="__('Product name (Vietnamese)')"
+                    name="name.vi"
+                    wire:model="name.vi"
+                    maxlength="255"
+                    :hint="__('Optional — falls back to English when empty.')"
+                    :error="$errors->first('name.vi')"
+                />
+                <div>
+                    <label for="description.vi" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Description (Vietnamese)') }}</label>
+                    <textarea id="description.vi" wire:model="description.vi" rows="6"
+                              class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
+                    <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('Optional — falls back to English when empty.') }}</p>
+                    @error('description.vi')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
             </div>
 

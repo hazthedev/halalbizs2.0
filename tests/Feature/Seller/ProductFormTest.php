@@ -391,7 +391,7 @@ test('a product video over 30MB is rejected', function () {
     expect(Product::query()->where('store_id', $seller->store->id)->count())->toBe(0);
 });
 
-test('ms translations are written only when filled and en is always written', function () {
+test('optional translations are written only when filled and English is always written', function () {
     $seller = productFormSeller();
     $category = productFormCategory();
 
@@ -399,6 +399,7 @@ test('ms translations are written only when filled and en is always written', fu
         ->test(Form::class)
         ->set('name.en', 'Bilingual Sambal')
         ->set('name.ms', 'Sambal Dwibahasa')
+        ->set('name.vi', 'Sambal song ngữ')
         ->set('description.en', '<p>Spicy<script>alert(1)</script></p>')
         ->set('categoryTop', $category->id)
         ->set('price', '7.50')
@@ -409,6 +410,7 @@ test('ms translations are written only when filled and en is always written', fu
 
     expect($product->getTranslation('name', 'en'))->toBe('Bilingual Sambal')
         ->and($product->getTranslation('name', 'ms', false))->toBe('Sambal Dwibahasa')
+        ->and($product->getTranslation('name', 'vi', false))->toBe('Sambal song ngữ')
         // The <script> body is dropped with the tag now rather than unwrapped
         // into the text — unwrapping is what promoted it to live markup (C1).
         ->and($product->getTranslation('description', 'en'))->toBe('<p>Spicy</p>')

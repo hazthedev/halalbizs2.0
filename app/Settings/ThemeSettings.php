@@ -20,6 +20,8 @@ class ThemeSettings extends Settings
 
     public string $announcement_text_ms;
 
+    public string $announcement_text_vi;
+
     public string $announcement_bg;
 
     public string $announcement_text_color;
@@ -44,6 +46,7 @@ class ThemeSettings extends Settings
             'announcement_enabled' => false,
             'announcement_text_en' => '',
             'announcement_text_ms' => '',
+            'announcement_text_vi' => '',
             'announcement_bg' => '#03392B',
             'announcement_text_color' => '#F7F7F4',
             'hero_image_enabled' => false,
@@ -88,6 +91,10 @@ class ThemeSettings extends Settings
     {
         if ($locale === 'ms' && trim($this->announcement_text_ms) !== '') {
             return $this->announcement_text_ms;
+        }
+
+        if ($locale === 'vi' && trim($this->announcement_text_vi) !== '') {
+            return $this->announcement_text_vi;
         }
 
         return $this->announcement_text_en;

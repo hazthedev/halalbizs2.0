@@ -13,8 +13,11 @@
  */
 
 use App\Livewire\Admin\Content\Pages;
+use App\Livewire\Admin\Support\Articles;
+use App\Models\HelpArticle;
 use App\Models\Page;
 use App\Models\User;
+use App\Support\HtmlSanitizer;
 use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
@@ -67,7 +70,7 @@ it('publishes an edited body to the public page', function () {
         ->and($html)->not->toContain('original body');
 });
 
-it('renders the Malay body under the ms locale and falls back to en without one', function () {
+it('renders optional locale bodies and falls back to English when one is cleared', function () {
     $page = cmsPage();
 
     Livewire::actingAs(cmsAdmin())
@@ -75,6 +78,7 @@ it('renders the Malay body under the ms locale and falls back to en without one'
         ->call('edit', $page->id)
         ->set('body.en', '<p>ENGLISH-BODY</p>')
         ->set('body.ms', '<p>BADAN-MELAYU</p>')
+        ->set('body.vi', '<p>NỘI-DUNG-TIẾNG-VIỆT</p>')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -82,16 +86,21 @@ it('renders the Malay body under the ms locale and falls back to en without one'
     // per request and overwrites anything app()->setLocale() set beforehand.
     expect(test()->withSession(['locale' => 'ms'])->get('/page/qa-page')->getContent())
         ->toContain('BADAN-MELAYU');
+    expect(test()->withSession(['locale' => 'vi'])->get('/page/qa-page')->getContent())
+        ->toContain('NỘI-DUNG-TIẾNG-VIỆT');
 
     // Clearing the ms body must fall back, not render an empty page.
     Livewire::actingAs(cmsAdmin())
         ->test(Pages::class)
         ->call('edit', $page->id)
         ->set('body.ms', '')
+        ->set('body.vi', '')
         ->call('save')
         ->assertHasNoErrors();
 
     expect(test()->withSession(['locale' => 'ms'])->get('/page/qa-page')->getContent())
+        ->toContain('ENGLISH-BODY');
+    expect(test()->withSession(['locale' => 'vi'])->get('/page/qa-page')->getContent())
         ->toContain('ENGLISH-BODY');
 });
 
@@ -285,7 +294,7 @@ it('still drops script bodies when it falls back to plain text', function () {
 });
 
 it('leaves a genuinely empty body empty', function () {
-    expect(\App\Support\HtmlSanitizer::clean('   ', \App\Support\HtmlSanitizer::CMS_TAGS))->toBe('');
+    expect(HtmlSanitizer::clean('   ', HtmlSanitizer::CMS_TAGS))->toBe('');
 });
 
 // ── Bounds ───────────────────────────────────────────────────────────────
@@ -305,9 +314,9 @@ it('rejects a body past the column limit instead of truncating it', function () 
 
 // ── Help articles: the other public CMS surface ──────────────────────────
 
-function cmsArticle(bool $active = true): App\Models\HelpArticle
+function cmsArticle(bool $active = true): HelpArticle
 {
-    return App\Models\HelpArticle::create([
+    return HelpArticle::create([
         'category' => 'buying',
         'title' => ['en' => 'QA Article'],
         'body' => ['en' => '<p>original article</p>'],
@@ -320,7 +329,7 @@ it('publishes an edited help article to the public page', function () {
     $article = cmsArticle();
 
     Livewire::actingAs(cmsAdmin())
-        ->test(App\Livewire\Admin\Support\Articles::class)
+        ->test(Articles::class)
         ->call('edit', $article->id)
         ->set('body.en', '<h2>New</h2><p>ARTICLE-MARKER-7</p>')
         ->call('save')
@@ -338,7 +347,7 @@ it('takes an unpublished help article off the storefront', function () {
     test()->get('/help/article/'.$article->id)->assertOk();
 
     Livewire::actingAs(cmsAdmin())
-        ->test(App\Livewire\Admin\Support\Articles::class)
+        ->test(Articles::class)
         ->call('toggleActive', $article->id);
 
     test()->get('/help/article/'.$article->id)->assertNotFound();
@@ -348,7 +357,7 @@ it('does not lose a help article body to broken markup either', function () {
     $article = cmsArticle();
 
     Livewire::actingAs(cmsAdmin())
-        ->test(App\Livewire\Admin\Support\Articles::class)
+        ->test(Articles::class)
         ->call('edit', $article->id)
         ->set('body.en', '</div><p>ARTICLE-KEEP-ME</p>')
         ->call('save')

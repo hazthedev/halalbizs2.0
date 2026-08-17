@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Content;
 
 use App\Models\Page;
+use App\Support\ContentLocales;
 use App\Support\HtmlSanitizer;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -30,11 +31,11 @@ class Pages extends Component
 
     public string $slug = '';
 
-    /** @var array{en: string, ms: string} */
-    public array $title = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $title = ['en' => '', 'ms' => '', 'vi' => ''];
 
-    /** @var array{en: string, ms: string} */
-    public array $body = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $body = ['en' => '', 'ms' => '', 'vi' => ''];
 
     public bool $isActive = true;
 
@@ -51,14 +52,8 @@ class Pages extends Component
         $this->resetForm();
         $this->editingId = $page->id;
         $this->slug = $page->slug;
-        $this->title = [
-            'en' => $page->getTranslation('title', 'en'),
-            'ms' => $page->getTranslation('title', 'ms', false) ?? '',
-        ];
-        $this->body = [
-            'en' => $page->getTranslation('body', 'en'),
-            'ms' => $page->getTranslation('body', 'ms', false) ?? '',
-        ];
+        $this->title = ContentLocales::read($page, 'title');
+        $this->body = ContentLocales::read($page, 'body');
         $this->isActive = $page->is_active;
         $this->showForm = true;
     }
@@ -76,8 +71,10 @@ class Pages extends Component
         $rules = [
             'title.en' => ['required', 'string', 'max:255'],
             'title.ms' => ['nullable', 'string', 'max:255'],
+            'title.vi' => ['nullable', 'string', 'max:255'],
             'body.en' => ['required', 'string', 'max:65000'],
             'body.ms' => ['nullable', 'string', 'max:65000'],
+            'body.vi' => ['nullable', 'string', 'max:65000'],
         ];
 
         if (! $systemPage) {
@@ -101,21 +98,8 @@ class Pages extends Component
 
         $page->is_active = in_array($page->slug, self::ALWAYS_ACTIVE_SLUGS, true) ? true : $this->isActive;
 
-        // en is ALWAYS written (fallback locale); ms only when filled.
-        $page->setTranslation('title', 'en', trim($this->title['en']));
-        $page->setTranslation('body', 'en', $this->sanitize($this->body['en']));
-
-        if (trim($this->title['ms'] ?? '') !== '') {
-            $page->setTranslation('title', 'ms', trim($this->title['ms']));
-        } else {
-            $page->forgetTranslation('title', 'ms');
-        }
-
-        if (trim($this->body['ms'] ?? '') !== '') {
-            $page->setTranslation('body', 'ms', $this->sanitize($this->body['ms']));
-        } else {
-            $page->forgetTranslation('body', 'ms');
-        }
+        ContentLocales::write($page, 'title', $this->title);
+        ContentLocales::write($page, 'body', $this->body, transform: $this->sanitize(...));
 
         $page->save();
 

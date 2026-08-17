@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Catalog;
 
 use App\Models\Attribute;
 use App\Models\Category;
+use App\Support\ContentLocales;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -29,11 +30,11 @@ class Categories extends Component
 
     public ?int $parentId = null;
 
-    /** @var array{en: string, ms: string} */
-    public array $name = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $name = ['en' => '', 'ms' => '', 'vi' => ''];
 
-    /** @var array{en: string, ms: string} */
-    public array $description = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $description = ['en' => '', 'ms' => '', 'vi' => ''];
 
     public string $commissionRate = '';
 
@@ -82,14 +83,8 @@ class Categories extends Component
 
         $this->editingId = $category->id;
         $this->parentId = $category->parent_id;
-        $this->name = [
-            'en' => $category->getTranslation('name', 'en'),
-            'ms' => $category->getTranslation('name', 'ms', false) ?? '',
-        ];
-        $this->description = [
-            'en' => $category->getTranslation('description', 'en', false) ?? '',
-            'ms' => $category->getTranslation('description', 'ms', false) ?? '',
-        ];
+        $this->name = ContentLocales::read($category, 'name');
+        $this->description = ContentLocales::read($category, 'description');
         $this->requiresHalalCertificate = $category->requires_halal_certificate === null
             ? ''
             : ($category->requires_halal_certificate ? '1' : '0');
@@ -111,8 +106,10 @@ class Categories extends Component
         $this->validate([
             'name.en' => ['required', 'string', 'max:255'],
             'name.ms' => ['nullable', 'string', 'max:255'],
+            'name.vi' => ['nullable', 'string', 'max:255'],
             'description.en' => ['nullable', 'string', 'max:2000'],
             'description.ms' => ['nullable', 'string', 'max:2000'],
+            'description.vi' => ['nullable', 'string', 'max:2000'],
             'commissionRate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'requiresHalalCertificate' => ['in:,1,0'],
             'image' => ['nullable', 'image', 'max:2048'],
@@ -149,27 +146,8 @@ class Categories extends Component
         $category->requires_halal_certificate = $this->requiresHalalCertificate === '' ? null : (bool) (int) $this->requiresHalalCertificate;
         $category->is_active = $this->isActive;
 
-        // en is ALWAYS written (fallback locale); ms only when filled.
-        $category->setTranslation('name', 'en', trim($this->name['en']));
-
-        if (trim($this->name['ms'] ?? '') !== '') {
-            $category->setTranslation('name', 'ms', trim($this->name['ms']));
-        } else {
-            $category->forgetTranslation('name', 'ms');
-        }
-
-        if (trim($this->description['en'] ?? '') === '' && trim($this->description['ms'] ?? '') === '') {
-            $category->forgetTranslation('description', 'en');
-            $category->forgetTranslation('description', 'ms');
-        } else {
-            $category->setTranslation('description', 'en', trim($this->description['en'] ?? ''));
-
-            if (trim($this->description['ms'] ?? '') !== '') {
-                $category->setTranslation('description', 'ms', trim($this->description['ms']));
-            } else {
-                $category->forgetTranslation('description', 'ms');
-            }
-        }
+        ContentLocales::write($category, 'name', $this->name);
+        ContentLocales::write($category, 'description', $this->description, englishRequired: false);
 
         $category->save();
 
@@ -273,8 +251,8 @@ class Categories extends Component
     private function resetForm(): void
     {
         $this->reset(['formOpen', 'editingId', 'parentId', 'commissionRate', 'requiresHalalCertificate', 'isActive', 'image', 'selectedAttributeIds']);
-        $this->name = ['en' => '', 'ms' => ''];
-        $this->description = ['en' => '', 'ms' => ''];
+        $this->name = ContentLocales::blank();
+        $this->description = ContentLocales::blank();
         $this->resetErrorBag();
     }
 

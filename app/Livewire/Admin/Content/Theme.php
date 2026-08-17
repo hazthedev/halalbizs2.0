@@ -29,6 +29,8 @@ class Theme extends Component
 
     public string $announcementTextMs = '';
 
+    public string $announcementTextVi = '';
+
     public string $announcementBg = '#03392B';
 
     public string $announcementTextColor = '#F7F7F4';
@@ -52,6 +54,7 @@ class Theme extends Component
             'occasion' => ['nullable', 'string', 'max:80'],
             'announcementTextEn' => [$this->announcementEnabled ? 'required' : 'nullable', 'string', 'max:200'],
             'announcementTextMs' => ['nullable', 'string', 'max:200'],
+            'announcementTextVi' => ['nullable', 'string', 'max:200'],
             'announcementBg' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'announcementTextColor' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'startsAt' => ['nullable', 'date'],
@@ -78,6 +81,7 @@ class Theme extends Component
         $settings->announcement_enabled = $this->announcementEnabled;
         $settings->announcement_text_en = trim($this->announcementTextEn);
         $settings->announcement_text_ms = trim($this->announcementTextMs);
+        $settings->announcement_text_vi = trim($this->announcementTextVi);
         $settings->announcement_bg = strtoupper($this->announcementBg);
         $settings->announcement_text_color = strtoupper($this->announcementTextColor);
         $settings->hero_image_enabled = $this->heroImageEnabled;
@@ -139,6 +143,7 @@ class Theme extends Component
         $this->announcementEnabled = $settings->announcement_enabled;
         $this->announcementTextEn = $settings->announcement_text_en;
         $this->announcementTextMs = $settings->announcement_text_ms;
+        $this->announcementTextVi = $settings->announcement_text_vi;
         $this->announcementBg = $settings->announcement_bg;
         $this->announcementTextColor = $settings->announcement_text_color;
         $this->heroImageEnabled = $settings->hero_image_enabled;

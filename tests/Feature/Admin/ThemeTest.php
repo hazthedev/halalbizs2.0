@@ -41,6 +41,7 @@ test('admin theme save persists all settings', function () {
         ->set('announcementEnabled', true)
         ->set('announcementTextEn', 'Raya sale — free shipping over RM40')
         ->set('announcementTextMs', 'Jualan Raya — penghantaran percuma melebihi RM40')
+        ->set('announcementTextVi', 'Khuyến mãi Raya — miễn phí giao hàng cho đơn trên RM40')
         ->set('announcementBg', '#7c2d12')
         ->set('announcementTextColor', '#fff7ed')
         ->set('heroImageEnabled', true)
@@ -55,6 +56,7 @@ test('admin theme save persists all settings', function () {
         ->and($settings->announcement_enabled)->toBeTrue()
         ->and($settings->announcement_text_en)->toBe('Raya sale — free shipping over RM40')
         ->and($settings->announcement_text_ms)->toBe('Jualan Raya — penghantaran percuma melebihi RM40')
+        ->and($settings->announcement_text_vi)->toBe('Khuyến mãi Raya — miễn phí giao hàng cho đơn trên RM40')
         ->and($settings->announcement_bg)->toBe('#7C2D12')
         ->and($settings->announcement_text_color)->toBe('#FFF7ED')
         ->and($settings->hero_image_enabled)->toBeTrue()
@@ -160,6 +162,20 @@ test('announcement bar shows the ms text under the ms locale', function () {
         ->get('/')
         ->assertOk()
         ->assertSee('Jualan Raya — penghantaran percuma melebihi RM40');
+});
+
+test('announcement bar shows Vietnamese text and falls back to English when it is empty', function () {
+    themeSettings([
+        'announcement_enabled' => true,
+        'announcement_text_en' => 'Raya sale',
+        'announcement_text_vi' => 'Khuyến mãi Raya',
+    ]);
+
+    $this->withSession(['locale' => 'vi'])->get('/')->assertOk()->assertSee('Khuyến mãi Raya');
+
+    themeSettings(['announcement_text_vi' => '']);
+
+    $this->withSession(['locale' => 'vi'])->get('/')->assertOk()->assertSee('Raya sale');
 });
 
 test('announcement bar is hidden when disabled', function () {

@@ -25,7 +25,7 @@ class BulkImport extends Component
 {
     use CurrentStore, WithFileUploads;
 
-    public const COLUMNS = ['name_en', 'name_ms', 'description_en', 'category_id', 'price_rm', 'stock', 'sku'];
+    public const COLUMNS = ['name_en', 'name_ms', 'name_vi', 'description_en', 'description_ms', 'description_vi', 'category_id', 'price_rm', 'stock', 'sku'];
 
     public $csv;
 
@@ -35,7 +35,7 @@ class BulkImport extends Component
     public function downloadTemplate(): StreamedResponse
     {
         return Csv::stream('product-import-template.csv', self::COLUMNS, [
-            ['Cotton Tee', 'Baju Kapas', 'Soft everyday cotton tee.', '1', '39.90', '100', 'TEE-001'],
+            ['Cotton Tee', 'Baju Kapas', 'Áo thun cotton', 'Soft everyday cotton tee.', 'Baju kapas lembut untuk dipakai setiap hari.', 'Áo thun cotton mềm mại dùng hằng ngày.', '1', '39.90', '100', 'TEE-001'],
         ]);
     }
 
@@ -78,11 +78,19 @@ class BulkImport extends Component
             $product = Product::create([
                 'store_id' => $store->id,
                 'category_id' => $categoryId,
-                'name' => ['en' => $nameEn, 'ms' => trim((string) ($data['name_ms'] ?? '')) ?: $nameEn],
+                'name' => array_filter([
+                    'en' => $nameEn,
+                    'ms' => trim((string) ($data['name_ms'] ?? '')),
+                    'vi' => trim((string) ($data['name_vi'] ?? '')),
+                ], fn (string $value, string $locale): bool => $locale === 'en' || $value !== '', ARRAY_FILTER_USE_BOTH),
                 // M-16: the PDP renders this column with {!! !!}, so Form.php runs
                 // every description through the sanitizer. This writer is the
                 // second one the C2 fix never reached — same column, same risk.
-                'description' => ['en' => HtmlSanitizer::clean(trim((string) ($data['description_en'] ?? ''))), 'ms' => ''],
+                'description' => array_filter([
+                    'en' => HtmlSanitizer::clean(trim((string) ($data['description_en'] ?? ''))),
+                    'ms' => HtmlSanitizer::clean(trim((string) ($data['description_ms'] ?? ''))),
+                    'vi' => HtmlSanitizer::clean(trim((string) ($data['description_vi'] ?? ''))),
+                ], fn (string $value, string $locale): bool => $locale === 'en' || $value !== '', ARRAY_FILTER_USE_BOTH),
                 'condition' => 'new',
                 'status' => ProductStatus::Draft, // never auto-publish
                 'cod_enabled' => true,

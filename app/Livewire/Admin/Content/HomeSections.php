@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Content;
 
 use App\Models\HomeSection;
+use App\Support\ContentLocales;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -24,8 +25,8 @@ class HomeSections extends Component
     #[Locked]
     public ?int $editingId = null;
 
-    /** @var array{en: string, ms: string} */
-    public array $title = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $title = ['en' => '', 'ms' => '', 'vi' => ''];
 
     public string $source = 'latest';
 
@@ -75,10 +76,7 @@ class HomeSections extends Component
 
         $this->resetErrorBag();
         $this->editingId = $section->id;
-        $this->title = [
-            'en' => $section->getTranslation('title', 'en', false) ?? '',
-            'ms' => $section->getTranslation('title', 'ms', false) ?? '',
-        ];
+        $this->title = ContentLocales::read($section, 'title');
         $this->source = (string) ($section->payload['source'] ?? ($section->type === 'product_grid' ? 'top' : 'latest'));
         $this->limit = (string) ($section->payload['limit'] ?? ($section->type === 'category_grid' ? 8 : 12));
     }
@@ -96,6 +94,7 @@ class HomeSections extends Component
         $rules = [
             'title.en' => ['nullable', 'string', 'max:255'],
             'title.ms' => ['nullable', 'string', 'max:255'],
+            'title.vi' => ['nullable', 'string', 'max:255'],
         ];
 
         if (in_array($section->type, ['category_grid', 'product_carousel', 'product_grid'], true)) {
@@ -108,14 +107,7 @@ class HomeSections extends Component
 
         $this->validate($rules, attributes: ['title.en' => __('title (English)')]);
 
-        // en is ALWAYS written (fallback locale); ms only when filled.
-        $section->setTranslation('title', 'en', trim($this->title['en']));
-
-        if (trim($this->title['ms'] ?? '') !== '') {
-            $section->setTranslation('title', 'ms', trim($this->title['ms']));
-        } else {
-            $section->forgetTranslation('title', 'ms');
-        }
+        ContentLocales::write($section, 'title', $this->title, englishRequired: false);
 
         // Payload contract per type — keys identical to Storefront\Home::sectionData().
         $section->payload = match ($section->type) {

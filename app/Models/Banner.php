@@ -31,6 +31,7 @@ class Banner extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')->singleFile();
+        $this->addMediaCollection('image_vi')->singleFile();
 
         // Optional motion slide (mp4/webm, ≤30MB — enforced by the admin
         // form's mimetypes/max validation). The image stays as the fallback.
@@ -39,7 +40,21 @@ class Banner extends Model implements HasMedia
 
     public function registerMediaConversions(?Media $media = null): void
     {
-        $this->addMediaConversion('card')->width(1600)->performOnCollections('image');
+        $this->addMediaConversion('card')->width(1600)->performOnCollections('image', 'image_vi');
+    }
+
+    /** Locale artwork with the base image as a deliberate fallback. */
+    public function imageUrl(string $locale, string $conversion = 'card'): string
+    {
+        if ($locale === 'vi') {
+            $localized = $this->getFirstMediaUrl('image_vi', $conversion);
+
+            if ($localized !== '') {
+                return $localized;
+            }
+        }
+
+        return $this->getFirstMediaUrl('image', $conversion);
     }
 
     #[Scope]

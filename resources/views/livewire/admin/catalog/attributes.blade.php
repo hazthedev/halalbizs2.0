@@ -8,6 +8,7 @@
         <form wire:submit="create" class="flex flex-wrap items-end gap-3">
             <x-ui.input class="min-w-48 flex-1" :label="__('Name (English)')" wire:model="name.en" :error="$errors->first('name.en')" />
             <x-ui.input class="min-w-48 flex-1" :label="__('Name (Bahasa Melayu)')" wire:model="name.ms" :error="$errors->first('name.ms')" placeholder="{{ __('Optional') }}" />
+            <x-ui.input class="min-w-48 flex-1" :label="__('Name (Vietnamese)')" wire:model="name.vi" :error="$errors->first('name.vi')" placeholder="{{ __('Optional') }}" />
             <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
                 <input type="checkbox" wire:model="isFilterable" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Filterable') }}
@@ -39,6 +40,7 @@
                                     <form wire:submit="update" class="flex flex-wrap items-center gap-2">
                                         <x-ui.input wire:model="editName.en" :error="$errors->first('editName.en')" aria-label="{{ __('Name (English)') }}" />
                                         <x-ui.input wire:model="editName.ms" :error="$errors->first('editName.ms')" placeholder="{{ __('BM (optional)') }}" aria-label="{{ __('Name (Bahasa Melayu)') }}" />
+                                        <x-ui.input wire:model="editName.vi" :error="$errors->first('editName.vi')" placeholder="{{ __('VI (optional)') }}" aria-label="{{ __('Name (Vietnamese)') }}" />
                                         <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Save') }}</button>
                                         <button type="button" wire:click="cancelEdit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
                                     </form>
@@ -111,6 +113,7 @@
                                         <form wire:submit="addValue" class="flex flex-wrap items-end gap-2 border-t border-line pt-3">
                                             <x-ui.input class="min-w-36 flex-1" :label="__('Value (English)')" wire:model="valueDraft.en" :error="$errors->first('valueDraft.en')" />
                                             <x-ui.input class="min-w-36 flex-1" :label="__('Value (Bahasa Melayu)')" wire:model="valueDraft.ms" :error="$errors->first('valueDraft.ms')" placeholder="{{ __('Optional') }}" />
+                                            <x-ui.input class="min-w-36 flex-1" :label="__('Value (Vietnamese)')" wire:model="valueDraft.vi" :error="$errors->first('valueDraft.vi')" placeholder="{{ __('Optional') }}" />
                                             <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Add value') }}</button>
                                         </form>
                                     </div>

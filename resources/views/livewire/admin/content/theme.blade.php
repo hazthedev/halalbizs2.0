@@ -40,6 +40,8 @@
                         placeholder="{{ __('e.g. Raya sale — free shipping over RM40') }}" />
             <x-ui.input :label="__('Text (Bahasa Melayu)')" wire:model="announcementTextMs" :error="$errors->first('announcementTextMs')"
                         :hint="__('Optional — English is shown when empty.')" />
+            <x-ui.input :label="__('Text (Vietnamese)')" wire:model="announcementTextVi" :error="$errors->first('announcementTextVi')"
+                        :hint="__('Optional — English is shown when empty.')" />
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div x-data="{ value: $wire.entangle('announcementBg') }">

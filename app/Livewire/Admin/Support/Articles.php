@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Support;
 
 use App\Enums\HelpCategory;
 use App\Models\HelpArticle;
+use App\Support\ContentLocales;
 use App\Support\HtmlSanitizer;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -24,11 +25,11 @@ class Articles extends Component
 
     public string $category = 'buying';
 
-    /** @var array{en: string, ms: string} */
-    public array $title = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $title = ['en' => '', 'ms' => '', 'vi' => ''];
 
-    /** @var array{en: string, ms: string} */
-    public array $body = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $body = ['en' => '', 'ms' => '', 'vi' => ''];
 
     public string $position = '0';
 
@@ -47,14 +48,8 @@ class Articles extends Component
         $this->resetForm();
         $this->editingId = $article->id;
         $this->category = $article->category->value;
-        $this->title = [
-            'en' => $article->getTranslation('title', 'en'),
-            'ms' => $article->getTranslation('title', 'ms', false) ?? '',
-        ];
-        $this->body = [
-            'en' => $article->getTranslation('body', 'en'),
-            'ms' => $article->getTranslation('body', 'ms', false) ?? '',
-        ];
+        $this->title = ContentLocales::read($article, 'title');
+        $this->body = ContentLocales::read($article, 'body');
         $this->position = (string) $article->position;
         $this->isActive = $article->is_active;
         $this->showForm = true;
@@ -71,8 +66,10 @@ class Articles extends Component
             'category' => ['required', Rule::enum(HelpCategory::class)],
             'title.en' => ['required', 'string', 'max:255'],
             'title.ms' => ['nullable', 'string', 'max:255'],
+            'title.vi' => ['nullable', 'string', 'max:255'],
             'body.en' => ['required', 'string', 'max:65000'],
             'body.ms' => ['nullable', 'string', 'max:65000'],
+            'body.vi' => ['nullable', 'string', 'max:65000'],
             'position' => ['required', 'integer', 'min:0', 'max:65535'],
         ], attributes: [
             'title.en' => __('title (English)'),
@@ -85,21 +82,8 @@ class Articles extends Component
         $article->position = (int) $this->position;
         $article->is_active = $this->isActive;
 
-        // en is ALWAYS written (fallback locale); ms only when filled.
-        $article->setTranslation('title', 'en', trim($this->title['en']));
-        $article->setTranslation('body', 'en', $this->sanitize($this->body['en']));
-
-        if (trim($this->title['ms'] ?? '') !== '') {
-            $article->setTranslation('title', 'ms', trim($this->title['ms']));
-        } else {
-            $article->forgetTranslation('title', 'ms');
-        }
-
-        if (trim($this->body['ms'] ?? '') !== '') {
-            $article->setTranslation('body', 'ms', $this->sanitize($this->body['ms']));
-        } else {
-            $article->forgetTranslation('body', 'ms');
-        }
+        ContentLocales::write($article, 'title', $this->title);
+        ContentLocales::write($article, 'body', $this->body, transform: $this->sanitize(...));
 
         $article->save();
 

@@ -34,6 +34,15 @@ test('the fallback returns a helpful note when nothing matches', function () {
         ->and($reply->text)->toContain('Maaf');
 });
 
+test('the fallback replies in Vietnamese', function () {
+    config(['services.anthropic.key' => null]);
+
+    $reply = app(ConciergeService::class)->reply('không-tồn-tại', [], 'vi');
+
+    expect($reply->products)->toBeEmpty()
+        ->and($reply->text)->toContain('Xin lỗi');
+});
+
 test('an empty message returns an empty reply without searching', function () {
     config(['services.anthropic.key' => null]);
 

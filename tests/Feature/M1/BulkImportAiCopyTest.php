@@ -27,12 +27,13 @@ function importSeller(): User
     return $seller;
 }
 
-test('the listing copy service falls back to bilingual template copy without an API key', function () {
+test('the listing copy service falls back to multilingual template copy without an API key', function () {
     $copy = app(ListingCopyService::class)->generate('Cotton Tee', ['Red', 'Large']);
 
     expect($copy['en'])->toContain('Cotton Tee')
         ->and($copy['en'])->toContain('Red')
-        ->and($copy['ms'])->not->toBe('');
+        ->and($copy['ms'])->not->toBe('')
+        ->and($copy['vi'])->toContain('chất lượng');
 });
 
 test('the product form fills a draft description with AI', function () {
@@ -41,7 +42,8 @@ test('the product form fills a draft description with AI', function () {
         ->set('name.en', 'Cotton Tee')
         ->call('generateCopy')
         ->assertSet('description.en', fn ($value) => str_contains((string) $value, 'Cotton Tee'))
-        ->assertSet('description.ms', fn ($value) => trim((string) $value) !== '');
+        ->assertSet('description.ms', fn ($value) => trim((string) $value) !== '')
+        ->assertSet('description.vi', fn ($value) => trim((string) $value) !== '');
 });
 
 test('bulk import creates draft products and reports row errors', function () {
@@ -66,4 +68,21 @@ test('bulk import creates draft products and reports row errors', function () {
         ->and($product->getTranslation('name', 'en'))->toBe('Cotton Tee')
         ->and($product->variants->first()->price_sen)->toBe(3990)
         ->and($product->variants->first()->stock)->toBe(100);
+});
+
+test('bulk import accepts Vietnamese columns while old CSV headers remain compatible', function () {
+    $seller = importSeller();
+    $category = Category::factory()->create();
+    $csv = "name_en,name_vi,description_en,description_vi,category_id,price_rm,stock,sku\n"
+        ."Rice Crackers,Bánh gạo giòn,Crisp rice snack.,Món ăn nhẹ từ gạo giòn.,{$category->id},8.90,20,RICE-VI\n";
+
+    Livewire::actingAs($seller)
+        ->test(BulkImport::class)
+        ->set('csv', UploadedFile::fake()->createWithContent('products-vi.csv', $csv))
+        ->call('import')
+        ->assertSet('result.created', 1);
+
+    $product = Product::whereJsonContains('name->vi', 'Bánh gạo giòn')->sole();
+
+    expect($product->getTranslation('description', 'vi', false))->toBe('Món ăn nhẹ từ gạo giòn.');
 });

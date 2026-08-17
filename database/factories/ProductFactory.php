@@ -22,7 +22,7 @@ class ProductFactory extends Factory
         return [
             'store_id' => Store::factory()->approved(),
             'category_id' => Category::factory(),
-            'name' => ['en' => $name, 'ms' => $name],
+            'name' => ['en' => $name, 'ms' => $name, 'vi' => $name],
             'description' => [
                 'en' => '<p>'.implode('</p><p>', fake()->paragraphs(3)).'</p>',
                 'ms' => '<p>'.implode('</p><p>', fake()->paragraphs(2)).'</p>',

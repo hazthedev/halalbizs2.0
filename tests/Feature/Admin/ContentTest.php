@@ -39,10 +39,12 @@ test('admin creates a banner with image, schedule, and translations', function (
         ->call('create')
         ->set('title.en', 'Raya Sale')
         ->set('title.ms', 'Jualan Raya')
+        ->set('title.vi', 'Khuyến mãi Raya')
         ->set('linkUrl', '/c/snacks')
         ->set('startsAt', '2026-06-01T00:00')
         ->set('endsAt', '2026-06-30T23:59')
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
+        ->set('imageVi', UploadedFile::fake()->image('banner-vi.jpg', 1200, 400))
         ->call('save')
         ->assertHasNoErrors();
 
@@ -50,11 +52,13 @@ test('admin creates a banner with image, schedule, and translations', function (
 
     expect($banner->getTranslation('title', 'en'))->toBe('Raya Sale')
         ->and($banner->getTranslation('title', 'ms'))->toBe('Jualan Raya')
+        ->and($banner->getTranslation('title', 'vi', false))->toBe('Khuyến mãi Raya')
         ->and($banner->link_url)->toBe('/c/snacks')
         ->and($banner->starts_at->format('Y-m-d H:i'))->toBe('2026-06-01 00:00')
         ->and($banner->ends_at->format('Y-m-d H:i'))->toBe('2026-06-30 23:59')
         ->and($banner->is_active)->toBeTrue()
-        ->and($banner->getFirstMedia('image'))->not->toBeNull();
+        ->and($banner->getFirstMedia('image'))->not->toBeNull()
+        ->and($banner->getFirstMedia('image_vi'))->not->toBeNull();
 });
 
 test('a banner video saves and renders as an autoplaying slide on the home page', function () {
@@ -78,6 +82,26 @@ test('a banner video saves and renders as an autoplaying slide on the home page'
     Livewire::test(Home::class)
         ->assertSee('autoplay muted loop playsinline', false)
         ->assertSee($banner->getFirstMediaUrl('video'), false);
+});
+
+test('Vietnamese storefront uses localized banner artwork instead of an English video', function () {
+    Storage::fake('public');
+
+    $banner = Banner::create([
+        'title' => ['en' => 'English campaign', 'vi' => 'Chiến dịch tiếng Việt'],
+        'position' => 0,
+        'is_active' => true,
+    ]);
+    $banner->addMedia(UploadedFile::fake()->image('banner-en.jpg', 1200, 400))->toMediaCollection('image');
+    $banner->addMedia(UploadedFile::fake()->image('banner-vi.jpg', 1200, 400))->toMediaCollection('image_vi');
+    $banner->addMedia(UploadedFile::fake()->create('english-promo.mp4', 1024, 'video/mp4'))->toMediaCollection('video');
+    HomeSection::create(['type' => 'banner', 'title' => ['en' => 'Promos'], 'position' => 0, 'is_active' => true]);
+
+    $response = $this->withSession(['locale' => 'vi'])->get('/');
+
+    $response->assertOk()
+        ->assertSee('banner-vi', false)
+        ->assertDontSee('english-promo', false);
 });
 
 test('a banner video must be MP4 or WebM', function () {
@@ -165,6 +189,7 @@ test('home section payload saves with the storefront contract keys and home stil
         ->call('edit', $section->id)
         ->set('title.en', 'Hot right now')
         ->set('title.ms', 'Hangat sekarang')
+        ->set('title.vi', 'Đang được ưa chuộng')
         ->set('source', 'top')
         ->set('limit', '6')
         ->call('save')
@@ -174,7 +199,8 @@ test('home section payload saves with the storefront contract keys and home stil
 
     expect($section->payload)->toBe(['source' => 'top', 'limit' => 6])
         ->and($section->getTranslation('title', 'en'))->toBe('Hot right now')
-        ->and($section->getTranslation('title', 'ms'))->toBe('Hangat sekarang');
+        ->and($section->getTranslation('title', 'ms'))->toBe('Hangat sekarang')
+        ->and($section->getTranslation('title', 'vi', false))->toBe('Đang được ưa chuộng');
 
     // The storefront home page (B1) must keep rendering after edits.
     test()->get('/')->assertOk();

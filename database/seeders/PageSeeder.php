@@ -14,6 +14,8 @@ class PageSeeder extends Seeder
 {
     public function run(): void
     {
+        $vi = (require database_path('seeders/data/vietnamese-cms.php'))['pages'];
+
         foreach ($this->pages() as $slug => $page) {
             // firstOrCreate, NOT updateOrCreate. These are CMS pages an admin
             // edits in the panel; updateOrCreate reverted every one of those
@@ -29,8 +31,12 @@ class PageSeeder extends Seeder
             Page::firstOrCreate(
                 ['slug' => $slug],
                 [
-                    'title' => ['en' => $page['title_en'], 'ms' => $page['title_ms']],
-                    'body' => ['en' => $page['body_en'], 'ms' => $page['body_ms']],
+                    'title' => ['en' => $page['title_en'], 'ms' => $page['title_ms'], 'vi' => $vi[$slug]['title']],
+                    'body' => [
+                        'en' => $page['body_en'],
+                        'ms' => $page['body_ms'],
+                        'vi' => str_replace(':brand', config('app.name', 'HalalBizs'), $vi[$slug]['body']),
+                    ],
                     'is_active' => true,
                 ],
             );

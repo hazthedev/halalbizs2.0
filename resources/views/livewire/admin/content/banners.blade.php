@@ -34,6 +34,12 @@
                                 class="min-h-11 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Bahasa Melayu') }}
                         </button>
+                        <button type="button" role="tab" x-on:click="tab = 'vi'"
+                                x-bind:aria-selected="tab === 'vi' ? 'true' : 'false'"
+                                x-bind:class="tab === 'vi' ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink'"
+                                class="min-h-11 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                            {{ __('Tiếng Việt') }}
+                        </button>
                     </div>
 
                     <div class="pt-3">
@@ -43,19 +49,24 @@
                         <div x-show="tab === 'ms'" x-cloak>
                             <x-ui.input :label="__('Title (Bahasa Melayu)')" wire:model="title.ms" :error="$errors->first('title.ms')" :hint="__('Optional — English is shown when empty.')" />
                         </div>
+                        <div x-show="tab === 'vi'" x-cloak>
+                            <x-ui.input :label="__('Title (Vietnamese)')" wire:model="title.vi" :error="$errors->first('title.vi')" :hint="__('Optional — English is shown when empty.')" />
+                        </div>
                     </div>
                 </div>
 
                 {{-- Supporting line + call to action. A headline alone names a
                      category; these are what actually sell the marketplace. --}}
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid gap-4 lg:grid-cols-3">
                     <x-ui.input :label="__('Supporting line (English)')" wire:model="subtitle.en" :error="$errors->first('subtitle.en')" :hint="__('Optional — one sentence under the headline.')" />
                     <x-ui.input :label="__('Supporting line (Bahasa Melayu)')" wire:model="subtitle.ms" :error="$errors->first('subtitle.ms')" :hint="__('Optional — English is shown when empty.')" />
+                    <x-ui.input :label="__('Supporting line (Vietnamese)')" wire:model="subtitle.vi" :error="$errors->first('subtitle.vi')" :hint="__('Optional — English is shown when empty.')" />
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid gap-4 lg:grid-cols-3">
                     <x-ui.input :label="__('Button text (English)')" wire:model="ctaLabel.en" :error="$errors->first('ctaLabel.en')" :hint="__('Optional — e.g. Shop Drinks. Hidden when empty.')" />
                     <x-ui.input :label="__('Button text (Bahasa Melayu)')" wire:model="ctaLabel.ms" :error="$errors->first('ctaLabel.ms')" :hint="__('Optional — English is shown when empty.')" />
+                    <x-ui.input :label="__('Button text (Vietnamese)')" wire:model="ctaLabel.vi" :error="$errors->first('ctaLabel.vi')" :hint="__('Optional — English is shown when empty.')" />
                 </div>
 
                 <x-ui.input :label="__('Link URL')" wire:model="linkUrl" placeholder="/c/snacks" :error="$errors->first('linkUrl')" :hint="__('Optional — where the banner clicks through to.')" />
@@ -79,6 +90,26 @@
                     <div wire:loading wire:target="image" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                     @if ($image)
                         <img src="{{ $image->temporaryUrl() }}" alt="{{ __('Banner preview') }}" class="mt-2 h-24 rounded-[var(--radius-card)] border border-line object-cover">
+                    @endif
+                </div>
+
+                <div>
+                    <label for="banner-image-vi" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Vietnamese image (optional)') }}</label>
+                    <input type="file" id="banner-image-vi" wire:model="imageVi" accept="image/*"
+                           class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-[13px] file:font-medium file:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    @error('imageVi')
+                        <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
+                    @else
+                        <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('Used for Vietnamese when copy is baked into the artwork. Falls back to the main image when empty.') }}</p>
+                    @enderror
+                    <div wire:loading wire:target="imageVi" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                    @if ($imageVi)
+                        <img src="{{ $imageVi->temporaryUrl() }}" alt="{{ __('Vietnamese banner preview') }}" class="mt-2 h-24 rounded-[var(--radius-card)] border border-line object-cover">
+                    @elseif ($editingId !== null && ($viImage = \App\Models\Banner::find($editingId)?->getFirstMediaUrl('image_vi', 'card')))
+                        <div class="mt-2 flex items-center gap-3">
+                            <img src="{{ $viImage }}" alt="{{ __('Vietnamese banner preview') }}" class="h-24 rounded-[var(--radius-card)] border border-line object-cover">
+                            <button type="button" wire:click="removeVietnameseImage" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint">{{ __('Remove') }}</button>
+                        </div>
                     @endif
                 </div>
 
@@ -107,7 +138,7 @@
                 </label>
 
                 <div class="flex items-center gap-2">
-                    <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="save, image, video">
+                    <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="save, image, imageVi, video">
                         {{ $editingId !== null ? __('Save banner') : __('Create banner') }}
                     </x-ui.button>
                     <x-ui.button variant="ghost" wire:click="cancel">{{ __('Cancel') }}</x-ui.button>
