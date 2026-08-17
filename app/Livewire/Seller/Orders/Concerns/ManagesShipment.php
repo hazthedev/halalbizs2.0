@@ -4,6 +4,7 @@ namespace App\Livewire\Seller\Orders\Concerns;
 
 use App\Enums\ActorType;
 use App\Enums\SubOrderStatus;
+use App\Jobs\RegisterAfterShipTracking;
 use App\Models\SubOrder;
 use App\Services\EasyParcelService;
 use App\Services\SubOrderStatusService;
@@ -84,6 +85,10 @@ trait ManagesShipment
         // Book a real courier shipment when the store uses EasyParcel (no-op
         // otherwise) — augments the manual tracking with an AWB + label.
         app(EasyParcelService::class)->bookIfEnabled($subOrder);
+
+        // Disabled/unkeyed by default. Once AfterShip credentials are added,
+        // registration happens off-request and works for any courier/country.
+        RegisterAfterShipTracking::dispatch($subOrder->id)->afterCommit();
 
         $this->closeShipModal();
         $this->afterShipped($subOrder->fresh());

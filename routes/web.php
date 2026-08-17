@@ -2,6 +2,7 @@
 
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\AffiliateReferralController;
+use App\Http\Controllers\AfterShipWebhookController;
 use App\Http\Controllers\EasyParcelWebhookController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\InvoiceController;
@@ -112,8 +113,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/payments/ipay88/response', [Ipay88Controller::class, 'response'])->name('payments.ipay88.response');
 Route::post('/payments/ipay88/backend', [Ipay88Controller::class, 'backend'])->name('payments.ipay88.backend');
 
-// Courier tracking webhook (token-gated, CSRF-exempt in bootstrap/app.php).
+// Courier tracking webhooks (provider-authenticated, CSRF-exempt in bootstrap/app.php).
 Route::post('/shipping/easyparcel/tracking', [EasyParcelWebhookController::class, 'tracking'])->name('shipping.easyparcel.tracking');
+Route::post('/shipping/aftership/tracking', [AfterShipWebhookController::class, 'tracking'])->name('shipping.aftership.tracking');
 
 // ===== Affiliate share links (M2.5) =====
 Route::get('/r/{code}', [AffiliateReferralController::class, 'refer'])->middleware('throttle:60,1')->name('affiliate.refer');

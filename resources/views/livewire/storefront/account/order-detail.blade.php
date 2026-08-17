@@ -301,6 +301,32 @@
                         @if ($subOrder->shipped_at)
                             <p class="mt-2 text-xs text-ink-soft">{{ __('Shipped :date', ['date' => $subOrder->shipped_at->format('j M Y')]) }}</p>
                         @endif
+                        @if ($subOrder->tracking_url)
+                            <a href="{{ $subOrder->tracking_url }}" target="_blank" rel="noopener noreferrer"
+                               class="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-emerald hover:text-emerald-deep">
+                                {{ __('Track on courier website') }}
+                                <span aria-hidden="true">&nbsp;↗</span>
+                            </a>
+                        @endif
+
+                        @if ($subOrder->trackingEvents->isNotEmpty())
+                            <div class="mt-4 border-t border-line pt-4">
+                                <h4 class="text-xs font-medium uppercase tracking-[0.04em] text-ink-soft">{{ __('Shipment journey') }}</h4>
+                                <ol class="mt-3 space-y-4">
+                                    @foreach ($subOrder->trackingEvents as $event)
+                                        <li class="relative border-l border-line pl-4" wire:key="tracking-event-{{ $event->id }}">
+                                            <span class="absolute -left-[4.5px] top-1.5 size-2 rounded-full bg-emerald" aria-hidden="true"></span>
+                                            <p class="text-sm font-medium text-ink">{{ $event->status->label() }}</p>
+                                            <p class="mt-0.5 text-xs leading-relaxed text-ink-soft">{{ $event->message }}</p>
+                                            <p class="mt-1 text-[11px] text-ink-faint">
+                                                {{ $event->occurred_at->format('j M Y, g:i a') }}
+                                                @if ($event->location) · {{ $event->location }} @endif
+                                            </p>
+                                        </li>
+                                    @endforeach
+                                </ol>
+                            </div>
+                        @endif
                     </x-ui.card>
                 @endif
 
