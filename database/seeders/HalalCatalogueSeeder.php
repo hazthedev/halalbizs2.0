@@ -181,14 +181,14 @@ class HalalCatalogueSeeder extends Seeder
         // and regenerates it from name.en on every save. Passing our own key made
         // firstOrNew match nothing and insert a duplicate on every run (98 of
         // them, twice). So key on exactly what the model will produce.
-        $slug = Str::slug($row['name_en']);
+        $canonicalSlug = Str::slug($row['name_en']);
         $legacySlug = Str::slug($row['legacy_name_en']);
         $priceSen = (int) round($row['price_myr'] * 100);
 
-        // Prefer the corrected canonical slug, but adopt the existing row by
-        // its former Malay-derived slug on the first corrective deployment.
-        // This keeps product ids, media, reviews and order history intact.
-        $product = Product::withTrashed()->where('slug', $slug)->first()
+        // The first corrective deployment briefly generated canonical English
+        // slugs. Recognise either form, but persist the original URL below so
+        // bookmarks and indexed links remain valid.
+        $product = Product::withTrashed()->where('slug', $canonicalSlug)->first()
             ?? Product::withTrashed()->where('slug', $legacySlug)->first()
             ?? new Product;
         $product->fill([
@@ -196,6 +196,7 @@ class HalalCatalogueSeeder extends Seeder
             'category_id' => $leaf->id,
             'name' => ['en' => $row['name_en'], 'ms' => $row['name_ms'], 'vi' => $this->vietnameseName($row, $vi)],
             'description' => $this->description($row, $vi),
+            'slug' => $legacySlug,
             'status' => ProductStatus::Live,
             'published_at' => $product->published_at ?? now(),
             'cod_enabled' => true,
@@ -206,12 +207,12 @@ class HalalCatalogueSeeder extends Seeder
             // Derive them from the legacy slug so the register does not mint a
             // second certificate merely because its product title was fixed.
             'halal_cert_number' => $this->certNumber($row['certifier'], $legacySlug),
-            'halal_cert_expiry' => now()->addMonths(6 + (crc32($slug) % 24))->startOfDay(),
+            'halal_cert_expiry' => now()->addMonths(6 + (crc32($legacySlug) % 24))->startOfDay(),
             'rating_avg' => $row['rating'] ?? 0,
             'rating_count' => $row['reviews'] ?? 0,
             'sold_count' => ($row['reviews'] ?? 0) * 3,
             'deleted_at' => null,
-        ])->save();
+        ])->saveQuietly();
 
         // Single default variant per SKU: this is a grocery catalogue, not
         // apparel, so there is nothing to matrix.
@@ -220,12 +221,12 @@ class HalalCatalogueSeeder extends Seeder
         $variant = ProductVariant::where('product_id', $product->id)->where('is_default', true)->first()
             ?? new ProductVariant([
                 'product_id' => $product->id,
-                'sku' => strtoupper(Str::substr(preg_replace('/[^A-Za-z0-9]/', '', $slug), 0, 8)).'-'.substr((string) crc32($slug), 0, 4),
+                'sku' => strtoupper(Str::substr(preg_replace('/[^A-Za-z0-9]/', '', $legacySlug), 0, 8)).'-'.substr((string) crc32($legacySlug), 0, 4),
             ]);
         $variant->fill([
             'options_label' => $row['unit'],
             'price_sen' => $priceSen,
-            'stock' => 40 + (crc32($slug) % 160),
+            'stock' => 40 + (crc32($legacySlug) % 160),
             'is_default' => true,
             'position' => 0,
         ])->save();
