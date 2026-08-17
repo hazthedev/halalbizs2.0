@@ -8,6 +8,7 @@ use App\Models\HelpArticle;
 use App\Models\HomeSection;
 use App\Models\Page;
 use App\Models\Product;
+use Database\Seeders\Support\CatalogueProductName;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 
@@ -56,17 +57,28 @@ class VietnameseContentSeeder extends Seeder
     /** @param array<int, array<string, mixed>> $rows */
     private function products(array $rows, array $translations): void
     {
-        $byEnglish = collect($rows)->keyBy('name_en');
+        $byEnglish = collect($rows)->map(function (array $row): array {
+            $row['legacy_name_en'] = $row['name_en'];
+            $row['name_en'] = CatalogueProductName::for($row);
+
+            return $row;
+        })->keyBy('name_en');
 
         Product::withTrashed()->with('category')->each(function (Product $product) use ($byEnglish, $translations): void {
             $english = $product->getTranslation('name', 'en', false);
             $row = $byEnglish->get($english);
 
-            if (! is_array($row) || ! isset($translations['products'][$english])) {
+            if (! is_array($row)) {
                 return;
             }
 
-            $name = $translations['products'][$english];
+            $name = $translations['products'][$row['legacy_name_en']]
+                ?? $translations['products'][$row['name_ms']]
+                ?? null;
+
+            if (! is_string($name)) {
+                return;
+            }
             $leaf = $translations['categories'][$row['leaf']] ?? $row['leaf'];
             $unit = trim((string) ($row['unit'] ?? ''));
             $unitSentence = $unit !== '' ? ' '.$unit.'.' : '';
