@@ -14,6 +14,7 @@ class PageSeeder extends Seeder
 {
     public function run(): void
     {
+        $brand = $this->brand();
         $vi = (require database_path('seeders/data/vietnamese-cms.php'))['pages'];
 
         foreach ($this->pages() as $slug => $page) {
@@ -28,25 +29,65 @@ class PageSeeder extends Seeder
             // nothing a human wrote is ever overwritten. Baseline copy changes
             // in this file therefore do NOT propagate to an existing page — edit
             // it in the admin panel, which is where it now lives.
-            Page::firstOrCreate(
+            $model = Page::firstOrCreate(
                 ['slug' => $slug],
                 [
                     'title' => ['en' => $page['title_en'], 'ms' => $page['title_ms'], 'vi' => $vi[$slug]['title']],
                     'body' => [
                         'en' => $page['body_en'],
                         'ms' => $page['body_ms'],
-                        'vi' => str_replace(':brand', config('app.name', 'HalalBizs'), $vi[$slug]['body']),
+                        'vi' => str_replace(':brand', $brand, $vi[$slug]['body']),
                     ],
                     'is_active' => true,
                 ],
             );
+
+            if ($slug === 'about') {
+                $this->upgradeShortAboutPage($model, $page, $vi[$slug]);
+            }
+        }
+    }
+
+    /**
+     * Upgrade only the original one-paragraph baseline. A later administrator
+     * edit is left untouched, including when this seeder runs on every deploy.
+     *
+     * @param  array<string, string>  $page
+     * @param  array{title: string, body: string}  $vi
+     */
+    private function upgradeShortAboutPage(Page $model, array $page, array $vi): void
+    {
+        $brand = $this->brand();
+        $legacy = [
+            'en' => "<h2>About {$brand}</h2><p>{$brand} is a Malaysian multi-vendor marketplace bringing trusted, halal-friendly sellers and shoppers together — with fair fees, buyer protection, and bilingual support.</p>",
+            'ms' => "<h2>Tentang {$brand}</h2><p>{$brand} ialah pasar pelbagai penjual Malaysia yang menghubungkan penjual yang dipercayai dan mesra halal dengan pembeli — dengan yuran adil, perlindungan pembeli, dan sokongan dwibahasa.</p>",
+            'vi' => "<h2>Về {$brand}</h2><p>{$brand} là sàn giao dịch đa nhà bán hàng tại Malaysia, kết nối người bán đáng tin cậy, thân thiện với halal cùng người mua — với mức phí công bằng, chính sách bảo vệ người mua và hỗ trợ đa ngôn ngữ.</p>",
+        ];
+        $replacement = [
+            'en' => $page['body_en'],
+            'ms' => $page['body_ms'],
+            'vi' => str_replace(':brand', $brand, $vi['body']),
+        ];
+        $changed = false;
+
+        foreach ($replacement as $locale => $body) {
+            $current = trim((string) $model->getTranslation('body', $locale, false));
+
+            if ($current === '' || $current === $legacy[$locale]) {
+                $model->setTranslation('body', $locale, $body);
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            $model->save();
         }
     }
 
     /** @return array<string, array<string, string>> */
     private function pages(): array
     {
-        $brand = config('app.name', 'HalalBizs');
+        $brand = $this->brand();
 
         return [
             'terms' => [
@@ -168,8 +209,104 @@ class PageSeeder extends Seeder
             'about' => [
                 'title_en' => 'About Us',
                 'title_ms' => 'Tentang Kami',
-                'body_en' => "<h2>About {$brand}</h2><p>{$brand} is a Malaysian multi-vendor marketplace bringing trusted, halal-friendly sellers and shoppers together — with fair fees, buyer protection, and bilingual support.</p>",
-                'body_ms' => "<h2>Tentang {$brand}</h2><p>{$brand} ialah pasar pelbagai penjual Malaysia yang menghubungkan penjual yang dipercayai dan mesra halal dengan pembeli — dengan yuran adil, perlindungan pembeli, dan sokongan dwibahasa.</p>",
+                'body_en' => <<<HTML
+                <h2>About {$brand}</h2>
+                <p>{$brand} is a Malaysian multi-vendor marketplace built to make everyday commerce more transparent, inclusive, and useful for buyers and independent sellers. We bring halal-conscious shopping, clear product information, dependable fulfilment, and practical seller tools into one marketplace.</p>
+                <h3>Our purpose</h3>
+                <p>We want buyers to understand what they are purchasing and who they are purchasing it from. At the same time, we want Malaysian businesses—from growing homegrown brands to established distributors—to reach customers without needing to build their own marketplace infrastructure.</p>
+                <h3>How the marketplace works</h3>
+                <p>Independent sellers operate their own stores, publish their products, manage stock, fulfil orders, and remain responsible for the accuracy and quality of their listings. {$brand} provides discovery, checkout, payment coordination, order records, buyer support, returns and dispute handling, and tools that help sellers manage their business.</p>
+                <h3>Our approach to halal confidence</h3>
+                <p>We treat halal evidence at product level. A verified seller does not automatically make every item halal-certified. Where certification is claimed, buyers can inspect the certificate linked to that product and search the public certificate register. This keeps the claim attached to the item and scope it actually covers.</p>
+                <h3>For buyers</h3>
+                <p>Buyers can shop across multiple sellers in one checkout, choose supported payment methods, follow each parcel separately, review product and certificate details, and request help when an order does not arrive as expected. The storefront is available in English, Bahasa Melayu, and Vietnamese, with prices displayed in supported currencies.</p>
+                <h3>For sellers</h3>
+                <p>Sellers receive a dedicated centre for products, variants, inventory, orders, promotions, withdrawals, certificates, and localized content. Our role is to make the operating tools clear and fair, while sellers focus on products, service, and lasting customer relationships.</p>
+                <h3>What guides us</h3>
+                <ul>
+                  <li><strong>Clarity</strong> — important claims should be visible and understandable.</li>
+                  <li><strong>Traceability</strong> — product, order, payment, and certificate records should connect.</li>
+                  <li><strong>Fair participation</strong> — buyers and sellers should know the rules before they act.</li>
+                  <li><strong>Respect for choice</strong> — halal-conscious shoppers need evidence, not assumptions.</li>
+                </ul>
+                <p>{$brand} is a marketplace operator, not a halal certification body and not the seller of record for third-party listings. Certification decisions remain with the recognised issuing body, while product quality and fulfilment remain the seller's responsibility.</p>
+                HTML,
+                'body_ms' => <<<HTML
+                <h2>Tentang {$brand}</h2>
+                <p>{$brand} ialah pasar berbilang penjual Malaysia yang dibina untuk menjadikan urusan jual beli harian lebih telus, inklusif dan berguna kepada pembeli serta penjual bebas. Kami menghimpunkan pembelian yang peka halal, maklumat produk yang jelas, pemenuhan yang boleh dipercayai dan alat penjual yang praktikal dalam satu pasar.</p>
+                <h3>Tujuan kami</h3>
+                <p>Kami mahu pembeli memahami apa yang dibeli dan daripada siapa mereka membelinya. Pada masa yang sama, kami mahu perniagaan Malaysia—daripada jenama tempatan yang sedang berkembang hingga pengedar yang mantap—mencapai pelanggan tanpa perlu membina infrastruktur pasar mereka sendiri.</p>
+                <h3>Cara pasar ini berfungsi</h3>
+                <p>Penjual bebas mengendalikan kedai sendiri, menerbitkan produk, mengurus stok, memenuhi pesanan, serta kekal bertanggungjawab atas ketepatan dan kualiti penyenaraian. {$brand} menyediakan penemuan produk, pembayaran, penyelarasan bayaran, rekod pesanan, sokongan pembeli, pemulangan dan pengendalian pertikaian, serta alat untuk membantu penjual mengurus perniagaan.</p>
+                <h3>Pendekatan kami terhadap keyakinan halal</h3>
+                <p>Kami mengendalikan bukti halal pada peringkat produk. Penjual yang disahkan tidak bermakna setiap produknya diperakui halal secara automatik. Apabila pensijilan dituntut, pembeli boleh memeriksa sijil yang dipautkan kepada produk tersebut dan membuat carian dalam daftar sijil awam. Dengan itu, tuntutan kekal terikat pada item dan skop sebenar yang dilindungi.</p>
+                <h3>Untuk pembeli</h3>
+                <p>Pembeli boleh membeli daripada beberapa penjual dalam satu pembayaran, memilih kaedah bayaran yang disokong, menjejaki setiap bungkusan secara berasingan, menyemak butiran produk dan sijil, serta mendapatkan bantuan apabila pesanan tidak diterima seperti dijangka. Kedai tersedia dalam bahasa Inggeris, Bahasa Melayu dan Vietnam, dengan harga dipaparkan dalam mata wang yang disokong.</p>
+                <h3>Untuk penjual</h3>
+                <p>Penjual menerima pusat khusus untuk produk, variasi, inventori, pesanan, promosi, pengeluaran wang, sijil dan kandungan berbilang bahasa. Peranan kami adalah menjadikan alat operasi jelas dan adil, sementara penjual memberi tumpuan kepada produk, perkhidmatan dan hubungan pelanggan yang berkekalan.</p>
+                <h3>Prinsip kami</h3>
+                <ul>
+                  <li><strong>Kejelasan</strong> — tuntutan penting perlu kelihatan dan mudah difahami.</li>
+                  <li><strong>Kebolehkesanan</strong> — rekod produk, pesanan, bayaran dan sijil perlu saling berkait.</li>
+                  <li><strong>Penyertaan yang adil</strong> — pembeli dan penjual perlu mengetahui peraturan sebelum bertindak.</li>
+                  <li><strong>Menghormati pilihan</strong> — pembeli yang peka halal memerlukan bukti, bukan andaian.</li>
+                </ul>
+                <p>{$brand} ialah pengendali pasar, bukan badan pensijilan halal dan bukan penjual berdaftar bagi penyenaraian pihak ketiga. Keputusan pensijilan kekal di bawah badan pengeluar yang diiktiraf, manakala kualiti produk dan pemenuhan kekal sebagai tanggungjawab penjual.</p>
+                HTML,
+            ],
+            'trust-safety' => [
+                'title_en' => 'Trust & Safety',
+                'title_ms' => 'Kepercayaan & Keselamatan',
+                'body_en' => <<<HTML
+                <h2>Trust &amp; Safety at {$brand}</h2>
+                <p>Trust is built from evidence, clear responsibilities, and a record of what happened—not from a badge alone. {$brand} combines seller review, product-level halal information, protected order flows, account safeguards, and human support so buyers and sellers can make informed decisions.</p>
+                <h3>Seller review</h3>
+                <p>Sellers apply with business and contact information before their store is approved. Approval allows a seller to operate on the marketplace; it does not certify every product they list. Sellers remain responsible for accurate descriptions, lawful goods, genuine documents, stock, packing, and delivery.</p>
+                <h3>Product-level halal evidence</h3>
+                <p>Halal claims are attached to individual products and the certificate records that cover them. A product may show the issuing body, certificate number, validity period, batch details, and scope. Buyers can use the certificate register to check the current record. If evidence expires, is rejected, or no longer covers the item, affected products can be held from publication or removed from sale.</p>
+                <h3>Buyer protection and order records</h3>
+                <p>Checkout records the seller, item, price, discount, payment and delivery details for each part of an order. Funds follow the order lifecycle and are released according to delivery and completion rules. Buyers can track parcels, raise a return request with evidence, and escalate unresolved cases for marketplace review.</p>
+                <h3>Payments and account security</h3>
+                <p>Payments use supported rails such as FPX, cards, e-wallets, or cash on delivery where available. Full card numbers are not stored by {$brand}. Rate limits, email verification, optional two-factor authentication, trusted-device controls, and new-device alerts help protect accounts. Never share your password, OTP, bank PIN, or card security code through chat, email, or telephone.</p>
+                <h3>Honest listings and reviews</h3>
+                <p>Sellers must not misrepresent ingredients, origin, certification, condition, price, or availability. Reviews should reflect a genuine order experience. Manipulated reviews, fake certificates, prohibited goods, voucher abuse, and attempts to move payment outside the marketplace may lead to listing removal, account restriction, or investigation.</p>
+                <h3>How to shop with confidence</h3>
+                <ol>
+                  <li>Read the complete product description, variation, quantity, ingredients, and seller information.</li>
+                  <li>For halal-certified items, open the certificate details and confirm the issuing body, validity, and covered product.</li>
+                  <li>Keep payment and messages inside {$brand} so the transaction record can support you.</li>
+                  <li>Inspect the parcel promptly and raise any issue from the order page within the displayed return window.</li>
+                  <li>Contact the Help Centre when a seller response does not resolve the issue.</li>
+                </ol>
+                <h3>Report a concern</h3>
+                <p>If you see a suspicious listing, misleading halal claim, unsafe product, unusual payment request, or account activity you do not recognise, stop the transaction and contact the Help Centre. Include the product or order reference and any supporting screenshots so the team can investigate accurately.</p>
+                <p>No marketplace can remove every risk. Our commitment is to make claims checkable, preserve transaction evidence, apply the published rules consistently, and provide a clear route to help when something goes wrong.</p>
+                HTML,
+                'body_ms' => <<<HTML
+                <h2>Kepercayaan &amp; Keselamatan di {$brand}</h2>
+                <p>Kepercayaan dibina melalui bukti, tanggungjawab yang jelas dan rekod tentang apa yang berlaku—bukan melalui lencana semata-mata. {$brand} menggabungkan semakan penjual, maklumat halal pada peringkat produk, aliran pesanan yang dilindungi, perlindungan akaun dan sokongan manusia supaya pembeli serta penjual boleh membuat keputusan berdasarkan maklumat.</p>
+                <h3>Semakan penjual</h3>
+                <p>Penjual memohon dengan maklumat perniagaan dan perhubungan sebelum kedai diluluskan. Kelulusan membolehkan penjual beroperasi di pasar; ia tidak memperakui setiap produk yang disenaraikan. Penjual kekal bertanggungjawab atas penerangan yang tepat, barangan yang sah, dokumen tulen, stok, pembungkusan dan penghantaran.</p>
+                <h3>Bukti halal pada peringkat produk</h3>
+                <p>Tuntutan halal dipautkan kepada produk individu dan rekod sijil yang melindunginya. Produk boleh memaparkan badan pengeluar, nombor sijil, tempoh sah, butiran kelompok dan skop. Pembeli boleh menggunakan daftar sijil untuk menyemak rekod semasa. Jika bukti tamat tempoh, ditolak atau tidak lagi melindungi item, produk terjejas boleh ditahan daripada penerbitan atau dikeluarkan daripada jualan.</p>
+                <h3>Perlindungan pembeli dan rekod pesanan</h3>
+                <p>Pembayaran merekodkan penjual, item, harga, diskaun, bayaran dan butiran penghantaran bagi setiap bahagian pesanan. Dana mengikut kitaran hayat pesanan dan dilepaskan menurut peraturan penghantaran dan penyelesaian. Pembeli boleh menjejaki bungkusan, mengemukakan permohonan pemulangan bersama bukti dan merujuk kes yang belum selesai untuk semakan pasar.</p>
+                <h3>Bayaran dan keselamatan akaun</h3>
+                <p>Bayaran menggunakan saluran yang disokong seperti FPX, kad, e-dompet atau tunai semasa penghantaran jika tersedia. Nombor kad penuh tidak disimpan oleh {$brand}. Had kadar, pengesahan e-mel, pengesahan dua faktor pilihan, kawalan peranti dipercayai dan amaran peranti baharu membantu melindungi akaun. Jangan sekali-kali berkongsi kata laluan, OTP, PIN bank atau kod keselamatan kad melalui sembang, e-mel atau telefon.</p>
+                <h3>Penyenaraian dan ulasan yang jujur</h3>
+                <p>Penjual tidak boleh memberikan gambaran palsu tentang ramuan, asal, pensijilan, keadaan, harga atau ketersediaan. Ulasan perlu mencerminkan pengalaman pesanan sebenar. Ulasan yang dimanipulasi, sijil palsu, barangan terlarang, penyalahgunaan baucar dan cubaan memindahkan bayaran ke luar pasar boleh menyebabkan penyenaraian dibuang, akaun dihadkan atau siasatan dijalankan.</p>
+                <h3>Cara membeli dengan yakin</h3>
+                <ol>
+                  <li>Baca penerangan produk, variasi, kuantiti, ramuan dan maklumat penjual dengan lengkap.</li>
+                  <li>Bagi item yang diperakui halal, buka butiran sijil dan sahkan badan pengeluar, tempoh sah serta produk yang dilindungi.</li>
+                  <li>Kekalkan bayaran dan mesej di dalam {$brand} supaya rekod transaksi boleh menyokong anda.</li>
+                  <li>Periksa bungkusan dengan segera dan laporkan isu dari halaman pesanan dalam tempoh pemulangan yang dipaparkan.</li>
+                  <li>Hubungi Pusat Bantuan apabila jawapan penjual tidak menyelesaikan isu.</li>
+                </ol>
+                <h3>Laporkan kebimbangan</h3>
+                <p>Jika anda melihat penyenaraian mencurigakan, tuntutan halal yang mengelirukan, produk tidak selamat, permintaan bayaran luar biasa atau aktiviti akaun yang tidak dikenali, hentikan transaksi dan hubungi Pusat Bantuan. Sertakan rujukan produk atau pesanan serta tangkap layar sokongan supaya pasukan boleh menyiasat dengan tepat.</p>
+                <p>Tiada pasar yang boleh menghapuskan semua risiko. Komitmen kami adalah menjadikan tuntutan boleh diperiksa, memelihara bukti transaksi, menggunakan peraturan yang diterbitkan secara konsisten dan menyediakan laluan bantuan yang jelas apabila sesuatu berlaku.</p>
+                HTML,
             ],
             'faq' => [
                 'title_en' => 'FAQ',
@@ -281,5 +418,12 @@ class PageSeeder extends Seeder
                 HTML,
             ],
         ];
+    }
+
+    private function brand(): string
+    {
+        $brand = trim((string) config('app.name'));
+
+        return $brand === '' || $brand === 'Laravel' ? 'HalalBizs' : $brand;
     }
 }

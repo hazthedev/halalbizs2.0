@@ -310,6 +310,7 @@
             <div class="motion-reveal" x-bind:class="shown && 'revealed'" style="animation-delay: 120ms">
                 <p class="font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-on-dark-faint">{{ __('Trust') }}</p>
                 <ul class="mt-4 space-y-2.5 text-[length:var(--text-base)]">
+                    <li><a href="{{ route('page.show', 'trust-safety') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Trust & safety') }}</a></li>
                     <li><a href="{{ route('help.index') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Help centre') }}</a></li>
                     <li><a href="{{ route('page.show', 'faq') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('FAQ') }}</a></li>
                     <li><a href="{{ route('page.show', 'refund-policy') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Refund policy') }}</a></li>
@@ -341,7 +342,7 @@
         <div class="border-t border-emerald-edge">
             <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-2 px-4 py-5 lg:px-12">
                 <p class="font-mono text-[length:var(--text-micro)] uppercase tracking-[var(--tracking-label)] text-on-dark-faint">&copy; {{ now()->year }} HalalBizs. {{ __('All rights reserved.') }}</p>
-                <p class="font-mono text-[length:var(--text-micro)] uppercase tracking-[var(--tracking-label)] text-on-dark-faint">English &middot; Bahasa Melayu</p>
+                <p class="font-mono text-[length:var(--text-micro)] uppercase tracking-[var(--tracking-label)] text-on-dark-faint">English &middot; Bahasa Melayu &middot; Tiếng Việt</p>
             </div>
         </div>
     </footer>
