@@ -70,6 +70,11 @@
                                     :class="tab === 'ms' ? 'border-b-2 border-ink text-ink' : 'text-ink-soft hover:text-ink'">
                                 {{ __('Bahasa Melayu') }}
                             </button>
+                            <button type="button" role="tab" x-on:click="tab = 'vi'" :aria-selected="tab === 'vi'"
+                                    class="min-h-11 px-3 text-[13px] font-medium focus-visible:ring-2 focus-visible:ring-emerald"
+                                    :class="tab === 'vi' ? 'border-b-2 border-ink text-ink' : 'text-ink-soft hover:text-ink'">
+                                {{ __('Tiếng Việt') }}
+                            </button>
                         </div>
 
                         <div x-show="tab === 'en'" class="space-y-4">
@@ -89,6 +94,16 @@
                                 <textarea id="description-ms" wire:model="description.ms" rows="3"
                                           class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
                                 @error('description.ms')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+
+                        <div x-show="tab === 'vi'" x-cloak class="space-y-4">
+                            <x-ui.input :label="__('Name (Vietnamese)')" wire:model="name.vi" :error="$errors->first('name.vi')" :hint="__('Optional — falls back to English when empty.')" />
+                            <div>
+                                <label for="description-vi" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Description (Vietnamese)') }}</label>
+                                <textarea id="description-vi" wire:model="description.vi" rows="3"
+                                          class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
+                                @error('description.vi')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                             </div>
                         </div>
 

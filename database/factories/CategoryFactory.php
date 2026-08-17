@@ -15,7 +15,7 @@ class CategoryFactory extends Factory
         $name = ucfirst(fake()->unique()->words(2, true));
 
         return [
-            'name' => ['en' => $name, 'ms' => $name],
+            'name' => ['en' => $name, 'ms' => $name, 'vi' => $name],
             'is_active' => true,
             'position' => fake()->numberBetween(0, 20),
         ];

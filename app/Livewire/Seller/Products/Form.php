@@ -16,6 +16,7 @@ use App\Models\ProductVariant;
 use App\Services\ListingCopyService;
 use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
+use App\Support\ContentLocales;
 use App\Support\HtmlSanitizer;
 use App\Support\RinggitInput;
 use Illuminate\Support\Carbon;
@@ -50,11 +51,11 @@ class Form extends Component
     public ?int $productId = null;
 
     // ── Basics ─────────────────────────────────────────────────────────
-    /** @var array{en: string, ms: string} */
-    public array $name = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $name = ['en' => '', 'ms' => '', 'vi' => ''];
 
-    /** @var array{en: string, ms: string} */
-    public array $description = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $description = ['en' => '', 'ms' => '', 'vi' => ''];
 
     public ?int $categoryTop = null;
 
@@ -377,7 +378,7 @@ class Form extends Component
         $this->save(ProductStatus::Draft);
     }
 
-    /** Generate bilingual draft description copy with AI (M1.6). */
+    /** Generate multilingual draft description copy with AI (M1.6). */
     public function generateCopy(ListingCopyService $copy): void
     {
         $title = trim($this->name['en']) !== '' ? trim($this->name['en']) : trim($this->name['ms']);
@@ -397,6 +398,7 @@ class Form extends Component
         $generated = $copy->generate($title, $attributes);
         $this->description['en'] = $generated['en'];
         $this->description['ms'] = $generated['ms'];
+        $this->description['vi'] = $generated['vi'];
 
         $this->dispatch('toast', message: __('Draft copy generated — review and edit before publishing.'));
     }
@@ -535,21 +537,8 @@ class Form extends Component
         // is what feeds the JSON-LD block on the PDP (defence in depth for C1).
         $sanitizeName = fn (string $text): string => trim(strip_tags($text));
 
-        // en is ALWAYS written (fallback locale); ms only when filled.
-        $product->setTranslation('name', 'en', $sanitizeName($this->name['en']));
-        $product->setTranslation('description', 'en', $sanitizeDescription(trim($this->description['en'] ?? '')));
-
-        if (trim($this->name['ms'] ?? '') !== '') {
-            $product->setTranslation('name', 'ms', $sanitizeName($this->name['ms']));
-        } else {
-            $product->forgetTranslation('name', 'ms');
-        }
-
-        if (trim($this->description['ms'] ?? '') !== '') {
-            $product->setTranslation('description', 'ms', $sanitizeDescription(trim($this->description['ms'])));
-        } else {
-            $product->forgetTranslation('description', 'ms');
-        }
+        ContentLocales::write($product, 'name', $this->name, transform: $sanitizeName);
+        ContentLocales::write($product, 'description', $this->description, transform: $sanitizeDescription);
     }
 
     /** Variations OFF → exactly one default variant, options_label null. */
@@ -745,8 +734,10 @@ class Form extends Component
         $this->validate([
             'name.en' => ['required', 'string', 'max:255'],
             'name.ms' => ['nullable', 'string', 'max:255'],
+            'name.vi' => ['nullable', 'string', 'max:255'],
             'description.en' => ['nullable', 'string', 'max:65000'],
             'description.ms' => ['nullable', 'string', 'max:65000'],
+            'description.vi' => ['nullable', 'string', 'max:65000'],
             'brandId' => ['nullable', Rule::exists('brands', 'id')->where('is_active', true)],
             'condition' => ['required', Rule::enum(ProductCondition::class)],
             'taxClass' => ['required', Rule::enum(TaxClass::class)],
@@ -1021,14 +1012,8 @@ class Form extends Component
     {
         $product->load(['options.values', 'variants']);
 
-        $this->name = [
-            'en' => $product->getTranslation('name', 'en'),
-            'ms' => $product->getTranslation('name', 'ms', false) ?? '',
-        ];
-        $this->description = [
-            'en' => $product->getTranslation('description', 'en'),
-            'ms' => $product->getTranslation('description', 'ms', false) ?? '',
-        ];
+        $this->name = ContentLocales::read($product, 'name');
+        $this->description = ContentLocales::read($product, 'description');
 
         $this->fillCategorySelection($product->category_id);
 

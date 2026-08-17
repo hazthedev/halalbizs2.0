@@ -65,6 +65,7 @@ class HalalCatalogueSeeder extends Seeder
         }
 
         $data = json_decode(File::get($path), true, 512, JSON_THROW_ON_ERROR);
+        $vi = json_decode(File::get(database_path('seeders/data/vietnamese-catalogue.json')), true, 512, JSON_THROW_ON_ERROR);
 
         $leaves = Category::query()
             ->whereNotNull('parent_id')
@@ -87,7 +88,7 @@ class HalalCatalogueSeeder extends Seeder
                 continue;
             }
 
-            $product = $this->seedProduct($row, $store, $leaf);
+            $product = $this->seedProduct($row, $store, $leaf, $vi);
             $seeded++;
 
             if ($this->attachPackshot($product, $row['image'])) {
@@ -167,7 +168,7 @@ class HalalCatalogueSeeder extends Seeder
     }
 
     /** @param  array<string, mixed>  $row */
-    private function seedProduct(array $row, Store $store, Category $leaf): Product
+    private function seedProduct(array $row, Store $store, Category $leaf, array $vi): Product
     {
         // ⚠ The slug is NOT ours to choose: Product uses Spatie\Sluggable\HasSlug
         // and regenerates it from name.en on every save. Passing our own key made
@@ -180,8 +181,8 @@ class HalalCatalogueSeeder extends Seeder
         $product->fill([
             'store_id' => $store->id,
             'category_id' => $leaf->id,
-            'name' => ['en' => $row['name_en'], 'ms' => $row['name_ms']],
-            'description' => $this->description($row),
+            'name' => ['en' => $row['name_en'], 'ms' => $row['name_ms'], 'vi' => $vi['products'][$row['name_en']]],
+            'description' => $this->description($row, $vi),
             'status' => ProductStatus::Live,
             'published_at' => $product->published_at ?? now(),
             'cod_enabled' => true,
@@ -214,13 +215,14 @@ class HalalCatalogueSeeder extends Seeder
     }
 
     /** @param  array<string, mixed>  $row */
-    private function description(array $row): array
+    private function description(array $row, array $vi): array
     {
         $unit = $row['unit'] ? ' '.$row['unit'].'.' : '';
 
         return [
             'en' => "{$row['name_en']}.{$unit} Certified by {$row['certifier']} and listed under {$row['leaf']}. The certificate is bound to this SKU, not to the shop.",
             'ms' => "{$row['name_ms']}.{$unit} Disahkan oleh {$row['certifier']} dan disenaraikan dalam {$row['leaf']}. Sijil terikat pada SKU ini, bukan pada kedai.",
+            'vi' => "{$vi['products'][$row['name_en']]}.{$unit} Được {$row['certifier']} chứng nhận và xếp trong danh mục {$vi['categories'][$row['leaf']]}. Chứng nhận được liên kết với SKU này, không phải với cửa hàng.",
         ];
     }
 

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             HelpArticleSeeder::class,
             ReasonSeeder::class,
             HomeSectionSeeder::class,
+            VietnameseContentSeeder::class,
         ]);
 
         if (app()->environment('local')) {

@@ -8,6 +8,9 @@ use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
+    /** @var array<string, string> */
+    private array $viNames = [];
+
     /**
      * The marketplace's real department tree (2026-07-30 revamp): the five
      * departments the reference design ships, with bilingual leaves matching
@@ -57,6 +60,8 @@ class CategorySeeder extends Seeder
 
     public function run(): void
     {
+        $content = json_decode(file_get_contents(database_path('seeders/data/vietnamese-catalogue.json')), true, 512, JSON_THROW_ON_ERROR);
+        $this->viNames = $content['categories'];
         $position = 0;
         $slugs = [];
 
@@ -80,7 +85,7 @@ class CategorySeeder extends Seeder
         $category = Category::updateOrCreate(
             ['slug' => $slug],
             [
-                'name' => ['en' => $en, 'ms' => $ms],
+                'name' => ['en' => $en, 'ms' => $ms, 'vi' => $this->viNames[$en]],
                 'parent_id' => $parentId,
                 'position' => $position,
                 'is_active' => true,

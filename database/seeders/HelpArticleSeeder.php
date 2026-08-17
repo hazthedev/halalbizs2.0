@@ -102,6 +102,15 @@ class HelpArticleSeeder extends Seeder
             ],
         ];
 
+        $vi = (require database_path('seeders/data/vietnamese-cms.php'))['help'];
+
+        foreach ($articles as &$article) {
+            [$title, $body] = $vi[$article['category'].':'.$article['position']];
+            $article['title']['vi'] = $title;
+            $article['body']['vi'] = $body;
+        }
+        unset($article);
+
         foreach ($articles as $article) {
             HelpArticle::updateOrCreate(
                 ['category' => $article['category'], 'position' => $article['position']],

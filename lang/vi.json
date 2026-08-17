@@ -2562,5 +2562,20 @@
     "{1}:count seller|[2,*]:count sellers": "{1}:count người bán|[2,*]:count người bán",
     "{1}:count star|[2,*]:count stars": "{1}:count sao|[2,*]:count sao",
     "— commission is held until the return window closes.": "— hoa hồng được giữ lại cho đến khi hết thời hạn đổi trả.",
-    "★ :rating & up": "★ :rating trở lên"
+    "★ :rating & up": "★ :rating trở lên",
+    "Product name (Vietnamese)": "Tên sản phẩm (Tiếng Việt)",
+    "Description (Vietnamese)": "Mô tả (Tiếng Việt)",
+    "Name (Vietnamese)": "Tên (Tiếng Việt)",
+    "Title (Vietnamese)": "Tiêu đề (Tiếng Việt)",
+    "Body (Vietnamese)": "Nội dung (Tiếng Việt)",
+    "Heading (Vietnamese)": "Tiêu đề mục (Tiếng Việt)",
+    "Supporting line (Vietnamese)": "Dòng nội dung bổ trợ (Tiếng Việt)",
+    "Button text (Vietnamese)": "Nội dung nút (Tiếng Việt)",
+    "Text (Vietnamese)": "Nội dung (Tiếng Việt)",
+    "Vietnamese image (optional)": "Hình ảnh Tiếng Việt (không bắt buộc)",
+    "Vietnamese banner image removed": "Đã xóa hình ảnh biểu ngữ Tiếng Việt",
+    "Vietnamese banner preview": "Xem trước biểu ngữ Tiếng Việt",
+    "Used for Vietnamese when copy is baked into the artwork. Falls back to the main image when empty.": "Dùng cho Tiếng Việt khi nội dung được ghép trực tiếp vào hình ảnh. Nếu để trống, hệ thống dùng hình ảnh chính.",
+    "VI (optional)": "VI (không bắt buộc)",
+    "Tiếng Việt": "Tiếng Việt"
 }

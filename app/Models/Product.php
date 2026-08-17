@@ -314,7 +314,9 @@ class Product extends Model implements HasMedia
             'id' => $this->id,
             'name_en' => $this->getTranslation('name', 'en'),
             'name_ms' => $this->getTranslation('name', 'ms', false),
+            'name_vi' => $this->getTranslation('name', 'vi', false),
             'description_en' => strip_tags($this->getTranslation('description', 'en')),
+            'description_vi' => strip_tags($this->getTranslation('description', 'vi', false)),
             'category' => $this->category?->getTranslation('name', 'en'),
             'store' => $this->store?->name,
             'min_price_sen' => $this->variants->isNotEmpty() ? $this->minPriceSen() : 0,
@@ -334,7 +336,9 @@ class Product extends Model implements HasMedia
         return collect([
             $this->getTranslation('name', 'en'),
             $this->getTranslation('name', 'ms', false),
+            $this->getTranslation('name', 'vi', false),
             strip_tags($this->getTranslation('description', 'en')),
+            strip_tags($this->getTranslation('description', 'vi', false)),
             $this->category?->getTranslation('name', 'en'),
             $this->searchableMetafieldText(),
         ])->filter()->implode(' ');

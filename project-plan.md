@@ -1,61 +1,102 @@
-# Project Plan — Audit Remediation (HALALBIZS-AUDIT-2026-07-27)
+# Project Plan — Vietnamese Catalogue and CMS Content
 
-> **2026-07-27 ~17:20 — adopted by a second session.** The original orchestrating
-> session stalled ~16:43 with all work uncommitted and this file's checkboxes
-> never updated. The successor banked the tree on `fix/audit-findings-2026-07-27`,
-> rebased onto origin/main (#51–#53 residue deduped), verified every wave against
-> the criteria below, and finished the remainder. States below are as verified,
-> not as originally left.
+**Goal:** make Vietnamese (`vi`) a first-class content locale for products, categories, banners, and shopper-facing CMS content, while retaining English as the required fallback.
 
-**Goal**: fix every finding in `docs/audit/HALALBIZS-AUDIT-2026-07-27.md` — 2 CRITICAL, 4 HIGH, ~22 MEDIUM, ~19 LOW — then verify.
-**Base**: `29ee7d1` (main). **Started**: 2026-07-27. **Orchestrator**: Hermes (main loop = planner/advisor/verifier).
+**Prepared:** 2026-08-17
+**Execution mode:** dependency-ordered solo implementation in the shared tree.
+**Existing work to preserve:** `lang/ms.json` contains the completed Malay shopper translation; `docs/audit/HALALBIZS-AUDIT-2026-08-11.md` is unrelated and must remain untouched.
 
-## Execution model
-Shared tree, **strictly disjoint file surfaces per task** (no worktrees: `/vendor` is gitignored so each worktree would need its own `composer install`; tests use `DB_DATABASE=:memory:` so parallel test runs cannot collide). Executors = `sonnet`, one per task. Maker ≠ checker: I verify centrally with the full suite.
+## Contract and decisions
 
-## Decision Log constraints
-`D-001`–`D-003` cover the landing page only — **nothing constrains this security work**.
+- No project contract file exists. `halalbizs2.0-decisions.md` has no decision that conflicts with this feature.
+- English remains required and is the fallback. Malay and Vietnamese are optional per record; an empty `vi` value must fall back to English exactly as an empty `ms` value does.
+- Existing Spatie-translatable JSON columns already accept `vi`; no SQL schema change is needed for products, categories, banners, pages, help articles, home sections, attributes, or attribute values.
+- Theme announcement copy is stored as typed settings, so it requires a new `theme.announcement_text_vi` settings migration.
+- Vietnamese content must be natural Vietnamese, not copied English/Malay or machine-looking literal prose. HTML structure, legal meaning, amounts, dates, product facts, certification claims, and URLs must remain unchanged.
+- Banner desktop headlines are baked into WebP artwork. Vietnamese banners therefore include a locale-specific `image_vi` media collection and five Vietnamese artwork files. Storefront selection is `image_vi` for `vi`, then the existing image as fallback. Existing English/Malay artwork is not altered.
+- Seed/backfill behavior must be idempotent and must never erase an administrator's existing non-empty Vietnamese translation.
 
-## Wave 1 — parallel (T1–T4)
+## Dependency graph
 
-- [x] **T1 — XSS output + upload hardening** (C1, C2, AL-M2, AL-C17, AL-L6)
-  Surface: `resources/views/livewire/storefront/product-detail.blade.php`, `app/Livewire/Seller/Products/Form.php`, new `app/Support/HtmlSanitizer.php`, `app/Livewire/Storefront/Account/ReviewOrder.php`, `app/Livewire/Storefront/Account/OrderDetail.php`, `config/livewire.php`, new `tests/Feature/Security/XssOutputTest.php`
-  Accept: a product named `</script><script>alert(1)</script>` is inert in the PDP; `<em onmouseover=x>` does not survive save; uploads cannot keep a client `.html` name; tests prove each and fail when reverted.
+```text
+T1 locale contract + regression harness
+ ├── T2 product/category/attribute writers + search/AI
+ ├── T3 banner/CMS writers + Vietnamese banner media
+ └── T4 complete Vietnamese seed content
+          └──────────────┬──────────────┘
+                         T5 safe existing-data backfill + deploy wiring
+                                      │
+                         T6 full verification + visual walkthrough
+```
 
-- [x] **T2 — Settlement layer atomicity** (H1, H2, H3, M1)
-  Surface: `app/Services/SubOrderStatusService.php`, `app/Services/RefundService.php`, `app/Listeners/RecordLedgerOnCompletion.php`, `app/Services/LedgerService.php`, new migration (ledger settlement dedupe), `tests/Feature/Stress/RefundLedgerStressTest.php`, `tests/Feature/Stress/PaymentFsmStockStressTest.php`
-  Accept: refund cap recomputed under `lockForUpdate` inside the txn; `transition()` locks + re-reads status and wraps status+history+dispatch in one txn; a ledger throw rolls the status back; DB-level dedupe backstop that does NOT constrain legitimately-repeating entry types.
+## Wave 1 — foundation
 
-- [x] **T3 — Config / middleware / infra** *(successor: Turnstile fail-closed override moved from a raw `env()` call — invisible under `config:cache` — to `config/services.php`; ⚠ `trustProxies at:'*'` ships with a needs-verification note on the cPanel topology)* (AL-C1, C2, C4, C6, C10, C11, C12, C13, C14, C15, C16)
-  Surface: `bootstrap/app.php`, `app/Http/Middleware/SecurityHeaders.php`, `app/Http/Middleware/SetDisplayCurrency.php`, `config/app.php`, `config/session.php`, `.env.example`, `app/Http/Controllers/AffiliateReferralController.php`, `app/Http/Controllers/EasyParcelWebhookController.php`, `app/Http/Controllers/Ipay88Controller.php`, `routes/web.php`, `tests/Feature/SecurityHeadersTest.php`
-  Accept: `//evil.com` rejected by the affiliate redirect; security headers present on 404 + 419; throttles on the unauthenticated write/compute routes; no dev-hostname fallback.
+- [x] **T1 — Content-locale contract and regression harness**
+  - Centralize the editable content locales as `en`, `ms`, `vi` using the existing locale configuration rather than scattering new two-item arrays.
+  - Add reusable tests proving: English required; Vietnamese optional; Vietnamese persists; blank Vietnamese is removed; shopper reads fall back to English.
+  - Keep UI chrome translation (`lang/vi.json`) separate from content translations.
+  - **Accept:** tests fail against the current two-locale writers and pass once the three-locale contract is applied; no existing English/Malay behavior changes.
 
-- [x] **T4 — Auth + admin authz + notifications** *(successor: GoogleAuthTest mock now fakes the raw `email_verified` claim + a refusal-path regression test)* (AL-C3, AL-C7, AL-C8, AL-C9, AL-L5, M8)
-  Surface: `app/Livewire/Storefront/Auth/Register.php`, `app/Livewire/Storefront/Auth/Login.php`, `app/Livewire/Storefront/Auth/TwoFactorChallenge.php`, `app/Http/Controllers/GoogleAuthController.php`, `app/Services/Turnstile.php`, `app/Observers/AdminAlertObserver.php`, `app/Livewire/Admin/System/Staff.php`, `tests/Feature/Auth/TwoFactorTest.php`, new `tests/Feature/Admin/AdminAlertScopingTest.php`
-  Accept: registration rate-limited; Turnstile fails closed outside local; per-IP + per-email login limiters; TOTP code not replayable; finance alerts only reach admins holding the permission; an admin cannot grant themselves permissions.
+## Wave 2 — writers and runtime readers
 
-## Wave 2 — parallel (T5–T7)
+- [x] **T2 — Products, categories, and attributes** *(depends on T1)*
+  - Add Vietnamese name/description fields to the seller product form and admin category form.
+  - Add Vietnamese name/value fields to admin attributes and attribute values.
+  - Extend product bulk import with optional `name_vi` and `description_vi` columns without rejecting old EN/MS CSV files.
+  - Extend AI listing-copy output and its deterministic fallback to return `en`, `ms`, and `vi`.
+  - Add `name_vi` and `description_vi` to Scout/Meilisearch searchable data and Vietnamese text to embedding input.
+  - Let the shopping concierge accept `vi`, describe products in the shopper's locale with English fallback, and return Vietnamese deterministic replies.
+  - **Accept:** create/edit/import/generate flows persist Vietnamese; Vietnamese product/category searches work; old imports remain compatible; seller/admin tests cover save, clear, fallback, sanitization, and search payloads.
 
-- [x] **T5 — Payments / jobs / webhooks** *(successor: X-Webhook-Id now stable across queue retries instead of a fresh uuid per attempt)* (M2, M3, M4, M5)
-  Surface: `app/Jobs/ConfirmIpay88PaymentJob.php`, `app/Jobs/SendWebhookJob.php`, `app/Services/WebhookDispatcher.php`, `app/Models/WebhookSubscription.php`, `app/Services/Ipay88Service.php`, `tests/Feature/Payments/Ipay88Test.php`
-  Accept: confirm job locks the payment row; retry/backoff/timeout on requery + webhook POST; a failed webhook can be redelivered; SSRF-unsafe URLs rejected.
+- [x] **T3 — Banners and CMS editors** *(depends on T1)*
+  - Add Vietnamese fields to banner title, supporting line, and CTA; CMS page title/body; help-article title/body; home-section heading; and theme announcement text.
+  - Add the settings migration/property/default for `announcement_text_vi` and preserve English fallback.
+  - Add an optional Vietnamese banner image upload/removal path and a locale-aware model helper used by storefront image and video-poster rendering.
+  - Update all corresponding admin tabs, labels, validation, reset/edit/save behavior, and accessibility text.
+  - **Accept:** every editor round-trips `vi`, clearing it restores English fallback, HTML is sanitized identically in every locale, and Vietnamese desktop/mobile banner copy and alt text agree.
 
-- [x] **T6 — Storefront Livewire hardening** *(AL-M6's Profile.php cap had already shipped as #51 — deduped by the rebase)* (H4/AL-M1, AL-M5, AL-M6, AL-L3, AL-L4, L2)
-  Surface: `app/Livewire/Storefront/ShopAssistant.php`, `ProductReviews.php`, `ProductQuestions.php`, `Listing.php`, `StorePage.php`, `RecommendedProducts.php`, `Account/Messages.php`, `Account/Profile.php`, new `tests/Feature/Security/LivewireHardeningTest.php`
-  Accept: assistant rate-limited + history capped; every pagination prop `#[Locked]` and clamped; SMS daily cap; `markHelpful` atomic; chat context product scoped.
+- [x] **T4 — Complete Vietnamese seed content** *(depends on T1; may proceed alongside T2/T3)*
+  - Translate all **166 products** (`name_vi` plus Vietnamese generated description based only on existing facts).
+  - Translate all **33 categories**.
+  - Translate all **5 banners** (headline, supporting line, CTA) and extend `scripts/bake-banner-copy.py` to render five Vietnamese WebP files from the committed source artwork with the same safe-zone/autofit checks.
+  - Translate all **6 CMS pages**, including the legal/policy text without changing meaning, values, or HTML structure.
+  - Translate all **10 help articles** and **5 titled home sections**.
+  - Add a Vietnamese baseline announcement value only where seeded/default occasion copy exists; do not invent an active campaign.
+  - **Accept:** a deterministic audit reports 166/166 products, 33/33 categories, 5/5 banners, 6/6 pages, 10/10 help articles, and 5/5 titled home sections with non-empty `vi`; no `vi` value is identical to a non-brand English source except legitimate names/acronyms.
 
-- [~] **T7 — Checkout, group-buy, DB indexes** *(all done EXCEPT L3 `$fillable` privilege columns — parked: factories/seeders mass-assign those columns, so the change ripples beyond a safe same-day diff; LOW severity, protected today by explicit-array call sites)* (AL-M3, AL-M4, AL-L1, AL-L2, M6, M7, L6, L3)
-  Surface: `app/Livewire/Storefront/Checkout.php`, `app/Services/CheckoutService.php`, `app/Services/GroupBuyService.php`, `app/Models/Store.php`, `app/Models/User.php`, new migrations (products composites, group_buy_teams index, voucher platform-code uniqueness), `tests/Feature/Stress/AuthzIdorStressTest.php` or matching existing checkout tests
-  Accept: group-buy price dies with the campaign window; duplicate submit cannot create two orders; one code cannot burn quota twice; privilege columns out of `$fillable`; indexes present.
+## Wave 3 — existing installations and deployment
 
-## Main-loop tasks (not delegated — risk of lockout / needs judgement)
-- [x] **AL-C5 — admin route `verified`**: verified Staff::sendInvite() marks verified on create; existing admin rows backfilled by migration `2026_07_27_000010`; both directions covered by `tests/Feature/Admin/AdminVerifiedGateTest.php`.
-- [~] **M10** — SKIPPED: negative-on-GROSS is by-design (the panel copy already warns), and the debt state is already surfaced in red in the seller UI. An admin alert would fire on every routine COD completion.
+- [x] **T5 — Non-destructive backfill and deploy wiring** *(depends on T2, T3, T4)*
+  - Make normal seeders include Vietnamese for clean installs.
+  - Add one idempotent Vietnamese-content backfill seeder for existing databases. It fills only missing/blank `vi` translations and never overwrites an existing administrator-authored Vietnamese value.
+  - Wire the backfill, help/home seeders, theme setting migration, catalogue seeder, and artwork seeder into the deployment path in dependency order.
+  - Ensure Scout reindexing/search configuration is documented or invoked only after the new content exists.
+  - **Accept:** two consecutive backfill runs produce the same database state; a pre-existing custom Vietnamese field survives; a database containing only EN/MS gains complete seeded Vietnamese content.
 
-## Cutover note (deploy gate)
-`TURNSTILE_ALLOW_UNCONFIGURED=true` must be in the **server `.env` BEFORE this
-deploys** — Turnstile now fails closed outside local/testing, so without the
-flag every preview login/registration breaks the moment the deploy lands.
+## Wave 4 — verification
 
-## Verify
-Full `php artisan test` (PowerShell) + Pint + three-dot diff review, then `ship`.
+- [x] **T6 — Automated and visual verification** *(depends on T5)*
+  - Run focused feature tests for products, bulk import/AI copy, catalogue admin, banners/content/theme, help centre, CMS pages, search, and concierge.
+  - Run `php artisan test -c phpunit.mariadb.xml`, Pint on changed PHP files, JSON parsing, `git diff --check`, and a three-dot diff/status review.
+  - Seed a clean test database and run the deterministic Vietnamese completeness audit.
+  - Walk the Vietnamese storefront at desktop and mobile widths: home banners, category surfaces, listing/search, product detail, help centre, and all CMS pages. Verify English fallback with one intentionally blank `vi` test record.
+  - Confirm only intended files changed and the existing `lang/ms.json` work remains intact.
+  - **Accept:** all tests/checks pass, no English-baked banner is shown to a Vietnamese desktop shopper, no raw translation key is visible, and no content surface silently falls back because seeded Vietnamese data is missing.
+
+## Completion boundary
+
+This task is complete only when both halves ship together:
+
+1. future content can be authored/imported in Vietnamese; and
+2. the existing seeded shopper catalogue and CMS corpus already contain Vietnamese.
+
+UI-only Vietnamese with English catalogue fallback does not satisfy this plan.
+
+## Verification result — 2026-08-17
+
+- MariaDB full suite: **1,251 passed, 4,712 assertions**.
+- Focused Vietnamese/catalogue/CMS suite: **124 passed, 724 assertions**.
+- Clean SQLite install plus a second `VietnameseContentSeeder` run succeeded.
+- Completeness audit: **166/166 products, 33 categories, 5 banners, 6 pages, 10 help articles, 5 home headings; 0 missing**.
+- Five Vietnamese banner WebPs generated at **1600×533**, visually checked for diacritics, collision, and safe-zone fit.
+- Changed PHP files pass Pint; Blade view compilation, JSON parsing, and `git diff --check` pass.

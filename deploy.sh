@@ -152,6 +152,11 @@ else
     echo "→ skip demo catalogue (SEED_DEMO_CATALOGUE='${SEED_DEMO_CATALOGUE:-unset}' — set it to true to enable)"
 fi
 
+# Fill only missing Vietnamese catalogue/CMS translations. This deliberately
+# runs after the optional catalogue/artwork seed and never overwrites content
+# authored by an administrator.
+"$PHP_BIN" artisan db:seed --class=VietnameseContentSeeder --force || { STEP_FAILED=1; echo "  ! Vietnamese content backfill reported errors — continuing"; }
+
 echo "→ rebuild caches"
 "$PHP_BIN" artisan config:cache
 "$PHP_BIN" artisan route:cache

@@ -67,7 +67,11 @@
                                         $bannerTitle = $banner->getTranslation('title', app()->getLocale());
                                         $bannerSubtitle = trim((string) $banner->getTranslation('subtitle', app()->getLocale()));
                                         $bannerCta = trim((string) $banner->getTranslation('cta_label', app()->getLocale()));
-                                        $bannerVideo = $banner->getFirstMediaUrl('video');
+                                        // Motion assets may also contain baked English copy. Until
+                                        // localized video collections exist, Vietnamese uses its
+                                        // dedicated still artwork rather than showing the wrong text.
+                                        $bannerVideo = app()->getLocale() === 'vi' ? '' : $banner->getFirstMediaUrl('video');
+                                        $bannerImage = $banner->imageUrl(app()->getLocale());
                                     @endphp
                                     <div class="swiper-slide">
                                         @if ($banner->link_url)
@@ -78,13 +82,13 @@
                                             @if ($bannerVideo)
                                                 <video autoplay muted loop playsinline
                                                        src="{{ $bannerVideo }}"
-                                                       poster="{{ $banner->getFirstMediaUrl('image', 'card') }}"
+                                                       poster="{{ $bannerImage }}"
                                                        aria-label="{{ $bannerTitle }}"
                                                        class="aspect-[3/1] w-full bg-paper object-cover"></video>
                                             @else
                                                 {{-- The copy is composited INTO the artwork now, so alt is the
                                                      only route a screen reader has to it. --}}
-                                                <img src="{{ $banner->getFirstMediaUrl('image', 'card') }}" alt="{{ $bannerTitle }}{{ $bannerSubtitle !== '' ? '. '.$bannerSubtitle : '' }}"
+                                                <img src="{{ $bannerImage }}" alt="{{ $bannerTitle }}{{ $bannerSubtitle !== '' ? '. '.$bannerSubtitle : '' }}"
                                                      class="aspect-[3/1] w-full bg-paper object-cover" @if (! $loop->first) loading="lazy" @endif>
                                             @endif
 

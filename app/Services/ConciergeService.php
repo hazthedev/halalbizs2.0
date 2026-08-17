@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Bilingual EN/BM shopping concierge (M2.2). Recommends LIVE products only
+ * EN/BM/VI shopping concierge (M2.2). Recommends LIVE products only
  * (Hard Rule 5 — never reads historical order snapshots). When a Claude key is
  * configured it answers via tool-use over the existing Scout index; otherwise
  * it falls back to a deterministic Scout search so the feature works locally
@@ -26,6 +26,8 @@ class ConciergeService
 
     private const MAX_RESULTS = 8;
 
+    private string $replyLocale = 'en';
+
     public function __construct(private ClaudeClient $claude) {}
 
     public function configured(): bool
@@ -38,7 +40,8 @@ class ConciergeService
      */
     public function reply(string $message, array $history = [], ?string $locale = null): ConciergeReply
     {
-        $locale = in_array($locale, ['en', 'ms'], true) ? $locale : app()->getLocale();
+        $locale = in_array($locale, ['en', 'ms', 'vi'], true) ? $locale : app()->getLocale();
+        $this->replyLocale = in_array($locale, ['en', 'ms', 'vi'], true) ? $locale : 'en';
         $message = trim($message);
 
         if ($message === '') {
@@ -193,7 +196,7 @@ class ConciergeService
 
         return [
             'id' => $product->id,
-            'name' => $product->getTranslation('name', 'en'),
+            'name' => $product->getTranslation('name', $this->replyLocale),
             'price' => Money::format($minSen),
             'rating' => (string) $product->rating_avg,
             'sold' => (int) $product->sold_count,
@@ -229,17 +232,21 @@ class ConciergeService
 
         if ($products->isEmpty()) {
             return new ConciergeReply(
-                $locale === 'ms'
-                    ? 'Maaf, saya tidak menemui produk yang sepadan. Cuba kata kunci lain — contohnya jenama, kategori, atau ciri produk.'
-                    : "I couldn't find a matching product. Try different keywords — a brand, a category, or a feature.",
+                match ($locale) {
+                    'ms' => 'Maaf, saya tidak menemui produk yang sepadan. Cuba kata kunci lain — contohnya jenama, kategori, atau ciri produk.',
+                    'vi' => 'Xin lỗi, tôi không tìm thấy sản phẩm phù hợp. Hãy thử từ khóa khác, chẳng hạn như thương hiệu, danh mục hoặc đặc điểm sản phẩm.',
+                    default => "I couldn't find a matching product. Try different keywords — a brand, a category, or a feature.",
+                },
                 new EloquentCollection,
             );
         }
 
         return new ConciergeReply(
-            $locale === 'ms'
-                ? 'Berikut beberapa produk yang mungkin sesuai untuk anda:'
-                : 'Here are a few products that might be a good fit:',
+            match ($locale) {
+                'ms' => 'Berikut beberapa produk yang mungkin sesuai untuk anda:',
+                'vi' => 'Dưới đây là một số sản phẩm có thể phù hợp với bạn:',
+                default => 'Here are a few products that might be a good fit:',
+            },
             $products,
         );
     }
@@ -247,13 +254,13 @@ class ConciergeService
     private function systemPrompt(string $locale): string
     {
         return <<<PROMPT
-        You are the HalalBizs shopping concierge — a warm, concise, bilingual (English + Bahasa Melayu) assistant for a Malaysian halal-friendly multi-vendor marketplace.
+        You are the HalalBizs shopping concierge — a warm, concise assistant in English, Bahasa Melayu, and Vietnamese for a Malaysian halal-friendly multi-vendor marketplace.
 
         Rules:
         - Recommend ONLY products returned by the search_products tool. Never invent products, prices, stores or URLs.
         - Call search_products whenever the shopper is looking for something; you may search more than once to refine results.
         - Prices are in Malaysian Ringgit (RM) exactly as the tool returns them. Never alter, round or estimate a price.
-        - Reply in the shopper's language. The interface language is "{$locale}" (en = English, ms = Bahasa Melayu); mirror the language the shopper writes in.
+        - Reply in the shopper's language. The interface language is "{$locale}" (en = English, ms = Bahasa Melayu, vi = Vietnamese); mirror the language the shopper writes in.
         - Be brief: a sentence or two, then let the product cards speak. Name the 1–3 most relevant items.
         - If nothing matches, say so honestly and suggest how to refine the search.
         - Stay on shopping topics for this marketplace.
@@ -271,7 +278,7 @@ class ConciergeService
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
-                    'query' => ['type' => 'string', 'description' => 'Keywords: product name, brand, category or feature (English or Malay).'],
+                    'query' => ['type' => 'string', 'description' => 'Keywords: product name, brand, category or feature (English, Malay, or Vietnamese).'],
                     'max_price_rm' => ['type' => 'integer', 'description' => 'Optional maximum price in whole Ringgit (RM).'],
                     'min_rating' => ['type' => 'integer', 'description' => 'Optional minimum average rating, 1 to 5.'],
                 ],

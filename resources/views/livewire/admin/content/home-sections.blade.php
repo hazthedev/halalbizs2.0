@@ -76,9 +76,10 @@
                         {{-- Inline editor --}}
                         @if ($editingId === $section->id)
                             <form wire:submit="save" class="space-y-4 border-t border-line bg-paper px-4 py-4">
-                                <div class="grid gap-4 sm:grid-cols-2">
+                                <div class="grid gap-4 lg:grid-cols-3">
                                     <x-ui.input :label="__('Heading (English)')" wire:model="title.en" :error="$errors->first('title.en')" :hint="__('Optional — leave blank for no heading.')" />
                                     <x-ui.input :label="__('Heading (Bahasa Melayu)')" wire:model="title.ms" :error="$errors->first('title.ms')" :hint="__('Optional — English is shown when empty.')" />
+                                    <x-ui.input :label="__('Heading (Vietnamese)')" wire:model="title.vi" :error="$errors->first('title.vi')" :hint="__('Optional — English is shown when empty.')" />
                                 </div>
 
                                 @if (in_array($section->type, ['product_carousel', 'product_grid'], true))

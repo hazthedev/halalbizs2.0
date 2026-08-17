@@ -73,7 +73,7 @@ class DemoSeeder extends Seeder
 
         foreach (range(1, 3) as $i) {
             $banner = Banner::create([
-                'title' => ['en' => "Campaign banner {$i}", 'ms' => "Sepanduk kempen {$i}"],
+                'title' => ['en' => "Campaign banner {$i}", 'ms' => "Sepanduk kempen {$i}", 'vi' => "Biểu ngữ chiến dịch {$i}"],
                 'link_url' => '/search?q=new',
                 'position' => $i,
                 'is_active' => true,

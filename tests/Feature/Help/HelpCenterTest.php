@@ -152,8 +152,10 @@ test('admin creates a help article with translations and a sanitized body', func
         ->set('category', 'payments')
         ->set('title.en', 'COD limits')
         ->set('title.ms', 'Had COD')
+        ->set('title.vi', 'Giới hạn COD')
         ->set('body.en', '<script>alert(1)</script><p>Up to <strong>RM500</strong>.</p><iframe src="x"></iframe>')
         ->set('body.ms', '<p>Sehingga RM500.</p>')
+        ->set('body.vi', '<p>Tối đa RM500.</p>')
         ->set('position', '4')
         ->call('save')
         ->assertHasNoErrors();
@@ -163,9 +165,11 @@ test('admin creates a help article with translations and a sanitized body', func
     expect($article->category->value)->toBe('payments')
         ->and($article->getTranslation('title', 'en'))->toBe('COD limits')
         ->and($article->getTranslation('title', 'ms'))->toBe('Had COD')
+        ->and($article->getTranslation('title', 'vi', false))->toBe('Giới hạn COD')
         // The <script> body is dropped with the tag now, not left as text (C1/C7).
         ->and($article->getTranslation('body', 'en'))->toBe('<p>Up to <strong>RM500</strong>.</p>')
         ->and($article->getTranslation('body', 'ms'))->toBe('<p>Sehingga RM500.</p>')
+        ->and($article->getTranslation('body', 'vi', false))->toBe('<p>Tối đa RM500.</p>')
         ->and($article->position)->toBe(4)
         ->and($article->is_active)->toBeTrue();
 });

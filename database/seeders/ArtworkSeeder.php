@@ -6,6 +6,7 @@ use App\Models\Banner;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
+use Spatie\MediaLibrary\HasMedia;
 
 /**
  * Banner + top-level category artwork.
@@ -35,7 +36,7 @@ class ArtworkSeeder extends Seeder
 
     /**
      * Ordered — position drives carousel order.
-     * [file, headline en/ms, subline en/ms, cta en/ms, link]
+     * [file, headline en/ms/vi, subline en/ms/vi, cta en/ms/vi, link]
      *
      * Every claim here is one this app can actually stand behind: sellers really
      * are verified before they can list, the certificate really is bound to the
@@ -48,41 +49,56 @@ class ArtworkSeeder extends Seeder
         [
             'banner-verified-trade.webp',
             'A halal shop is not the same as a halal product', 'Kedai halal tidak sama dengan produk halal',
+            'Cửa hàng halal không đồng nghĩa mọi sản phẩm đều halal',
             'Here the certificate is bound to the item, not the storefront. Look it up before you buy.',
             'Di sini sijil terikat pada produk, bukan pada kedai. Semak dahulu sebelum anda membeli.',
+            'Tại đây, chứng nhận gắn với từng sản phẩm chứ không phải cửa hàng. Hãy kiểm tra trước khi mua.',
             'Search the register', 'Cari dalam daftar',
+            'Tra cứu chứng nhận',
             '/certificate-register',
         ],
         [
             'banner-groceries-pantry.webp',
             'Fill the pantry without second-guessing it', 'Isi pantri tanpa rasa was-was',
+            'An tâm lấp đầy căn bếp',
             'Rice, oils and spices from sellers we verified before they could list.',
             'Beras, minyak dan rempah daripada penjual yang kami sahkan sebelum mereka boleh menyenaraikan.',
+            'Gạo, dầu ăn và gia vị từ những người bán đã được xác minh trước khi đăng bán.',
             'Shop Groceries & Pantry', 'Beli Barangan Runcit',
+            'Mua thực phẩm khô',
             '/c/groceries-pantry',
         ],
         [
             'banner-food-snacks.webp',
             'Snacks everyone at the table can eat', 'Snek yang semua orang boleh makan',
+            'Đồ ăn vặt cho mọi người bên bàn ăn',
             'Every packet traces back to a certificate and the batch it was packed in.',
             'Setiap paket boleh dijejak kembali kepada sijil dan kelompok pembungkusannya.',
+            'Mỗi gói hàng đều có thể truy xuất về chứng nhận và lô đóng gói.',
             'Shop Food & Snacks', 'Beli Makanan & Snek',
+            'Mua thực phẩm & đồ ăn vặt',
             '/c/food-snacks',
         ],
         [
             'banner-drinks.webp',
             'Know what is in the bottle', 'Ketahui apa yang ada di dalam botol',
+            'Biết rõ thứ có trong mỗi chai',
             'Cordials, teas and milks, each listed under a certificate you can read.',
             'Kordial, teh dan susu, setiap satu disenaraikan di bawah sijil yang boleh anda baca.',
+            'Nước trái cây, trà và sữa, mỗi sản phẩm đều có chứng nhận để bạn kiểm tra.',
             'Shop Drinks', 'Beli Minuman',
+            'Mua đồ uống',
             '/c/drinks',
         ],
         [
             'banner-care.webp',
             'Halal does not stop at the kitchen', 'Halal tidak terhenti di dapur',
+            'Halal không chỉ dừng ở gian bếp',
             'Shampoo, soap and skincare, checked the same way as the food.',
             'Syampu, sabun dan penjagaan kulit, disemak dengan cara yang sama seperti makanan.',
+            'Dầu gội, xà phòng và sản phẩm chăm sóc da được kiểm tra như thực phẩm.',
             'Shop Cosmetics & Care', 'Beli Kosmetik & Penjagaan',
+            'Mua mỹ phẩm & chăm sóc cá nhân',
             '/c/cosmetics-care',
         ],
     ];
@@ -118,14 +134,14 @@ class ArtworkSeeder extends Seeder
     {
         $done = 0;
 
-        foreach (self::BANNERS as $i => [$file, $en, $ms, $subEn, $subMs, $ctaEn, $ctaMs, $link]) {
+        foreach (self::BANNERS as $i => [$file, $en, $ms, $vi, $subEn, $subMs, $subVi, $ctaEn, $ctaMs, $ctaVi, $link]) {
             // Keyed on link_url so a re-run updates rather than duplicates.
             $banner = Banner::updateOrCreate(
                 ['link_url' => $link],
                 [
-                    'title' => ['en' => $en, 'ms' => $ms],
-                    'subtitle' => ['en' => $subEn, 'ms' => $subMs],
-                    'cta_label' => ['en' => $ctaEn, 'ms' => $ctaMs],
+                    'title' => ['en' => $en, 'ms' => $ms, 'vi' => $vi],
+                    'subtitle' => ['en' => $subEn, 'ms' => $subMs, 'vi' => $subVi],
+                    'cta_label' => ['en' => $ctaEn, 'ms' => $ctaMs, 'vi' => $ctaVi],
                     'position' => $i,
                     'is_active' => true,
                     'starts_at' => null,
@@ -136,6 +152,8 @@ class ArtworkSeeder extends Seeder
             if ($this->attach($banner, $file, 'image')) {
                 $done++;
             }
+
+            $this->attach($banner, 'vi/'.$file, 'image_vi');
         }
 
         // Retire DemoSeeder's imageless placeholders — the grey "HA" slabs that
@@ -146,7 +164,7 @@ class ArtworkSeeder extends Seeder
         $this->command?->info("banners: {$done}/".count(self::BANNERS)." (retired {$retired} demo placeholder".($retired === 1 ? '' : 's').')');
     }
 
-    /** @param  \Spatie\MediaLibrary\HasMedia  $model */
+    /** @param  HasMedia  $model */
     private function attach($model, string $file, string $collection): bool
     {
         $absolute = database_path(self::ART_DIR.'/'.$file);

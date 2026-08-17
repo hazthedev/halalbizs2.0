@@ -148,13 +148,15 @@ return [
             Product::class => [
                 'filterableAttributes' => ['attribute_value_ids', 'category', 'store', 'min_price_sen'],
                 'sortableAttributes' => ['min_price_sen', 'sold_count'],
-                'searchableAttributes' => ['name_en', 'name_ms', 'description_en', 'category', 'store'],
+                'searchableAttributes' => ['name_en', 'name_ms', 'name_vi', 'description_en', 'description_vi', 'category', 'store'],
                 'rankingRules' => ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness', 'sold_count:desc'],
                 'synonyms' => [
                     'kasut' => ['shoe', 'shoes'],
                     'baju' => ['shirt', 'clothing', 'top'],
                     'telefon' => ['phone', 'handphone', 'mobile'],
                     'beg' => ['bag'],
+                    'gạo' => ['rice', 'beras'],
+                    'đồ uống' => ['drinks', 'minuman'],
                 ],
             ],
         ],

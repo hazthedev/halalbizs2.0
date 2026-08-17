@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Content;
 
 use App\Models\Banner;
+use App\Support\ContentLocales;
 use App\Support\HtmlSanitizer;
 use Closure;
 use Illuminate\Support\Carbon;
@@ -27,14 +28,14 @@ class Banners extends Component
     #[Locked]
     public ?int $editingId = null;
 
-    /** @var array{en: string, ms: string} */
-    public array $title = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $title = ['en' => '', 'ms' => '', 'vi' => ''];
 
-    /** @var array{en: string, ms: string} */
-    public array $subtitle = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $subtitle = ['en' => '', 'ms' => '', 'vi' => ''];
 
-    /** @var array{en: string, ms: string} */
-    public array $ctaLabel = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $ctaLabel = ['en' => '', 'ms' => '', 'vi' => ''];
 
     public string $linkUrl = '';
 
@@ -45,6 +46,9 @@ class Banners extends Component
     public bool $isActive = true;
 
     public ?TemporaryUploadedFile $image = null;
+
+    /** Optional Vietnamese artwork when the headline is baked into the image. */
+    public ?TemporaryUploadedFile $imageVi = null;
 
     /** Optional motion slide (mp4/webm, ≤30MB) — the image stays as fallback. */
     public ?TemporaryUploadedFile $video = null;
@@ -61,18 +65,9 @@ class Banners extends Component
 
         $this->resetForm();
         $this->editingId = $banner->id;
-        $this->title = [
-            'en' => $banner->getTranslation('title', 'en'),
-            'ms' => $banner->getTranslation('title', 'ms', false) ?? '',
-        ];
-        $this->subtitle = [
-            'en' => $banner->getTranslation('subtitle', 'en', false) ?? '',
-            'ms' => $banner->getTranslation('subtitle', 'ms', false) ?? '',
-        ];
-        $this->ctaLabel = [
-            'en' => $banner->getTranslation('cta_label', 'en', false) ?? '',
-            'ms' => $banner->getTranslation('cta_label', 'ms', false) ?? '',
-        ];
+        $this->title = ContentLocales::read($banner, 'title');
+        $this->subtitle = ContentLocales::read($banner, 'subtitle');
+        $this->ctaLabel = ContentLocales::read($banner, 'cta_label');
         $this->linkUrl = $banner->link_url ?? '';
         $this->startsAt = $banner->starts_at?->format('Y-m-d\TH:i') ?? '';
         $this->endsAt = $banner->ends_at?->format('Y-m-d\TH:i') ?? '';
@@ -90,10 +85,13 @@ class Banners extends Component
         $this->validate([
             'title.en' => ['required', 'string', 'max:255'],
             'title.ms' => ['nullable', 'string', 'max:255'],
+            'title.vi' => ['nullable', 'string', 'max:255'],
             'subtitle.en' => ['nullable', 'string', 'max:255'],
             'subtitle.ms' => ['nullable', 'string', 'max:255'],
+            'subtitle.vi' => ['nullable', 'string', 'max:255'],
             'ctaLabel.en' => ['nullable', 'string', 'max:60'],
             'ctaLabel.ms' => ['nullable', 'string', 'max:60'],
+            'ctaLabel.vi' => ['nullable', 'string', 'max:60'],
             // M-17: this lands in a live <a href> on the storefront hero, so a
             // cms.manage admin could otherwise plant `javascript:`. Blade escapes
             // the quotes but not the scheme. Relative paths must stay legal —
@@ -106,6 +104,7 @@ class Banners extends Component
             'startsAt' => ['nullable', 'date'],
             'endsAt' => ['nullable', 'date'],
             'image' => [$this->editingId === null ? 'required' : 'nullable', 'image', 'max:4096'],
+            'imageVi' => ['nullable', 'image', 'max:4096'],
             'video' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm', 'max:30720'],
         ], [
             'video.mimetypes' => __('The video must be an MP4 or WebM file.'),
@@ -136,26 +135,9 @@ class Banners extends Component
             'is_active' => $this->isActive,
         ]);
 
-        // en is ALWAYS written (fallback locale); ms only when filled.
-        $banner->setTranslation('title', 'en', trim($this->title['en']));
-
-        if (trim($this->title['ms'] ?? '') !== '') {
-            $banner->setTranslation('title', 'ms', trim($this->title['ms']));
-        } else {
-            $banner->forgetTranslation('title', 'ms');
-        }
-
-        // subtitle and cta_label follow the same rule as title: en is the
-        // fallback, ms only when actually filled in.
-        foreach (['subtitle' => $this->subtitle, 'cta_label' => $this->ctaLabel] as $field => $values) {
-            foreach (['en', 'ms'] as $locale) {
-                if (trim($values[$locale] ?? '') !== '') {
-                    $banner->setTranslation($field, $locale, trim($values[$locale]));
-                } else {
-                    $banner->forgetTranslation($field, $locale);
-                }
-            }
-        }
+        ContentLocales::write($banner, 'title', $this->title);
+        ContentLocales::write($banner, 'subtitle', $this->subtitle, englishRequired: false);
+        ContentLocales::write($banner, 'cta_label', $this->ctaLabel, englishRequired: false);
 
         $banner->save();
 
@@ -164,6 +146,12 @@ class Banners extends Component
             $banner->addMedia($this->image->getRealPath())
                 ->usingFileName($this->image->getClientOriginalName())
                 ->toMediaCollection('image');
+        }
+
+        if ($this->imageVi !== null) {
+            $banner->addMedia($this->imageVi->getRealPath())
+                ->usingFileName($this->imageVi->getClientOriginalName())
+                ->toMediaCollection('image_vi');
         }
 
         if ($this->video !== null) {
@@ -187,6 +175,19 @@ class Banners extends Component
         Banner::findOrFail($this->editingId)->clearMediaCollection('video');
 
         $this->dispatch('toast', message: __('Banner video removed'));
+    }
+
+    public function removeVietnameseImage(): void
+    {
+        if ($this->editingId === null) {
+            $this->imageVi = null;
+
+            return;
+        }
+
+        Banner::findOrFail($this->editingId)->clearMediaCollection('image_vi');
+        $this->imageVi = null;
+        $this->dispatch('toast', message: __('Vietnamese banner image removed'));
     }
 
     public function toggleActive(int $bannerId): void
@@ -238,7 +239,7 @@ class Banners extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['showForm', 'editingId', 'title', 'subtitle', 'ctaLabel', 'linkUrl', 'startsAt', 'endsAt', 'isActive', 'image', 'video']);
+        $this->reset(['showForm', 'editingId', 'title', 'subtitle', 'ctaLabel', 'linkUrl', 'startsAt', 'endsAt', 'isActive', 'image', 'imageVi', 'video']);
         $this->resetErrorBag();
     }
 

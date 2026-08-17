@@ -44,6 +44,7 @@ test('admin can create a root and a child category with en name and generated sl
         ->call('startCreate')
         ->set('name.en', 'Halal Gourmet')
         ->set('name.ms', 'Gourmet Halal')
+        ->set('name.vi', 'Ẩm thực halal cao cấp')
         ->set('commissionRate', '7.5')
         ->call('save')
         ->assertHasNoErrors();
@@ -52,6 +53,7 @@ test('admin can create a root and a child category with en name and generated sl
 
     expect($root->getTranslation('name', 'en'))->toBe('Halal Gourmet')
         ->and($root->getTranslation('name', 'ms', false))->toBe('Gourmet Halal')
+        ->and($root->getTranslation('name', 'vi', false))->toBe('Ẩm thực halal cao cấp')
         ->and($root->parent_id)->toBeNull()
         ->and((float) $root->commission_rate)->toBe(7.5);
 
@@ -180,6 +182,7 @@ test('admin can create, rename, toggle, and delete an attribute and manage its v
         ->test(AttributesComponent::class)
         ->set('name.en', 'Material')
         ->set('name.ms', 'Bahan')
+        ->set('name.vi', 'Chất liệu')
         ->call('create')
         ->assertHasNoErrors();
 
@@ -187,6 +190,7 @@ test('admin can create, rename, toggle, and delete an attribute and manage its v
 
     expect($attribute->getTranslation('name', 'en'))->toBe('Material')
         ->and($attribute->getTranslation('name', 'ms', false))->toBe('Bahan')
+        ->and($attribute->getTranslation('name', 'vi', false))->toBe('Chất liệu')
         ->and($attribute->is_filterable)->toBeTrue();
 
     // Value add — en required, ms optional.
@@ -200,6 +204,7 @@ test('admin can create, rename, toggle, and delete an attribute and manage its v
     $component
         ->set('valueDraft.en', 'Cotton')
         ->set('valueDraft.ms', 'Kapas')
+        ->set('valueDraft.vi', 'Cotton')
         ->call('addValue')
         ->assertHasNoErrors();
 
@@ -207,6 +212,7 @@ test('admin can create, rename, toggle, and delete an attribute and manage its v
 
     expect($value->getTranslation('value', 'en'))->toBe('Cotton')
         ->and($value->getTranslation('value', 'ms', false))->toBe('Kapas')
+        ->and($value->getTranslation('value', 'vi', false))->toBe('Cotton')
         ->and($value->position)->toBe(0);
 
     // Rename + filterable toggle.

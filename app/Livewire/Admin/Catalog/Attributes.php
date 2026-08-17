@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Catalog;
 
 use App\Models\Attribute;
 use App\Models\AttributeValue;
+use App\Support\ContentLocales;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -15,28 +16,29 @@ use Livewire\Component;
 class Attributes extends Component
 {
     // ── Create form ────────────────────────────────────────────────────
-    /** @var array{en: string, ms: string} */
-    public array $name = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $name = ['en' => '', 'ms' => '', 'vi' => ''];
 
     public bool $isFilterable = true;
 
     // ── Inline edit ────────────────────────────────────────────────────
     public ?int $editingId = null;
 
-    /** @var array{en: string, ms: string} */
-    public array $editName = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $editName = ['en' => '', 'ms' => '', 'vi' => ''];
 
     // ── Values panel ───────────────────────────────────────────────────
     public ?int $managingId = null;
 
-    /** @var array{en: string, ms: string} */
-    public array $valueDraft = ['en' => '', 'ms' => ''];
+    /** @var array{en: string, ms: string, vi: string} */
+    public array $valueDraft = ['en' => '', 'ms' => '', 'vi' => ''];
 
     public function create(): void
     {
         $this->validate([
             'name.en' => ['required', 'string', 'max:255'],
             'name.ms' => ['nullable', 'string', 'max:255'],
+            'name.vi' => ['nullable', 'string', 'max:255'],
         ], attributes: ['name.en' => __('attribute name (English)')]);
 
         Attribute::create([
@@ -44,7 +46,7 @@ class Attributes extends Component
             'is_filterable' => $this->isFilterable,
         ]);
 
-        $this->name = ['en' => '', 'ms' => ''];
+        $this->name = ContentLocales::blank();
         $this->isFilterable = true;
 
         $this->dispatch('toast', message: __('Attribute created'));
@@ -55,10 +57,7 @@ class Attributes extends Component
         $attribute = Attribute::query()->findOrFail($attributeId);
 
         $this->editingId = $attribute->id;
-        $this->editName = [
-            'en' => $attribute->getTranslation('name', 'en'),
-            'ms' => $attribute->getTranslation('name', 'ms', false) ?? '',
-        ];
+        $this->editName = ContentLocales::read($attribute, 'name');
         $this->resetErrorBag();
     }
 
@@ -67,17 +66,12 @@ class Attributes extends Component
         $this->validate([
             'editName.en' => ['required', 'string', 'max:255'],
             'editName.ms' => ['nullable', 'string', 'max:255'],
+            'editName.vi' => ['nullable', 'string', 'max:255'],
         ], attributes: ['editName.en' => __('attribute name (English)')]);
 
         $attribute = Attribute::query()->findOrFail($this->editingId);
 
-        $attribute->setTranslation('name', 'en', trim($this->editName['en']));
-
-        if (trim($this->editName['ms'] ?? '') !== '') {
-            $attribute->setTranslation('name', 'ms', trim($this->editName['ms']));
-        } else {
-            $attribute->forgetTranslation('name', 'ms');
-        }
+        ContentLocales::write($attribute, 'name', $this->editName);
 
         $attribute->save();
 
@@ -88,7 +82,7 @@ class Attributes extends Component
     public function cancelEdit(): void
     {
         $this->reset(['editingId']);
-        $this->editName = ['en' => '', 'ms' => ''];
+        $this->editName = ContentLocales::blank();
         $this->resetErrorBag();
     }
 
@@ -114,7 +108,7 @@ class Attributes extends Component
     public function manageValues(int $attributeId): void
     {
         $this->managingId = $this->managingId === $attributeId ? null : $attributeId;
-        $this->valueDraft = ['en' => '', 'ms' => ''];
+        $this->valueDraft = ContentLocales::blank();
         $this->resetErrorBag();
     }
 
@@ -123,6 +117,7 @@ class Attributes extends Component
         $this->validate([
             'valueDraft.en' => ['required', 'string', 'max:255'],
             'valueDraft.ms' => ['nullable', 'string', 'max:255'],
+            'valueDraft.vi' => ['nullable', 'string', 'max:255'],
         ], attributes: ['valueDraft.en' => __('value (English)')]);
 
         $attribute = Attribute::query()->findOrFail($this->managingId);
@@ -132,7 +127,7 @@ class Attributes extends Component
             'position' => (int) ($attribute->values()->max('position') ?? -1) + 1,
         ]);
 
-        $this->valueDraft = ['en' => '', 'ms' => ''];
+        $this->valueDraft = ContentLocales::blank();
     }
 
     public function removeValue(int $valueId): void
@@ -180,17 +175,11 @@ class Attributes extends Component
     }
 
     /**
-     * @param  array{en: string, ms: string}  $input
-     * @return array<string, string> en always present; ms only when filled
+     * @param  array{en: string, ms: string, vi: string}  $input
+     * @return array<string, string> en always present; optional locales only when filled
      */
     private function translationPayload(array $input): array
     {
-        $payload = ['en' => trim($input['en'])];
-
-        if (trim($input['ms'] ?? '') !== '') {
-            $payload['ms'] = trim($input['ms']);
-        }
-
-        return $payload;
+        return ContentLocales::payload($input);
     }
 }
