@@ -65,7 +65,56 @@ HTML,
         ],
         'about' => [
             'title' => 'Về chúng tôi',
-            'body' => '<h2>Về :brand</h2><p>:brand là sàn giao dịch đa nhà bán hàng tại Malaysia, kết nối người bán đáng tin cậy, thân thiện với halal cùng người mua — với mức phí công bằng, chính sách bảo vệ người mua và hỗ trợ đa ngôn ngữ.</p>',
+            'body' => <<<'HTML'
+<h2>Về :brand</h2>
+<p>:brand là sàn thương mại đa người bán tại Malaysia, được xây dựng để hoạt động mua bán hằng ngày trở nên minh bạch, bao trùm và hữu ích hơn cho người mua cũng như các nhà bán hàng độc lập. Chúng tôi kết hợp mua sắm chú trọng halal, thông tin sản phẩm rõ ràng, quy trình hoàn tất đơn đáng tin cậy và công cụ bán hàng thiết thực trong một sàn duy nhất.</p>
+<h3>Mục đích của chúng tôi</h3>
+<p>Chúng tôi muốn người mua hiểu rõ mình đang mua gì và mua từ ai. Đồng thời, chúng tôi muốn các doanh nghiệp Malaysia—từ thương hiệu nội địa đang phát triển đến nhà phân phối lâu năm—có thể tiếp cận khách hàng mà không phải tự xây dựng toàn bộ hạ tầng sàn thương mại.</p>
+<h3>Cách sàn hoạt động</h3>
+<p>Các nhà bán hàng độc lập vận hành cửa hàng riêng, đăng sản phẩm, quản lý tồn kho, hoàn tất đơn hàng và chịu trách nhiệm về tính chính xác cũng như chất lượng của nội dung đăng bán. :brand cung cấp khả năng khám phá sản phẩm, thanh toán, điều phối giao dịch, hồ sơ đơn hàng, hỗ trợ người mua, xử lý trả hàng và tranh chấp, cùng các công cụ giúp người bán quản lý hoạt động kinh doanh.</p>
+<h3>Cách chúng tôi xây dựng niềm tin về halal</h3>
+<p>Chúng tôi quản lý bằng chứng halal ở cấp sản phẩm. Một người bán đã được xác minh không có nghĩa mọi sản phẩm của họ tự động được chứng nhận halal. Khi có tuyên bố chứng nhận, người mua có thể xem chứng nhận gắn với sản phẩm và tra cứu sổ đăng ký chứng nhận công khai. Nhờ vậy, tuyên bố luôn gắn với đúng mặt hàng và phạm vi thực tế được chứng nhận.</p>
+<h3>Dành cho người mua</h3>
+<p>Người mua có thể mua từ nhiều người bán trong một lần thanh toán, chọn phương thức thanh toán được hỗ trợ, theo dõi từng kiện hàng riêng biệt, xem thông tin sản phẩm và chứng nhận, cũng như yêu cầu hỗ trợ khi đơn hàng không diễn ra như mong đợi. Gian hàng hỗ trợ tiếng Anh, tiếng Mã Lai và tiếng Việt, với giá hiển thị bằng các loại tiền tệ được hỗ trợ.</p>
+<h3>Dành cho người bán</h3>
+<p>Người bán có trung tâm riêng để quản lý sản phẩm, phân loại, tồn kho, đơn hàng, khuyến mãi, rút tiền, chứng nhận và nội dung đa ngôn ngữ. Vai trò của chúng tôi là làm cho công cụ vận hành rõ ràng và công bằng, để người bán tập trung vào sản phẩm, dịch vụ và mối quan hệ lâu dài với khách hàng.</p>
+<h3>Nguyên tắc định hướng</h3>
+<ul>
+<li><strong>Rõ ràng</strong> — những tuyên bố quan trọng phải dễ thấy và dễ hiểu.</li>
+<li><strong>Khả năng truy xuất</strong> — hồ sơ sản phẩm, đơn hàng, thanh toán và chứng nhận phải liên kết với nhau.</li>
+<li><strong>Tham gia công bằng</strong> — người mua và người bán cần biết quy tắc trước khi hành động.</li>
+<li><strong>Tôn trọng lựa chọn</strong> — người mua chú trọng halal cần bằng chứng, không phải giả định.</li>
+</ul>
+<p>:brand là đơn vị vận hành sàn, không phải cơ quan chứng nhận halal và không phải bên bán đối với nội dung đăng bán của bên thứ ba. Quyết định chứng nhận thuộc về cơ quan cấp chứng nhận được công nhận; chất lượng sản phẩm và việc hoàn tất đơn hàng vẫn là trách nhiệm của người bán.</p>
+HTML,
+        ],
+        'trust-safety' => [
+            'title' => 'Tin cậy & An toàn',
+            'body' => <<<'HTML'
+<h2>Tin cậy &amp; An toàn tại :brand</h2>
+<p>Niềm tin được xây dựng từ bằng chứng, trách nhiệm rõ ràng và hồ sơ về những gì đã xảy ra—không chỉ từ một huy hiệu. :brand kết hợp quy trình xét duyệt người bán, thông tin halal ở cấp sản phẩm, luồng đơn hàng được bảo vệ, biện pháp bảo vệ tài khoản và hỗ trợ từ con người để người mua lẫn người bán có thể đưa ra quyết định đầy đủ thông tin.</p>
+<h3>Xét duyệt người bán</h3>
+<p>Người bán đăng ký bằng thông tin doanh nghiệp và liên hệ trước khi cửa hàng được phê duyệt. Việc phê duyệt cho phép người bán hoạt động trên sàn; điều đó không chứng nhận mọi sản phẩm họ đăng. Người bán vẫn chịu trách nhiệm về mô tả chính xác, hàng hóa hợp pháp, tài liệu xác thực, tồn kho, đóng gói và giao hàng.</p>
+<h3>Bằng chứng halal ở cấp sản phẩm</h3>
+<p>Tuyên bố halal được gắn với từng sản phẩm và hồ sơ chứng nhận bao phủ sản phẩm đó. Một sản phẩm có thể hiển thị cơ quan cấp, số chứng nhận, thời hạn hiệu lực, thông tin lô hàng và phạm vi. Người mua có thể dùng sổ đăng ký chứng nhận để kiểm tra hồ sơ hiện tại. Nếu bằng chứng hết hạn, bị từ chối hoặc không còn bao phủ mặt hàng, sản phẩm liên quan có thể bị giữ khỏi xuất bản hoặc gỡ khỏi bán.</p>
+<h3>Bảo vệ người mua và hồ sơ đơn hàng</h3>
+<p>Trang thanh toán ghi nhận người bán, mặt hàng, giá, giảm giá, thanh toán và thông tin giao hàng cho từng phần của đơn. Dòng tiền đi theo vòng đời đơn hàng và được giải ngân theo quy tắc giao hàng, hoàn tất. Người mua có thể theo dõi kiện hàng, gửi yêu cầu trả hàng kèm bằng chứng và chuyển trường hợp chưa giải quyết lên sàn để xem xét.</p>
+<h3>Thanh toán và bảo mật tài khoản</h3>
+<p>Thanh toán sử dụng các kênh được hỗ trợ như FPX, thẻ, ví điện tử hoặc thanh toán khi nhận hàng nếu có. :brand không lưu đầy đủ số thẻ. Giới hạn tần suất, xác minh email, xác thực hai yếu tố tùy chọn, kiểm soát thiết bị tin cậy và cảnh báo thiết bị mới giúp bảo vệ tài khoản. Không bao giờ chia sẻ mật khẩu, OTP, mã PIN ngân hàng hoặc mã bảo mật thẻ qua trò chuyện, email hay điện thoại.</p>
+<h3>Nội dung đăng bán và đánh giá trung thực</h3>
+<p>Người bán không được mô tả sai thành phần, nguồn gốc, chứng nhận, tình trạng, giá hoặc mức tồn. Đánh giá phải phản ánh trải nghiệm đơn hàng thật. Đánh giá bị thao túng, chứng nhận giả, hàng bị cấm, lạm dụng phiếu giảm giá và cố đưa thanh toán ra ngoài sàn có thể dẫn đến gỡ sản phẩm, hạn chế tài khoản hoặc điều tra.</p>
+<h3>Cách mua sắm tự tin</h3>
+<ol>
+<li>Đọc đầy đủ mô tả sản phẩm, phân loại, số lượng, thành phần và thông tin người bán.</li>
+<li>Với sản phẩm được chứng nhận halal, mở chi tiết chứng nhận và xác nhận cơ quan cấp, thời hạn cùng sản phẩm được bao phủ.</li>
+<li>Giữ thanh toán và tin nhắn trong :brand để hồ sơ giao dịch có thể bảo vệ bạn.</li>
+<li>Kiểm tra kiện hàng sớm và báo vấn đề từ trang đơn hàng trong thời hạn trả hàng hiển thị.</li>
+<li>Liên hệ Trung tâm Trợ giúp khi phản hồi của người bán chưa giải quyết được vấn đề.</li>
+</ol>
+<h3>Báo cáo vấn đề</h3>
+<p>Nếu bạn thấy nội dung đăng bán đáng ngờ, tuyên bố halal gây hiểu lầm, sản phẩm không an toàn, yêu cầu thanh toán bất thường hoặc hoạt động tài khoản không nhận ra, hãy dừng giao dịch và liên hệ Trung tâm Trợ giúp. Kèm theo mã sản phẩm hoặc đơn hàng và ảnh chụp hỗ trợ để đội ngũ điều tra chính xác.</p>
+<p>Không sàn thương mại nào có thể loại bỏ mọi rủi ro. Cam kết của chúng tôi là làm cho các tuyên bố có thể kiểm tra, bảo toàn bằng chứng giao dịch, áp dụng nhất quán các quy tắc đã công bố và cung cấp một lộ trình hỗ trợ rõ ràng khi có vấn đề.</p>
+HTML,
         ],
         'faq' => [
             'title' => 'Câu hỏi thường gặp',

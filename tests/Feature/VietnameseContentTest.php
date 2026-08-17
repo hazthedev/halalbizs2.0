@@ -71,7 +71,7 @@ test('Vietnamese CMS backfill is complete and preserves administrator copy', fun
 
     $this->seed(VietnameseContentSeeder::class);
 
-    expect(Page::whereRaw("json_extract(title, '$.vi') is not null")->count())->toBe(6)
+    expect(Page::whereRaw("json_extract(title, '$.vi') is not null")->count())->toBe(7)
         ->and(HelpArticle::whereRaw("json_extract(title, '$.vi') is not null")->count())->toBe(10)
         ->and(HomeSection::whereNotNull('title')->whereRaw("json_extract(title, '$.vi') is not null")->count())->toBe(5)
         ->and(Banner::whereRaw("json_extract(title, '$.vi') is not null")->count())->toBe(5);

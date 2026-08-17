@@ -19,7 +19,7 @@ use Livewire\Component;
 #[Layout('layouts.admin')]
 class Pages extends Component
 {
-    public const SYSTEM_SLUGS = ['about', 'terms', 'privacy', 'refund-policy', 'faq'];
+    public const SYSTEM_SLUGS = ['about', 'trust-safety', 'terms', 'privacy', 'refund-policy', 'faq'];
 
     /** Legally required at all times — deactivation blocked. */
     public const ALWAYS_ACTIVE_SLUGS = ['terms', 'privacy'];
