@@ -2589,5 +2589,14 @@
     "The payment simulator is available for preview testing. It does not charge real money.": "Simulator pembayaran tersedia untuk ujian pratonton. Ia tidak mengenakan bayaran sebenar.",
     "Online payment is hidden from buyers until both credentials are saved.": "Pembayaran dalam talian disembunyikan daripada pembeli sehingga kedua-dua kelayakan disimpan.",
     "Credentials are complete. Run the connection test before sandbox checkout testing.": "Kelayakan lengkap. Jalankan ujian sambungan sebelum menguji pembayaran dalam sandbox.",
-    "Live credentials are complete. Confirm a small live payment and refund before launch.": "Kelayakan langsung lengkap. Sahkan pembayaran langsung bernilai kecil dan bayaran balik sebelum pelancaran."
+    "Live credentials are complete. Confirm a small live payment and refund before launch.": "Kelayakan langsung lengkap. Sahkan pembayaran langsung bernilai kecil dan bayaran balik sebelum pelancaran.",
+    "Information received": "Maklumat penghantaran diterima",
+    "In transit": "Dalam perjalanan",
+    "Out for delivery": "Sedang dihantar",
+    "Delivery attempt failed": "Percubaan penghantaran gagal",
+    "Available for pickup": "Sedia untuk diambil",
+    "Delivery exception": "Masalah penghantaran",
+    "Tracking expired": "Penjejakan tamat tempoh",
+    "Track on courier website": "Jejak di laman web kurier",
+    "Shipment journey": "Perjalanan penghantaran"
 }

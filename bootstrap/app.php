@@ -119,6 +119,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'payments/ipay88/response',
             'payments/ipay88/backend',
             'shipping/easyparcel/tracking',
+            'shipping/aftership/tracking',
         ]);
 
         $middleware->alias([

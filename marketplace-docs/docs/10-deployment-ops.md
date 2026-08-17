@@ -22,6 +22,7 @@ One VPS, 4 vCPU / 8 GB, Ubuntu 24.04 — Nginx, PHP-FPM 8.4 (opcache, `pm.max_ch
 | `coins:expire` (M2.1 lapsed Loyalty Coin lots) | daily 01:00 |
 | `group-buy:expire` (M2.6 lapsed recruiting teams) | every 15 min |
 | `subscriptions:process` (M2.8 due subscribe-and-save orders) | hourly |
+| `tracking:register-open` (AfterShip registration rescue; inert when disabled) | every 15 min |
 | `search:embed` (M2.3 embedding backfill — run on demand / after driver change) | manual |
 | `rates:sync` (if API enabled, with margin) | daily 06:00 |
 | `sitemap:generate` | daily 03:00 |
@@ -50,6 +51,14 @@ Forced HTTPS + HSTS · secure/same-site cookies · CSP (self + CDN + Turnstile +
 5. Expiry job observed cancelling an abandoned live order + restock confirmed.
 6. Reconciliation view (08 §E) matches iPay88 portal for the test set.
 7. Alert wired: backend callback signature mismatch → Sentry fatal + admin notification.
+
+## AfterShip tracking activation checklist
+1. Keep `TRACKING_PROVIDER=none` until an AfterShip Tracking API key and webhook secret are available; manual courier tracking remains unchanged while disabled.
+2. Set `TRACKING_PROVIDER=aftership`, `AFTERSHIP_API_KEY`, and `AFTERSHIP_WEBHOOK_SECRET`, then rebuild the configuration cache.
+3. In AfterShip, register `https://<marketplace-domain>/shipping/aftership/tracking`, select the latest supported webhook version, and enable shipment-status updates.
+4. Send AfterShip's test webhook and confirm a 2xx response; unsigned or incorrectly signed requests must return 401.
+5. Run `php artisan tracking:register-open` once to queue parcels shipped before activation. The scheduler then rescues missed registrations every 15 minutes.
+6. Test one real shipment through In Transit → Out for Delivery → Delivered and confirm the buyer journey, signed checkpoint ingestion, COD settlement, and idempotent duplicate delivery callback.
 
 ## Launch checklist
 Legal pages live (T&C incl. tax-inclusive pricing stance, Privacy/PDPA, Refund policy — `docs/02` §3) · LHDN e-Invoice obligation re-verified for marketplaces (compliance checkpoint) · seeded categories real · admin accounts 2FA'd, default seeder admin removed · robots + sitemap submitted to Search Console · `migrate:fresh` banned on prod (confirm no destructive scripts in deploy) · backup restore **tested once** · load sanity: `wrk` on home/listing/PDP cached paths · Dusk full-regression green on staging · rollback plan: Forge previous release + DB backup point.

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CommissionBasis;
+use App\Enums\ShipmentTrackingStatus;
 use App\Enums\SubOrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,7 @@ class SubOrder extends Model
         'sub_order_no', 'order_id', 'store_id', 'status',
         'items_subtotal_sen', 'shipping_fee_sen', 'shop_discount_sen', 'shipping_subsidy_sen', 'tax_sen', 'total_sen',
         'refunded_sen', 'commission_rate', 'commission_sen', 'tracking_courier', 'tracking_no',
+        'tracking_provider', 'tracking_provider_id', 'tracking_status', 'tracking_url', 'tracking_last_event_at',
         'awb_no', 'shipping_label_url', 'courier_service',
         'shipped_at', 'delivered_at', 'completed_at', 'auto_complete_at',
         'cancelled_at', 'cancel_reason',
@@ -49,6 +51,8 @@ class SubOrder extends Model
             'completed_at' => 'datetime',
             'auto_complete_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'tracking_status' => ShipmentTrackingStatus::class,
+            'tracking_last_event_at' => 'datetime',
         ];
     }
 
@@ -92,6 +96,11 @@ class SubOrder extends Model
     public function statusHistories(): HasMany
     {
         return $this->hasMany(OrderStatusHistory::class)->orderBy('created_at');
+    }
+
+    public function trackingEvents(): HasMany
+    {
+        return $this->hasMany(ShipmentTrackingEvent::class)->orderByDesc('occurred_at');
     }
 
     public function ledgerEntries(): HasMany

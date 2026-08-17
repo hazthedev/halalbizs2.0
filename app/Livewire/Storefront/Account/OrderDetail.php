@@ -208,7 +208,7 @@ class OrderDetail extends Component
     private function loadSubOrder(): void
     {
         $this->subOrder->refresh()->load([
-            'items.product.media', 'statusHistories', 'store', 'order.payment',
+            'items.product.media', 'statusHistories', 'trackingEvents', 'store', 'order.payment',
             'returnRequest.reason', 'returnRequest.media',
         ]);
     }

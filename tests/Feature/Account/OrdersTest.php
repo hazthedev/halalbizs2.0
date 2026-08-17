@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PaymentMethod;
+use App\Enums\ShipmentTrackingStatus;
 use App\Enums\SubOrderStatus;
 use App\Livewire\Storefront\Account\OrderDetail;
 use App\Livewire\Storefront\Account\Orders;
@@ -296,6 +297,15 @@ test('detail page renders snapshots, timeline, address, totals and tracking', fu
     $subOrder = ordersSubOrder($buyer, SubOrderStatus::Shipped);
     $item = ordersItem($subOrder, qty: 2);
     $item->update(['product_name' => 'Snapshot name at purchase', 'variant_label' => 'Blue / XL']);
+    $subOrder->forceFill(['tracking_url' => 'https://tracking.example.test/parcel'])->save();
+    $subOrder->trackingEvents()->create([
+        'provider' => 'aftership',
+        'external_id' => 'checkpoint-account-test',
+        'status' => ShipmentTrackingStatus::InTransit,
+        'message' => 'Parcel reached the sorting centre',
+        'location' => 'Hanoi, Vietnam',
+        'occurred_at' => now(),
+    ]);
 
     $this->actingAs($buyer);
 
@@ -305,6 +315,10 @@ test('detail page renders snapshots, timeline, address, totals and tracking', fu
         ->assertSee('Blue / XL')
         ->assertSee($subOrder->order->shipping_address['recipient_name'])
         ->assertSee($subOrder->tracking_no)
+        ->assertSee('Shipment journey')
+        ->assertSee('Parcel reached the sorting centre')
+        ->assertSee('Hanoi, Vietnam')
+        ->assertSee('Track on courier website')
         ->assertSee($subOrder->order->order_no)
         ->assertSee('Shipped');
 });

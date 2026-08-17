@@ -440,6 +440,7 @@ it('sweeps every GET route against every persona and writes the matrix', functio
         'payments.ipay88.response' => '404s on a blank merchant_key; signature checked (UX path, never fulfils)',
         'payments.ipay88.backend' => 'COVERED — "does not let a forged iPay88 backend callback mark an order paid"',
         'shipping.easyparcel.tracking' => 'COVERED — "rejects the courier webhook without its token…" (401)',
+        'shipping.aftership.tracking' => 'COVERED — "rejects courier webhooks without valid credentials…" (401)',
         'storage.local.upload' => 'COVERED — "does not serve the private disk without a signature" (PUT → 403, no file written)',
         'default-livewire.update' => 'Livewire framework endpoint — snapshots are checksum-signed; component-action authz is a separate area',
         'livewire.upload-file' => 'Livewire framework endpoint',
@@ -721,12 +722,15 @@ it('keeps unpublished catalogue data out of the public API', function () {
     expect($listed)->not->toContain($w['draftProduct']->id);
 });
 
-it('rejects the courier webhook without its token and the gateway callback without a signature', function () {
+it('rejects courier webhooks without valid credentials and the gateway callback without a signature', function () {
     qaWorld();
 
     test()->post(route('shipping.easyparcel.tracking'), ['awb_no' => 'X', 'status' => 'delivered'])
         ->assertStatus(401);
 
     test()->post(route('shipping.easyparcel.tracking'), ['awb_no' => 'X'], ['X-EasyParcel-Token' => 'wrong'])
+        ->assertStatus(401);
+
+    test()->postJson(route('shipping.aftership.tracking'), ['event' => 'tracking_update'], ['aftership-hmac-sha256' => 'wrong'])
         ->assertStatus(401);
 });

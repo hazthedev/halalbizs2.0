@@ -2589,5 +2589,14 @@
     "The payment simulator is available for preview testing. It does not charge real money.": "Trình mô phỏng thanh toán dùng để kiểm tra bản xem trước. Hệ thống không thu tiền thật.",
     "Online payment is hidden from buyers until both credentials are saved.": "Thanh toán trực tuyến sẽ bị ẩn với người mua cho đến khi lưu đủ cả hai thông tin xác thực.",
     "Credentials are complete. Run the connection test before sandbox checkout testing.": "Thông tin xác thực đã đầy đủ. Hãy kiểm tra kết nối trước khi thử thanh toán trong sandbox.",
-    "Live credentials are complete. Confirm a small live payment and refund before launch.": "Thông tin xác thực chế độ thực đã đầy đủ. Hãy xác nhận một giao dịch nhỏ và hoàn tiền trước khi ra mắt."
+    "Live credentials are complete. Confirm a small live payment and refund before launch.": "Thông tin xác thực chế độ thực đã đầy đủ. Hãy xác nhận một giao dịch nhỏ và hoàn tiền trước khi ra mắt.",
+    "Information received": "Đã nhận thông tin vận chuyển",
+    "In transit": "Đang vận chuyển",
+    "Out for delivery": "Đang giao hàng",
+    "Delivery attempt failed": "Giao hàng không thành công",
+    "Available for pickup": "Sẵn sàng để nhận",
+    "Delivery exception": "Sự cố giao hàng",
+    "Tracking expired": "Theo dõi đã hết hạn",
+    "Track on courier website": "Theo dõi trên trang của đơn vị vận chuyển",
+    "Shipment journey": "Hành trình vận chuyển"
 }

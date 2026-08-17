@@ -18,6 +18,9 @@ Schedule::command('carts:remind-abandoned')->hourly();
 Schedule::command('seller:compute-health')->dailyAt('02:00');
 // M2.1 — expire lapsed Loyalty Coin lots.
 Schedule::command('coins:expire')->dailyAt('01:00');
+// Register any shipped parcel that missed its first AfterShip queue attempt.
+// The command exits before querying when TRACKING_PROVIDER is not configured.
+Schedule::command('tracking:register-open')->everyFifteenMinutes()->withoutOverlapping(5);
 
 // Halal certificate expiry watch: delist products under an expired certificate,
 // restore them on renewal, nudge sellers 60 days out. Early, before the day's
