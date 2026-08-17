@@ -2578,5 +2578,16 @@
     "Vietnamese banner preview": "Xem trước biểu ngữ Tiếng Việt",
     "Used for Vietnamese when copy is baked into the artwork. Falls back to the main image when empty.": "Dùng cho Tiếng Việt khi nội dung được ghép trực tiếp vào hình ảnh. Nếu để trống, hệ thống dùng hình ảnh chính.",
     "VI (optional)": "VI (không bắt buộc)",
-    "Tiếng Việt": "Tiếng Việt"
+    "Tiếng Việt": "Tiếng Việt",
+    "Add both the merchant code and merchant key before testing the connection.": "Nhập cả mã người bán và khóa người bán trước khi kiểm tra kết nối.",
+    "The selected payment method is currently unavailable.": "Phương thức thanh toán đã chọn hiện không khả dụng.",
+    "No payment method is available for this order. Please contact support.": "Không có phương thức thanh toán nào khả dụng cho đơn hàng này. Vui lòng liên hệ bộ phận hỗ trợ.",
+    "Simulator active": "Trình mô phỏng đang hoạt động",
+    "Sandbox configured": "Đã cấu hình sandbox",
+    "Live configured": "Đã cấu hình chế độ thực",
+    "Not configured": "Chưa cấu hình",
+    "The payment simulator is available for preview testing. It does not charge real money.": "Trình mô phỏng thanh toán dùng để kiểm tra bản xem trước. Hệ thống không thu tiền thật.",
+    "Online payment is hidden from buyers until both credentials are saved.": "Thanh toán trực tuyến sẽ bị ẩn với người mua cho đến khi lưu đủ cả hai thông tin xác thực.",
+    "Credentials are complete. Run the connection test before sandbox checkout testing.": "Thông tin xác thực đã đầy đủ. Hãy kiểm tra kết nối trước khi thử thanh toán trong sandbox.",
+    "Live credentials are complete. Confirm a small live payment and refund before launch.": "Thông tin xác thực chế độ thực đã đầy đủ. Hãy xác nhận một giao dịch nhỏ và hoàn tiền trước khi ra mắt."
 }

@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Models\Voucher;
 use App\Services\CartService;
 use App\Services\CheckoutService;
+use App\Settings\CodSettings;
+use App\Settings\Ipay88Settings;
 use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
@@ -62,6 +64,14 @@ function checkoutPagePlatformVoucher(string $code, int $valueSen, int $minSpendS
         'ends_at' => now()->addDay(),
         'is_active' => true,
     ]);
+}
+
+function checkoutPageEnableIpay88(): void
+{
+    $settings = app(Ipay88Settings::class);
+    $settings->merchant_code = 'M00001';
+    $settings->merchant_key = 'TestKey123';
+    $settings->save();
 }
 
 test('a guest is redirected to login', function () {
@@ -252,6 +262,7 @@ test('AL-L2: a note keyed to a store outside this checkout is dropped, not trust
 test('an iPay88 order redirects to the payment bridge', function () {
     [$buyer] = checkoutPageBuyer();
     $product = checkoutPageProduct(10000);
+    checkoutPageEnableIpay88();
 
     app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
 
@@ -261,6 +272,53 @@ test('an iPay88 order redirects to the payment bridge', function () {
         ->assertRedirect(route('payments.ipay88.pay', Order::first()));
 
     expect(Order::first()->payment_method)->toBe(PaymentMethod::Ipay88);
+});
+
+test('unconfigured iPay88 is hidden and checkout defaults to COD', function () {
+    [$buyer] = checkoutPageBuyer();
+    $product = checkoutPageProduct(10000);
+
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+
+    Livewire::actingAs($buyer)
+        ->test(Checkout::class)
+        ->assertSet('paymentMethod', 'cod')
+        ->assertDontSee('Online payment — FPX, cards, e-wallets')
+        ->assertSee('Cash on delivery');
+});
+
+test('a forged iPay88 selection cannot place an order without credentials', function () {
+    [$buyer] = checkoutPageBuyer();
+    $product = checkoutPageProduct(10000);
+
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+
+    $component = Livewire::actingAs($buyer)->test(Checkout::class);
+
+    // Bypass the rendered radio controls and mutate the component instance,
+    // matching a forged request that asks for the hidden gateway directly.
+    $component->instance()->paymentMethod = 'ipay88';
+    $component->instance()->placeOrder(app(CheckoutService::class));
+
+    expect(Order::count())->toBe(0)
+        ->and($buyer->cart->items()->count())->toBe(1);
+});
+
+test('checkout blocks submission when neither COD nor online payment is available', function () {
+    [$buyer] = checkoutPageBuyer();
+    $product = checkoutPageProduct(10000);
+
+    $cod = app(CodSettings::class);
+    $cod->enabled = false;
+    $cod->save();
+
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+
+    Livewire::actingAs($buyer)
+        ->test(Checkout::class)
+        ->assertSet('paymentMethod', '')
+        ->assertSee('No payment method is available for this order. Please contact support.')
+        ->assertSeeHtml('disabled="disabled"');
 });
 
 test('a checkout failure surfaces as an error toast and persists no order', function () {

@@ -2578,5 +2578,16 @@
     "Vietnamese banner preview": "Pratonton sepanduk Bahasa Vietnam",
     "Used for Vietnamese when copy is baked into the artwork. Falls back to the main image when empty.": "Digunakan untuk Bahasa Vietnam apabila teks dibenamkan dalam karya seni. Imej utama digunakan jika kosong.",
     "VI (optional)": "VI (pilihan)",
-    "Tiếng Việt": "Tiếng Việt"
+    "Tiếng Việt": "Tiếng Việt",
+    "Add both the merchant code and merchant key before testing the connection.": "Masukkan kod pedagang dan kunci pedagang sebelum menguji sambungan.",
+    "The selected payment method is currently unavailable.": "Kaedah pembayaran yang dipilih tidak tersedia pada masa ini.",
+    "No payment method is available for this order. Please contact support.": "Tiada kaedah pembayaran tersedia untuk pesanan ini. Sila hubungi sokongan.",
+    "Simulator active": "Simulator aktif",
+    "Sandbox configured": "Sandbox dikonfigurasi",
+    "Live configured": "Mod langsung dikonfigurasi",
+    "Not configured": "Belum dikonfigurasi",
+    "The payment simulator is available for preview testing. It does not charge real money.": "Simulator pembayaran tersedia untuk ujian pratonton. Ia tidak mengenakan bayaran sebenar.",
+    "Online payment is hidden from buyers until both credentials are saved.": "Pembayaran dalam talian disembunyikan daripada pembeli sehingga kedua-dua kelayakan disimpan.",
+    "Credentials are complete. Run the connection test before sandbox checkout testing.": "Kelayakan lengkap. Jalankan ujian sambungan sebelum menguji pembayaran dalam sandbox.",
+    "Live credentials are complete. Confirm a small live payment and refund before launch.": "Kelayakan langsung lengkap. Sahkan pembayaran langsung bernilai kecil dan bayaran balik sebelum pelancaran."
 }

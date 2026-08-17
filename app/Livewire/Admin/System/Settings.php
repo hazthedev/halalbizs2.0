@@ -274,6 +274,12 @@ class Settings extends Component
      */
     public function testIpay88Connection(): void
     {
+        if (! app(Ipay88Service::class)->hasCredentials()) {
+            $this->dispatch('toast', message: __('Add both the merchant code and merchant key before testing the connection.'), type: 'error');
+
+            return;
+        }
+
         try {
             $response = app(Ipay88Service::class)->requery('TEST-CONNECTION', 100);
 
@@ -289,8 +295,12 @@ class Settings extends Component
 
     public function render()
     {
+        $ipay88 = app(Ipay88Service::class);
+
         return view('livewire.admin.system.settings', [
             'activeCurrencies' => Currency::query()->active()->get(),
+            'ipay88Configured' => $ipay88->hasCredentials(),
+            'ipay88Mock' => $ipay88->isMock(),
         ])->title(__('Settings'));
     }
 }
