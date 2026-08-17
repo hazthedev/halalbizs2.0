@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\User;
+use Database\Seeders\Support\CatalogueProductName;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -79,6 +80,12 @@ class HalalCatalogueSeeder extends Seeder
         $missingImages = [];
 
         foreach ($data['products'] as $row) {
+            // The original catalogue accidentally copied Malay into name_en for
+            // most generated SKUs. Keep that legacy value only as the stable
+            // lookup identity, then persist genuinely English storefront copy.
+            $row['legacy_name_en'] = $row['name_en'];
+            $row['name_en'] = CatalogueProductName::for($row);
+
             $store = $stores[$row['brand']] ?? null;
             $leaf = $leaves[$row['leaf']] ?? null;
 
@@ -175,13 +182,19 @@ class HalalCatalogueSeeder extends Seeder
         // firstOrNew match nothing and insert a duplicate on every run (98 of
         // them, twice). So key on exactly what the model will produce.
         $slug = Str::slug($row['name_en']);
+        $legacySlug = Str::slug($row['legacy_name_en']);
         $priceSen = (int) round($row['price_myr'] * 100);
 
-        $product = Product::withTrashed()->firstOrNew(['slug' => $slug]);
+        // Prefer the corrected canonical slug, but adopt the existing row by
+        // its former Malay-derived slug on the first corrective deployment.
+        // This keeps product ids, media, reviews and order history intact.
+        $product = Product::withTrashed()->where('slug', $slug)->first()
+            ?? Product::withTrashed()->where('slug', $legacySlug)->first()
+            ?? new Product;
         $product->fill([
             'store_id' => $store->id,
             'category_id' => $leaf->id,
-            'name' => ['en' => $row['name_en'], 'ms' => $row['name_ms'], 'vi' => $vi['products'][$row['name_en']]],
+            'name' => ['en' => $row['name_en'], 'ms' => $row['name_ms'], 'vi' => $this->vietnameseName($row, $vi)],
             'description' => $this->description($row, $vi),
             'status' => ProductStatus::Live,
             'published_at' => $product->published_at ?? now(),
@@ -189,7 +202,10 @@ class HalalCatalogueSeeder extends Seeder
             // The certificate columns already exist on this table, so the badge
             // the revamped card renders is real data, not decoration.
             'halal_status' => HalalStatus::Certified,
-            'halal_cert_number' => $this->certNumber($row['certifier'], $slug),
+            // Certificate demo identities predate this language correction.
+            // Derive them from the legacy slug so the register does not mint a
+            // second certificate merely because its product title was fixed.
+            'halal_cert_number' => $this->certNumber($row['certifier'], $legacySlug),
             'halal_cert_expiry' => now()->addMonths(6 + (crc32($slug) % 24))->startOfDay(),
             'rating_avg' => $row['rating'] ?? 0,
             'rating_count' => $row['reviews'] ?? 0,
@@ -199,10 +215,13 @@ class HalalCatalogueSeeder extends Seeder
 
         // Single default variant per SKU: this is a grocery catalogue, not
         // apparel, so there is nothing to matrix.
-        $variant = ProductVariant::firstOrNew([
-            'product_id' => $product->id,
-            'sku' => strtoupper(Str::substr(preg_replace('/[^A-Za-z0-9]/', '', $slug), 0, 8)).'-'.substr((string) crc32($slug), 0, 4),
-        ]);
+        // A title correction must not create a second default variant or change
+        // the SKU already referenced by carts and order lines.
+        $variant = ProductVariant::where('product_id', $product->id)->where('is_default', true)->first()
+            ?? new ProductVariant([
+                'product_id' => $product->id,
+                'sku' => strtoupper(Str::substr(preg_replace('/[^A-Za-z0-9]/', '', $slug), 0, 8)).'-'.substr((string) crc32($slug), 0, 4),
+            ]);
         $variant->fill([
             'options_label' => $row['unit'],
             'price_sen' => $priceSen,
@@ -222,8 +241,16 @@ class HalalCatalogueSeeder extends Seeder
         return [
             'en' => "{$row['name_en']}.{$unit} Certified by {$row['certifier']} and listed under {$row['leaf']}. The certificate is bound to this SKU, not to the shop.",
             'ms' => "{$row['name_ms']}.{$unit} Disahkan oleh {$row['certifier']} dan disenaraikan dalam {$row['leaf']}. Sijil terikat pada SKU ini, bukan pada kedai.",
-            'vi' => "{$vi['products'][$row['name_en']]}.{$unit} Được {$row['certifier']} chứng nhận và xếp trong danh mục {$vi['categories'][$row['leaf']]}. Chứng nhận được liên kết với SKU này, không phải với cửa hàng.",
+            'vi' => "{$this->vietnameseName($row, $vi)}.{$unit} Được {$row['certifier']} chứng nhận và xếp trong danh mục {$vi['categories'][$row['leaf']]}. Chứng nhận được liên kết với SKU này, không phải với cửa hàng.",
         ];
+    }
+
+    /** @param array<string, mixed> $row @param array<string, mixed> $vi */
+    private function vietnameseName(array $row, array $vi): string
+    {
+        return $vi['products'][$row['legacy_name_en']]
+            ?? $vi['products'][$row['name_ms']]
+            ?? $vi['products'][$row['name_en']];
     }
 
     private function certNumber(string $certifier, string $slug): string

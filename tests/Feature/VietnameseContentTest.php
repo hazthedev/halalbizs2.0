@@ -6,9 +6,13 @@ use App\Models\HomeSection;
 use App\Models\Page;
 use App\Models\Product;
 use App\Support\ContentLocales;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\HalalCatalogueSeeder;
 use Database\Seeders\HelpArticleSeeder;
 use Database\Seeders\HomeSectionSeeder;
 use Database\Seeders\PageSeeder;
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\Support\CatalogueProductName;
 use Database\Seeders\VietnameseContentSeeder;
 
 test('Vietnamese catalogue source covers every seeded product and category', function () {
@@ -20,8 +24,45 @@ test('Vietnamese catalogue source covers every seeded product and category', fun
         ->and($vi['categories'])->toHaveCount(33);
 
     foreach ($catalogue['products'] as $product) {
-        expect(trim($vi['products'][$product['name_en']] ?? ''))->not->toBe('');
+        expect(trim($vi['products'][$product['name_en']] ?? $vi['products'][$product['name_ms']] ?? ''))->not->toBe('');
     }
+});
+
+test('effective English catalogue names do not reuse generated Malay titles', function () {
+    $catalogue = json_decode(file_get_contents(database_path('seeders/data/halalbizs-catalogue.json')), true, 512, JSON_THROW_ON_ERROR);
+    $generated = collect($catalogue['products'])->where('source', 'generated');
+
+    expect($generated)->toHaveCount(124)
+        ->and($generated->map(fn (array $row): string => CatalogueProductName::for($row))->unique())->toHaveCount(124)
+        ->and(CatalogueProductName::for($generated->firstWhere('key', 'tuna-in-brine')))->toBe('Tuna In Brine')
+        ->and(CatalogueProductName::for($generated->firstWhere('key', 'honey-with-propolis')))->toBe('Honey With Propolis')
+        ->and(CatalogueProductName::for($generated->firstWhere('key', 'spf50-sunscreen')))->toBe('SPF 50 Sunscreen');
+
+    foreach ($generated as $row) {
+        expect(CatalogueProductName::for($row))->not->toBe($row['name_ms']);
+    }
+
+    $reference = collect($catalogue['products'])->firstWhere('key', 'tuna-dalam-minyak');
+    expect(CatalogueProductName::for($reference))->toBe('Tuna in Oil');
+});
+
+test('catalogue reseed corrects a legacy Malay English title without duplicating its product or variant', function () {
+    $this->seed([RoleSeeder::class, CategorySeeder::class, HalalCatalogueSeeder::class]);
+
+    $product = Product::where('slug', 'tuna-in-brine')->sole();
+    $variant = $product->variants()->sole();
+    $product->setTranslation('name', 'en', 'Tuna Dalam Air Garam')->save();
+
+    expect($product->refresh()->slug)->toBe('tuna-dalam-air-garam');
+
+    $this->seed(HalalCatalogueSeeder::class);
+
+    $corrected = Product::findOrFail($product->id);
+
+    expect($corrected->getTranslation('name', 'en', false))->toBe('Tuna In Brine')
+        ->and($corrected->slug)->toBe('tuna-in-brine')
+        ->and(Product::whereIn('slug', ['tuna-in-brine', 'tuna-dalam-air-garam'])->count())->toBe(1)
+        ->and($corrected->variants()->sole()->id)->toBe($variant->id);
 });
 
 test('Vietnamese CMS backfill is complete and preserves administrator copy', function () {
