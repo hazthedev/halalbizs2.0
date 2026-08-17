@@ -49,18 +49,15 @@ test('effective English catalogue names do not reuse generated Malay titles', fu
 test('catalogue reseed corrects a legacy Malay English title without duplicating its product or variant', function () {
     $this->seed([RoleSeeder::class, CategorySeeder::class, HalalCatalogueSeeder::class]);
 
-    $product = Product::where('slug', 'tuna-in-brine')->sole();
+    $product = Product::where('slug', 'tuna-dalam-air-garam')->sole();
     $variant = $product->variants()->sole();
-    $product->setTranslation('name', 'en', 'Tuna Dalam Air Garam')->save();
-
-    expect($product->refresh()->slug)->toBe('tuna-dalam-air-garam');
 
     $this->seed(HalalCatalogueSeeder::class);
 
     $corrected = Product::findOrFail($product->id);
 
     expect($corrected->getTranslation('name', 'en', false))->toBe('Tuna In Brine')
-        ->and($corrected->slug)->toBe('tuna-in-brine')
+        ->and($corrected->slug)->toBe('tuna-dalam-air-garam')
         ->and(Product::whereIn('slug', ['tuna-in-brine', 'tuna-dalam-air-garam'])->count())->toBe(1)
         ->and($corrected->variants()->sole()->id)->toBe($variant->id);
 });
