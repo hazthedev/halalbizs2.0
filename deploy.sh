@@ -14,8 +14,22 @@
 # we add the usual cPanel locations and resolve php/composer explicitly, and
 # make composer optional (it's a no-op when no dependency changed).
 #
-# Frontend assets (Vite/Tailwind) are committed under public/build/ because the
-# cPanel host has no Node — run `npm run build` + commit locally on FE changes.
+# Frontend assets (Vite/Tailwind) are committed under public/build/ and built
+# locally: run `npm run build` + commit on any FE change.
+#
+# NOT because the host lacks Node — it was claimed here for months that it does,
+# and that was wrong. Measured 2026-08-18 from inside this script: the box
+# carries CloudLinux alt-nodejs at
+#   /opt/alt/alt-nodejs18/root/usr/bin/node   v18.20.8
+#   /opt/alt/alt-nodejs20/root/usr/bin/node   v20.19.4
+#   /opt/alt/alt-nodejs24/root/usr/bin/node   v24.6.0
+# None of them is on the PATH this script sets, `node`/`npm` do not resolve, and
+# $HOME is empty in the webhook context — so a build step here would need an
+# explicit absolute path, not a `command -v node`.
+#
+# Committing the bundle stays the deliberate choice for now (an `npm ci` on a
+# shared host is slow and memory-bound), but it is a CHOICE, not a limitation.
+# Whoever revisits it: the binaries above are the starting point.
 #
 set -e
 
@@ -156,22 +170,6 @@ fi
 # runs after the optional catalogue/artwork seed and never overwrites content
 # authored by an administrator.
 "$PHP_BIN" artisan db:seed --class=VietnameseContentSeeder --force || { STEP_FAILED=1; echo "  ! Vietnamese content backfill reported errors — continuing"; }
-
-# ── TEMPORARY PROBE 2 (remove in the follow-up PR) ───────────────────────
-# Round 1 found no node on PATH and none in three common locations, but it did
-# NOT check cPanel's own Node mechanism (~/nodevenv/<app>/<ver>/bin/node, what
-# "Setup Node.js App" creates) or cpanel's bundled 3rdparty node. Widen before
-# concluding anything.
-echo "→ probe 2: where is node, really (temporary)"
-echo "   HOME          : $HOME"
-echo "   nodevenv dir  : $( [ -d "$HOME/nodevenv" ] && ls "$HOME/nodevenv" 2>/dev/null | tr '\n' ' ' || echo 'absent' )"
-for d in "$HOME"/nodevenv/*/*/bin/node /usr/local/cpanel/3rdparty/bin/node /opt/alt/alt-nodejs*/root/usr/bin/node /opt/cpanel/ea-nodejs*/bin/node; do
-    [ -x "$d" ] && echo "   FOUND         : $d ($("$d" -v 2>/dev/null))"
-done
-echo "   nodejs alias  : $(command -v nodejs >/dev/null 2>&1 && nodejs -v || echo absent)"
-echo "   any node under /opt (2 deep): $(find /opt -maxdepth 4 -name node -type f 2>/dev/null | head -3 | tr '\n' ' ')"
-echo "   ssh shell     : $(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f7)"
-# ── end probe ────────────────────────────────────────────────────────────
 
 echo "→ rebuild caches"
 "$PHP_BIN" artisan config:cache
