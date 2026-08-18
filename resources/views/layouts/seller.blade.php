@@ -34,7 +34,7 @@
     <div class="flex">
         {{-- Sidebar --}}
         <aside
-            class="invisible fixed inset-y-0 left-0 z-30 w-60 -translate-x-full border-r border-line bg-surface pt-14 transition-[transform,visibility] duration-150 lg:visible lg:static lg:translate-x-0 lg:pt-0"
+            class="invisible fixed inset-y-0 left-0 z-30 w-60 -translate-x-full overflow-y-auto border-r border-line bg-surface pt-14 transition-[transform,visibility] duration-150 lg:visible lg:static lg:translate-x-0 lg:pt-0"
             x-bind:class="sidebarOpen ? 'translate-x-0 visible' : ''"
         >
             <nav class="space-y-0.5 p-3" aria-label="{{ __('Seller navigation') }}">
