@@ -237,6 +237,7 @@ class ProductDetail extends Component
         $minSen = $this->product->minPriceSen();
         $maxSen = $this->product->maxPriceSen();
         $inStock = $this->product->variants->sum('stock') > 0;
+        $purchasable = app(GeneralSettings::class)->purchasing_enabled;
 
         $schema = [
             '@context' => 'https://schema.org',
@@ -251,7 +252,17 @@ class ProductDetail extends Component
                 'lowPrice' => sprintf('%d.%02d', intdiv($minSen, 100), $minSen % 100),
                 'highPrice' => sprintf('%d.%02d', intdiv($maxSen, 100), $maxSen % 100),
                 'offerCount' => $this->product->variants->count(),
-                'availability' => $inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                // In listing-only mode nothing can be bought here, so InStock would tell
+                // Google these are purchasable and put them in Shopping results that
+                // dead-end on a PDP with no buy button. InStoreOnly is the signal for
+                // "real product, real price, not orderable online" — which is exactly
+                // what the page says: contact the seller. OutOfStock would be a lie;
+                // the stock is there, the checkout is not.
+                'availability' => match (true) {
+                    ! $purchasable => 'https://schema.org/InStoreOnly',
+                    $inStock => 'https://schema.org/InStock',
+                    default => 'https://schema.org/OutOfStock',
+                },
             ],
         ];
 
