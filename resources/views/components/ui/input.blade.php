@@ -24,7 +24,22 @@
                  is the safe direction to fail. --}}
             type="{{ $type }}"
             @if ($isPassword) x-bind:type="shown ? 'text' : 'password'" @endif
-            @if($name) name="{{ $name }}" id="{{ $name }}" @endif
+            {{-- The visible <label> above only reaches assistive tech when it can
+                 point at an id, and `id` is only emitted when the caller passed a
+                 `name`. 138 of the 144 call sites in this app do not, so those
+                 fields rendered a label that was associated with nothing —
+                 measured with axe on /admin/system/settings, 9 flagged inputs on
+                 that page alone.
+
+                 aria-label rather than a generated id on purpose: an id derived
+                 from wire:model collides when two forms on one screen bind the
+                 same property (the attributes and brands screens both do), and a
+                 random one changes on every Livewire re-render. --}}
+            @if($name)
+                name="{{ $name }}" id="{{ $name }}"
+            @elseif($label && ! $attributes->has('aria-label'))
+                aria-label="{{ $label }}"
+            @endif
             {{ $attributes->except('class')->merge([
                 'class' => 'block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink transition-[color,box-shadow,border-color] duration-[120ms] ease-out-soft placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald/60 focus-visible:border-emerald min-h-11 '
                     .($isPassword ? 'pr-12 ' : '')
