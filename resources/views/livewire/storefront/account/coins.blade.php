@@ -14,8 +14,15 @@
             </div>
 
             @if ($expiringAt)
+                {{-- The expiry is real either way; only the instruction stops being
+                     true in listing-only mode, where there is no checkout to spend
+                     them at. Same inline settings read as product-card.blade.php. --}}
                 <p class="relative mt-4 text-[13px] text-brass-tint/80">
-                    {{ __('Some coins expire :when — spend them at checkout.', ['when' => $expiringAt->diffForHumans()]) }}
+                    @if (app(\App\Settings\GeneralSettings::class)->purchasing_enabled)
+                        {{ __('Some coins expire :when — spend them at checkout.', ['when' => $expiringAt->diffForHumans()]) }}
+                    @else
+                        {{ __('Some coins expire :when.', ['when' => $expiringAt->diffForHumans()]) }}
+                    @endif
                 </p>
             @endif
         </div>
