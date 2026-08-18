@@ -6,7 +6,7 @@
     {{-- Filters (docs/08 §E: status, store, method, date; search order_no — mono) --}}
     <x-ui.card class="p-3">
         <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
-            <div class="lg:col-span-2">
+            <div class="min-w-0 lg:col-span-3">
                 <label for="orders-search" class="sr-only">{{ __('Search orders') }}</label>
                 <input
                     id="orders-search"
@@ -46,14 +46,21 @@
                     @endforeach
                 </select>
             </div>
-            <div class="flex items-center gap-2">
+            {{-- Measured 2026-08-18 on the preview: a type=date input will not
+                 render below 142px, so the pair plus separator needs ~302px. One
+                 column of this grid is 154px at 1280 and only 221px at 1680, so
+                 this row overflowed `main` by 116px at EVERY desktop width. Two
+                 columns give it 316px at the narrowest. min-w-0 is the other
+                 half: grid and flex items default to min-width:auto, which is
+                 what stopped the inputs shrinking in the first place. --}}
+            <div class="flex min-w-0 items-center gap-2 lg:col-span-2">
                 <label for="orders-date-from" class="sr-only">{{ __('From date') }}</label>
                 <input id="orders-date-from" type="date" wire:model.live="dateFrom"
-                       class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                       class="block min-h-11 w-full min-w-0 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                 <span class="text-[13px] text-ink-faint" aria-hidden="true">–</span>
                 <label for="orders-date-to" class="sr-only">{{ __('To date') }}</label>
                 <input id="orders-date-to" type="date" wire:model.live="dateTo"
-                       class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                       class="block min-h-11 w-full min-w-0 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             </div>
         </div>
         @if ($search !== '' || $status !== '' || $store !== '' || $method !== '' || $dateFrom !== '' || $dateTo !== '')
