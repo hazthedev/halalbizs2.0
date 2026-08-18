@@ -17,6 +17,7 @@ use App\Services\ShippingCalculator;
 use App\Services\TaxService;
 use App\Services\VoucherService;
 use App\Settings\CodSettings;
+use App\Settings\GeneralSettings;
 use App\Support\Money;
 use App\Support\VoucherDiscount;
 use Illuminate\Contracts\View\View;
@@ -64,6 +65,17 @@ class Checkout extends Component
 
     public function mount(): void
     {
+        if (! app(GeneralSettings::class)->purchasing_enabled) {
+            session()->flash('toast', [
+                'message' => __('This marketplace is currently in listing-only mode. Purchasing is unavailable.'),
+                'type' => 'error',
+            ]);
+
+            $this->redirectRoute('home', navigate: true);
+
+            return;
+        }
+
         // Guard direct GETs with nothing selected.
         if ($this->selectedGroups()->isEmpty()) {
             session()->flash('toast', [

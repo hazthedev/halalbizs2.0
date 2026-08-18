@@ -6,6 +6,7 @@ use App\Enums\GroupBuyMemberStatus;
 use App\Exceptions\CheckoutException;
 use App\Models\GroupBuyTeam;
 use App\Services\GroupBuyService;
+use App\Settings\GeneralSettings;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -22,7 +23,10 @@ class Team extends Component
 
     public function mount(GroupBuyTeam $team): void
     {
-        abort_unless(config('groupbuy.enabled', true), 404);
+        abort_unless(
+            config('groupbuy.enabled', true) && app(GeneralSettings::class)->purchasing_enabled,
+            404,
+        );
 
         $this->team = $team->load('groupBuy.variant.product', 'groupBuy.product');
     }

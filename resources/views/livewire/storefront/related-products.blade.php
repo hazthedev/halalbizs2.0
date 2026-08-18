@@ -3,11 +3,13 @@
         <section class="mt-10" aria-label="{{ __('Frequently bought together') }}">
             <div class="flex items-center justify-between gap-3">
                 <x-ui.section-heading :title="__('Frequently bought together')" />
+                @if (app(\App\Settings\GeneralSettings::class)->purchasing_enabled)
                 <button type="button" wire:click="addAllBoughtTogether"
                         wire:loading.attr="disabled" wire:target="addAllBoughtTogether"
                         class="inline-flex min-h-11 shrink-0 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Add all to cart') }}
                 </button>
+                @endif
             </div>
             <div class="mt-4 flex gap-3 overflow-x-auto pb-2">
                 @foreach ($boughtTogether as $item)

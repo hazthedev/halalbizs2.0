@@ -31,6 +31,8 @@ class Settings extends Component
     /** @var array<int, string> */
     public array $displayCurrencies = [];
 
+    public bool $purchasingEnabled = true;
+
     // ── Order ──────────────────────────────────────────────────────────
     public string $returnWindowDays = '';
 
@@ -86,6 +88,7 @@ class Settings extends Component
         $general = app(GeneralSettings::class);
         $this->siteName = $general->site_name;
         $this->displayCurrencies = $general->display_currencies;
+        $this->purchasingEnabled = $general->purchasing_enabled;
 
         $order = app(OrderSettings::class);
         $this->returnWindowDays = (string) $order->return_window_days;
@@ -131,6 +134,7 @@ class Settings extends Component
         $settings = app(GeneralSettings::class);
         $settings->site_name = trim($this->siteName);
         $settings->display_currencies = $codes;
+        $settings->purchasing_enabled = $this->purchasingEnabled;
         $settings->save();
 
         $this->displayCurrencies = $codes;

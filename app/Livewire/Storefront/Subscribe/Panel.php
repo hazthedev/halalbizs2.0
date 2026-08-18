@@ -3,6 +3,7 @@
 namespace App\Livewire\Storefront\Subscribe;
 
 use App\Enums\SubscriptionInterval;
+use App\Exceptions\CheckoutException;
 use App\Models\Product;
 use App\Services\SubscriptionService;
 use Illuminate\Contracts\View\View;
@@ -52,7 +53,13 @@ class Panel extends Component
             return;
         }
 
-        $subscriptions->subscribe(auth()->user(), $variant, $address, $interval);
+        try {
+            $subscriptions->subscribe(auth()->user(), $variant, $address, $interval);
+        } catch (CheckoutException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+
+            return;
+        }
 
         $this->dispatch('toast', message: __('Subscribed! Manage it any time under My subscriptions.'), type: 'success');
     }

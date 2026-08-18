@@ -31,6 +31,13 @@ class RelatedProducts extends Component
     public function addAllBoughtTogether(): void
     {
         $cart = app(CartService::class);
+
+        if (! $cart->purchasingEnabled()) {
+            $this->reconcileCart(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'), error: true);
+
+            return;
+        }
+
         $added = 0;
 
         foreach (app(RecommendationService::class)->frequentlyBoughtTogether($this->product->id) as $product) {

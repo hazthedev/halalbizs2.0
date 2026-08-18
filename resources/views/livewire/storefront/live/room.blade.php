@@ -1,6 +1,7 @@
 <div wire:poll.15s class="mx-auto w-full max-w-7xl px-4 py-6">
     @php($featured = $session->featuredProduct)
     @php($isLive = $session->status === \App\Enums\LiveSessionStatus::Live)
+    @php($purchasingEnabled = app(\App\Settings\GeneralSettings::class)->purchasing_enabled)
 
     <div class="flex flex-wrap items-center gap-3">
         @if ($isLive)
@@ -45,7 +46,7 @@
                         <a href="{{ route('product.show', $featured->slug) }}" wire:navigate class="line-clamp-1 text-sm font-medium text-ink hover:text-emerald">{{ $featured->getTranslation('name', app()->getLocale()) }}</a>
                         <p class="mt-0.5 text-lg font-medium text-ink tnum">@price($minSen)</p>
                     </div>
-                    @if ($variant && $featured->variants->count() === 1)
+                    @if ($purchasingEnabled && $variant && $featured->variants->count() === 1)
                         <button type="button" x-on:click="$store.cart.bump()" wire:click="addToCart({{ $variant->id }})"
                                 class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white hover:bg-emerald-deep">
                             {{ __('Add to cart') }}
@@ -59,7 +60,7 @@
 
         {{-- Sidebar: voucher + rail + sold feed --}}
         <div class="space-y-4">
-            @if ($session->voucher_code)
+            @if ($purchasingEnabled && $session->voucher_code)
                 <div class="flex items-center justify-between gap-2 rounded-[var(--radius-card)] border border-dashed border-brass/50 bg-brass/10 px-4 py-3">
                     <div class="min-w-0">
                         <p class="text-[11px] font-medium uppercase tracking-[0.06em] text-brass-deep">{{ __('Live voucher') }}</p>
@@ -101,7 +102,7 @@
                                 <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="line-clamp-1 text-[13px] font-medium text-ink hover:text-emerald">{{ $product->getTranslation('name', app()->getLocale()) }}</a>
                                 <p class="text-[13px] font-medium text-ink tnum">@price($minSen)</p>
                             </div>
-                            @if ($variant && $product->variants->count() === 1)
+                            @if ($purchasingEnabled && $variant && $product->variants->count() === 1)
                                 <button type="button" x-on:click="$store.cart.bump()" wire:click="addToCart({{ $variant->id }})"
                                         class="inline-flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-emerald text-white hover:bg-emerald-deep" aria-label="{{ __('Add to cart') }}">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>

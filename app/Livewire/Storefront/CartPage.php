@@ -25,6 +25,12 @@ class CartPage extends Component
 
     public function updateQty(int $variantId, int $qty): void
     {
+        if (! app(CartService::class)->purchasingEnabled()) {
+            $this->dispatch('toast', message: __('This marketplace is currently in listing-only mode. Purchasing is unavailable.'), type: 'error');
+
+            return;
+        }
+
         $variant = ProductVariant::find($variantId);
 
         if ($variant !== null) {
@@ -57,6 +63,13 @@ class CartPage extends Component
     public function undoRemove(int $variantId): void
     {
         $service = app(CartService::class);
+
+        if (! $service->purchasingEnabled()) {
+            $this->dispatch('toast', message: __('This marketplace is currently in listing-only mode. Purchasing is unavailable.'), type: 'error');
+
+            return;
+        }
+
         $variant = ProductVariant::find($variantId);
 
         // hasItem() keeps the restore idempotent — MiniCart listens for the
@@ -140,6 +153,7 @@ class CartPage extends Component
             'allSelected' => $selectable->isNotEmpty() && $selectable->every(fn ($line) => $line->selected),
             'selectedCount' => $selected->count(),
             'itemsTotalSen' => (int) $selected->sum(fn ($line) => $line->lineTotalSen),
+            'purchasingEnabled' => $service->purchasingEnabled(),
         ])->title(__('Your basket'));
     }
 
