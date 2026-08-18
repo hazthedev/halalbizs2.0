@@ -35,7 +35,8 @@ class Product extends Model implements HasMedia
     protected $fillable = [
         'store_id', 'category_id', 'brand_id', 'name', 'slug', 'description',
         'condition', 'status', 'tax_class', 'weight_grams', 'length_mm', 'width_mm', 'height_mm',
-        'cod_enabled', 'halal_status', 'halal_cert_number', 'halal_cert_expiry', 'published_at',
+        'cod_enabled', 'marketplace_links_always_visible',
+        'halal_status', 'halal_cert_number', 'halal_cert_expiry', 'published_at',
         'halal_certificate_id', 'halal_batch_code', 'halal_packed_on',
     ];
 
@@ -46,6 +47,7 @@ class Product extends Model implements HasMedia
             'status' => ProductStatus::class,
             'tax_class' => TaxClass::class,
             'cod_enabled' => 'boolean',
+            'marketplace_links_always_visible' => 'boolean',
             'halal_status' => HalalStatus::class,
             'halal_cert_expiry' => 'date',
             'halal_packed_on' => 'date',
@@ -172,6 +174,25 @@ class Product extends Model implements HasMedia
     public function metafield(string $key): ?string
     {
         return $this->metafields->firstWhere('key', $key)?->value;
+    }
+
+    /** Outbound "also available on Shopee" links, in the seller's own order. */
+    public function marketplaceLinks(): HasMany
+    {
+        return $this->hasMany(ProductMarketplaceLink::class)->orderBy('position');
+    }
+
+    /**
+     * Whether the outbound links should be shown to a shopper right now.
+     *
+     * They are the whole point of listing-only mode, so they always show there.
+     * With our own checkout live they are opt-in per product, because sending a
+     * ready buyer to a competitor is the seller's call to make, not a default.
+     */
+    public function showsMarketplaceLinks(bool $purchasingEnabled): bool
+    {
+        return $this->marketplaceLinks->isNotEmpty()
+            && (! $purchasingEnabled || $this->marketplace_links_always_visible);
     }
 
     public function variants(): HasMany

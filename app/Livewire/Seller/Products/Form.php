@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductVariant;
 use App\Services\ListingCopyService;
+use App\Services\MarketplaceLinkResolver;
 use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
 use App\Support\ContentLocales;
@@ -46,6 +47,9 @@ class Form extends Component
     public const MAX_IMAGES = 9;
 
     public const MAX_OPTION_GROUPS = 2;
+
+    /** One link per platform is all the schema allows, so the list cannot usefully be longer. */
+    public const MAX_MARKETPLACE_LINKS = 4;
 
     #[Locked]
     public ?int $productId = null;
@@ -106,6 +110,17 @@ class Form extends Component
 
     /** @var array<int, array{name: string, values: array<int, string>, draft: string}> */
     public array $optionGroups = [];
+
+    /**
+     * Seller-pasted marketplace URLs. Only the URL is captured — the platform is
+     * derived from the host by MarketplaceLinkResolver, so a seller cannot label
+     * an arbitrary link "Shopee".
+     *
+     * @var array<int, array{url: string}>
+     */
+    public array $marketplaceLinks = [];
+
+    public bool $marketplaceLinksAlwaysVisible = false;
 
     /** @var array<string, array{label: string, price: string, sale_price: string, stock: string, sku: string, variant_id: int|null}> keyed by joined value indexes */
     public array $matrix = [];
@@ -178,6 +193,21 @@ class Form extends Component
         unset($this->optionGroups[$index]);
         $this->optionGroups = array_values($this->optionGroups);
         $this->regenerateMatrix();
+    }
+
+    public function addMarketplaceLink(): void
+    {
+        if (count($this->marketplaceLinks) >= self::MAX_MARKETPLACE_LINKS) {
+            return;
+        }
+
+        $this->marketplaceLinks[] = ['url' => ''];
+    }
+
+    public function removeMarketplaceLink(int $index): void
+    {
+        unset($this->marketplaceLinks[$index]);
+        $this->marketplaceLinks = array_values($this->marketplaceLinks);
     }
 
     public function addOptionValue(int $groupIndex): void
@@ -465,6 +495,7 @@ class Form extends Component
                 'width_mm' => $this->widthMm,
                 'height_mm' => $this->heightMm,
                 'cod_enabled' => $this->codEnabled,
+                'marketplace_links_always_visible' => $this->marketplaceLinksAlwaysVisible,
             ]);
 
             if ($status === ProductStatus::Live && $product->published_at === null) {
@@ -477,6 +508,7 @@ class Form extends Component
 
             $product->attributeValues()->sync(array_map('intval', $this->attributeValueIds));
             $this->syncMetafields($product);
+            $this->syncMarketplaceLinks($product);
 
             if ($this->hasVariations) {
                 $this->syncVariantMatrix($product);
@@ -523,6 +555,39 @@ class Form extends Component
 
             $product->metafields()->updateOrCreate(['key' => $key], ['value' => $value]);
         }
+    }
+
+    /**
+     * Reconcile the outbound links. Rows are keyed by the RESOLVED platform, not
+     * by their position in the form, so re-ordering or re-pasting the same URL
+     * updates the existing row instead of colliding with the unique index.
+     * Anything the seller removed is deleted.
+     */
+    private function syncMarketplaceLinks(Product $product): void
+    {
+        $resolver = app(MarketplaceLinkResolver::class);
+        $keep = [];
+        $position = 0;
+
+        foreach ($this->marketplaceLinks as $row) {
+            $resolved = $resolver->resolve($row['url'] ?? null);
+
+            // Unresolvable rows never reach here — validateMarketplaceLinks()
+            // has already failed the save — but resolve() stays the only thing
+            // that decides what gets written.
+            if ($resolved === null) {
+                continue;
+            }
+
+            $product->marketplaceLinks()->updateOrCreate(
+                ['platform' => $resolved['platform']],
+                ['url' => $resolved['url'], 'position' => $position++],
+            );
+
+            $keep[] = $resolved['platform'];
+        }
+
+        $product->marketplaceLinks()->whereNotIn('platform', $keep ?: [''])->delete();
     }
 
     private function applyTranslations(Product $product): void
@@ -745,6 +810,10 @@ class Form extends Component
             'newImages.*' => ['image', 'max:4096'],
             'newVideo' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm', 'max:30720'],
             'matrixImages.*' => ['nullable', 'image', 'max:4096'],
+            // The add-button's count guard is UX only — a wire:model array is
+            // client-writable, so the ceiling has to be a rule as well.
+            'marketplaceLinks' => ['array', 'max:'.self::MAX_MARKETPLACE_LINKS],
+            'marketplaceLinks.*.url' => ['nullable', 'string', 'max:'.MarketplaceLinkResolver::MAX_LENGTH],
             'weightGrams' => ['nullable', 'integer', 'min:0'],
             'lengthMm' => ['nullable', 'integer', 'min:0'],
             'widthMm' => ['nullable', 'integer', 'min:0'],
@@ -766,6 +835,7 @@ class Form extends Component
         $this->validateCategory();
         $this->validateImages($publishing);
         $this->validateSchedule();
+        $this->validateMarketplaceLinks();
 
         if ($this->hasVariations) {
             $this->validateMatrix();
@@ -775,6 +845,48 @@ class Form extends Component
 
         if ($this->getErrorBag()->isNotEmpty()) {
             throw ValidationException::withMessages($this->getErrorBag()->getMessages());
+        }
+    }
+
+    /**
+     * Every URL must resolve to an allow-listed platform, and each platform may
+     * appear once. Errors are per row so the seller sees which line is wrong.
+     */
+    private function validateMarketplaceLinks(): void
+    {
+        $resolver = app(MarketplaceLinkResolver::class);
+        $seen = [];
+
+        foreach ($this->marketplaceLinks as $index => $row) {
+            $url = trim((string) ($row['url'] ?? ''));
+
+            if ($url === '') {
+                continue;
+            }
+
+            $resolved = $resolver->resolve($url);
+
+            if ($resolved === null) {
+                $this->addError(
+                    "marketplaceLinks.{$index}.url",
+                    __('Enter a full https:// link from one of these marketplaces: :platforms', [
+                        'platforms' => $resolver->supportedLabels(),
+                    ]),
+                );
+
+                continue;
+            }
+
+            if (isset($seen[$resolved['platform']])) {
+                $this->addError(
+                    "marketplaceLinks.{$index}.url",
+                    __('You have already added a :platform link for this product.', ['platform' => $resolved['label']]),
+                );
+
+                continue;
+            }
+
+            $seen[$resolved['platform']] = true;
         }
     }
 
@@ -1022,6 +1134,8 @@ class Form extends Component
         $this->taxClass = $product->tax_class?->value ?? 'exempt';
         $this->attributeValueIds = $product->attributeValues->pluck('id')->all();
         $this->metafields = $product->metafields->pluck('value', 'key')->all();
+        $this->marketplaceLinks = $product->marketplaceLinks->map(fn ($link) => ['url' => $link->url])->all();
+        $this->marketplaceLinksAlwaysVisible = (bool) $product->marketplace_links_always_visible;
         $this->weightGrams = $product->weight_grams;
         $this->lengthMm = $product->length_mm;
         $this->widthMm = $product->width_mm;
