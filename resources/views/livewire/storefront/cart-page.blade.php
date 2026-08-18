@@ -168,7 +168,9 @@
                     <span class="text-ink-soft">{{ __('Items total') }}</span>
                     <span class="font-mono font-medium text-ink-head tnum">@price($itemsTotalSen)</span>
                 </div>
-                <p class="mt-1 text-[13px] text-ink-soft">{{ __('Shipping calculated at checkout') }}</p>
+                @if ($purchasingEnabled)
+                    <p class="mt-1 text-[13px] text-ink-soft">{{ __('Shipping calculated at checkout') }}</p>
+                @endif
 
                 <div class="mt-3 flex items-baseline justify-between border-t border-line pt-3">
                     <span class="text-sm font-medium">{{ __('Total') }}</span>

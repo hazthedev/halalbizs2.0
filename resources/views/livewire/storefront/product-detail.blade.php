@@ -191,6 +191,10 @@
 
                 {{-- Quantity stepper --}}
                 <div class="mt-5 flex flex-wrap items-center gap-3">
+                    {{-- Listing-only mode has nothing to add a quantity TO, so the
+                         stepper goes; the stock badge and notify-me below stay, because
+                         stock level is catalogue information and notify-me is not a sale. --}}
+                    @if ($purchasingEnabled)
                     <span class="text-[13px] font-medium text-ink">{{ __('Quantity') }}</span>
                     <div class="inline-flex items-center rounded-full border border-line-strong">
                         <button type="button" wire:click="decrementQty"
@@ -203,6 +207,7 @@
                                 class="flex size-11 items-center justify-center rounded-r-full text-ink-soft hb-press [--press:0.9] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="{{ __('Increase quantity') }}">+</button>
                     </div>
+                    @endif
                     @if ($variant !== null && $variant->stock > 0 && $variant->stock < 10)
                         <span class="text-[13px] font-medium text-warn">{{ __('Only :count left', ['count' => $variant->stock]) }}</span>
                     @elseif ($variant !== null && $variant->stock < 1)
@@ -225,8 +230,10 @@
                 <div class="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-ink-soft">
                     <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
                     <span>{{ __('Ships from :state', ['state' => $store?->state ?? 'Malaysia']) }}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{{ __('Shipping calculated at checkout') }}</span>
+                    @if ($purchasingEnabled)
+                        <span aria-hidden="true">·</span>
+                        <span>{{ __('Shipping calculated at checkout') }}</span>
+                    @endif
                 </div>
 
                 {{-- Ingredients & scope. The reference's wording explains WHY the
