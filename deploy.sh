@@ -157,6 +157,24 @@ fi
 # authored by an administrator.
 "$PHP_BIN" artisan db:seed --class=VietnameseContentSeeder --force || { STEP_FAILED=1; echo "  ! Vietnamese content backfill reported errors — continuing"; }
 
+# ── TEMPORARY PROBE (remove in the follow-up PR) ─────────────────────────
+# deploy.sh:18 asserts "the cPanel host has no Node", and that claim is the only
+# reason public/build is committed as a binary bundle. Haze says the host does
+# have Node. Both can be true at once: the webhook runs as the LiteSpeed web
+# user with the fixed PATH set at the top of this file, and cPanel keeps its
+# Node outside that PATH. Measure it rather than argue about it.
+echo "→ probe: host toolchain (temporary)"
+echo "   whoami        : $(whoami 2>/dev/null || echo '?')"
+echo "   PATH          : $PATH"
+echo "   node (on PATH): $(command -v node >/dev/null 2>&1 && node -v || echo 'NOT ON PATH')"
+echo "   npm  (on PATH): $(command -v npm  >/dev/null 2>&1 && npm -v  || echo 'NOT ON PATH')"
+for d in /opt/cpanel/ea-nodejs*/bin/node "$HOME"/.nvm/versions/node/*/bin/node /usr/local/bin/node; do
+    [ -x "$d" ] && echo "   found node    : $d ($("$d" -v 2>/dev/null))"
+done
+echo "   meilisearch   : $(command -v meilisearch >/dev/null 2>&1 && echo present || echo absent)"
+echo "   can background: $( (nohup sleep 5 >/dev/null 2>&1 &) && echo 'spawned (survival unknown)' || echo 'refused')"
+# ── end probe ────────────────────────────────────────────────────────────
+
 echo "→ rebuild caches"
 "$PHP_BIN" artisan config:cache
 "$PHP_BIN" artisan route:cache
