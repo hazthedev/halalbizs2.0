@@ -4,7 +4,12 @@
 @import '@fontsource/ibm-plex-mono/500.css';
 @import 'tailwindcss';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+/* The pager this app renders is LIVEWIRE's, not Laravel's — every paginated screen
+   is a Livewire component. This used to scan Laravel's pagination views, which
+   nothing here renders, while Livewire's own were scanned by nothing at all: three
+   classes it uses (ml-3, ring-blue-300, z-0) were never compiled. Livewire's view is
+   now published under ../views/vendor/livewire and picked up by the glob below, and
+   removing this line was measured to change the selector set by nothing. */
 /* Deliberately NOT scanning storage/framework/views: the compiled-Blade cache is a
    per-machine build input, so the bundle differed by which pages a checkout happened
    to have rendered. It only ever added Laravel's exception-renderer classes, which
