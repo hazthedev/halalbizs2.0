@@ -5,6 +5,8 @@ use App\Enums\PaymentMethod;
 use App\Enums\SubscriptionInterval;
 use App\Exceptions\CheckoutException;
 use App\Livewire\Admin\System\Settings;
+use App\Enums\CoinTransactionType;
+use App\Livewire\Storefront\Account\Coins;
 use App\Livewire\Storefront\CartPage;
 use App\Livewire\Storefront\Checkout;
 use App\Livewire\Storefront\Layout\MiniCart;
@@ -16,6 +18,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\CheckoutService;
+use App\Services\CoinService;
 use App\Services\GroupBuyService;
 use App\Services\SubscriptionService;
 use App\Settings\GeneralSettings;
@@ -244,4 +247,29 @@ test('purchase-assuming chrome is withdrawn from the product and cart pages', fu
     Livewire::actingAs($buyer)->test(CartPage::class)
         ->assertSee('Checkout unavailable')
         ->assertDontSee('Shipping calculated at checkout');
+});
+
+test('the coin expiry notice stops telling buyers to spend at a checkout that is gone', function () {
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    app(CoinService::class)->credit($buyer, 500, CoinTransactionType::Earn, expiryDays: 21);
+
+    // CONTROL: with purchasing on, the notice keeps its instruction.
+    Livewire::actingAs($buyer)->test(Coins::class)
+        ->assertSee('spend them at checkout');
+
+    setListingOnlyMode();
+
+    // The expiry is still real, so the warning stays — only the instruction goes.
+    Livewire::actingAs($buyer)->test(Coins::class)
+        ->assertDontSee('spend them at checkout')
+        ->assertSee('Some coins expire');
+});
+
+test('the shortened coin expiry notice is translated in Malay and Vietnamese', function () {
+    app()->setLocale('ms');
+    expect(__('Some coins expire :when.', ['when' => 'esok']))->toBe('Sebahagian syiling luput esok.');
+
+    app()->setLocale('vi');
+    expect(__('Some coins expire :when.', ['when' => 'ngày mai']))->toBe('Một số xu sẽ hết hạn ngày mai.');
 });
