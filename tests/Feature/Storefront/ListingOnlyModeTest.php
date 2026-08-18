@@ -211,3 +211,37 @@ test('product structured data stops advertising availability while listing-only 
         ->assertSee($inStoreOnly, false)
         ->assertDontSee('"availability":"'.$inStock.'"', false);
 });
+
+test('purchase-assuming chrome is withdrawn from the product and cart pages', function () {
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $product = listingModeProduct();
+    $variant = $product->variants->first();
+    app(CartService::class)->addItem($buyer, $variant, 1);
+
+    // CONTROL: with purchasing on, the stepper and the checkout-shipping line are both there.
+    $this->get(route('product.show', $product->slug))
+        ->assertOk()
+        ->assertSee('Increase quantity')
+        ->assertSee('Shipping calculated at checkout');
+
+    Livewire::actingAs($buyer)->test(CartPage::class)
+        ->assertSee('Shipping calculated at checkout');
+
+    setListingOnlyMode();
+
+    // The stepper has nothing to add a quantity to; the shipping line points at a
+    // checkout that cannot be reached. The stock badge and "Ships from" stay —
+    // both are catalogue facts that listing-only mode does not change.
+    $this->get(route('product.show', $product->slug))
+        ->assertOk()
+        ->assertDontSee('Increase quantity')
+        ->assertDontSee('Shipping calculated at checkout')
+        ->assertSee('Ships from');
+
+    // Same line of copy, same defect, one page over: it sat directly above the
+    // disabled "Checkout unavailable" button.
+    Livewire::actingAs($buyer)->test(CartPage::class)
+        ->assertSee('Checkout unavailable')
+        ->assertDontSee('Shipping calculated at checkout');
+});
