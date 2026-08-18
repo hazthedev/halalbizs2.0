@@ -157,22 +157,20 @@ fi
 # authored by an administrator.
 "$PHP_BIN" artisan db:seed --class=VietnameseContentSeeder --force || { STEP_FAILED=1; echo "  ! Vietnamese content backfill reported errors — continuing"; }
 
-# ── TEMPORARY PROBE (remove in the follow-up PR) ─────────────────────────
-# deploy.sh:18 asserts "the cPanel host has no Node", and that claim is the only
-# reason public/build is committed as a binary bundle. Haze says the host does
-# have Node. Both can be true at once: the webhook runs as the LiteSpeed web
-# user with the fixed PATH set at the top of this file, and cPanel keeps its
-# Node outside that PATH. Measure it rather than argue about it.
-echo "→ probe: host toolchain (temporary)"
-echo "   whoami        : $(whoami 2>/dev/null || echo '?')"
-echo "   PATH          : $PATH"
-echo "   node (on PATH): $(command -v node >/dev/null 2>&1 && node -v || echo 'NOT ON PATH')"
-echo "   npm  (on PATH): $(command -v npm  >/dev/null 2>&1 && npm -v  || echo 'NOT ON PATH')"
-for d in /opt/cpanel/ea-nodejs*/bin/node "$HOME"/.nvm/versions/node/*/bin/node /usr/local/bin/node; do
-    [ -x "$d" ] && echo "   found node    : $d ($("$d" -v 2>/dev/null))"
+# ── TEMPORARY PROBE 2 (remove in the follow-up PR) ───────────────────────
+# Round 1 found no node on PATH and none in three common locations, but it did
+# NOT check cPanel's own Node mechanism (~/nodevenv/<app>/<ver>/bin/node, what
+# "Setup Node.js App" creates) or cpanel's bundled 3rdparty node. Widen before
+# concluding anything.
+echo "→ probe 2: where is node, really (temporary)"
+echo "   HOME          : $HOME"
+echo "   nodevenv dir  : $( [ -d "$HOME/nodevenv" ] && ls "$HOME/nodevenv" 2>/dev/null | tr '\n' ' ' || echo 'absent' )"
+for d in "$HOME"/nodevenv/*/*/bin/node /usr/local/cpanel/3rdparty/bin/node /opt/alt/alt-nodejs*/root/usr/bin/node /opt/cpanel/ea-nodejs*/bin/node; do
+    [ -x "$d" ] && echo "   FOUND         : $d ($("$d" -v 2>/dev/null))"
 done
-echo "   meilisearch   : $(command -v meilisearch >/dev/null 2>&1 && echo present || echo absent)"
-echo "   can background: $( (nohup sleep 5 >/dev/null 2>&1 &) && echo 'spawned (survival unknown)' || echo 'refused')"
+echo "   nodejs alias  : $(command -v nodejs >/dev/null 2>&1 && nodejs -v || echo absent)"
+echo "   any node under /opt (2 deep): $(find /opt -maxdepth 4 -name node -type f 2>/dev/null | head -3 | tr '\n' ' ')"
+echo "   ssh shell     : $(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f7)"
 # ── end probe ────────────────────────────────────────────────────────────
 
 echo "→ rebuild caches"
