@@ -31,7 +31,7 @@ class ProductDetail extends Component
     {
         abort_unless($product->isLive() || $this->canPreview($product), 404);
 
-        $product->load(['options.values', 'variants.media', 'media', 'store', 'category', 'brand', 'metafields']);
+        $product->load(['options.values', 'variants.media', 'media', 'store', 'category', 'brand', 'metafields', 'marketplaceLinks']);
 
         $this->product = $product;
 

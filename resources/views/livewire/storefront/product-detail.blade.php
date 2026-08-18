@@ -345,6 +345,13 @@
                         <p class="mt-1 text-[13px] text-ink-soft">{{ __('Purchasing is currently unavailable. Browse the product details or contact the seller for more information.') }}</p>
                     </div>
                 @endif
+
+                {{-- Outbound marketplace links. One block outside the two buy
+                     regions, so it renders once and serves both breakpoints; the
+                     mobile sticky bar is too cramped for it and duplicating it
+                     there would repeat the pdp-add-to-cart testid collision.
+                     The component decides its own visibility. --}}
+                <x-marketplace-links :product="$product" />
                 {{-- Mobile actions live in the sticky buy bar below --}}
 
                 {{-- Group-buy / share-to-unlock (M2.6) --}}

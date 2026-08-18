@@ -573,6 +573,54 @@
             </label>
         </x-ui.card>
 
+        {{-- ── Marketplace links ──────────────────────────────────── --}}
+        <x-ui.card class="p-5">
+            <h2 class="font-display text-lg font-medium">{{ __('Also available on') }}</h2>
+            <p class="mt-1 text-[13px] text-ink-soft">
+                {{ __('Link this product to your own listing on :platforms. Shoppers get a button that opens it in a new tab.', ['platforms' => app(\App\Services\MarketplaceLinkResolver::class)->supportedLabels()]) }}
+            </p>
+
+            <div class="mt-4 space-y-3">
+                @foreach ($marketplaceLinks as $linkIndex => $link)
+                    <div class="flex items-start gap-2" wire:key="marketplace-link-{{ $linkIndex }}">
+                        <x-ui.input
+                            class="flex-1"
+                            type="url"
+                            :label="__('Listing URL')"
+                            placeholder="https://shopee.com.my/..."
+                            wire:model="marketplaceLinks.{{ $linkIndex }}.url"
+                            :error="$errors->first('marketplaceLinks.'.$linkIndex.'.url')"
+                        />
+                        {{-- mt-7 clears the input's label rather than items-end on the
+                             row: rejecting unknown hosts means an error line under the
+                             input is the NORMAL case here, and items-end would make the
+                             button jump down every time one appears. --}}
+                        <button type="button"
+                                wire:click="removeMarketplaceLink({{ $linkIndex }})"
+                                class="mt-7 inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-medium text-ink-soft hover:bg-paper">
+                            {{ __('Remove') }}
+                        </button>
+                    </div>
+                @endforeach
+            </div>
+
+            @if (count($marketplaceLinks) < \App\Livewire\Seller\Products\Form::MAX_MARKETPLACE_LINKS)
+                <button type="button"
+                        wire:click="addMarketplaceLink"
+                        class="mt-3 inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-4 text-[13px] font-medium text-ink hover:bg-paper">
+                    {{ __('Add a marketplace link') }}
+                </button>
+            @endif
+
+            <label class="mt-4 flex min-h-11 cursor-pointer items-start gap-2 text-sm font-medium text-ink">
+                <input type="checkbox" wire:model="marketplaceLinksAlwaysVisible" class="mt-0.5 size-4 shrink-0 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                <span>
+                    {{ __('Show these links even when customers can buy here') }}
+                    <span class="mt-0.5 block text-[13px] font-normal text-ink-faint">{{ __('Off by default. While the marketplace is listing-only, the links always show.') }}</span>
+                </span>
+            </label>
+        </x-ui.card>
+
         {{-- ── Actions ────────────────────────────────────────────── --}}
         {{-- H-6: a blocking failure needs an inline exit next to the control
              that failed, naming the remedy — a corner toast is not an error
