@@ -129,7 +129,10 @@
                 @foreach ($groups as $heading => $links)
                     <div>
                         @if ($heading)
-                            <p class="px-3 pb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-brass-deep/70">{{ $heading }}</p>
+                            {{-- Full brass-deep, not /70: at 70% over white this rendered #ad8f64 for
+                                 3.04:1 against the 4.5:1 AA needs at 11px. Measured with axe on
+                                 every one of the 32 admin pages. --}}
+                            <p class="px-3 pb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-brass-deep">{{ $heading }}</p>
                         @endif
                         <div class="space-y-0.5">
                             @foreach ($links as [$routeName, $label, $activePattern])
