@@ -188,3 +188,26 @@ test('listing-only buyer copy is translated in Malay and Vietnamese', function (
     expect(__('Listing only'))->toBe('Chỉ niêm yết')
         ->and(__('Checkout unavailable'))->toBe('Không thể thanh toán');
 });
+
+test('product structured data stops advertising availability while listing-only mode is active', function () {
+    $product = listingModeProduct();
+
+    // JSON_encode escapes the slashes, so the page carries `https:\/\/schema.org\/...`.
+    $inStock = 'https:\/\/schema.org\/InStock';
+    $inStoreOnly = 'https:\/\/schema.org\/InStoreOnly';
+
+    // CONTROL: with purchasing on, an in-stock product is still InStock.
+    $this->get(route('product.show', $product->slug))
+        ->assertOk()
+        ->assertSee($inStock, false)
+        ->assertDontSee($inStoreOnly, false);
+
+    setListingOnlyMode();
+
+    // Stock is unchanged — only the checkout went away — so OutOfStock would be
+    // false. InStoreOnly is the "not orderable online" signal search engines read.
+    $this->get(route('product.show', $product->slug))
+        ->assertOk()
+        ->assertSee($inStoreOnly, false)
+        ->assertDontSee('"availability":"'.$inStock.'"', false);
+});
