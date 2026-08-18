@@ -5,7 +5,10 @@
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+/* Deliberately NOT scanning storage/framework/views: the compiled-Blade cache is a
+   per-machine build input, so the bundle differed by which pages a checkout happened
+   to have rendered. It only ever added Laravel's exception-renderer classes, which
+   ship their own stylesheet. Real templates are covered by the two @source lines below. */
 @source '../views/**/*.blade.php';
 @source '../../app/Livewire/**/*.php';
 
