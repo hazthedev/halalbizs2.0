@@ -73,6 +73,12 @@
     @endif
 
     {{-- List --}}
+    {{-- While the form is open the list is put away, the same way the "Add"
+         button above already is. It used to sit under the editor, pushing this
+         page to 1871px against a 744px viewport and leaving you editing one
+         record with every other one still on screen. Covers New as well as
+         Edit — same clutter either way. --}}
+    @unless ($showForm)
     <x-ui.card class="overflow-x-auto">
         @if ($vouchers->isEmpty())
             <x-ui.empty-state :title="__('No platform vouchers yet')" :message="__('Create one above — buyers apply codes at checkout.')" />
@@ -138,4 +144,5 @@
             </table>
         @endif
     </x-ui.card>
+    @endunless
 </div>
