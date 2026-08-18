@@ -7,7 +7,7 @@
     <title>{{ isset($title) && $title ? $title.' · ' : '' }}{{ __('Admin') }} · {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen overflow-x-clip bg-paper text-ink antialiased" x-data="{ sidebarOpen: false }">
+<body class="min-h-screen overflow-x-clip bg-paper text-ink antialiased lg:h-screen lg:overflow-hidden" x-data="{ sidebarOpen: false }">
 
     {{-- Ink topbar --}}
     <header class="sticky top-0 z-40 border-b border-emerald-edge bg-emerald-night">
@@ -31,9 +31,13 @@
         </div>
     </header>
 
-    <div class="flex">
+    {{-- Desktop: the topbar is fixed at h-14 and this row takes the rest of the
+         viewport, so the sidebar and the main column each scroll on their own
+         instead of sharing one page scrollbar. Mobile is untouched — there the
+         sidebar is an overlay and the page scrolls normally. --}}
+    <div class="flex lg:h-[calc(100vh-3.5rem)]">
         <aside
-            class="invisible fixed inset-y-0 left-0 z-30 w-60 -translate-x-full overflow-y-auto border-r border-line bg-surface pt-14 transition-[transform,visibility] duration-150 lg:visible lg:static lg:translate-x-0 lg:pt-0"
+            class="invisible fixed inset-y-0 left-0 z-30 w-60 -translate-x-full overflow-y-auto border-r border-line bg-surface pt-14 transition-[transform,visibility] duration-150 lg:visible lg:static lg:h-full lg:translate-x-0 lg:pt-0"
             x-bind:class="sidebarOpen ? 'translate-x-0 visible' : ''"
         >
             <nav class="space-y-4 p-3 text-sm" aria-label="{{ __('Admin navigation') }}">
@@ -142,7 +146,7 @@
 
         <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-20 bg-emerald-night/40 lg:hidden" x-on:click="sidebarOpen = false"></div>
 
-        <main class="min-h-[calc(100vh-3.5rem)] min-w-0 flex-1 p-4 lg:p-6">
+        <main class="min-h-[calc(100vh-3.5rem)] min-w-0 flex-1 p-4 lg:h-full lg:overflow-y-auto lg:p-6">
             {{ $slot }}
         </main>
     </div>
