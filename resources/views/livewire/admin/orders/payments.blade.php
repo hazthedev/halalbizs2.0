@@ -22,6 +22,11 @@
                    class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
             {{ __('Mismatches only') }}
         </label>
+        <label for="payments-needs-portal" class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
+            <input id="payments-needs-portal" type="checkbox" wire:model.live="needsPortalRefund"
+                   class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+            {{ __('Needs portal refund') }}
+        </label>
     </x-ui.card>
 
     {{-- Table per design §6 --}}
@@ -81,6 +86,15 @@
                                     −@money($payment->refunded_sen)
                                     @if ($payment->refunded_at)
                                         <span class="block text-[11px] font-sans text-ink-soft">{{ $payment->refunded_at->format('d M Y') }}</span>
+                                    @endif
+                                    {{-- The amount alone said "refunded" whether or not the
+                                         gateway moved anything. false is the case someone
+                                         must finish by hand; null is COD, where the ledger
+                                         adjustment IS the refund and nothing is owed. --}}
+                                    @if ($payment->gateway_refund_ok === false)
+                                        <span class="mt-0.5 block text-[11px] font-sans font-medium text-danger">{{ __('Needs portal refund') }}</span>
+                                    @elseif ($payment->gateway_refund_ok === true)
+                                        <span class="mt-0.5 block text-[11px] font-sans text-ink-soft">{{ __('Gateway confirmed') }}</span>
                                     @endif
                                 @else
                                     —

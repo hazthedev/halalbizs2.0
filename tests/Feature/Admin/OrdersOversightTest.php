@@ -286,3 +286,49 @@ test('requery button confirms a pending payment when iPay88 answers 00', functio
     expect($order->payment_status)->toBe(PaymentStatus::Paid)
         ->and($subOrder->refresh()->status)->toBe(SubOrderStatus::Confirmed);
 });
+
+test('the payments grid separates a refund the gateway made from one a human still owes', function () {
+    $admin = oversightAdmin();
+
+    /** A refunded payment row with a given gateway outcome. */
+    $refunded = function (string $ref, ?bool $gatewayOk) {
+        return Payment::create([
+            'order_id' => Order::factory()->create()->id,
+            'gateway' => PaymentMethod::Ipay88,
+            'ref_no' => $ref,
+            'amount_sen' => 5000,
+            'currency' => 'MYR',
+            'status' => GatewayPaymentStatus::Success,
+            'refunded_sen' => 5000,
+            'refunded_at' => now(),
+            'gateway_refund_ok' => $gatewayOk,
+            'signature_valid' => true,
+        ]);
+    };
+
+    $refunded('MPOWED0001', false);  // gateway did not do it — a human must
+    $refunded('MPDONE0001', true);   // gateway confirmed
+    $refunded('MPCODD0001', null);   // COD: nothing was ever owed at a gateway
+
+    $component = Livewire::actingAs($admin)->test(Payments::class);
+
+    // "Gateway confirmed" appears nowhere but inside a row cell, so seeing it
+    // proves the cell rendered — unlike "Needs portal refund", which is also the
+    // filter's own label and would pass on a page with no matching rows at all.
+    $component->assertSee('MPOWED0001')
+        ->assertSee('MPDONE0001')
+        ->assertSee('MPCODD0001')
+        ->assertSee(__('Gateway confirmed'));
+
+    // The flagged cell, counted rather than merely seen: one filter label plus
+    // exactly one flagged row. A hardcoded label would score 1 and fail here.
+    expect(substr_count($component->html(), __('Needs portal refund')))->toBe(2);
+
+    $component->set('needsPortalRefund', true)
+        ->assertSee('MPOWED0001')
+        ->assertDontSee('MPDONE0001')   // control: a confirmed refund is not owed
+        ->assertDontSee('MPCODD0001')   // control: neither is a COD one
+        ->assertDontSee(__('Gateway confirmed'));
+
+    expect(substr_count($component->html(), __('Needs portal refund')))->toBe(2);
+});

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ActorType;
+use App\Enums\CoinTransactionType;
 use App\Enums\LedgerEntryType;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
@@ -9,16 +10,20 @@ use App\Enums\TaxClass;
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
 use App\Models\Address;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\SubOrder;
 use App\Models\User;
 use App\Models\Voucher;
 use App\Services\CartService;
 use App\Services\CheckoutService;
+use App\Services\CoinService;
 use App\Services\OrderService;
 use App\Services\RefundService;
 use App\Services\SubOrderStatusService;
+use App\Settings\Ipay88Settings;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
 
@@ -222,7 +227,7 @@ test('a refund before completion writes no ledger adjustment but tracks the paym
 });
 
 /** Two identical stores, one product each, flat shipping $shippingSen per store. */
-function twoStoreOrder(User $buyer, Address $address, int $shippingSen = 0, int $coins = 0, ?string $code = null): App\Models\Order
+function twoStoreOrder(User $buyer, Address $address, int $shippingSen = 0, int $coins = 0, ?string $code = null): Order
 {
     foreach ([1, 2] as $ignored) {
         $product = Product::factory()->create(['cod_enabled' => true, 'tax_class' => TaxClass::Exempt]);
@@ -238,7 +243,7 @@ function twoStoreOrder(User $buyer, Address $address, int $shippingSen = 0, int 
     }
 
     $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Ipay88, $code, coinsToRedeem: $coins);
-    $order->forceFill(['payment_status' => App\Enums\PaymentStatus::Paid, 'paid_at' => now()])->save();
+    $order->forceFill(['payment_status' => PaymentStatus::Paid, 'paid_at' => now()])->save();
 
     return $order;
 }
@@ -265,7 +270,7 @@ test('coins come out of the refunded cash — the first store refunded gets its 
     $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor', 'country' => 'MY']);
 
     // The audit's worked example: 2 × RM100, no vouchers, RM20 of coins.
-    app(App\Services\CoinService::class)->credit($buyer, 2000, App\Enums\CoinTransactionType::Earn);
+    app(CoinService::class)->credit($buyer, 2000, CoinTransactionType::Earn);
     $order = twoStoreOrder($buyer, $address, coins: 2000);
 
     expect($order->coin_redemption_sen)->toBe(2000)
@@ -302,4 +307,143 @@ test('platform-funded free shipping stays with the seller but is not refunded as
 
     expect((int) $order->fresh()->payment->refunded_sen)
         ->toBe((int) $first->total_sen - (int) $first->shipping_subsidy_sen);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Did the gateway actually move the money?
+|--------------------------------------------------------------------------
+|
+| PaymentGateway::refund() returns a bool and its own contract says
+| "false -> caller falls back to manual / store credit". RefundService threw it
+| away and wrote refunded_sen + refunded_at either way, so a refund the gateway
+| never performed read as settled on every surface downstream. These pin the
+| three states apart — and the null one carries as much weight as the others,
+| because false on a COD refund would queue a portal action that does not exist.
+*/
+
+/** iPay88 configured with a live refund endpoint, answering $response. */
+function refundGatewayAnswering(mixed $response): void
+{
+    $settings = app(Ipay88Settings::class);
+    $settings->merchant_code = 'M12345';
+    $settings->merchant_key = 'test-key';
+    $settings->sandbox = true;
+    $settings->save();
+
+    config(['services.ipay88.refund_url' => 'https://payment.ipay88.com.my/epayment/refund.asp']);
+    Http::fake(['*' => $response]);
+}
+
+test('an online refund the gateway never made is flagged as owing a portal refund', function () {
+    // No services.ipay88.refund_url — which is the configuration on every
+    // environment we have, so this is the ORDINARY case and not an edge one.
+    expect(config('services.ipay88.refund_url'))->toBeEmpty();
+
+    $subOrder = refundCompletedSubOrder();
+
+    app(RefundService::class)->refund($subOrder, $subOrder->total_sen, ActorType::Admin, null, 'IP88-RFND-9', markRefunded: true);
+
+    $payment = $subOrder->fresh()->order->payment;
+
+    // The money side is deliberately unchanged: the cash IS owed to the buyer and
+    // the record of that must survive. What is new is that the row has stopped
+    // implying the gateway returned it.
+    expect($payment->refunded_sen)->toBe(20500)
+        ->and($payment->refunded_at)->not->toBeNull()
+        ->and($payment->gateway_refund_ok)->toBeFalse();
+});
+
+test('an online refund the gateway confirms is not flagged', function () {
+    refundGatewayAnswering(Http::response('OK'));
+
+    $subOrder = refundCompletedSubOrder();
+
+    app(RefundService::class)->refund($subOrder, $subOrder->total_sen, ActorType::Admin, null, 'IP88-RFND-10', markRefunded: true);
+
+    expect($subOrder->fresh()->order->payment->gateway_refund_ok)->toBeTrue();
+});
+
+test('an online refund the gateway REJECTS is flagged, even though the endpoint answered', function () {
+    // The control for the test above: same configuration, same call, same code
+    // path — only the gateway's answer differs. Without this one, a flag that was
+    // hardwired to true would still pass.
+    refundGatewayAnswering(Http::response('refund not permitted', 400));
+
+    $subOrder = refundCompletedSubOrder();
+
+    app(RefundService::class)->refund($subOrder, $subOrder->total_sen, ActorType::Admin, null, 'IP88-RFND-11', markRefunded: true);
+
+    expect($subOrder->fresh()->order->payment->gateway_refund_ok)->toBeFalse();
+});
+
+test('a COD refund is not flagged at all — no gateway was ever meant to run', function () {
+    // Cash goes back by hand and the ledger adjustment IS the refund, so nothing
+    // is outstanding. This must read null and NOT false, or every COD refund
+    // joins the "needs portal refund" queue and the queue becomes noise.
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor']);
+    $product = Product::factory()->create(['cod_enabled' => true]);
+    $product->variants->first()->update(['price_sen' => 5000, 'sale_price_sen' => null, 'stock' => 10]);
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    $subOrder = $order->subOrders->first();
+    $status = app(SubOrderStatusService::class);
+    $status->transition($subOrder, SubOrderStatus::Processing, ActorType::Seller);
+    $status->transition($subOrder->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
+    app(OrderService::class)->markDelivered($subOrder->fresh(), ActorType::System);
+    $status->transition($subOrder->fresh(), SubOrderStatus::ReturnRequested, ActorType::Buyer, $buyer->id);
+
+    $total = (int) $subOrder->fresh()->total_sen;
+    app(RefundService::class)->refund($subOrder->fresh(), $total, ActorType::Admin, null, null, markRefunded: true);
+
+    $payment = $subOrder->fresh()->order->payment;
+
+    expect($payment->refunded_sen)->toBe($total)
+        ->and($payment->gateway_refund_ok)->toBeNull();
+});
+
+test('a later slice the gateway accepts does not clear an earlier one still owed', function () {
+    // ONE sequence, not two Http::fake() calls: a second fake() MERGES into the
+    // stub list and the first matching stub still wins, so the "now it succeeds"
+    // half silently kept getting the 400 and the test proved nothing. Caught by
+    // the revert-proof passing when the sticky rule was deleted.
+    refundGatewayAnswering(Http::sequence()
+        ->push('refund not permitted', 400)
+        ->push('OK', 200));
+
+    $subOrder = refundCompletedSubOrder();
+
+    // First slice: the gateway refuses. RM50 is now owed in the portal.
+    app(RefundService::class)->refund($subOrder, 5000, ActorType::Admin, null, 'IP88-RFND-12a', markRefunded: false);
+    expect($subOrder->fresh()->order->payment->gateway_refund_ok)->toBeFalse();
+
+    // Second slice: the gateway accepts. The first RM50 is still owed by hand —
+    // money owed does not stop being owed because the next call went through.
+    app(RefundService::class)->refund($subOrder->fresh(), 5000, ActorType::Admin, null, 'IP88-RFND-12b', markRefunded: false);
+
+    $payment = $subOrder->fresh()->order->payment;
+
+    expect($payment->refunded_sen)->toBe(10000)
+        ->and($payment->gateway_refund_ok)->toBeFalse();
+});
+
+test('CONTROL: the second slice really does reach a gateway that accepts it', function () {
+    // The guard for the test above. Same sequence, same two calls — but with the
+    // FIRST slice succeeding too, so nothing is ever owed and the flag must end
+    // true. If the sequence were not advancing, this would read false and the
+    // stickiness test above would be passing on a stuck 400 rather than on the
+    // rule it claims to prove.
+    refundGatewayAnswering(Http::sequence()
+        ->push('OK', 200)
+        ->push('OK', 200));
+
+    $subOrder = refundCompletedSubOrder();
+
+    app(RefundService::class)->refund($subOrder, 5000, ActorType::Admin, null, 'IP88-RFND-13a', markRefunded: false);
+    app(RefundService::class)->refund($subOrder->fresh(), 5000, ActorType::Admin, null, 'IP88-RFND-13b', markRefunded: false);
+
+    expect($subOrder->fresh()->order->payment->gateway_refund_ok)->toBeTrue();
 });

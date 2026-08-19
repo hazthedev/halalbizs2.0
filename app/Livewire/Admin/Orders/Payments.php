@@ -33,9 +33,17 @@ class Payments extends Component
     #[Url(except: false)]
     public bool $mismatchesOnly = false;
 
+    /**
+     * "Needs portal refund" — the gateway did not perform a refund we have
+     * already recorded, so a human owes one in the merchant portal. This is the
+     * actionable half of the reconciliation job, the same way mismatchesOnly is.
+     */
+    #[Url(except: false)]
+    public bool $needsPortalRefund = false;
+
     public function updated(string $property): void
     {
-        if (in_array($property, ['status', 'mismatchesOnly'], true)) {
+        if (in_array($property, ['status', 'mismatchesOnly', 'needsPortalRefund'], true)) {
             $this->resetPage();
         }
     }
@@ -83,6 +91,7 @@ class Payments extends Component
             ->with('order')
             ->when(GatewayPaymentStatus::tryFrom($this->status), fn ($query, $status) => $query->where('status', $status))
             ->when($this->mismatchesOnly, fn ($query) => $query->where('signature_valid', false))
+            ->when($this->needsPortalRefund, fn ($query) => $query->where('gateway_refund_ok', false))
             ->latest('created_at')
             ->latest('id')
             ->paginate(self::PER_PAGE);

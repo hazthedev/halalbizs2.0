@@ -113,14 +113,40 @@ class RefundService
                 $cashSen = min($amountSen, $this->storeCashShareSen($subOrder, $order, $amountSen));
                 $cashSen = min($cashSen, max(0, (int) $order->grand_total_sen - (int) $payment->refunded_sen));
 
+                // KEEP the gateway's answer. PaymentGateway::refund() returns a
+                // bool and its own contract says "false -> caller falls back to
+                // manual / store credit" — this caller discarded it, so a refund
+                // the gateway never performed still wrote refunded_at and read as
+                // settled everywhere downstream. With no services.ipay88.refund_url
+                // configured that is EVERY online refund.
+                //
+                // A missing driver counts as false, not as null: the `?->` below is
+                // reachable (a payment_method with no registered gateway) and "no
+                // gateway ran at all" is precisely the case a human must finish.
+                // null is reserved for "no gateway refund was attempted" — COD,
+                // where the ledger adjustment IS the refund and nothing is owed.
+                $gatewayOk = null;
+
                 if ($online && $cashSen > 0) {
-                    $this->gateways->driver($subOrder->order->payment_method?->value)?->refund($payment, $cashSen, $reference);
+                    $gatewayOk = (bool) $this->gateways
+                        ->driver($subOrder->order->payment_method?->value)
+                        ?->refund($payment, $cashSen, $reference);
                 }
 
                 if ($cashSen > 0) {
                     $payment->forceFill([
                         'refunded_sen' => (int) $payment->refunded_sen + $cashSen,
                         'refunded_at' => now(),
+                        // Sticky false across partial refunds: a later slice that the
+                        // gateway DOES accept must not clear an earlier one a human
+                        // still owes in the portal. Money owed does not expire because
+                        // the next call went through.
+                        // ponytail: nothing ever clears this — there is no "I settled
+                        //   it in the portal" control. Add one to the admin payments
+                        //   grid if the flag starts crying wolf.
+                        'gateway_refund_ok' => $payment->gateway_refund_ok === false
+                            ? false
+                            : $gatewayOk,
                     ])->save();
                 }
             }
