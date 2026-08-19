@@ -127,6 +127,7 @@
                     :payload="$statusPayload"
                     refresh-event="seller-status"
                     :height="260"
+                    :empty-message="__('No orders in this period yet.')"
                     aria-label="{{ __('Orders by status') }}"
                 />
             </div>
@@ -143,6 +144,7 @@
                 :payload="$topProductsPayload"
                 refresh-event="seller-top"
                 :height="240"
+                :empty-message="__('No units sold in this period yet.')"
                 aria-label="{{ __('Top products') }}"
             />
         </div>

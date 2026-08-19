@@ -268,3 +268,54 @@ test('dashboard keeps the stat cards, to-do strip and recent orders', function (
         ->assertSee(__('Recent orders'))
         ->assertSee($subOrder->sub_order_no);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Charts with no data must SAY so
+|--------------------------------------------------------------------------
+| statusPayload() filters to statuses with a count > 0, so a store with no
+| orders in the period hands the charting library an empty series — and it
+| draws nothing at all: no axes, no legend, no message. The seller dashboard
+| rendered "Orders by status" as a heading above ~500px of blank card, found
+| by looking at the deployed page rather than by any assertion here.
+|
+| An ALL-ZERO series is deliberately NOT the same case: a flat line at zero is
+| the honest answer for a quiet period, and the revenue chart must keep drawing
+| it. The control below pins that distinction.
+*/
+
+test('a chart with no data renders an empty state instead of a blank card', function () {
+    $seller = dashboardSeller();   // no orders at all
+
+    Livewire::actingAs($seller)
+        ->test(Dashboard::class)
+        ->assertSee(__('No orders in this period yet.'))
+        ->assertSee(__('No units sold in this period yet.'));
+});
+
+test('CONTROL: a chart WITH data draws the chart and shows no empty state', function () {
+    $seller = dashboardSeller();
+    dashboardSubOrderFor($seller, SubOrderStatus::Completed, 10000, now()->subDay());
+
+    Livewire::actingAs($seller)
+        ->test(Dashboard::class)
+        ->assertDontSee(__('No orders in this period yet.'))
+        ->assertSeeHtml('hbChart');
+});
+
+test('an all-zero revenue series still draws the chart, it is not "empty"', function () {
+    // A cancelled order is excluded from revenue, so the revenue series is all
+    // zeroes while still having a data point per day. That must render a flat
+    // line, not the placeholder — otherwise a quiet week looks like a broken
+    // dashboard.
+    $seller = dashboardSeller();
+    dashboardSubOrderFor($seller, SubOrderStatus::Cancelled, 10000, now()->subDay());
+
+    $payload = Livewire::actingAs($seller)
+        ->test(Dashboard::class)
+        ->instance()
+        ->revenueData();
+
+    expect($payload)->not->toBeEmpty()
+        ->and(array_sum($payload))->toBe(0);
+});
