@@ -17,6 +17,17 @@ class SecuritySettings extends Settings
     /** Stored for the future real SMS gateway driver — dormant for now. */
     public string $sms_provider_key;
 
+    /**
+     * Reject passwords found in public breach dumps (Password::uncompromised()).
+     *
+     * ON by default and should stay on: it only ever blocks a password an
+     * attacker already has on a list, and the check itself fails OPEN when the
+     * API is unreachable, so switching it off does not unblock legitimate
+     * customers — it only permits weaker ones. The minimum length is NOT part
+     * of this toggle and cannot be switched off.
+     */
+    public bool $breached_password_check;
+
     public static function group(): string
     {
         return 'security';

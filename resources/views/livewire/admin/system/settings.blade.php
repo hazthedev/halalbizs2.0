@@ -114,6 +114,16 @@
                             :error="$errors->first('smsProviderKey')" />
                 <p class="text-[13px] text-ink-faint">{{ __('Stored for the production SMS driver. Locally, codes are written to the log instead of sent.') }}</p>
 
+                <p class="pt-2 text-[13px] font-medium text-ink-soft">{{ __('Password rules') }}</p>
+                <label for="breached-password-check" class="flex min-h-11 cursor-pointer items-start gap-2 text-sm font-medium text-ink">
+                    <input id="breached-password-check" type="checkbox" wire:model="breachedPasswordCheck"
+                           class="mt-0.5 size-4 shrink-0 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                    <span>
+                        {{ __('Reject passwords found in data breaches') }}
+                        <span class="mt-0.5 block text-[13px] font-normal text-ink-faint">{{ __('Recommended. Only the first 5 characters of a hash leave the server, and the check is skipped if the service is unreachable — so it never blocks a sign-up on its own. The 8-character minimum stays on either way.') }}</span>
+                    </span>
+                </label>
+
                 <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="saveSecurity">{{ __('Save security') }}</x-ui.button>
             </form>
         </x-ui.card>

@@ -32,6 +32,7 @@ use App\Services\Search\RemoteEmbedder;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
 use App\Services\Sms\WhatsAppSender;
+use App\Settings\SecuritySettings;
 use App\Support\ClientIp;
 use App\Support\Money;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -119,7 +120,22 @@ class AppServiceProvider extends ServiceProvider
         // is known good on this host (iPay88, EasyParcel, WhatsApp all call out),
         // so a hang is unlikely; if registration ever stalls, bind
         // UncompromisedVerifier to a NotPwnedVerifier with a short timeout.
-        Password::defaults(fn () => Password::min(8)->uncompromised());
+        // The breach check is admin-switchable (security.breached_password_check,
+        // default ON). Read INSIDE the closure, never at boot: this runs only when
+        // a password is actually validated, so a fresh install still migrates
+        // before the settings table exists, and flipping the toggle takes effect
+        // without a deploy or a cache clear.
+        //
+        // min(8) sits outside the branch on purpose — the toggle turns off the
+        // breach list, not the length floor. Switching it off must not quietly
+        // restore the `12345678` rule that caused all of this.
+        Password::defaults(function () {
+            $rule = Password::min(8);
+
+            return app(SecuritySettings::class)->breached_password_check
+                ? $rule->uncompromised()
+                : $rule;
+        });
 
         // Superadmin bypass (bug #1). The `admin` role carries NO permissions —
         // it only gets you past EnsureAdmin — so every admin section is gated on

@@ -6,6 +6,7 @@ use App\Livewire\Storefront\Auth\Register;
 use App\Livewire\Storefront\Auth\ResetPassword;
 use App\Livewire\Storefront\Auth\VerifyEmailNotice;
 use App\Models\User;
+use App\Settings\SecuritySettings;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Hash;
@@ -201,4 +202,81 @@ test('verified users are redirected away from the verification notice', function
     Livewire::actingAs($user)
         ->test(VerifyEmailNotice::class)
         ->assertRedirect(route('home'));
+});
+
+/*
+|--------------------------------------------------------------------------
+| The breach check is admin-switchable (security.breached_password_check)
+|--------------------------------------------------------------------------
+| The three above prove the rule fires while it is ON. These prove the toggle
+| actually reaches it, and — the one that matters — that turning it off does
+| NOT take the length floor with it. Switching off the breach list must not
+| quietly restore the min(8)-only rule that let the live superadmin run
+| `12345678` before 2026-08-10.
+*/
+
+/** Turn the breach check off, the way the admin screen does. */
+function disableBreachedPasswordCheck(): void
+{
+    $settings = app(SecuritySettings::class);
+    $settings->breached_password_check = false;
+    $settings->save();
+}
+
+test('the breach check is ON by default', function () {
+    expect(app(SecuritySettings::class)->breached_password_check)->toBeTrue();
+});
+
+test('with the check off, a breached password is accepted', function () {
+    Http::fake(['api.pwnedpasswords.com/*' => Http::response(PWNED_12345678)]);
+    disableBreachedPasswordCheck();
+
+    Livewire::test(Register::class)
+        ->set('name', 'Aisha binti Ali')
+        ->set('email', 'aisha@example.com')
+        ->set('password', '12345678')
+        ->set('password_confirmation', '12345678')
+        ->set('phone', '012-345 6789')
+        ->set('terms', true)
+        ->call('register')
+        ->assertHasNoErrors(['password']);
+
+    expect(User::where('email', 'aisha@example.com')->exists())->toBeTrue();
+});
+
+test('with the check off, the API is not called at all', function () {
+    // Outcome alone cannot tell "the rule was skipped" from "the rule ran and
+    // the fake happened to say clean". The absence of the request can.
+    Http::fake(['api.pwnedpasswords.com/*' => Http::response(PWNED_12345678)]);
+    disableBreachedPasswordCheck();
+
+    Livewire::test(Register::class)
+        ->set('name', 'Aisha binti Ali')
+        ->set('email', 'aisha@example.com')
+        ->set('password', '12345678')
+        ->set('password_confirmation', '12345678')
+        ->set('phone', '012-345 6789')
+        ->set('terms', true)
+        ->call('register');
+
+    Http::assertNothingSent();
+});
+
+test('with the check off, the 8-character minimum still holds', function () {
+    // The toggle turns off the breach LIST, not the length floor. If this ever
+    // goes green with a 7-character password, the toggle has become a switch
+    // for "no password rules at all".
+    disableBreachedPasswordCheck();
+
+    Livewire::test(Register::class)
+        ->set('name', 'Aisha binti Ali')
+        ->set('email', 'aisha@example.com')
+        ->set('password', 'short7c')
+        ->set('password_confirmation', 'short7c')
+        ->set('phone', '012-345 6789')
+        ->set('terms', true)
+        ->call('register')
+        ->assertHasErrors(['password']);
+
+    expect(User::where('email', 'aisha@example.com')->exists())->toBeFalse();
 });

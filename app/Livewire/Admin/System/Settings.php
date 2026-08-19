@@ -57,6 +57,9 @@ class Settings extends Component
 
     public bool $turnstileSecretSet = false;
 
+    /** Reject passwords found in public breach dumps. Default ON. */
+    public bool $breachedPasswordCheck = true;
+
     public string $googleClientId = '';
 
     public string $googleClientSecret = '';
@@ -108,6 +111,7 @@ class Settings extends Component
         $this->googleClientId = $security->google_client_id;
         $this->googleClientSecretSet = $security->google_client_secret !== '';
         $this->smsProviderKeySet = $security->sms_provider_key !== '';
+        $this->breachedPasswordCheck = $security->breached_password_check;
 
         $tracking = app(TrackingSettings::class);
         $this->ga4Id = $tracking->ga4_id;
@@ -207,6 +211,7 @@ class Settings extends Component
         $settings = app(SecuritySettings::class);
         $settings->turnstile_site_key = trim($this->turnstileSiteKey);
         $settings->google_client_id = trim($this->googleClientId);
+        $settings->breached_password_check = $this->breachedPasswordCheck;
 
         // Write-only secrets: blank input keeps the stored value.
         if (trim($this->turnstileSecret) !== '') {
