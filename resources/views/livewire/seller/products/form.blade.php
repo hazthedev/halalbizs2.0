@@ -596,7 +596,14 @@
                                 :label="__('Name shoppers see')"
                                 maxlength="80"
                                 :placeholder="__('e.g. Our Shopee store')"
-                                wire:model.blur="marketplaceLinks.{{ $linkIndex }}.title"
+                                {{-- Plain (deferred) wire:model, NOT .blur. Tabbing from here to
+                                     the address field would otherwise round-trip and re-render this
+                                     whole card — including the server-rendered badge below — while
+                                     the seller is already typing the address, and Livewire's DOM
+                                     diff can append the response's value to the half-typed one.
+                                     Reproduced on the preview 2026-08-20: both fields came back
+                                     doubled. Nothing here needs the server before save. --}}
+                                wire:model="marketplaceLinks.{{ $linkIndex }}.title"
                                 :error="$errors->first('marketplaceLinks.'.$linkIndex.'.title')"
                             />
                             {{-- mt-7 clears the input's label rather than items-end on the
