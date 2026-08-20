@@ -49,7 +49,7 @@ class Form extends Component
     public const MAX_OPTION_GROUPS = 2;
 
     /** One link per platform is all the schema allows, so the list cannot usefully be longer. */
-    public const MAX_MARKETPLACE_LINKS = 4;
+    public const MAX_MARKETPLACE_LINKS = 6;
 
     #[Locked]
     public ?int $productId = null;
@@ -112,11 +112,14 @@ class Form extends Component
     public array $optionGroups = [];
 
     /**
-     * Seller-pasted marketplace URLs. Only the URL is captured — the platform is
-     * derived from the host by MarketplaceLinkResolver, so a seller cannot label
-     * an arbitrary link "Shopee".
+     * Seller-pasted outbound links: a URL and the title the shopper reads.
      *
-     * @var array<int, array{url: string}>
+     * The PLATFORM is never captured here — it is derived from the host by
+     * MarketplaceLinkResolver, so a seller cannot title a link "Shopee" and have
+     * it count as a verified Shopee link. The title is free text and is only
+     * ever rendered as text.
+     *
+     * @var array<int, array{url: string, title: string}>
      */
     public array $marketplaceLinks = [];
 
@@ -201,7 +204,7 @@ class Form extends Component
             return;
         }
 
-        $this->marketplaceLinks[] = ['url' => ''];
+        $this->marketplaceLinks[] = ['url' => '', 'title' => ''];
     }
 
     public function removeMarketplaceLink(int $index): void
@@ -558,36 +561,42 @@ class Form extends Component
     }
 
     /**
-     * Reconcile the outbound links. Rows are keyed by the RESOLVED platform, not
-     * by their position in the form, so re-ordering or re-pasting the same URL
-     * updates the existing row instead of colliding with the unique index.
-     * Anything the seller removed is deleted.
+     * Replace the outbound links with what the form holds, in form order.
+     *
+     * Delete-and-reinsert rather than a reconcile: a row carries nothing worth
+     * preserving across a save (no counters, no history, and "verified" is
+     * derived from the host at read time), and with several links allowed per
+     * platform there is no longer a stable key to reconcile against. The old
+     * code keyed on platform because the unique index forced it to.
+     *
+     * isSafe() is re-asked here rather than trusted from validation — this is
+     * the last place before an href reaches a shopper.
      */
     private function syncMarketplaceLinks(Product $product): void
     {
         $resolver = app(MarketplaceLinkResolver::class);
-        $keep = [];
+        $rows = [];
         $position = 0;
 
         foreach ($this->marketplaceLinks as $row) {
-            $resolved = $resolver->resolve($row['url'] ?? null);
+            $url = trim((string) ($row['url'] ?? ''));
+            $title = trim((string) ($row['title'] ?? ''));
 
-            // Unresolvable rows never reach here — validateMarketplaceLinks()
-            // has already failed the save — but resolve() stays the only thing
-            // that decides what gets written.
-            if ($resolved === null) {
+            if ($url === '' || ! $resolver->isSafe($url)) {
                 continue;
             }
 
-            $product->marketplaceLinks()->updateOrCreate(
-                ['platform' => $resolved['platform']],
-                ['url' => $resolved['url'], 'position' => $position++],
-            );
-
-            $keep[] = $resolved['platform'];
+            $rows[] = [
+                // Null platform = a host we do not allow-list = not verified.
+                'platform' => $resolver->resolve($url)['platform'] ?? null,
+                'title' => mb_substr($title, 0, 80),
+                'url' => $url,
+                'position' => $position++,
+            ];
         }
 
-        $product->marketplaceLinks()->whereNotIn('platform', $keep ?: [''])->delete();
+        $product->marketplaceLinks()->delete();
+        $product->marketplaceLinks()->createMany($rows);
     }
 
     private function applyTranslations(Product $product): void
@@ -814,6 +823,7 @@ class Form extends Component
             // client-writable, so the ceiling has to be a rule as well.
             'marketplaceLinks' => ['array', 'max:'.self::MAX_MARKETPLACE_LINKS],
             'marketplaceLinks.*.url' => ['nullable', 'string', 'max:'.MarketplaceLinkResolver::MAX_LENGTH],
+            'marketplaceLinks.*.title' => ['nullable', 'string', 'max:80'],
             'weightGrams' => ['nullable', 'integer', 'min:0'],
             'lengthMm' => ['nullable', 'integer', 'min:0'],
             'widthMm' => ['nullable', 'integer', 'min:0'],
@@ -852,6 +862,18 @@ class Form extends Component
      * Every URL must resolve to an allow-listed platform, and each platform may
      * appear once. Errors are per row so the seller sees which line is wrong.
      */
+    /**
+     * The link rows, checked one at a time.
+     *
+     * A seller may link ANYWHERE (Haze, 2026-08-20) — the allow-list no longer
+     * decides what may be saved, only what counts as verified. So the gate here
+     * is the URL's SHAPE, not its host: https, no embedded credentials, no
+     * control characters. All of that is one isSafe() call, and it is the same
+     * check the live-embed allow-list makes.
+     *
+     * Two links to the same site are fine now; the same URL twice is not, since
+     * it would render as two identical dropdown entries.
+     */
     private function validateMarketplaceLinks(): void
     {
         $resolver = app(MarketplaceLinkResolver::class);
@@ -859,34 +881,46 @@ class Form extends Component
 
         foreach ($this->marketplaceLinks as $index => $row) {
             $url = trim((string) ($row['url'] ?? ''));
+            $title = trim((string) ($row['title'] ?? ''));
 
+            // An empty row is the seller adding a row and changing their mind;
+            // a titled row with no URL is a half-filled one and says so.
             if ($url === '') {
+                if ($title !== '') {
+                    $this->addError("marketplaceLinks.{$index}.url", __('Add the link, or remove this row.'));
+                }
+
                 continue;
             }
 
-            $resolved = $resolver->resolve($url);
-
-            if ($resolved === null) {
+            if (! $resolver->isSafe($url)) {
                 $this->addError(
                     "marketplaceLinks.{$index}.url",
-                    __('Enter a full https:// link from one of these marketplaces: :platforms', [
-                        'platforms' => $resolver->supportedLabels(),
-                    ]),
+                    __('Enter a full https:// web address, with no username or password in it.'),
                 );
 
                 continue;
             }
 
-            if (isset($seen[$resolved['platform']])) {
+            if ($title === '') {
                 $this->addError(
-                    "marketplaceLinks.{$index}.url",
-                    __('You have already added a :platform link for this product.', ['platform' => $resolved['label']]),
+                    "marketplaceLinks.{$index}.title",
+                    __('Give this link a name — shoppers see it, not the address.'),
                 );
+            }
+
+            // Compared on the normalised host + the raw rest, so the same
+            // listing pasted as HTTPS://Shopee.com.my/p and https://shopee.com.my/p
+            // is caught as the duplicate it is.
+            $key = mb_strtolower($url);
+
+            if (isset($seen[$key])) {
+                $this->addError("marketplaceLinks.{$index}.url", __('You have already added this link.'));
 
                 continue;
             }
 
-            $seen[$resolved['platform']] = true;
+            $seen[$key] = true;
         }
     }
 
@@ -1134,7 +1168,7 @@ class Form extends Component
         $this->taxClass = $product->tax_class?->value ?? 'exempt';
         $this->attributeValueIds = $product->attributeValues->pluck('id')->all();
         $this->metafields = $product->metafields->pluck('value', 'key')->all();
-        $this->marketplaceLinks = $product->marketplaceLinks->map(fn ($link) => ['url' => $link->url])->all();
+        $this->marketplaceLinks = $product->marketplaceLinks->map(fn ($link) => ['url' => $link->url, 'title' => $link->title])->all();
         $this->marketplaceLinksAlwaysVisible = (bool) $product->marketplace_links_always_visible;
         $this->weightGrams = $product->weight_grams;
         $this->lengthMm = $product->length_mm;

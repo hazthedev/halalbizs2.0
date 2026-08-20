@@ -111,7 +111,6 @@
     "All stores": "All stores",
     "All subjects": "All subjects",
     "Allow cash on delivery (COD)": "Allow cash on delivery (COD)",
-    "Also available on": "Cũng có trên",
     "Always on": "Always on",
     "Amount": "Amount",
     "Amount owed — from COD commission or a refund on a paid-out order. Future sales recover it; payouts resume once your balance is positive.": "Amount owed — from COD commission or a refund on a paid-out order. Future sales recover it; payouts resume once your balance is positive.",
@@ -230,7 +229,6 @@
     "Bulk import": "Bulk import",
     "Button text (Bahasa Melayu)": "Button text (Bahasa Melayu)",
     "Button text (English)": "Button text (English)",
-    "Buy on :platform": "Mua trên :platform",
     "Buyer questions land here the moment they hit send.": "Buyer questions land here the moment they hit send.",
     "Buyer reviews appear here the moment they are posted.": "Buyer reviews appear here the moment they are posted.",
     "Buyer says": "Buyer says",
@@ -2613,5 +2611,6 @@
     "Purchasing is currently unavailable. Your existing basket is preserved and will be available if purchasing is enabled again.": "Hiện không thể mua hàng. Giỏ hiện có của bạn được giữ nguyên và sẽ khả dụng nếu tính năng mua hàng được bật lại.",
     "This marketplace is currently for product listings and enquiries only.": "Chợ hiện chỉ dành cho niêm yết sản phẩm và gửi yêu cầu.",
     "This marketplace is currently in listing-only mode. Purchasing is unavailable.": "Chợ hiện đang ở chế độ chỉ niêm yết. Tính năng mua hàng không khả dụng.",
-    "Turn this off for listing-only mode. Products, search, wishlists and buyer enquiries stay available, while cart additions, recurring purchases, group buys and checkout are blocked.": "Tắt tùy chọn này để dùng chế độ chỉ niêm yết. Sản phẩm, tìm kiếm, danh sách yêu thích và yêu cầu của người mua vẫn hoạt động; việc thêm vào giỏ, mua định kỳ, mua chung và thanh toán sẽ bị chặn."
+    "Turn this off for listing-only mode. Products, search, wishlists and buyer enquiries stay available, while cart additions, recurring purchases, group buys and checkout are blocked.": "Tắt tùy chọn này để dùng chế độ chỉ niêm yết. Sản phẩm, tìm kiếm, danh sách yêu thích và yêu cầu của người mua vẫn hoạt động; việc thêm vào giỏ, mua định kỳ, mua chung và thanh toán sẽ bị chặn.",
+    "Also available in": "Cũng có trên"
 }

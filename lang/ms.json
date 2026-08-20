@@ -181,7 +181,6 @@
     "All time": "Sepanjang masa",
     "Allow cash on delivery (COD)": "Allow cash on delivery (COD)",
     "Already have an account?": "Sudah mempunyai akaun?",
-    "Also available on": "Turut tersedia di",
     "Always on": "Always on",
     "Amount": "Amount",
     "Amount owed — from COD commission or a refund on a paid-out order. Future sales recover it; payouts resume once your balance is positive.": "Amount owed — from COD commission or a refund on a paid-out order. Future sales recover it; payouts resume once your balance is positive.",
@@ -342,7 +341,6 @@
     "Button text (English)": "Button text (English)",
     "Buy again": "Beli lagi",
     "Buy now": "Beli sekarang",
-    "Buy on :platform": "Beli di :platform",
     "Buyer": "Pembeli",
     "Buyer questions land here the moment they hit send.": "Buyer questions land here the moment they hit send.",
     "Buyer reviews appear here the moment they are posted.": "Buyer reviews appear here the moment they are posted.",
@@ -2613,5 +2611,6 @@
     "Purchasing is currently unavailable. Your existing basket is preserved and will be available if purchasing is enabled again.": "Pembelian tidak tersedia buat masa ini. Bakul sedia ada anda dikekalkan dan akan tersedia jika pembelian diaktifkan semula.",
     "This marketplace is currently for product listings and enquiries only.": "Pasaran ini kini hanya untuk penyenaraian produk dan pertanyaan.",
     "This marketplace is currently in listing-only mode. Purchasing is unavailable.": "Pasaran ini kini dalam mod penyenaraian sahaja. Pembelian tidak tersedia.",
-    "Turn this off for listing-only mode. Products, search, wishlists and buyer enquiries stay available, while cart additions, recurring purchases, group buys and checkout are blocked.": "Matikan pilihan ini untuk mod penyenaraian sahaja. Produk, carian, senarai hajat dan pertanyaan pembeli kekal tersedia, manakala penambahan troli, pembelian berulang, belian berkumpulan dan pembayaran disekat."
+    "Turn this off for listing-only mode. Products, search, wishlists and buyer enquiries stay available, while cart additions, recurring purchases, group buys and checkout are blocked.": "Matikan pilihan ini untuk mod penyenaraian sahaja. Produk, carian, senarai hajat dan pertanyaan pembeli kekal tersedia, manakala penambahan troli, pembelian berulang, belian berkumpulan dan pembayaran disekat.",
+    "Also available in": "Turut tersedia di"
 }

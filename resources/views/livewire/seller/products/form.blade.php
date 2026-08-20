@@ -573,33 +573,64 @@
             </label>
         </x-ui.card>
 
-        {{-- ── Marketplace links ──────────────────────────────────── --}}
+        {{-- ── External links ─────────────────────────────────────── --}}
         <x-ui.card class="p-5">
-            <h2 class="font-display text-lg font-medium">{{ __('Also available on') }}</h2>
+            <h2 class="font-display text-lg font-medium">{{ __('Also available in') }}</h2>
             <p class="mt-1 text-[13px] text-ink-soft">
-                {{ __('Link this product to your own listing on :platforms. Shoppers get a button that opens it in a new tab.', ['platforms' => app(\App\Services\MarketplaceLinkResolver::class)->supportedLabels()]) }}
+                {{ __('Link this product to your listings elsewhere. Shoppers get one button that opens your chosen link in a new tab.') }}
+                {{ __('Links to :platforms are checked automatically; any other website is still allowed.', ['platforms' => app(\App\Services\MarketplaceLinkResolver::class)->supportedLabels()]) }}
             </p>
 
             <div class="mt-4 space-y-3">
                 @foreach ($marketplaceLinks as $linkIndex => $link)
-                    <div class="flex items-start gap-2" wire:key="marketplace-link-{{ $linkIndex }}">
+                    {{-- Resolved on render rather than held in a property: the badge
+                         must follow what the seller has actually typed, and the answer
+                         is a scan of a four-row config array. Inline @php(), the form
+                         this file already uses — a @php BLOCK here makes Blade
+                         mis-compile the inline one in the metafields card above it. --}}
+                    @php($resolvedPlatform = app(\App\Services\MarketplaceLinkResolver::class)->resolve($link['url'] ?? null))
+                    <div class="rounded-[var(--radius-control)] border border-line p-3" wire:key="marketplace-link-{{ $linkIndex }}">
+                        <div class="flex items-start gap-2">
+                            <x-ui.input
+                                class="flex-1"
+                                :label="__('Name shoppers see')"
+                                maxlength="80"
+                                :placeholder="__('e.g. Our Shopee store')"
+                                wire:model.blur="marketplaceLinks.{{ $linkIndex }}.title"
+                                :error="$errors->first('marketplaceLinks.'.$linkIndex.'.title')"
+                            />
+                            {{-- mt-7 clears the input's label rather than items-end on the
+                                 row: an error line under an input is a normal case here, and
+                                 items-end would make the button jump every time one appears. --}}
+                            <button type="button"
+                                    wire:click="removeMarketplaceLink({{ $linkIndex }})"
+                                    class="mt-7 inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-medium text-ink-soft hover:bg-paper">
+                                {{ __('Remove') }}
+                            </button>
+                        </div>
+
                         <x-ui.input
-                            class="flex-1"
+                            class="mt-3"
                             type="url"
-                            :label="__('Listing URL')"
-                            placeholder="https://shopee.com.my/..."
-                            wire:model="marketplaceLinks.{{ $linkIndex }}.url"
+                            :label="__('Web address')"
+                            placeholder="https://"
+                            wire:model.blur="marketplaceLinks.{{ $linkIndex }}.url"
                             :error="$errors->first('marketplaceLinks.'.$linkIndex.'.url')"
                         />
-                        {{-- mt-7 clears the input's label rather than items-end on the
-                             row: rejecting unknown hosts means an error line under the
-                             input is the NORMAL case here, and items-end would make the
-                             button jump down every time one appears. --}}
-                        <button type="button"
-                                wire:click="removeMarketplaceLink({{ $linkIndex }})"
-                                class="mt-7 inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-medium text-ink-soft hover:bg-paper">
-                            {{ __('Remove') }}
-                        </button>
+
+                        {{-- Seller-facing only. Shoppers are shown every link the
+                             same way (Haze, 2026-08-20) — this badge tells the
+                             seller which of their links we recognise, it does not
+                             gate anything. --}}
+                        @if ($resolvedPlatform)
+                            <p class="mt-2 text-[13px] font-medium text-emerald">
+                                {{ __('Checked — this is a :platform link.', ['platform' => $resolvedPlatform['label']]) }}
+                            </p>
+                        @elseif (trim((string) ($link['url'] ?? '')) !== '')
+                            <p class="mt-2 text-[13px] text-ink-faint">
+                                {{ __('Not a marketplace we check. The link still works.') }}
+                            </p>
+                        @endif
                     </div>
                 @endforeach
             </div>
@@ -608,7 +639,7 @@
                 <button type="button"
                         wire:click="addMarketplaceLink"
                         class="mt-3 inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-4 text-[13px] font-medium text-ink hover:bg-paper">
-                    {{ __('Add a marketplace link') }}
+                    {{ __('Add a link') }}
                 </button>
             @endif
 
