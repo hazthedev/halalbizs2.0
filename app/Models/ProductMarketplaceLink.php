@@ -7,17 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * One outbound "also available on Shopee" link for a product.
+ * One outbound "also available in …" link for a product.
  *
  * `platform` is a config('marketplaces.platforms') key resolved from the URL's
- * host by MarketplaceLinkResolver — never seller input. A row can therefore only
- * exist for an allow-listed host.
+ * host by MarketplaceLinkResolver — never seller input, so a link cannot claim
+ * to be somewhere it is not. It is nullable, and its presence IS the verified
+ * flag: a recognised host is a link we vouch for, anything else is one we merely
+ * carry. There is no separate column, so the two cannot drift apart.
+ *
+ * `title` is what the shopper reads and is seller-supplied — with arbitrary
+ * hosts allowed there is no brand name to fall back on.
  */
 class ProductMarketplaceLink extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['product_id', 'platform', 'url', 'position'];
+    protected $fillable = ['product_id', 'platform', 'title', 'url', 'position'];
 
     protected function casts(): array
     {
@@ -32,12 +37,12 @@ class ProductMarketplaceLink extends Model
     }
 
     /**
-     * Display name for the platform. Falls back to the stored key so a link
-     * whose platform was later removed from config still renders as something
-     * rather than an empty button.
+     * Whether this link points at a marketplace we allow-list. Derived, never
+     * stored — see the class docblock.
      */
-    public function label(): string
+    public function isVerified(): bool
     {
-        return (string) config("marketplaces.platforms.{$this->platform}.label", $this->platform);
+        return $this->platform !== null
+            && config("marketplaces.platforms.{$this->platform}") !== null;
     }
 }
