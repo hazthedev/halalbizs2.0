@@ -3,7 +3,7 @@
     {{-- Header --}}
     <x-ui.section-heading :title="__('Commission')" :subtitle="__('Hierarchy: store override → category chain upward → global default. Sub-orders snapshot their rate at checkout — changes here only affect future orders.')" as="h1" />
 
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div class="grid items-start gap-4 lg:grid-cols-2">
 
         {{-- Global rate --}}
         <x-ui.card class="p-4">
