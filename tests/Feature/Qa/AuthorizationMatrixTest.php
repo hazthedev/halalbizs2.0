@@ -568,7 +568,7 @@ it('keeps platform takings out of a zero-permission admin dashboard', function (
     expect($noneHtml)->not->toContain('987654');
 });
 
-it('parks an admin without 2FA outside the panel', function () {
+it('lets an admin without 2FA into the panel (2FA optional since 2026-09-10)', function () {
     $w = qaWorld();
 
     $noTwoFactor = User::factory()->create(['two_factor_method' => null]);
@@ -576,8 +576,7 @@ it('parks an admin without 2FA outside the panel', function () {
     $noTwoFactor->syncPermissions(QA_PERMISSIONS);
 
     foreach (['admin.dashboard', 'admin.system.staff', 'admin.finance.payouts'] as $name) {
-        test()->actingAs($noTwoFactor->fresh())->get(route($name))
-            ->assertRedirect(route('account.profile').'#security');
+        test()->actingAs($noTwoFactor->fresh())->get(route($name))->assertOk();
     }
 });
 

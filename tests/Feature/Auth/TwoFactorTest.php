@@ -277,16 +277,14 @@ test('disabling 2FA requires the current password', function () {
         ->and($user->fresh()->two_factor_recovery_codes)->toBeNull();
 });
 
-test('admins without 2FA are redirected to the profile security section', function () {
-    $admin = User::factory()->create();
+test('admins without 2FA reach the admin panel (2FA optional since 2026-09-10)', function () {
+    $admin = User::factory()->create(['two_factor_method' => null]);
     makeAdmin($admin);
 
-    $response = $this->actingAs($admin)->get('/admin');
+    $this->actingAs($admin)->get('/admin')->assertOk();
 
-    $response->assertRedirect(route('account.profile').'#security');
-
-    expect(session('toast')['message'])
-        ->toBe(__('Set up two-factor authentication to access the admin panel.'));
+    // The old "set up 2FA" park toast must be gone with the redirect.
+    expect(session('toast'))->toBeNull();
 });
 
 test('admins with 2FA reach the admin panel', function () {

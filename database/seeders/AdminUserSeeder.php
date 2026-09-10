@@ -22,12 +22,6 @@ class AdminUserSeeder extends Seeder
             ],
         );
 
-        // Admin accounts must carry 2FA (EnsureAdmin); email-code method by
-        // default — codes land in the mail log locally.
-        if ($admin->two_factor_method === null) {
-            $admin->forceFill(['two_factor_method' => 'email'])->save();
-        }
-
         $admin->syncRoles(['admin']);
 
         // The primary admin is the superadmin, so a fresh install always has
