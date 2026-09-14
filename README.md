@@ -1,58 +1,68 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# HalalBizs 2.0
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Shopee-style multi-vendor marketplace for halal groceries in Malaysia —
+storefront, seller centre, and admin panel in one Laravel app
+(`CLAUDE.md:3`). Buyers, sellers, and admins share one codebase and one
+`SetLocale` middleware in English, Bahasa Melayu, and Vietnamese
+(`config/locales.php:15-17`).
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP `^8.3`, Laravel `^13.8`, Livewire `^4.3` (`composer.json`)
+- MariaDB locally, SQLite in-memory for tests (`phpunit.xml`)
+- Tailwind CSS v4 + Vite for the front end (`package.json`)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Local setup
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Site is served by [Herd](https://herd.laravel.com) at `halalbizs2.0.test`.
+2. Copy `.env.example` to `.env` and set your own `APP_KEY` (`php artisan key:generate`).
+3. `composer install`
+4. `npm ci && npm run build`
+5. `php artisan migrate` (seeders below are optional locally; `migrate:fresh --seed`
+   gives a full demo dataset per `CLAUDE.md`)
 
-## Learning Laravel
+## Tests
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+php artisan test        # Pest, runs against SQLite in-memory (phpunit.xml)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+One test intentionally fails under SQLite by design — it exists only to flag
+that engine (`CLAUDE.md`: "one engine-guard test FAILS by design"). The real
+gate is MariaDB: `php artisan test -c phpunit.mariadb.xml` (local-only config,
+gitignored).
 
-## Contributing
+## Deploy
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Production is cPanel, deployed by `deploy.sh` (interactive or via the
+`public/deploy.php` webhook). What it actually does, in order:
 
-## Code of Conduct
+1. Aborts if `APP_ENV=production` and `APP_DEBUG=true` (would leak errors).
+2. `git fetch origin && git reset --hard origin/main` — a hard reset, always.
+3. Clears caches, then `composer install --no-dev --optimize-autoloader` —
+   **only if a `composer` binary is on PATH**; otherwise it skips this step
+   and assumes `vendor/` is already current (no new deps that deploy).
+4. `php artisan migrate --force`.
+5. Seeds idempotent reference data every deploy: `RoleSeeder`, `CurrencySeeder`,
+   `PageSeeder` (create-only, never overwrites an edited page).
+6. `DemoReviewsSeeder` runs only when `APP_ENV != production`.
+7. `SEED_DEMO_CATALOGUE=true` in the server `.env` opts in to a full demo
+   catalogue (19 sellers, 166 products, certificates, artwork) — off by
+   default, independent of `APP_ENV`, safe to re-run.
+8. `VietnameseContentSeeder` backfills missing `vi` translations without
+   touching admin-authored content.
+9. Rebuilds config/route/event/view caches.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Frontend assets (`public/build/`) are **committed to the repo** and built
+locally with `npm run build` — the deploy script does not build them. This is
+a deliberate choice, not a platform limitation: the host does carry Node
+(`/opt/alt/alt-nodejs*`), it's just not wired into the deploy PATH yet
+(`deploy.sh`, top-of-file comments).
 
-## Security Vulnerabilities
+## Docs
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- `CLAUDE.md` — stack, architecture conventions, and the hard rules (money in
+  sen, atomic stock/voucher locks, status transitions, snapshots, etc).
+- `docs/` — audits, feature gap analysis, and roadmap.
+- `marketplace-docs/docs/` — the full functional specs; start at
+  `00-overview.md`.
