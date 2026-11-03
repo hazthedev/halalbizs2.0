@@ -52,11 +52,7 @@
                 <div>
                     <div class="mb-1.5 flex items-center justify-between gap-2">
                         <label for="description.en" class="block text-[13px] font-medium text-ink">{{ __('Description (English)') }}</label>
-                        <button type="button" wire:click="generateCopy" wire:loading.attr="disabled" wire:target="generateCopy"
-                                class="inline-flex items-center gap-1 rounded-[var(--radius-control)] border border-brass/40 px-2.5 py-1 text-[12px] font-medium text-brass hover:bg-brass-tint/40">
-                            <span wire:loading.remove wire:target="generateCopy">{{ __('Generate with AI') }}</span>
-                            <span wire:loading wire:target="generateCopy">{{ __('Generating…') }}</span>
-                        </button>
+                        {{-- "Generate with AI" button hidden (owner, 2026-11-03). generateCopy() stays on the component. --}}
                     </div>
                     <textarea id="description.en" wire:model="description.en" rows="6"
                               class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
