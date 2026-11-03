@@ -46,6 +46,13 @@ test('the product form fills a draft description with AI', function () {
         ->assertSet('description.vi', fn ($value) => trim((string) $value) !== '');
 });
 
+test('the product form does not show the AI description button (hidden 2026-11-03)', function () {
+    Livewire::actingAs(importSeller())
+        ->test(Form::class)
+        ->assertDontSee('Generate with AI')
+        ->assertDontSeeHtml('wire:click="generateCopy"');
+});
+
 test('bulk import creates draft products and reports row errors', function () {
     $seller = importSeller();
     $store = $seller->store;
