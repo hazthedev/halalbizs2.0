@@ -415,7 +415,11 @@ test('status notifications reach buyer and seller on confirmation', function () 
 test('invalid status transitions are rejected', function () {
     [$buyer, $address] = checkoutBuyer();
     $product = Product::factory()->create(['cod_enabled' => true]);
-    $product->variants->first()->update(['stock' => 5]); // factory stock can roll 0
+    $product->variants->first()->update([
+        'price_sen' => 10000,
+        'sale_price_sen' => null,
+        'stock' => 5,
+    ]);
     cartWith($buyer, $product);
 
     $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
