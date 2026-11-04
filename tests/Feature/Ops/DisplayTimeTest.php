@@ -87,6 +87,21 @@ test('the audit log date filter is a Malaysia day', function () {
     expect(Activity::count())->toBeGreaterThanOrEqual(2);
 });
 
+test('the audit log ignores an impossible calendar day filter', function () {
+    Carbon::setTestNow('2026-11-04 12:00:00');
+    test()->seed(RoleSeeder::class);
+    $admin = User::factory()->create(['two_factor_method' => 'email']);
+    makeAdmin($admin);
+    activity()->log('calendar-day-filter-control')
+        ->forceFill(['created_at' => '2026-11-04 10:00:00'])
+        ->save();
+
+    Livewire::actingAs($admin)
+        ->test(AuditLog::class)
+        ->set('dateFrom', '2026-11-31')
+        ->assertSee('calendar-day-filter-control');
+});
+
 // ── 3 sample screens + 1 email: stored 2026-11-03 17:30 UTC reads 2026-11-04 01:30 ──
 
 test('sample screen 1: the audit log shows a stored 17:30 UTC as 01:30 next day', function () {
