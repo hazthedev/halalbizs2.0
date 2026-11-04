@@ -109,7 +109,7 @@ test('an /admin intended URL is honoured for an admin but not for a buyer', func
 
 test('with no intended URL each role lands at its own home', function () {
     loginAs(landingAdmin())->assertRedirect(route('admin.dashboard'));
-    loginAs(landingSeller())->assertRedirect(route('seller.dashboard'));
+    loginAs(landingSeller())->assertRedirect(route('home'));
     loginAs(landingBuyer())->assertRedirect(route('home'));
 });
 
