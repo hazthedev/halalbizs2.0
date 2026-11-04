@@ -13,6 +13,7 @@
 use App\Livewire\Storefront\Auth\Login;
 use App\Models\Store;
 use App\Models\User;
+use App\Support\PostLoginRedirect;
 use Database\Seeders\RoleSeeder;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
@@ -95,6 +96,27 @@ test('an ordinary storefront intended URL is honoured for everyone', function ()
     session()->put('url.intended', url('/account/orders'));
 
     loginAs(landingBuyer())->assertRedirect(url('/account/orders'));
+});
+
+test('guest auth pages are discarded as intended URLs but cart is honoured', function () {
+    $buyer = landingBuyer();
+
+    foreach ([
+        '/login',
+        '/register',
+        '/forgot-password',
+        '/reset-password/stale-token',
+        '/password/reset/stale-token',
+        '/two-factor-challenge',
+    ] as $path) {
+        session()->put('url.intended', url($path));
+
+        expect(PostLoginRedirect::url($buyer))->toBe(route('home'), "Guest destination {$path} must fall back home.");
+    }
+
+    session()->put('url.intended', url('/cart'));
+
+    expect(PostLoginRedirect::url($buyer))->toBe(url('/cart'));
 });
 
 test('an /admin intended URL is honoured for an admin but not for a buyer', function () {

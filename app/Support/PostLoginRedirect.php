@@ -72,6 +72,11 @@ class PostLoginRedirect
     {
         $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
 
+        if (in_array($path, ['login', 'register', 'forgot-password'], true)
+            || Str::startsWith($path, ['password/', 'reset-password/', 'two-factor'])) {
+            return false;
+        }
+
         if ($path === 'seller/apply' || $path === 'seller/status') {
             return true;
         }
