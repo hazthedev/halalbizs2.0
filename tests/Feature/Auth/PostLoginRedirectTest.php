@@ -116,3 +116,35 @@ test('with no intended URL each role lands at its own home', function () {
 test('a pending seller lands on the storefront, not a seller centre they cannot enter', function () {
     loginAs(landingSeller(approved: false))->assertRedirect(route('home'));
 });
+
+// ── Guest-only pages are never a landing (HBIZ-B2) ─────────────────────────
+
+test('a stale guest-page intended URL lands on home, not back on the auth page', function (string $path) {
+    session()->put('url.intended', url($path));
+    loginAs(landingBuyer())->assertRedirect(route('home'));
+
+    // The seller/admin prefix rules would otherwise accept their own entrances.
+    session()->put('url.intended', url($path));
+    loginAs(landingSeller())->assertRedirect(route('home'));
+})->with([
+    '/login', '/register', '/forgot-password', '/reset-password/abc123',
+    '/two-factor-challenge', '/seller/login', '/seller/register', '/login?foo=1',
+]);
+
+test('a stale /admin/login intended URL sends an admin to the admin home', function () {
+    session()->put('url.intended', url('/admin/login'));
+
+    loginAs(landingAdmin())->assertRedirect(route('admin.dashboard'));
+});
+
+test('a path that merely starts like an auth page is still honoured', function () {
+    session()->put('url.intended', url('/login-help'));
+
+    loginAs(landingBuyer())->assertRedirect(url('/login-help'));
+});
+
+test('a cart intended URL is honoured', function () {
+    session()->put('url.intended', url('/cart'));
+
+    loginAs(landingBuyer())->assertRedirect(url('/cart'));
+});

@@ -72,6 +72,13 @@ class PostLoginRedirect
     {
         $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
 
+        // Auth entrances (the router's `guest` group + 2FA challenge) are never a
+        // landing: a stale one would bounce a fresh login straight back to it.
+        if (in_array($path, ['login', 'register', 'forgot-password', 'two-factor-challenge', 'seller/login', 'seller/register', 'admin/login'], true)
+            || Str::startsWith($path, 'reset-password/')) {
+            return false;
+        }
+
         if ($path === 'seller/apply' || $path === 'seller/status') {
             return true;
         }
