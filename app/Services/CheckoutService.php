@@ -99,8 +99,8 @@ class CheckoutService
         return DB::transaction(function () use ($buyer, $address, $method, $platformCode, $shopCode, $shippingCode, $sellerNotes, $coinsToRedeem, $explicitLines) {
             // 0. AL-M4 idempotency guard (cart-based checkout only — an
             //    explicit-lines/subscription order never touches a cart).
-            //    Canonical lock order, extended: cart → variants → flash →
-            //    group-buy → vouchers → wallet. The cart lock is taken FIRST,
+            //    Canonical lock order, extended: cart → buyer (COD only) →
+            //    variants → flash → group-buy → vouchers → wallet. The cart lock is taken FIRST,
             //    before the lines are even read, and it is a resource type no
             //    other step in this transaction ever locks — a strict prefix
             //    of the existing chain, so it can never introduce a deadlock
@@ -131,6 +131,25 @@ class CheckoutService
                     if ($duplicate !== null) {
                         return $duplicate->fresh(['subOrders.items', 'payment']);
                     }
+                }
+            }
+
+            if ($method === PaymentMethod::Cod) {
+                User::query()->whereKey($buyer->getKey())->lockForUpdate()->firstOrFail();
+
+                $openCodOrders = Order::query()
+                    ->where('user_id', $buyer->id)
+                    ->where('payment_method', PaymentMethod::Cod->value)
+                    ->whereHas('subOrders', fn ($query) => $query->whereIn('status', [
+                        SubOrderStatus::PendingPayment->value,
+                        SubOrderStatus::Confirmed->value,
+                        SubOrderStatus::Processing->value,
+                        SubOrderStatus::Shipped->value,
+                    ]))
+                    ->count();
+
+                if ($openCodOrders >= 3) {
+                    throw new CheckoutException(__('You have open cash-on-delivery orders; receive them before placing another.'));
                 }
             }
 

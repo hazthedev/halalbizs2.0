@@ -22,6 +22,7 @@ use App\Support\Money;
 use App\Support\VoucherDiscount;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -194,6 +195,18 @@ class Checkout extends Component
 
             return;
         }
+
+        $throttleKey = 'checkout:'.auth()->id();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $this->dispatch('toast', message: __('Too many checkout attempts. Try again in :minutes minute(s).', [
+                'minutes' => (int) ceil(RateLimiter::availableIn($throttleKey) / 60),
+            ]), type: 'error');
+
+            return;
+        }
+
+        RateLimiter::hit($throttleKey, 3600);
 
         try {
             $order = $checkout->place(

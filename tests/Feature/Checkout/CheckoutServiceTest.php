@@ -72,6 +72,35 @@ test('COD checkout splits orders per store with snapshots and stock decrement', 
         ->and($order->payment->amount_sen)->toBe($order->grand_total_sen);
 });
 
+test('COD checkout refuses a fourth open order and ignores delivered or cancelled orders', function () {
+    [$buyer, $address] = checkoutBuyer();
+    $product = Product::factory()->create(['cod_enabled' => true]);
+    $product->variants->first()->update(['stock' => 5]);
+
+    foreach ([SubOrderStatus::Confirmed, SubOrderStatus::Shipped] as $status) {
+        $order = Order::factory()->create(['user_id' => $buyer->id, 'payment_method' => PaymentMethod::Cod]);
+        SubOrder::factory()->status($status)->create(['order_id' => $order->id]);
+    }
+
+    foreach ([SubOrderStatus::Delivered, SubOrderStatus::Cancelled] as $status) {
+        $order = Order::factory()->create(['user_id' => $buyer->id, 'payment_method' => PaymentMethod::Cod]);
+        SubOrder::factory()->status($status)->create(['order_id' => $order->id]);
+    }
+
+    cartWith($buyer, $product);
+    $firstOrder = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    expect($firstOrder)->toBeInstanceOf(Order::class);
+
+    expect(app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod)->id)
+        ->toBe($firstOrder->id);
+
+    cartWith($buyer, $product);
+
+    expect(fn () => app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod))
+        ->toThrow(CheckoutException::class, 'You have open cash-on-delivery orders; receive them before placing another.');
+});
+
 test('SST is computed, snapshotted and added to totals for a registered seller', function () {
     [$buyer, $address] = checkoutBuyer(); // Selangor, Malaysia
 
