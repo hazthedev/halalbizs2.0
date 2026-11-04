@@ -5,6 +5,7 @@ use App\Enums\GroupBuyStatus;
 use App\Enums\GroupBuyTeamStatus;
 use App\Enums\PaymentMethod;
 use App\Exceptions\CheckoutException;
+use App\Livewire\Storefront\Checkout;
 use App\Models\Address;
 use App\Models\GroupBuy;
 use App\Models\GroupBuyMember;
@@ -14,6 +15,8 @@ use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\GroupBuyService;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -120,6 +123,37 @@ test('an unlocked membership prices the line at the group price and burns the me
     expect($member->status)->toBe(GroupBuyMemberStatus::Purchased)
         ->and($member->sub_order_id)->toBe($order->subOrders->first()->id)
         ->and($deal->variant->fresh()->stock)->toBe(19);
+});
+
+test('unlocked group-buy order passes after five regular attempts', function () {
+    [$buyer] = gbBuyer();
+    $deal = gbDeal(6000, 2);
+
+    $svc = app(GroupBuyService::class);
+    $team = $svc->startTeam($buyer, $deal);
+    $svc->joinTeam(User::factory()->create(), $team);
+    app(CartService::class)->addItem($buyer, $deal->variant, 1);
+
+    $key = 'checkout:'.$buyer->id;
+    RateLimiter::clear($key);
+    RateLimiter::hit($key, 3600);
+    RateLimiter::hit($key, 3600);
+    RateLimiter::hit($key, 3600);
+    RateLimiter::hit($key, 3600);
+    RateLimiter::hit($key, 3600);
+
+    Livewire::actingAs($buyer)
+        ->test(Checkout::class)
+        ->call('placeOrder')
+        ->assertDispatched('cart-updated', count: 0);
+
+    $member = GroupBuyMember::where('group_buy_team_id', $team->id)
+        ->where('user_id', $buyer->id)
+        ->firstOrFail();
+
+    expect($member->status)->toBe(GroupBuyMemberStatus::Purchased)
+        ->and($member->sub_order_id)->not->toBeNull()
+        ->and(RateLimiter::attempts($key))->toBe(5);
 });
 
 test('a forming (not-yet-unlocked) team does not change the checkout price', function () {

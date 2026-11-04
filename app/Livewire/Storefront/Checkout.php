@@ -12,6 +12,7 @@ use App\Models\Voucher;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\CoinService;
+use App\Services\GroupBuyService;
 use App\Services\Ipay88Service;
 use App\Services\ShippingCalculator;
 use App\Services\TaxService;
@@ -181,7 +182,8 @@ class Checkout extends Component
             'sellerNotes.*' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $validStoreIds = $this->selectedGroups()->keys()->map(fn ($id) => (string) $id)->all();
+        $selectedGroups = $this->selectedGroups();
+        $validStoreIds = $selectedGroups->keys()->map(fn ($id) => (string) $id)->all();
 
         $sellerNotes = collect($this->sellerNotes)
             ->only($validStoreIds)
@@ -196,17 +198,24 @@ class Checkout extends Component
             return;
         }
 
+        $groupBuyRedemption = app(GroupBuyService::class)->hasRedeemableFor(
+            auth()->user(),
+            $selectedGroups->flatten(1)->map(fn ($line) => (int) $line->variant->id)->all(),
+        );
+
         $throttleKey = 'checkout:'.auth()->id();
 
-        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
-            $this->dispatch('toast', message: __('Too many checkout attempts. Try again in :minutes minute(s).', [
-                'minutes' => (int) ceil(RateLimiter::availableIn($throttleKey) / 60),
-            ]), type: 'error');
+        if (! $groupBuyRedemption) {
+            if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+                $this->dispatch('toast', message: __('Too many checkout attempts. Try again in :minutes minute(s).', [
+                    'minutes' => (int) ceil(RateLimiter::availableIn($throttleKey) / 60),
+                ]), type: 'error');
 
-            return;
+                return;
+            }
+
+            RateLimiter::hit($throttleKey, 3600);
         }
-
-        RateLimiter::hit($throttleKey, 3600);
 
         try {
             $order = $checkout->place(
