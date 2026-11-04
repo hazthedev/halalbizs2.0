@@ -154,3 +154,39 @@ test('an external intended URL is rejected', function () {
 
     loginAs(landingBuyer())->assertRedirect(route('home'));
 });
+
+test('unsafe encoded or schemed intended URLs are rejected', function (string $url) {
+    session()->put('url.intended', $url);
+
+    loginAs(landingBuyer())->assertRedirect(route('home'));
+})->with([
+    'protocol-relative' => '//evil.example/cart',
+    'triple-slash network path' => '///evil.example/cart',
+    'backslash network path' => '/\\evil.example/cart',
+    'javascript scheme' => 'javascript:alert(1)',
+    'encoded protocol-relative' => '%2F%2Fevil.example/cart',
+    'encoded path separator' => '/%2F%2Fevil.example/cart',
+    'encoded backslash' => '/%5Cevil.example/cart',
+    'double-encoded protocol-relative' => '%252F%252Fevil.example/cart',
+    'encoded scheme' => '%6Aavascript%3Aalert(1)',
+]);
+
+test('an intended URL with the app host but a different scheme is rejected', function () {
+    config(['app.url' => 'https://halalbiz.example']);
+    session()->put('url.intended', 'http://halalbiz.example/cart');
+
+    loginAs(landingBuyer())->assertRedirect(route('home'));
+});
+
+test('a relative intended path is honoured', function () {
+    session()->put('url.intended', '/cart');
+
+    loginAs(landingBuyer())->assertRedirect('/cart');
+});
+
+test('a same-origin absolute intended URL is honoured', function () {
+    config(['app.url' => 'https://halalbiz.example']);
+    session()->put('url.intended', 'https://halalbiz.example/cart');
+
+    loginAs(landingBuyer())->assertRedirect('https://halalbiz.example/cart');
+});
