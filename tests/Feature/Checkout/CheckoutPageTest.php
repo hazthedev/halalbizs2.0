@@ -14,6 +14,7 @@ use App\Services\CheckoutService;
 use App\Settings\CodSettings;
 use App\Settings\Ipay88Settings;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
@@ -224,6 +225,28 @@ test('placing a COD order creates it, empties the cart, and redirects to success
         ->and($buyer->cart->items()->count())->toBe(0)
         // AL-L2: the note actually reaches the sub-order now.
         ->and($order->subOrders->first()->buyer_note)->toBe('Leave at the guardhouse');
+});
+
+test('checkout throttles a buyer after five placement attempts per hour', function () {
+    [$buyer] = checkoutPageBuyer();
+    $product = checkoutPageProduct(10000);
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+
+    $key = 'checkout:'.$buyer->id;
+    RateLimiter::clear($key);
+    RateLimiter::hit($key, 3600);
+    RateLimiter::hit($key, 3600);
+    RateLimiter::hit($key, 3600);
+    RateLimiter::hit($key, 3600);
+    RateLimiter::hit($key, 3600);
+
+    Livewire::actingAs($buyer)
+        ->test(Checkout::class)
+        ->call('placeOrder')
+        ->assertDispatched('toast', type: 'error');
+
+    expect(Order::count())->toBe(0)
+        ->and(RateLimiter::attempts($key))->toBe(5);
 });
 
 test('AL-L2: an over-length seller note is rejected server-side and no order is placed', function () {

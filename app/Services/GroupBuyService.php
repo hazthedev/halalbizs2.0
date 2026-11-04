@@ -13,6 +13,7 @@ use App\Models\SubOrder;
 use App\Models\User;
 use App\Notifications\GroupBuyUnlockedNotification;
 use App\Settings\GeneralSettings;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -100,7 +101,32 @@ class GroupBuyService
             return collect();
         }
 
-        $members = GroupBuyMember::query()
+        $members = $this->redeemableQuery($user, $variantIds)
+            ->orderByDesc('group_buys.id')
+            ->lockForUpdate()
+            ->get();
+
+        $members->load('team.groupBuy');
+
+        // One membership per variant (the most recent deal wins).
+        return $members->unique(fn (GroupBuyMember $m) => $m->team->groupBuy->product_variant_id)
+            ->keyBy(fn (GroupBuyMember $m) => $m->team->groupBuy->product_variant_id);
+    }
+
+    /** Whether any selected cart variant has a currently redeemable membership. */
+    public function hasRedeemableFor(User $user, array $variantIds): bool
+    {
+        return $this->enabled()
+            && $variantIds !== []
+            && $this->redeemableQuery($user, $variantIds)->exists();
+    }
+
+    /** @param  array<int, int>  $variantIds
+     * @return Builder<GroupBuyMember>
+     */
+    private function redeemableQuery(User $user, array $variantIds): Builder
+    {
+        return GroupBuyMember::query()
             ->select('group_buy_members.*')
             ->join('group_buy_teams', 'group_buy_teams.id', '=', 'group_buy_members.group_buy_team_id')
             ->join('group_buys', 'group_buys.id', '=', 'group_buy_teams.group_buy_id')
@@ -116,16 +142,7 @@ class GroupBuyService
             // deal closes.
             ->where('group_buys.starts_at', '<=', now())
             ->where('group_buys.ends_at', '>=', now())
-            ->whereIn('group_buys.product_variant_id', $variantIds)
-            ->orderByDesc('group_buys.id')
-            ->lockForUpdate()
-            ->get();
-
-        $members->load('team.groupBuy');
-
-        // One membership per variant (the most recent deal wins).
-        return $members->unique(fn (GroupBuyMember $m) => $m->team->groupBuy->product_variant_id)
-            ->keyBy(fn (GroupBuyMember $m) => $m->team->groupBuy->product_variant_id);
+            ->whereIn('group_buys.product_variant_id', $variantIds);
     }
 
     /** Mark a (locked) membership purchased, linking the sub-order. */
