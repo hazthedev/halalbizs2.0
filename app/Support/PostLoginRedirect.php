@@ -94,10 +94,6 @@ class PostLoginRedirect
             return route('admin.dashboard');
         }
 
-        if ($user->hasRole('seller') && $user->store !== null && $user->store->isApproved()) {
-            return route('seller.dashboard');
-        }
-
         return route('home');
     }
 }
