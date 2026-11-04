@@ -148,3 +148,9 @@ test('a cart intended URL is honoured', function () {
 
     loginAs(landingBuyer())->assertRedirect(url('/cart'));
 });
+
+test('an external intended URL is rejected', function () {
+    session()->put('url.intended', 'https://evil.example/cart');
+
+    loginAs(landingBuyer())->assertRedirect(route('home'));
+});

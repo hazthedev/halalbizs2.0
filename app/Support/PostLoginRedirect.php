@@ -70,6 +70,13 @@ class PostLoginRedirect
      */
     private static function mayVisit(User $user, string $url): bool
     {
+        $host = parse_url($url, PHP_URL_HOST);
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+
+        if ($host !== null && ($appHost === null || strcasecmp($host, $appHost) !== 0)) {
+            return false;
+        }
+
         $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
 
         // Auth entrances (the router's `guest` group + 2FA challenge) are never a
