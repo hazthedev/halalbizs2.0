@@ -70,7 +70,18 @@ class PostLoginRedirect
      */
     private static function mayVisit(User $user, string $url): bool
     {
+        if (! self::isLocalUrl($url)) {
+            return false;
+        }
+
         $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
+
+        // Auth entrances (the router's `guest` group + 2FA challenge) are never a
+        // landing: a stale one would bounce a fresh login straight back to it.
+        if (in_array($path, ['login', 'register', 'forgot-password', 'two-factor-challenge', 'seller/login', 'seller/register', 'admin/login'], true)
+            || Str::startsWith($path, 'reset-password/')) {
+            return false;
+        }
 
         if ($path === 'seller/apply' || $path === 'seller/status') {
             return true;
@@ -85,6 +96,44 @@ class PostLoginRedirect
         }
 
         return true;
+    }
+
+    private static function isLocalUrl(string $url): bool
+    {
+        for ($depth = 0; $depth < 5; $depth++) {
+            if (str_contains($url, '\\') || preg_match('/[\x00-\x20\x7f]/', $url)) {
+                return false;
+            }
+
+            $parts = parse_url($url);
+            if ($parts === false) {
+                return false;
+            }
+
+            if (isset($parts['scheme']) || isset($parts['host'])) {
+                $app = parse_url(config('app.url'));
+
+                return isset($parts['scheme'], $parts['host'], $app['scheme'], $app['host'])
+                    && strcasecmp($parts['scheme'], $app['scheme']) === 0
+                    && strcasecmp($parts['host'], $app['host']) === 0
+                    && ($parts['port'] ?? null) === ($app['port'] ?? null)
+                    && ! isset($parts['user'])
+                    && ! isset($parts['pass']);
+            }
+
+            if (str_starts_with($url, '//')) {
+                return false;
+            }
+
+            $decoded = rawurldecode($url);
+            if ($decoded === $url) {
+                return true;
+            }
+
+            $url = $decoded;
+        }
+
+        return false;
     }
 
     /** The natural landing for this user's most privileged hat. */
