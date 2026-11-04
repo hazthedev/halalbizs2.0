@@ -18,6 +18,7 @@ use App\Services\MarketplaceLinkResolver;
 use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
 use App\Support\ContentLocales;
+use App\Support\DisplayTime;
 use App\Support\HtmlSanitizer;
 use App\Support\RinggitInput;
 use Illuminate\Support\Carbon;
@@ -1135,7 +1136,7 @@ class Form extends Component
         }
 
         try {
-            return Carbon::parse($value);
+            return DisplayTime::parse($value);
         } catch (\Throwable) {
             return null;
         }
@@ -1214,8 +1215,8 @@ class Form extends Component
         $scheduled = $product->variants->first(fn (ProductVariant $v) => $v->sale_starts_at !== null || $v->sale_ends_at !== null);
 
         if ($scheduled !== null) {
-            $this->saleStartsAt = $scheduled->sale_starts_at?->format('Y-m-d\TH:i') ?? '';
-            $this->saleEndsAt = $scheduled->sale_ends_at?->format('Y-m-d\TH:i') ?? '';
+            $this->saleStartsAt = $scheduled->sale_starts_at?->display()->format('Y-m-d\TH:i') ?? '';
+            $this->saleEndsAt = $scheduled->sale_ends_at?->display()->format('Y-m-d\TH:i') ?? '';
         }
     }
 

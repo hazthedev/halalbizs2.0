@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Settings\ThemeSettings;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
@@ -60,8 +61,9 @@ test('admin theme save persists all settings', function () {
         ->and($settings->announcement_bg)->toBe('#7C2D12')
         ->and($settings->announcement_text_color)->toBe('#FFF7ED')
         ->and($settings->hero_image_enabled)->toBeTrue()
-        ->and($settings->starts_at)->toContain('2026-06-01')
-        ->and($settings->ends_at)->toContain('2026-06-30');
+        // Typed as Malaysia time, stored as UTC, shown back as typed.
+        ->and(Carbon::parse($settings->starts_at)->format('Y-m-d H:i'))->toBe('2026-05-31 16:00')
+        ->and(Carbon::parse($settings->ends_at)->display()->format('Y-m-d H:i'))->toBe('2026-06-30 23:59');
 });
 
 test('colors must be 6-digit hex values', function () {

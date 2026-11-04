@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CertificateStatus;
+use App\Support\DisplayTime;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -136,7 +137,7 @@ class HalalCertificate extends Model implements HasMedia
      */
     public function isValid(): bool
     {
-        $today = now()->startOfDay();
+        $today = DisplayTime::today();
 
         return $this->valid_from->lte($today) && $this->valid_to->gte($today);
     }
@@ -150,7 +151,7 @@ class HalalCertificate extends Model implements HasMedia
     /** Negative once it has lapsed, which is what the UI needs to say so. */
     public function daysRemaining(): int
     {
-        return (int) now()->startOfDay()->diffInDays($this->valid_to, false);
+        return (int) DisplayTime::today()->diffInDays($this->valid_to, false);
     }
 
     /**

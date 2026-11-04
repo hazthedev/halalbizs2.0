@@ -108,7 +108,7 @@
                                 </span>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">
-                                {{ $boost->starts_at->format('d M Y H:i') }} → {{ $boost->ends_at->format('d M Y H:i') }}
+                                {{ $boost->starts_at->display()->format('d M Y H:i') }} → {{ $boost->ends_at->display()->format('d M Y H:i') }}
                             </td>
                             <td class="px-3 py-2 text-right font-medium tabular-nums whitespace-nowrap">@money($boost->amount_sen)</td>
                             <td class="px-3 py-2"><x-ui.badge :variant="$pill">{{ $boost->status->label() }}</x-ui.badge></td>

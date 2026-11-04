@@ -26,7 +26,7 @@
                         @foreach ([
                             ['value' => number_format($featuredStore->listing_count), 'label' => __('Certified listings')],
                             ['value' => $featuredStore->rating_count > 0 ? number_format((float) $featuredStore->rating_avg, 1) : '—', 'label' => __('Seller rating')],
-                            ['value' => optional($featuredStore->approved_at)->format('Y') ?? '—', 'label' => __('On HalalBizs since')],
+                            ['value' => $featuredStore->approved_at?->display()->format('Y') ?? '—', 'label' => __('On HalalBizs since')],
                         ] as $figure)
                             <div>
                                 <dt class="font-mono text-[length:var(--text-h3)] font-medium leading-none text-ink-head tnum">{{ $figure['value'] }}</dt>

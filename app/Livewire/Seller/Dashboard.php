@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\StoreLedgerEntry;
 use App\Models\SubOrder;
+use App\Support\DisplayTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
@@ -75,7 +76,7 @@ class Dashboard extends Component
         $store = $this->currentStore();
 
         $this->todayOrders = $store->subOrders()
-            ->whereDate('created_at', today())
+            ->whereBetween('created_at', [DisplayTime::dayStart(), DisplayTime::dayEnd()])
             ->count();
 
         $this->toShip = $store->subOrders()
@@ -115,7 +116,7 @@ class Dashboard extends Component
     /** Inclusive start of the active period (midnight, `days - 1` ago). */
     private function periodStart(): Carbon
     {
-        return now()->subDays($this->periodDays() - 1)->startOfDay();
+        return DisplayTime::dayStart(DisplayTime::now()->subDays($this->periodDays() - 1));
     }
 
     /**
@@ -145,7 +146,7 @@ class Dashboard extends Component
             ->whereIn('status', self::REVENUE_STATUSES)
             ->where('created_at', '>=', $this->periodStart())
             ->get(['created_at', 'total_sen'])
-            ->groupBy(fn (SubOrder $subOrder) => $subOrder->created_at->toDateString())
+            ->groupBy(fn (SubOrder $subOrder) => $subOrder->created_at->display()->toDateString())
             ->map(fn (Collection $rows) => (int) $rows->sum('total_sen'));
 
         $data = $days->map(fn (string $day) => (int) ($byDay[$day] ?? 0))->values()->all();
@@ -282,14 +283,14 @@ class Dashboard extends Component
     private function dayKeys(): Collection
     {
         return collect(range($this->periodDays() - 1, 0))
-            ->map(fn (int $back) => now()->subDays($back)->toDateString());
+            ->map(fn (int $back) => DisplayTime::now()->subDays($back)->toDateString());
     }
 
     /** Human day labels (e.g. "5 Jun") matching dayKeys order. */
     private function dayLabels(): Collection
     {
         return collect(range($this->periodDays() - 1, 0))
-            ->map(fn (int $back) => now()->subDays($back)->format('j M'));
+            ->map(fn (int $back) => DisplayTime::now()->subDays($back)->format('j M'));
     }
 
     private function statusColor(SubOrderStatus $status): string

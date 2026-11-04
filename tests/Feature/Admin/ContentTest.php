@@ -54,8 +54,11 @@ test('admin creates a banner with image, schedule, and translations', function (
         ->and($banner->getTranslation('title', 'ms'))->toBe('Jualan Raya')
         ->and($banner->getTranslation('title', 'vi', false))->toBe('Khuyến mãi Raya')
         ->and($banner->link_url)->toBe('/c/snacks')
-        ->and($banner->starts_at->format('Y-m-d H:i'))->toBe('2026-06-01 00:00')
-        ->and($banner->ends_at->format('Y-m-d H:i'))->toBe('2026-06-30 23:59')
+        // Typed as Malaysia time, stored as UTC (8 h earlier), shown back as typed.
+        ->and($banner->starts_at->format('Y-m-d H:i'))->toBe('2026-05-31 16:00')
+        ->and($banner->ends_at->format('Y-m-d H:i'))->toBe('2026-06-30 15:59')
+        ->and($banner->starts_at->display()->format('Y-m-d H:i'))->toBe('2026-06-01 00:00')
+        ->and($banner->ends_at->display()->format('Y-m-d H:i'))->toBe('2026-06-30 23:59')
         ->and($banner->is_active)->toBeTrue()
         ->and($banner->getFirstMedia('image'))->not->toBeNull()
         ->and($banner->getFirstMedia('image_vi'))->not->toBeNull();

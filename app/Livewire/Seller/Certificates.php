@@ -7,6 +7,7 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Models\HalalCertificate;
 use App\Models\HalalCertificateEvent;
 use App\Models\Product;
+use App\Support\DisplayTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -180,7 +181,7 @@ class Certificates extends Component
 
             HalalCertificateEvent::create([
                 'halal_certificate_id' => $certificate->id,
-                'occurred_on' => now()->toDateString(),
+                'occurred_on' => DisplayTime::today()->toDateString(),
                 'summary' => $certificate->wasRecentlyCreated
                     ? __('Submitted for review')
                     : __('Renewal submitted for review'),

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Content;
 use App\Models\FlashSale;
 use App\Models\FlashSaleItem;
 use App\Models\ProductVariant;
+use App\Support\DisplayTime;
 use App\Support\RinggitInput;
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -48,8 +49,8 @@ class FlashSales extends Component
 
         FlashSale::create([
             'title' => $data['title'],
-            'starts_at' => $data['startsAt'],
-            'ends_at' => $data['endsAt'],
+            'starts_at' => DisplayTime::parse($data['startsAt']),
+            'ends_at' => DisplayTime::parse($data['endsAt']),
             'is_active' => true,
         ]);
 

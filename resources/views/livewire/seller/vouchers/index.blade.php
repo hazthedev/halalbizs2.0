@@ -108,7 +108,7 @@
                                 @if ($voucher->min_spend_sen > 0) @money($voucher->min_spend_sen) @else — @endif
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">
-                                {{ $voucher->starts_at->format('d M Y') }} → {{ $voucher->ends_at->format('d M Y') }}
+                                {{ $voucher->starts_at->display()->format('d M Y') }} → {{ $voucher->ends_at->display()->format('d M Y') }}
                             </td>
                             <td class="px-3 py-2 text-right font-mono tabular-nums">
                                 {{ $voucher->used_count }}<span class="text-ink-faint">/{{ $voucher->quota ?? '∞' }}</span>

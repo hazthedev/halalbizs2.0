@@ -6,6 +6,7 @@ use App\Models\Payout;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\SubOrder;
+use App\Support\DisplayTime;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -62,8 +63,8 @@ class AuditLog extends Component
                 $this->subjectType !== '' && isset(self::SUBJECT_TYPES[$this->subjectType]),
                 fn ($query) => $query->where('subject_type', self::SUBJECT_TYPES[$this->subjectType]),
             )
-            ->when($this->dateFrom !== '', fn ($query) => $query->whereDate('created_at', '>=', $this->dateFrom))
-            ->when($this->dateTo !== '', fn ($query) => $query->whereDate('created_at', '<=', $this->dateTo))
+            ->when($this->isDay($this->dateFrom), fn ($query) => $query->where('created_at', '>=', DisplayTime::dayStart($this->dateFrom)))
+            ->when($this->isDay($this->dateTo), fn ($query) => $query->where('created_at', '<=', DisplayTime::dayEnd($this->dateTo)))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(25);
@@ -72,5 +73,10 @@ class AuditLog extends Component
             'activities' => $activities,
             'subjectTypes' => array_keys(self::SUBJECT_TYPES),
         ])->title(__('Audit log'));
+    }
+
+    private function isDay(string $value): bool
+    {
+        return preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1;
     }
 }

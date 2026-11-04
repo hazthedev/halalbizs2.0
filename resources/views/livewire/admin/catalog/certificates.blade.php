@@ -123,7 +123,7 @@
                                 </div>
                             @else
                                 <p class="mt-4 text-[13px] text-ink-soft">
-                                    {{ __('Approved :when.', ['when' => $certificate->reviewed_at?->format('d M Y') ?? '—']) }}
+                                    {{ __('Approved :when.', ['when' => $certificate->reviewed_at?->display()->format('d M Y') ?? '—']) }}
                                 </p>
                             @endif
                         </div>

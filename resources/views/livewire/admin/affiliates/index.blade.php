@@ -13,7 +13,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div class="min-w-0">
                                 <p class="text-sm font-medium text-ink">{{ $payout->affiliate?->user?->name }} · <span class="font-medium tnum">@money($payout->amount_sen)</span></p>
-                                <p class="text-xs text-ink-faint">{{ $payout->requested_at?->format('d M Y') }} · {{ data_get($payout->bank_snapshot, 'details') }}</p>
+                                <p class="text-xs text-ink-faint">{{ $payout->requested_at?->display()->format('d M Y') }} · {{ data_get($payout->bank_snapshot, 'details') }}</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <button type="button" wire:click="openPay({{ $payout->id }})" class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] bg-emerald px-3 text-[13px] font-medium text-white hover:bg-emerald-deep">{{ __('Mark paid') }}</button>

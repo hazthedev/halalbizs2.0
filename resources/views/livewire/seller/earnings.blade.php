@@ -110,7 +110,7 @@
                             };
                         @endphp
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="entry-{{ $entry->id }}">
-                            <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $entry->created_at->format('j M Y, g:ia') }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $entry->created_at->display()->format('j M Y, g:ia') }}</td>
                             <td class="px-4 py-2.5"><x-ui.badge :variant="$chip">{{ $entry->type->label() }}</x-ui.badge></td>
                             <td class="px-4 py-2.5">{{ $entry->description }}</td>
                             <td class="px-4 py-2.5 text-right font-mono font-medium tabular-nums whitespace-nowrap {{ $entry->amount_sen >= 0 ? 'text-emerald' : 'text-ink' }}">{{ $entry->amount_sen >= 0 ? '+' : '' }}@money($entry->amount_sen)</td>
@@ -159,8 +159,8 @@
                             <td class="px-4 py-2.5 whitespace-nowrap font-mono font-medium">{{ $payout->payout_no }}</td>
                             <td class="px-4 py-2.5 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($payout->amount_sen)</td>
                             <td class="px-4 py-2.5"><x-ui.badge :variant="$pill">{{ $payout->status->label() }}</x-ui.badge></td>
-                            <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $payout->requested_at?->format('j M Y') ?? '—' }}</td>
-                            <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $payout->paid_at?->format('j M Y') ?? '—' }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $payout->requested_at?->display()->format('j M Y') ?? '—' }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $payout->paid_at?->display()->format('j M Y') ?? '—' }}</td>
                             {{-- On the rejected path `reference` carries the admin's reason --}}
                             <td class="px-4 py-2.5 {{ $payout->status === PayoutStatus::Rejected ? 'text-ink-soft' : 'font-mono' }}">{{ $payout->reference ?? '—' }}</td>
                         </tr>

@@ -6,6 +6,7 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Models\LiveSession;
 use App\Models\Product;
 use App\Services\LiveSessionService;
+use App\Support\DisplayTime;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -58,7 +59,7 @@ class LiveSessions extends Component
             'title' => $validated['title'],
             'video_url' => $validated['videoUrl'] ?: null,
             'voucher_code' => $validated['voucherCode'] ? strtoupper($validated['voucherCode']) : null,
-            'scheduled_for' => $validated['scheduledFor'] ?: null,
+            'scheduled_for' => $validated['scheduledFor'] ? DisplayTime::parse($validated['scheduledFor']) : null,
         ]);
 
         $this->showForm = false;

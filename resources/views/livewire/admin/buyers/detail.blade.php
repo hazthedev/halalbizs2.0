@@ -11,7 +11,7 @@
                     <x-ui.badge variant="sale">{{ __('Active') }}</x-ui.badge>
                 @endif
             </div>
-            <p class="text-[13px] text-ink-soft">{{ __('Joined :date', ['date' => $user->created_at->format('j M Y')]) }}</p>
+            <p class="text-[13px] text-ink-soft">{{ __('Joined :date', ['date' => $user->created_at->display()->format('j M Y')]) }}</p>
         </div>
         <a href="{{ route('admin.buyers.index') }}" wire:navigate
            class="ml-auto inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
@@ -31,7 +31,7 @@
                 </div>
                 <div class="flex justify-between gap-3">
                     <dt class="text-ink-soft">{{ __('Email verified') }}</dt>
-                    <dd class="text-right">{{ $user->email_verified_at !== null ? $user->email_verified_at->format('j M Y') : __('No') }}</dd>
+                    <dd class="text-right">{{ $user->email_verified_at !== null ? $user->email_verified_at->display()->format('j M Y') : __('No') }}</dd>
                 </div>
                 <div class="flex justify-between gap-3">
                     <dt class="text-ink-soft">{{ __('Phone') }}</dt>

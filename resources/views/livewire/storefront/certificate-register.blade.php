@@ -62,7 +62,7 @@
                     </div>
                 </div>
                 <p class="text-right font-mono text-[length:var(--text-tiny)] text-ink-faint">
-                    {{ __('Checked') }}<br>{{ now()->format('j M Y, H:i') }} MYT
+                    {{ __('Checked') }}<br>{{ \App\Support\DisplayTime::now()->format('j M Y, H:i') }} MYT
                 </p>
             </div>
 

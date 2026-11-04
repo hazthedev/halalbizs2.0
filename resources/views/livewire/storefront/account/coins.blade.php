@@ -101,7 +101,7 @@
                         <li class="flex items-center justify-between gap-3 px-5 py-3">
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-medium text-ink">{{ $txn->description ?: $txn->type->label() }}</p>
-                                <p class="text-xs text-ink-faint">{{ $txn->created_at?->format('d M Y') }}</p>
+                                <p class="text-xs text-ink-faint">{{ $txn->created_at?->display()->format('d M Y') }}</p>
                             </div>
                             <span @class([
                                 'shrink-0 text-sm font-medium tnum',

@@ -46,13 +46,13 @@ class VoucherService
 
         if (now()->lt($voucher->starts_at)) {
             throw new CheckoutException(__("This voucher isn't live yet — it starts :date.", [
-                'date' => $voucher->starts_at->format('j M'),
+                'date' => $voucher->starts_at->display()->format('j M'),
             ]));
         }
 
         if (now()->gt($voucher->ends_at)) {
             throw new CheckoutException(__('This voucher expired on :date.', [
-                'date' => $voucher->ends_at->format('j M Y'),
+                'date' => $voucher->ends_at->display()->format('j M Y'),
             ]));
         }
 

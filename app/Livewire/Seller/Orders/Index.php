@@ -93,7 +93,7 @@ class Index extends Component
             ->latest('created_at')->latest('id')->get()
             ->map(fn (SubOrder $subOrder) => [
                 $subOrder->sub_order_no,
-                $subOrder->created_at?->toDateTimeString(),
+                $subOrder->created_at?->display()->toDateTimeString(),
                 $subOrder->status->value,
                 RinggitInput::fromSen($subOrder->items_subtotal_sen),
                 RinggitInput::fromSen($subOrder->shipping_fee_sen),

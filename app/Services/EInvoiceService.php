@@ -12,6 +12,7 @@ use App\Models\SubOrder;
 use App\Services\EInvoice\EInvoiceDocumentBuilder;
 use App\Services\EInvoice\EInvoiceProvider;
 use App\Services\EInvoice\EInvoiceResult;
+use App\Support\DisplayTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -160,8 +161,9 @@ class EInvoiceService
     /** @return array{0: Carbon, 1: Carbon} */
     private function periodBounds(string $period): array
     {
-        $month = Carbon::createFromFormat('Y-m', $period)->startOfMonth();
+        // The period is a Malaysia month; paid_at is stored UTC.
+        $month = Carbon::createFromFormat('Y-m', $period, DisplayTime::zone())->startOfMonth();
 
-        return [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()];
+        return [$month->copy()->setTimezone('UTC'), $month->copy()->endOfMonth()->setTimezone('UTC')];
     }
 }

@@ -21,7 +21,7 @@
         </div>
         <p class="mt-1 text-[13px] text-ink-soft">
             {{ __('Order :no', ['no' => $subOrder->order->order_no]) }}
-            · {{ __('Placed :date', ['date' => $placedAt->format('j M Y, g:ia')]) }}
+            · {{ __('Placed :date', ['date' => $placedAt->display()->format('j M Y, g:ia')]) }}
             · {{ __('Store: :name', ['name' => $subOrder->store->name]) }}
             · {{ __('Buyer: :name', ['name' => $subOrder->order->user->name]) }}
         </p>
@@ -91,7 +91,7 @@
                             <div class="pb-1">
                                 <p class="text-[13px] font-medium text-ink">{{ SubOrderStatus::from($history->to_status)->label() }}</p>
                                 <p class="text-[12px] text-ink-soft">
-                                    {{ $history->created_at->format('j M Y, g:ia') }} · {{ $history->actor_type->label() }}
+                                    {{ $history->created_at->display()->format('j M Y, g:ia') }} · {{ $history->actor_type->label() }}
                                 </p>
                                 @if ($history->note)
                                     <p class="mt-0.5 text-[12px] text-ink-soft">{{ $history->note }}</p>
@@ -183,7 +183,7 @@
                         @if ($payment->paid_at)
                             <div class="flex items-center justify-between gap-3">
                                 <dt class="text-ink-soft">{{ __('Paid at') }}</dt>
-                                <dd>{{ $payment->paid_at->format('j M Y, g:ia') }}</dd>
+                                <dd>{{ $payment->paid_at->display()->format('j M Y, g:ia') }}</dd>
                             </div>
                         @endif
                     @endif

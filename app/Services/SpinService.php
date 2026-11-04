@@ -9,6 +9,7 @@ use App\Exceptions\CheckoutException;
 use App\Models\CoinWallet;
 use App\Models\User;
 use App\Models\Voucher;
+use App\Support\DisplayTime;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -32,7 +33,7 @@ class SpinService
     {
         $last = CoinWallet::where('user_id', $user->id)->value('last_spin_on');
 
-        return $last === null || (string) $last < now()->toDateString();
+        return $last === null || (string) $last < DisplayTime::today()->toDateString();
     }
 
     /**
@@ -50,11 +51,11 @@ class SpinService
             $wallet = CoinWallet::firstOrCreate(['user_id' => $user->id]);
             $wallet = CoinWallet::whereKey($wallet->id)->lockForUpdate()->first();
 
-            if ($wallet->last_spin_on?->toDateString() === now()->toDateString()) {
+            if ($wallet->last_spin_on?->toDateString() === DisplayTime::today()->toDateString()) {
                 throw new CheckoutException(__('You have already spun the wheel today — come back tomorrow!'));
             }
 
-            $wallet->forceFill(['last_spin_on' => now()])->save();
+            $wallet->forceFill(['last_spin_on' => DisplayTime::today()])->save();
 
             return $this->grant($user, $this->draw());
         });

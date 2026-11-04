@@ -37,7 +37,7 @@
                                 {{ $sale->isLive() ? __('Live') : ($sale->is_active ? __('Scheduled') : __('Off')) }}
                             </span>
                         </h2>
-                        <p class="text-[13px] text-ink-soft">{{ $sale->starts_at->format('d M H:i') }} → {{ $sale->ends_at->format('d M H:i') }}</p>
+                        <p class="text-[13px] text-ink-soft">{{ $sale->starts_at->display()->format('d M H:i') }} → {{ $sale->ends_at->display()->format('d M H:i') }}</p>
                     </div>
                     <div class="flex gap-2">
                         <button wire:click="openAddItem({{ $sale->id }})" class="rounded-[var(--radius-control)] border border-line-strong px-3 py-1.5 text-[13px] font-medium">{{ __('Add deal') }}</button>

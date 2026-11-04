@@ -192,7 +192,7 @@
                                                         <td class="py-1 pr-4 font-mono tabular-nums">{{ rtrim(rtrim((string) $entry->rate, '0'), '.') }}</td>
                                                         <td class="py-1 pr-4 font-mono tabular-nums">{{ rtrim(rtrim((string) $entry->margin_percent, '0'), '.') }}</td>
                                                         <td class="py-1 pr-4">{{ $entry->source }}</td>
-                                                        <td class="py-1">{{ $entry->fetched_at->format('d M Y H:i') }}</td>
+                                                        <td class="py-1">{{ $entry->fetched_at->display()->format('d M Y H:i') }}</td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>

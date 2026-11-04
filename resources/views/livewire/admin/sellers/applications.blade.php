@@ -67,7 +67,7 @@
                                                 </div>
                                                 <div class="flex justify-between gap-3">
                                                     <dt class="text-ink-soft">{{ __('Submitted') }}</dt>
-                                                    <dd class="text-right">{{ $reviewingStore->created_at->format('j M Y, g:ia') }}</dd>
+                                                    <dd class="text-right">{{ $reviewingStore->created_at->display()->format('j M Y, g:ia') }}</dd>
                                                 </div>
                                             </dl>
                                             <p class="mt-3 border-t border-line pt-3 text-[13px] leading-relaxed text-ink-soft">{{ $reviewingStore->description }}</p>

@@ -9,6 +9,7 @@ use App\Models\CoinWallet;
 use App\Models\Order;
 use App\Models\User;
 use App\Support\CoinRedemptionResult;
+use App\Support\DisplayTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -200,20 +201,20 @@ class CoinService
 
         return DB::transaction(function () use ($user) {
             $wallet = $this->lockWallet($this->walletFor($user)->id);
-            $today = now()->toDateString();
+            $today = DisplayTime::today()->toDateString();
 
             if ($wallet->last_checkin_on?->toDateString() === $today) {
                 throw new CheckoutException(__('You have already checked in today.'));
             }
 
-            $continuing = $wallet->last_checkin_on?->toDateString() === now()->subDay()->toDateString();
+            $continuing = $wallet->last_checkin_on?->toDateString() === DisplayTime::today()->subDay()->toDateString();
             $streak = $continuing ? $wallet->checkin_streak + 1 : 1;
             $day = (($streak - 1) % 7) + 1;
 
             $rewards = (array) config('coins.checkin_rewards', []);
             $coins = (int) ($rewards[$day] ?? 5);
 
-            $wallet->forceFill(['last_checkin_on' => now(), 'checkin_streak' => $streak])->save();
+            $wallet->forceFill(['last_checkin_on' => DisplayTime::today(), 'checkin_streak' => $streak])->save();
             $this->creditLocked($wallet, $coins, CoinTransactionType::Checkin, null, __('Daily check-in — day :n', ['n' => $day]));
 
             return ['coins' => $coins, 'streak' => $streak, 'day' => $day];
@@ -224,7 +225,7 @@ class CoinService
     {
         $last = CoinWallet::where('user_id', $user->id)->value('last_checkin_on');
 
-        return $last === null || (string) $last < now()->toDateString();
+        return $last === null || (string) $last < DisplayTime::today()->toDateString();
     }
 
     /**

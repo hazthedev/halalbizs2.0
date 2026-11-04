@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Finance;
 use App\Enums\PayoutStatus;
 use App\Models\Payout;
 use App\Services\LedgerService;
+use App\Support\DisplayTime;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -182,7 +183,7 @@ class Payouts extends Component
             return;
         }
 
-        $filename = 'payouts-'.now()->format('Ymd-His').'.csv';
+        $filename = 'payouts-'.DisplayTime::now()->format('Ymd-His').'.csv';
 
         return response()->streamDownload(function () use ($payouts) {
             $out = fopen('php://output', 'w');

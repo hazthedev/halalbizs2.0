@@ -5,13 +5,14 @@ namespace App\Notifications;
 use App\Support\Money;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
 
 /** A creator earned affiliate commission on a referred order (M2.5). */
 class AffiliateCommissionNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(public int $commissionSen, public ?\Illuminate\Support\Carbon $unlocksAt = null) {}
+    public function __construct(public int $commissionSen, public ?Carbon $unlocksAt = null) {}
 
     /** @return array<int, string> */
     public function via(object $notifiable): array
@@ -32,7 +33,7 @@ class AffiliateCommissionNotification extends Notification
                 ? __('You earned :amount commission from a referred order.', ['amount' => Money::format($this->commissionSen)])
                 : __(':amount commission is pending from a referred order — available :date once the return window closes.', [
                     'amount' => Money::format($this->commissionSen),
-                    'date' => $this->unlocksAt->translatedFormat('j M Y'),
+                    'date' => $this->unlocksAt->display()->translatedFormat('j M Y'),
                 ]),
             'url' => route('account.affiliate'),
         ];

@@ -34,12 +34,14 @@ use App\Services\Sms\SmsSender;
 use App\Services\Sms\WhatsAppSender;
 use App\Settings\SecuritySettings;
 use App\Support\ClientIp;
+use App\Support\DisplayTime;
 use App\Support\Money;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -88,6 +90,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // `$stored->display()->format(...)`: the one spelling for rendering a stored time.
+        Carbon::macro('display', fn () => DisplayTime::show($this));
+
         // Production hardening (docs/10): force HTTPS URL generation behind the
         // TLS-terminating proxy. Local/dev/tests keep their scheme untouched.
         if ($this->app->isProduction()) {

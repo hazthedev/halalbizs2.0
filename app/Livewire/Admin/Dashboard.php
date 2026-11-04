@@ -23,6 +23,7 @@ use App\Models\Store;
 use App\Models\SubOrder;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Support\DisplayTime;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -133,10 +134,10 @@ class Dashboard extends Component
         // Volume tiles are platform-wide numbers too, so they follow the
         // permission that owns their section (same rule as queues() below).
         $ordersToday = ($user?->can('orders.manage') ?? false)
-            ? Order::query()->where('placed_at', '>=', now()->startOfDay())->count()
+            ? Order::query()->where('placed_at', '>=', DisplayTime::dayStart())->count()
             : 0;
         $newBuyersToday = ($user?->can('sellers.manage') ?? false)
-            ? User::query()->where('created_at', '>=', now()->startOfDay())->count()
+            ? User::query()->where('created_at', '>=', DisplayTime::dayStart())->count()
             : 0;
 
         $topStores = SubOrder::query()
@@ -239,9 +240,9 @@ class Dashboard extends Component
     private function periodStart(): CarbonInterface
     {
         return match ($this->period) {
-            'today' => now()->startOfDay(),
-            '7d' => now()->subDays(6)->startOfDay(),
-            default => now()->subDays(29)->startOfDay(),
+            'today' => DisplayTime::dayStart(),
+            '7d' => DisplayTime::dayStart(DisplayTime::now()->subDays(6)),
+            default => DisplayTime::dayStart(DisplayTime::now()->subDays(29)),
         };
     }
 
@@ -261,7 +262,7 @@ class Dashboard extends Component
         $days = $this->periodDays();
 
         return collect(range($days - 1, 0))
-            ->map(fn (int $back) => now()->subDays($back)->toDateString())
+            ->map(fn (int $back) => DisplayTime::now()->subDays($back)->toDateString())
             ->values();
     }
 
@@ -279,7 +280,7 @@ class Dashboard extends Component
             ->where('payment_status', PaymentStatus::Paid)
             ->where('paid_at', '>=', $this->periodStart())
             ->get(['paid_at', 'grand_total_sen'])
-            ->groupBy(fn (Order $order) => $order->paid_at->toDateString())
+            ->groupBy(fn (Order $order) => $order->paid_at->display()->toDateString())
             ->map(fn ($orders) => (int) $orders->sum('grand_total_sen'));
 
         $series = $days->map(fn (string $day) => (int) ($byDay[$day] ?? 0))->values();
@@ -424,7 +425,7 @@ class Dashboard extends Component
         $byDay = User::query()
             ->where('created_at', '>=', $this->periodStart())
             ->get(['created_at'])
-            ->groupBy(fn (User $user) => $user->created_at->toDateString())
+            ->groupBy(fn (User $user) => $user->created_at->display()->toDateString())
             ->map(fn ($users) => $users->count());
 
         $series = $days->map(fn (string $day) => (int) ($byDay[$day] ?? 0))->values();

@@ -94,7 +94,7 @@
                                 <p class="font-medium">{{ $bank['bank_name'] ?? '—' }}</p>
                                 <p class="text-[12px] text-ink-soft"><span class="font-mono">{{ $bank['account_number'] ?? '—' }}</span> · {{ $bank['account_name'] ?? '—' }}</p>
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $payout->requested_at?->format('j M Y, g:ia') ?? '—' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $payout->requested_at?->display()->format('j M Y, g:ia') ?? '—' }}</td>
 
                             @if ($tab === PayoutStatus::Requested->value)
                                 <td class="px-3 py-2">
@@ -121,7 +121,7 @@
                                 </td>
                             @elseif ($tab === PayoutStatus::Paid->value)
                                 <td class="px-3 py-2 whitespace-nowrap font-mono">{{ $payout->reference ?? '—' }}</td>
-                                <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $payout->paid_at?->format('j M Y, g:ia') ?? '—' }}</td>
+                                <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $payout->paid_at?->display()->format('j M Y, g:ia') ?? '—' }}</td>
                             @elseif ($tab === PayoutStatus::Rejected->value)
                                 {{-- reference carries the rejection reason on this path --}}
                                 <td class="px-3 py-2 text-ink-soft">{{ $payout->reference ?? '—' }}</td>
