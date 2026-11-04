@@ -85,7 +85,7 @@
                                 @if ((int) $payment->refunded_sen > 0)
                                     −@money($payment->refunded_sen)
                                     @if ($payment->refunded_at)
-                                        <span class="block text-[11px] font-sans text-ink-soft">{{ $payment->refunded_at->format('d M Y') }}</span>
+                                        <span class="block text-[11px] font-sans text-ink-soft">{{ $payment->refunded_at->display()->format('d M Y') }}</span>
                                     @endif
                                     {{-- The amount alone said "refunded" whether or not the
                                          gateway moved anything. false is the case someone
@@ -114,7 +114,7 @@
                             <td class="max-w-44 truncate px-3 py-2 font-mono text-[12px] text-ink-soft" title="{{ $payment->requery_result }}">
                                 {{ $payment->requery_result ?? '—' }}
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $payment->paid_at?->format('j M Y, g:ia') ?? '—' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $payment->paid_at?->display()->format('j M Y, g:ia') ?? '—' }}</td>
                             <td class="px-3 py-2">
                                 <div class="flex justify-end">
                                     @if ($canRequery)

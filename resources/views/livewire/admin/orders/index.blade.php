@@ -104,7 +104,7 @@
                             <td class="px-3 py-2 whitespace-nowrap font-mono text-ink-soft">{{ $subOrder->order->order_no }}</td>
                             <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $subOrder->store->name }}</span></td>
                             <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $subOrder->order->user->name }}</span></td>
-                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $placedAt->format('j M Y, g:ia') }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $placedAt->display()->format('j M Y, g:ia') }}</td>
                             <td class="px-3 py-2 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($subOrder->total_sen)</td>
                             <td class="px-3 py-2"><x-order-status-pill :status="$subOrder->status" /></td>
                         </tr>

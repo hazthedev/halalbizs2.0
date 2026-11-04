@@ -6,9 +6,9 @@ use App\Enums\GroupBuyStatus;
 use App\Livewire\Concerns\CurrentStore;
 use App\Models\GroupBuy;
 use App\Models\Product;
+use App\Support\DisplayTime;
 use App\Support\RinggitInput;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -43,7 +43,7 @@ class GroupBuys extends Component
 
         $this->targetSize = (int) config('groupbuy.default_target_size', 2);
         $this->windowHours = (int) config('groupbuy.default_window_hours', 24);
-        $this->endsAt = now()->addWeek()->format('Y-m-d\TH:i');
+        $this->endsAt = DisplayTime::now()->addWeek()->format('Y-m-d\TH:i');
     }
 
     public function create(): void
@@ -51,7 +51,7 @@ class GroupBuys extends Component
         $this->reset(['productId', 'variantId', 'groupPrice']);
         $this->targetSize = (int) config('groupbuy.default_target_size', 2);
         $this->windowHours = (int) config('groupbuy.default_window_hours', 24);
-        $this->endsAt = now()->addWeek()->format('Y-m-d\TH:i');
+        $this->endsAt = DisplayTime::now()->addWeek()->format('Y-m-d\TH:i');
         $this->showForm = true;
     }
 
@@ -65,7 +65,7 @@ class GroupBuys extends Component
             'groupPrice' => 'required|string',
             'targetSize' => 'required|integer|min:2|max:100',
             'windowHours' => 'required|integer|min:1|max:168',
-            'endsAt' => 'required|date|after:now',
+            'endsAt' => 'required|date|after:'.DisplayTime::now()->toDateTimeString(),
         ]);
 
         $product = Product::where('id', $validated['productId'])->where('store_id', $store->id)->first();
@@ -90,7 +90,7 @@ class GroupBuys extends Component
             'team_window_hours' => $validated['windowHours'],
             'status' => GroupBuyStatus::Active,
             'starts_at' => now(),
-            'ends_at' => Carbon::parse($validated['endsAt']),
+            'ends_at' => DisplayTime::parse($validated['endsAt']),
         ]);
 
         $this->showForm = false;

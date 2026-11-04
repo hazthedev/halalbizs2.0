@@ -6,6 +6,7 @@ use App\Enums\HalalStatus;
 use App\Enums\ProductCondition;
 use App\Enums\ProductStatus;
 use App\Enums\TaxClass;
+use App\Support\DisplayTime;
 use App\Support\JsonSearch;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -136,7 +137,7 @@ class Product extends Model implements HasMedia
         }
 
         // Not valid, so it is one of the two edges: lapsed, or not in force yet.
-        return $cert->valid_to->lt(now()->startOfDay()) ? 'lapsed' : 'pending';
+        return $cert->valid_to->lt(DisplayTime::today()) ? 'lapsed' : 'pending';
     }
 
     public function store(): BelongsTo

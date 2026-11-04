@@ -31,7 +31,7 @@
                         <td class="px-4 py-3 font-medium text-ink">{{ $subscription->user?->name }}</td>
                         <td class="px-4 py-3 text-ink-soft">{{ $subscription->variant?->product?->getTranslation('name', 'en') }}</td>
                         <td class="px-4 py-3 text-right tnum">{{ __(':n days', ['n' => $subscription->interval_days]) }}</td>
-                        <td class="px-4 py-3 text-right text-ink-soft">{{ $subscription->next_run_at?->format('d M Y') ?? '—' }}</td>
+                        <td class="px-4 py-3 text-right text-ink-soft">{{ $subscription->next_run_at?->display()->format('d M Y') ?? '—' }}</td>
                     </tr>
                 @empty
                     <tr><td colspan="4" class="px-4 py-10 text-center text-ink-soft">{{ __('No subscriptions in this state.') }}</td></tr>

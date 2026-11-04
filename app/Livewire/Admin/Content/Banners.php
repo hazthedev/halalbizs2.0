@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Content;
 
 use App\Models\Banner;
 use App\Support\ContentLocales;
+use App\Support\DisplayTime;
 use App\Support\HtmlSanitizer;
 use Closure;
 use Illuminate\Support\Carbon;
@@ -69,8 +70,8 @@ class Banners extends Component
         $this->subtitle = ContentLocales::read($banner, 'subtitle');
         $this->ctaLabel = ContentLocales::read($banner, 'cta_label');
         $this->linkUrl = $banner->link_url ?? '';
-        $this->startsAt = $banner->starts_at?->format('Y-m-d\TH:i') ?? '';
-        $this->endsAt = $banner->ends_at?->format('Y-m-d\TH:i') ?? '';
+        $this->startsAt = $banner->starts_at?->display()->format('Y-m-d\TH:i') ?? '';
+        $this->endsAt = $banner->ends_at?->display()->format('Y-m-d\TH:i') ?? '';
         $this->isActive = $banner->is_active;
         $this->showForm = true;
     }
@@ -250,7 +251,7 @@ class Banners extends Component
         }
 
         try {
-            return Carbon::parse($value);
+            return DisplayTime::parse($value);
         } catch (\Throwable) {
             return null;
         }

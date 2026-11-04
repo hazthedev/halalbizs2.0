@@ -26,7 +26,7 @@
             </td>
             <td class="num">
                 <div class="mono">{{ $subOrder->sub_order_no }}</div>
-                <div class="muted">{{ $subOrder->order->placed_at->format('d M Y, H:i') }}</div>
+                <div class="muted">{{ $subOrder->order->placed_at->display()->format('d M Y, H:i') }}</div>
                 <div class="muted">{{ __('Order') }} <span class="mono">{{ $subOrder->order->order_no }}</span></div>
             </td>
         </tr>

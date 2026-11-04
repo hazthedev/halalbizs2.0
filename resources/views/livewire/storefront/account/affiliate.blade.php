@@ -39,7 +39,7 @@
                     <p class="mt-1 font-display text-2xl font-medium tnum">@money($pendingSen)</p>
                     <p class="mt-1 text-[11px] text-ink-faint">
                         @if ($nextUnlockAt)
-                            {{ __('Unlocks :date', ['date' => $nextUnlockAt->translatedFormat('j M Y')]) }}
+                            {{ __('Unlocks :date', ['date' => $nextUnlockAt->display()->translatedFormat('j M Y')]) }}
                         @else
                             {{ __('Held until the return window closes') }}
                         @endif
@@ -129,7 +129,7 @@
                     <ul class="mt-4 divide-y divide-line border-t border-line">
                         @foreach ($payouts as $payout)
                             <li class="flex items-center justify-between gap-3 py-2.5 text-[13px]">
-                                <span class="text-ink-soft">{{ $payout->requested_at?->format('d M Y') }}</span>
+                                <span class="text-ink-soft">{{ $payout->requested_at?->display()->format('d M Y') }}</span>
                                 <span class="font-medium text-ink tnum">@money($payout->amount_sen)</span>
                                 <x-ui.badge :variant="match($payout->status) {
                                     \App\Enums\AffiliatePayoutStatus::Paid => 'success',
@@ -168,9 +168,9 @@
                                 <div class="min-w-0">
                                     <p class="truncate text-sm font-medium text-ink">{{ $referral->subOrder?->sub_order_no ?? __('Order') }}</p>
                                     <p class="text-xs text-ink-faint">
-                                        {{ $referral->created_at?->format('d M Y') }} · {{ $referral->status->label() }}
+                                        {{ $referral->created_at?->display()->format('d M Y') }} · {{ $referral->status->label() }}
                                         @if ($referral->status === \App\Enums\AffiliateReferralStatus::Pending && $referral->locks_at)
-                                            · {{ __('available :date', ['date' => $referral->locks_at->format('d M Y')]) }}
+                                            · {{ __('available :date', ['date' => $referral->locks_at->display()->format('d M Y')]) }}
                                         @elseif ($partly)
                                             · {{ __('reduced by :amount after a refund', ['amount' => \App\Support\Money::format($referral->reversed_sen)]) }}
                                         @elseif ($referral->status === \App\Enums\AffiliateReferralStatus::Reversed)

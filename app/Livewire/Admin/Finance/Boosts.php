@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Finance;
 
 use App\Models\ProductBoost;
+use App\Support\DisplayTime;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -38,7 +39,7 @@ class Boosts extends Component
         $sum = fn ($query) => (int) $query->sum('amount_sen');
 
         return [
-            'today' => $sum(ProductBoost::query()->where('created_at', '>=', now()->startOfDay())),
+            'today' => $sum(ProductBoost::query()->where('created_at', '>=', DisplayTime::dayStart())),
             'week' => $sum(ProductBoost::query()->where('created_at', '>=', now()->subDays(7))),
             'month' => $sum(ProductBoost::query()->where('created_at', '>=', now()->subDays(30))),
             'all' => $sum(ProductBoost::query()),

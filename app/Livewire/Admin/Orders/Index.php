@@ -6,6 +6,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\SubOrderStatus;
 use App\Models\Store;
 use App\Models\SubOrder;
+use App\Support\DisplayTime;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -62,8 +63,8 @@ class Index extends Component
             ->when(SubOrderStatus::tryFrom($this->status), fn ($query, $status) => $query->where('status', $status))
             ->when(ctype_digit($this->store), fn ($query) => $query->where('store_id', (int) $this->store))
             ->when(PaymentMethod::tryFrom($this->method), fn ($query, $method) => $query->whereHas('order', fn ($q) => $q->where('payment_method', $method)))
-            ->when($this->validDate($this->dateFrom), fn ($query, $date) => $query->whereDate('created_at', '>=', $date))
-            ->when($this->validDate($this->dateTo), fn ($query, $date) => $query->whereDate('created_at', '<=', $date))
+            ->when($this->validDate($this->dateFrom), fn ($query, $date) => $query->where('created_at', '>=', DisplayTime::dayStart($date)))
+            ->when($this->validDate($this->dateTo), fn ($query, $date) => $query->where('created_at', '<=', DisplayTime::dayEnd($date)))
             ->when(trim($this->search) !== '', function ($query) {
                 $term = trim($this->search);
 

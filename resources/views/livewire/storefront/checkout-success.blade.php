@@ -76,7 +76,7 @@
         @endif
 
         <p class="mt-3 text-xs text-ink-faint">
-            {{ __('Ordered :date', ['date' => $order->created_at->timezone(config('app.display_timezone', 'Asia/Kuala_Lumpur'))->format('j M Y, g:ia')]) }}
+            {{ __('Ordered :date', ['date' => $order->created_at->display()->format('j M Y, g:ia')]) }}
         @else
             {{ $order->payment_method->label() }}
         @endif

@@ -11,6 +11,7 @@ use App\Models\SubOrder;
 use App\Services\DeviceGuard;
 use App\Services\OtpService;
 use App\Settings\GeneralSettings;
+use App\Support\DisplayTime;
 use App\Support\Totp;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -464,7 +465,7 @@ class Profile extends Component
 
         return response()->streamDownload(function () use ($payload) {
             echo json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        }, 'my-data-'.now()->format('Ymd-His').'.json', ['Content-Type' => 'application/json']);
+        }, 'my-data-'.DisplayTime::now()->format('Ymd-His').'.json', ['Content-Type' => 'application/json']);
     }
 
     /**

@@ -51,6 +51,7 @@ wildcard DNS + a wildcard TLS cert (docs/10).
 - Business logic lives in `App\Services\*` (CheckoutService, SubOrderStatusService, CommissionResolver, Ipay88Service, CartService, CurrencyConverter, VoucherService, LedgerService). Livewire components stay thin.
 - Enums in `App\Enums` — string-backed, with `label()`. No DB enum columns.
 - Middleware: `SetLocale`, `SetDisplayCurrency`, `EnsureSeller` (role + approved store), `EnsureAdmin`.
+- Time: storage and `app.timezone` are UTC; users see and type Malaysia time (`config('app.display_timezone')`). Render a stored time with `$t->display()->format(...)`; read typed input with `DisplayTime::parse()`; "today"/day filters use `DisplayTime::dayStart()/dayEnd()/today()` (`App\Support\DisplayTime`). `tests/Feature/Ops/DisplayTimeTest.php` guards the views.
 - Money formatting: `@money($sen)` Blade directive (plain MYR) and `@price($sen)` (display-currency conversion).
 
 ## Hard rules (violations = rejected PR)

@@ -16,7 +16,7 @@
             </div>
             <p class="text-[13px] text-ink-soft">
                 {{ __('Owner: :name (:email)', ['name' => $store->user->name, 'email' => $store->user->email]) }}
-                · {{ __('Joined :date', ['date' => $store->created_at->format('j M Y')]) }}
+                · {{ __('Joined :date', ['date' => $store->created_at->display()->format('j M Y')]) }}
             </p>
         </div>
 

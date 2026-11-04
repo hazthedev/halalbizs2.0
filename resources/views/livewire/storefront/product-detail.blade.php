@@ -297,7 +297,7 @@
                             <p class="mt-2 text-[length:var(--text-base)] text-ink-soft">
                                 {{ $store->name }}
                                 @if ($store->approved_at)
-                                    <span aria-hidden="true" class="text-ink-faint">·</span> {{ __('audited seller since :year', ['year' => $store->approved_at->format('Y')]) }}
+                                    <span aria-hidden="true" class="text-ink-faint">·</span> {{ __('audited seller since :year', ['year' => $store->approved_at->display()->format('Y')]) }}
                                 @endif
                                 @if ($store->state)
                                     <span aria-hidden="true" class="text-ink-faint">·</span> {{ __('ships from :state', ['state' => $store->state]) }}

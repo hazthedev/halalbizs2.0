@@ -5,8 +5,8 @@ namespace App\Livewire\Admin\Content;
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
 use App\Models\Voucher;
+use App\Support\DisplayTime;
 use App\Support\RinggitInput;
-use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -68,8 +68,8 @@ class Vouchers extends Component
         $this->minSpend = $voucher->min_spend_sen > 0 ? RinggitInput::fromSen($voucher->min_spend_sen) : '';
         $this->quota = $voucher->quota !== null ? (string) $voucher->quota : '';
         $this->perUserLimit = (string) $voucher->per_user_limit;
-        $this->startsAt = $voucher->starts_at->format('Y-m-d\TH:i');
-        $this->endsAt = $voucher->ends_at->format('Y-m-d\TH:i');
+        $this->startsAt = $voucher->starts_at->display()->format('Y-m-d\TH:i');
+        $this->endsAt = $voucher->ends_at->display()->format('Y-m-d\TH:i');
         $this->isActive = $voucher->is_active;
         $this->showForm = true;
     }
@@ -111,8 +111,8 @@ class Vouchers extends Component
         [$valueSen, $percent, $maxDiscountSen] = $this->validateTypeFields($type);
         $minSpendSen = $this->validateRinggit('minSpend', $this->minSpend, allowEmpty: true) ?? 0;
 
-        $starts = Carbon::parse($this->startsAt);
-        $ends = Carbon::parse($this->endsAt);
+        $starts = DisplayTime::parse($this->startsAt);
+        $ends = DisplayTime::parse($this->endsAt);
 
         if ($ends->lte($starts)) {
             throw ValidationException::withMessages([

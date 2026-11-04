@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Support\DisplayTime;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -33,7 +34,7 @@ class NewDeviceLoginNotification extends Notification implements ShouldQueue
             ->line(__(':device · IP :ip · :time', [
                 'device' => $this->deviceLabel,
                 'ip' => $this->ip,
-                'time' => now()->format('j M Y, g:i a'),
+                'time' => DisplayTime::now()->format('j M Y, g:i a'),
             ]))
             ->line(__('If this was you, no action is needed. If it wasn\'t, change your password and log out your other devices now.'))
             ->action(__('Review account security'), url('/account#security'));

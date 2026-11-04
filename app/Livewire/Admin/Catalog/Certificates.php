@@ -6,6 +6,7 @@ use App\Enums\CertificateStatus;
 use App\Models\HalalCertificate;
 use App\Models\HalalCertificateEvent;
 use App\Notifications\HalalCertificateDecision;
+use App\Support\DisplayTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -66,7 +67,7 @@ class Certificates extends Component
             // is buyer-facing: state the fact, name no reviewer.
             HalalCertificateEvent::create([
                 'halal_certificate_id' => $certificate->id,
-                'occurred_on' => now()->toDateString(),
+                'occurred_on' => DisplayTime::today()->toDateString(),
                 'summary' => __('Verified by :app', ['app' => config('app.name')]),
             ]);
         });

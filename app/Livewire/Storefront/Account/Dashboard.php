@@ -7,6 +7,7 @@ use App\Enums\SubOrderStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\SubOrder;
+use App\Support\DisplayTime;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -121,7 +122,7 @@ class Dashboard extends Component
 
     private function periodStart(): CarbonInterface
     {
-        return now()->startOfMonth()->subMonths($this->monthsInPeriod() - 1);
+        return DisplayTime::dayStart(DisplayTime::now()->startOfMonth()->subMonths($this->monthsInPeriod() - 1));
     }
 
     /**
@@ -134,7 +135,7 @@ class Dashboard extends Component
     private function spendChart(): array
     {
         $months = collect(range($this->monthsInPeriod() - 1, 0))
-            ->map(fn (int $back) => now()->startOfMonth()->subMonths($back));
+            ->map(fn (int $back) => DisplayTime::now()->startOfMonth()->subMonths($back));
 
         $byMonth = Order::query()
             ->where('user_id', auth()->id())
@@ -142,7 +143,7 @@ class Dashboard extends Component
             ->whereNotNull('paid_at')
             ->where('paid_at', '>=', $this->periodStart())
             ->get(['paid_at', 'grand_total_sen'])
-            ->groupBy(fn (Order $order) => $order->paid_at->format('Y-m'))
+            ->groupBy(fn (Order $order) => $order->paid_at->display()->format('Y-m'))
             ->map(fn ($orders) => (int) $orders->sum('grand_total_sen'));
 
         $labels = $months->map(fn (Carbon $month) => $month->format('M Y'))->values()->all();

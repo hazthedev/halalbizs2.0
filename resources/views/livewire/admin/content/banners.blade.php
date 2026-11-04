@@ -201,7 +201,7 @@
                                 @if ($banner->starts_at === null && $banner->ends_at === null)
                                     {{ __('Always on') }}
                                 @else
-                                    {{ $banner->starts_at?->format('d M Y H:i') ?? __('Now') }} → {{ $banner->ends_at?->format('d M Y H:i') ?? __('No end') }}
+                                    {{ $banner->starts_at?->display()->format('d M Y H:i') ?? __('Now') }} → {{ $banner->ends_at?->display()->format('d M Y H:i') ?? __('No end') }}
                                 @endif
                             </td>
                             <td class="px-3 py-2">

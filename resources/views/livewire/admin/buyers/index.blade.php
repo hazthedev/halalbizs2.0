@@ -51,7 +51,7 @@
                                 @endif
                             </td>
                             <td class="px-3 py-2 text-right tabular-nums">{{ $buyer->orders_count }}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $buyer->created_at->format('j M Y') }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $buyer->created_at->display()->format('j M Y') }}</td>
                             <td class="px-3 py-2">
                                 @if ($buyer->isSuspended())
                                     <x-ui.badge variant="danger">{{ __('Suspended') }}</x-ui.badge>

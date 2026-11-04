@@ -66,7 +66,7 @@ class Earnings extends Component
         $rows = $store->ledgerEntries()
             ->latest('created_at')->latest('id')->get()
             ->map(fn ($entry) => [
-                $entry->created_at?->toDateTimeString(),
+                $entry->created_at?->display()->toDateTimeString(),
                 $entry->type->value,
                 $entry->status->value,
                 RinggitInput::fromSen($entry->amount_sen),

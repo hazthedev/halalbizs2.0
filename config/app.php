@@ -92,6 +92,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Display Timezone
+    |--------------------------------------------------------------------------
+    |
+    | Storage and `timezone` above stay UTC. Every time a user SEES is converted
+    | to this zone, and every time a user TYPES is read as this zone
+    | (App\Support\DisplayTime). Single source of the zone: a per-user picker,
+    | if ever built, replaces only DisplayTime::zone().
+    |
+    */
+
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Asia/Kuala_Lumpur'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

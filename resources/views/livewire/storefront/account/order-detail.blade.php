@@ -30,7 +30,7 @@
                         <h2 class="font-mono text-base font-medium text-ink">{{ $subOrder->sub_order_no }}</h2>
                         <x-order-status-pill :status="$subOrder->status" />
                     </div>
-                    <p class="mt-1 text-xs text-ink-soft">{{ __('Placed :date', ['date' => $subOrder->order->placed_at->format('j M Y, g:i a')]) }}</p>
+                    <p class="mt-1 text-xs text-ink-soft">{{ __('Placed :date', ['date' => $subOrder->order->placed_at->display()->format('j M Y, g:i a')]) }}</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     @if ($showInvoice)
@@ -152,7 +152,7 @@
                 @if ($returnRequest->status === \App\Enums\ReturnStatus::Requested)
                     <p class="mt-2 text-sm text-ink-soft">
                         {{ __('The seller has until :date to respond (:relative).', [
-                            'date' => $returnRequest->respond_by->format('j M Y, g:i a'),
+                            'date' => $returnRequest->respond_by->display()->format('j M Y, g:i a'),
                             'relative' => $returnRequest->respond_by->diffForHumans(),
                         ]) }}
                     </p>
@@ -222,7 +222,7 @@
                                         {{ \App\Enums\SubOrderStatus::tryFrom($history->to_status)?->label() ?? $history->to_status }}
                                     </p>
                                     <p class="mt-0.5 text-xs text-ink-soft">
-                                        {{ $history->actor_type->label() }} · {{ $history->created_at->format('j M Y, g:i a') }}
+                                        {{ $history->actor_type->label() }} · {{ $history->created_at->display()->format('j M Y, g:i a') }}
                                     </p>
                                     @if ($history->note)
                                         <p class="mt-1 text-xs text-ink-soft">{{ $history->note }}</p>
@@ -299,7 +299,7 @@
                             </button>
                         </div>
                         @if ($subOrder->shipped_at)
-                            <p class="mt-2 text-xs text-ink-soft">{{ __('Shipped :date', ['date' => $subOrder->shipped_at->format('j M Y')]) }}</p>
+                            <p class="mt-2 text-xs text-ink-soft">{{ __('Shipped :date', ['date' => $subOrder->shipped_at->display()->format('j M Y')]) }}</p>
                         @endif
                         @if ($subOrder->tracking_url)
                             <a href="{{ $subOrder->tracking_url }}" target="_blank" rel="noopener noreferrer"
@@ -319,7 +319,7 @@
                                             <p class="text-sm font-medium text-ink">{{ $event->status->label() }}</p>
                                             <p class="mt-0.5 text-xs leading-relaxed text-ink-soft">{{ $event->message }}</p>
                                             <p class="mt-1 text-[11px] text-ink-faint">
-                                                {{ $event->occurred_at->format('j M Y, g:i a') }}
+                                                {{ $event->occurred_at->display()->format('j M Y, g:i a') }}
                                                 @if ($event->location) · {{ $event->location }} @endif
                                             </p>
                                         </li>
@@ -373,7 +373,7 @@
                         <p>{{ __('Payment method') }}: {{ $subOrder->order->payment_method->label() }}</p>
                         <p>{{ __('Order number') }}: <span class="font-mono text-ink">{{ $subOrder->order->order_no }}</span></p>
                         @if ($subOrder->order->paid_at)
-                            <p>{{ __('Paid :date', ['date' => $subOrder->order->paid_at->format('j M Y, g:i a')]) }}</p>
+                            <p>{{ __('Paid :date', ['date' => $subOrder->order->paid_at->display()->format('j M Y, g:i a')]) }}</p>
                         @endif
                     </div>
                 </x-ui.card>

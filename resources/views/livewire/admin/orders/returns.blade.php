@@ -140,7 +140,7 @@
                             <td class="px-3 py-2"><span class="line-clamp-1 max-w-52">{{ $request->reason?->label ?? '—' }}</span></td>
                             <td class="px-3 py-2"><x-return-status-pill :status="$request->status" /></td>
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">
-                                {{ $request->escalated_at?->format('j M Y, g:ia') ?? '—' }}
+                                {{ $request->escalated_at?->display()->format('j M Y, g:ia') ?? '—' }}
                             </td>
                             <td class="px-3 py-2">
                                 <div class="flex justify-end">

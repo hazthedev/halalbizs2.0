@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\EInvoiceService;
+use App\Support\DisplayTime;
 use Illuminate\Console\Command;
 
 /**
@@ -18,7 +19,7 @@ class ConsolidateEInvoices extends Command
 
     public function handle(EInvoiceService $service): int
     {
-        $period = $this->argument('period') ?? now()->subMonthNoOverflow()->format('Y-m');
+        $period = $this->argument('period') ?? DisplayTime::now()->subMonthNoOverflow()->format('Y-m');
 
         $count = $service->consolidate($period);
 

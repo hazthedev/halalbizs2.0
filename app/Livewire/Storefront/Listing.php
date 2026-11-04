@@ -15,6 +15,7 @@ use App\Models\SearchLog;
 use App\Models\Store;
 use App\Services\VectorSearchService;
 use App\Settings\BoostSettings;
+use App\Support\DisplayTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
@@ -377,7 +378,7 @@ class Listing extends Component
                         // "valid 12 months+" is about REMAINING life, not the
                         // original term: a buyer wants cover through the year
                         // ahead, not a certificate that was long once.
-                        'valid12' => $cert->whereDate('valid_to', '>=', now()->addYear()),
+                        'valid12' => $cert->whereDate('valid_to', '>=', DisplayTime::today()->addYear()),
                         'dedicated' => $cert->where('dedicated_facility', true),
                         'export' => $cert->where('export_paperwork', true),
                         default => null,

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Content;
 
 use App\Models\ThemeAsset;
 use App\Settings\ThemeSettings;
+use App\Support\DisplayTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -158,7 +159,7 @@ class Theme extends Component
         }
 
         try {
-            return Carbon::parse($iso)->format('Y-m-d\TH:i');
+            return Carbon::parse($iso)->display()->format('Y-m-d\TH:i');
         } catch (\Throwable) {
             return '';
         }
@@ -171,7 +172,7 @@ class Theme extends Component
         }
 
         try {
-            return Carbon::parse($value);
+            return DisplayTime::parse($value);
         } catch (\Throwable) {
             return null;
         }

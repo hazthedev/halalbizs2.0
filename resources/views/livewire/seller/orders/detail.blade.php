@@ -28,7 +28,7 @@
             <x-ui.badge :variant="$badgeVariant">{{ $subOrder->status->label() }}</x-ui.badge>
         </div>
         <p class="mt-1 text-[13px] text-ink-soft">
-            {{ __('Placed :date', ['date' => $placedAt->format('j M Y, g:ia')]) }}
+            {{ __('Placed :date', ['date' => $placedAt->display()->format('j M Y, g:ia')]) }}
             · {{ __('Buyer: :name', ['name' => $subOrder->order->user->name]) }}
         </p>
     </div>
@@ -114,7 +114,7 @@
                         @endif
                         <div class="flex gap-2">
                             <dt class="shrink-0 text-ink-soft">{{ __('Requested') }}:</dt>
-                            <dd class="text-ink">{{ $returnRequest->created_at->format('j M Y, g:ia') }}</dd>
+                            <dd class="text-ink">{{ $returnRequest->created_at->display()->format('j M Y, g:ia') }}</dd>
                         </div>
                     </dl>
 
@@ -135,7 +135,7 @@
                         <div class="mt-3 rounded-[var(--radius-control)] border {{ $returnRequest->respond_by->isPast() ? 'border-danger/40 bg-danger-tint/40' : 'border-warn/40 bg-warn-tint/40' }} p-3">
                             <p class="text-[13px] font-medium text-ink">
                                 {{ __('Respond by :date (:relative) — unanswered requests escalate to admin automatically.', [
-                                    'date' => $returnRequest->respond_by->format('j M Y, g:ia'),
+                                    'date' => $returnRequest->respond_by->display()->format('j M Y, g:ia'),
                                     'relative' => $returnRequest->respond_by->diffForHumans(),
                                 ]) }}
                             </p>
@@ -205,7 +205,7 @@
                             <div class="pb-1">
                                 <p class="text-[13px] font-medium text-ink">{{ SubOrderStatus::from($history->to_status)->label() }}</p>
                                 <p class="text-[12px] text-ink-soft">
-                                    {{ $history->created_at->format('j M Y, g:ia') }} · {{ $history->actor_type->label() }}
+                                    {{ $history->created_at->display()->format('j M Y, g:ia') }} · {{ $history->actor_type->label() }}
                                 </p>
                                 @if ($history->note)
                                     <p class="mt-0.5 text-[12px] text-ink-soft">{{ $history->note }}</p>
@@ -275,15 +275,15 @@
                         </div>
                     @endif
                     @if ($subOrder->status === SubOrderStatus::Delivered && $subOrder->auto_complete_at)
-                        <p class="text-[13px] text-ink-soft">{{ __('Completes automatically on :date unless the buyer acts first.', ['date' => $subOrder->auto_complete_at->format('j M Y')]) }}</p>
+                        <p class="text-[13px] text-ink-soft">{{ __('Completes automatically on :date unless the buyer acts first.', ['date' => $subOrder->auto_complete_at->display()->format('j M Y')]) }}</p>
                     @endif
                     @if ($subOrder->status === SubOrderStatus::Completed && $subOrder->completed_at)
-                        <p class="text-[13px] text-ink-soft">{{ __('Completed on :date.', ['date' => $subOrder->completed_at->format('j M Y')]) }}</p>
+                        <p class="text-[13px] text-ink-soft">{{ __('Completed on :date.', ['date' => $subOrder->completed_at->display()->format('j M Y')]) }}</p>
                     @endif
 
                 @elseif ($subOrder->status === SubOrderStatus::Cancelled)
                     <p class="text-[13px] text-ink-soft">
-                        {{ __('Cancelled on :date.', ['date' => $subOrder->cancelled_at?->format('j M Y') ?? '—']) }}
+                        {{ __('Cancelled on :date.', ['date' => $subOrder->cancelled_at?->display()->format('j M Y') ?? '—']) }}
                         @if ($subOrder->cancel_reason)
                             {{ __('Reason: :reason', ['reason' => $subOrder->cancel_reason]) }}
                         @endif

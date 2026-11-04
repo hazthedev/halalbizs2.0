@@ -24,7 +24,7 @@
 
         <div class="whitespace-pre-line break-words rounded-[10px] px-3.5 py-2.5 text-sm leading-relaxed text-ink {{ $own ? 'bg-emerald-tint' : 'border border-line bg-surface' }}">{{ $message->body }}</div>
         <p class="mt-1 text-[11px] text-ink-faint {{ $own ? 'text-right' : '' }}">
-            {{ $message->created_at->format('j M, g:i a') }}
+            {{ $message->created_at->display()->format('j M, g:i a') }}
         </p>
     </div>
 </div>

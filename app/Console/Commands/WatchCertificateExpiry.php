@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\ProductStatus;
 use App\Models\HalalCertificate;
 use App\Notifications\HalalCertificateWatch;
+use App\Support\DisplayTime;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,7 @@ class WatchCertificateExpiry extends Command
         // and the "expiring soon" badge cannot disagree. It used to say that
         // while hardcoding 60 here as well — two places claiming to be one.
         $window = (int) ($this->option('days') ?: HalalCertificate::RENEWAL_WINDOW_DAYS);
-        $today = now()->startOfDay();
+        $today = DisplayTime::today();
 
         $lapsed = $this->sweepLapsed($today);
         $restored = $this->sweepRestored($today);

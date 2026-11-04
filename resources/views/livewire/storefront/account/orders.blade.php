@@ -40,7 +40,7 @@
                             <div class="min-w-0">
                                 <p class="font-mono text-sm font-medium text-ink">{{ $order->order_no }}</p>
                                 <p class="mt-0.5 text-xs text-ink-soft">
-                                    {{ __('Placed :date', ['date' => $order->placed_at->format('j M Y, g:i a')]) }}
+                                    {{ __('Placed :date', ['date' => $order->placed_at->display()->format('j M Y, g:i a')]) }}
                                     · {{ trans_choice('{1}:count seller|[2,*]:count sellers', $order->subOrders->count(), ['count' => $order->subOrders->count()]) }}
                                 </p>
                             </div>
