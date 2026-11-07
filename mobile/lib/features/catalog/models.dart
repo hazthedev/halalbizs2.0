@@ -79,6 +79,7 @@ class Store {
 
   final Map<String, dynamic> json;
 
+  int? get id => asInt(json['id']);
   String get slug => asStr(json['slug']) ?? '';
   String get name => asStr(json['name']) ?? slug;
   String? get description => asStr(json['description']);
@@ -88,10 +89,11 @@ class Store {
   double? get ratingAvg => asDouble(json['rating_avg']);
 }
 
-/// Pagination from the envelope `meta` (Laravel paginator keys).
+/// Pagination from the envelope `meta` (`page` from ApiResponse, or the
+/// legacy paginator's `current_page`).
 class PageMeta {
   PageMeta(Map<String, dynamic>? m)
-      : page = asInt(m?['current_page']) ?? 1,
+      : page = asInt(m?['current_page'] ?? m?['page']) ?? 1,
         lastPage = asInt(m?['last_page']) ?? 1,
         total = asInt(m?['total']) ?? 0;
 
