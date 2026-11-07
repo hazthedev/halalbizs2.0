@@ -48,10 +48,18 @@ class FakeApi extends ApiClient {
   Future<dynamic> get(String path, {Map<String, dynamic>? query, void Function(Map<String, dynamic>)? meta}) async =>
       _call('GET', path, query, null, meta);
 
+  /// Headers of the most recent `post` (null when none were sent).
+  Map<String, String>? lastHeaders;
+
   @override
   Future<dynamic> post(String path,
-          {Object? body, Map<String, dynamic>? query, void Function(Map<String, dynamic>)? meta}) async =>
-      _call('POST', path, query, body, meta);
+      {Object? body,
+      Map<String, dynamic>? query,
+      Map<String, String>? headers,
+      void Function(Map<String, dynamic>)? meta}) async {
+    lastHeaders = headers;
+    return _call('POST', path, query, body, meta);
+  }
 
   @override
   Future<dynamic> patch(String path, {Object? body}) async => _call('PATCH', path, null, body, null);

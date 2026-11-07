@@ -97,6 +97,15 @@ void main() {
     expect(h['Authorization'], 'Bearer tok');
   });
 
+  test('post forwards per-call headers (Idempotency-Key) on top of the defaults', () async {
+    final adapter = StubAdapter((_) => (201, {'ok': true, 'data': null}));
+    await realClient(adapter, token: 'tok').post('checkout/place', body: {}, headers: {'Idempotency-Key': 'k-1'});
+    final h = adapter.requests.single.headers;
+    expect(h['Idempotency-Key'], 'k-1');
+    expect(h['Authorization'], 'Bearer tok');
+    expect(h['Accept'], 'application/json');
+  });
+
   test('401 tears the session down: token cleared, caches wiped, SignedOut(sessionEnded)', () async {
     final adapter = StubAdapter((_) => (401, {'ok': false, 'error': {'code': 'unauthenticated', 'message': 'Unauthenticated.'}}));
     final tokens = MemoryTokenStore('tok');
