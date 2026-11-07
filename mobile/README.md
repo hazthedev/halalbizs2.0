@@ -39,7 +39,9 @@ Build defines:
 
 Release builds: `flutter build apk --release --dart-define=API_BASE_URL=…`,
 `flutter build ipa --release --dart-define=API_BASE_URL=…` (needs Xcode),
-`flutter build web --release` (used for the Playwright smoke).
+`flutter build web --release` (used for the Playwright smoke). Always add
+`--no-tree-shake-icons`: font_awesome_flutter 11's `FaIconData` defeats the
+const finder, so tree-shaking drops glyphs the app uses.
 
 ## Gates
 
