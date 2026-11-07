@@ -392,5 +392,299 @@
         "type": "String"
       }
     }
-  }
+  },
+  "cartCheckout": "Checkout",
+  "cartContinueShopping": "Continue shopping",
+  "cartEmptyTitle": "Your cart is empty",
+  "cartEmptyBody": "Find something halal and good — it will wait for you here.",
+  "cartItemCount": "{count} items",
+  "@cartItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartPurchasingPaused": "Purchasing is paused — you can browse, but not check out right now.",
+  "cartRemove": "Remove",
+  "cartSelectAll": "Select all",
+  "cartSelectToCheckout": "Select at least one item to check out.",
+  "cartSelectedSubtotal": "Subtotal · {count} selected",
+  "@cartSelectedSubtotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartUnavailable": "Unavailable",
+  "cartViewCart": "View cart",
+  "checkoutTitle": "Checkout",
+  "checkoutDeliverTo": "Deliver to",
+  "checkoutChange": "Change",
+  "checkoutNoAddress": "You have no delivery address yet — add one to place your order.",
+  "checkoutChooseMethod": "Choose an available payment method.",
+  "checkoutSellerNote": "Note to seller",
+  "checkoutSellerNoteHint": "Optional — e.g. leave at the guard house",
+  "checkoutVouchers": "Vouchers",
+  "checkoutPlatformVoucher": "HalalBizs voucher",
+  "checkoutShopVoucher": "Shop voucher",
+  "checkoutVoucherHint": "Voucher code",
+  "checkoutVoucherApply": "Apply",
+  "checkoutVoucherRemove": "Remove",
+  "checkoutVoucherApplied": "{code} applied · {amount} off",
+  "@checkoutVoucherApplied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutUseCoins": "Use coins (you have {balance})",
+  "@checkoutUseCoins": {
+    "placeholders": {
+      "balance": {
+        "type": "int"
+      }
+    }
+  },
+  "checkoutCoinsToUse": "Coins to use",
+  "checkoutCoinsWorth": "{coins} coins · {amount} off",
+  "@checkoutCoinsWorth": {
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPaymentMethod": "Payment method",
+  "checkoutMethodCod": "Cash on delivery",
+  "checkoutMethodIpay88": "Online payment (FPX, card, e-wallet)",
+  "checkoutMethodUnavailable": "Not available for this order.",
+  "checkoutSummary": "Summary",
+  "checkoutSubtotal": "Subtotal",
+  "checkoutShipping": "Shipping",
+  "checkoutShippingPending": "Choose an address",
+  "checkoutShippingDiscount": "Shipping discount",
+  "checkoutPlatformDiscount": "HalalBizs voucher",
+  "checkoutShopDiscount": "Shop discount",
+  "checkoutTax": "Tax",
+  "checkoutGrandTotal": "Grand total",
+  "checkoutPlaceOrder": "Place order",
+  "checkoutDoneTitle": "Order placed",
+  "checkoutDoneBody": "Order {orderNo} is confirmed. Your orders are here:",
+  "@checkoutDoneBody": {
+    "placeholders": {
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutViewOrders": "View orders",
+  "checkoutPayTitle": "Payment",
+  "checkoutPayBrowserTitle": "Complete payment in your browser",
+  "checkoutPayBrowserBody": "Order {orderNo} opened in your browser. Come back here when you are done — we check the payment automatically.",
+  "@checkoutPayBrowserBody": {
+    "placeholders": {
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPayExpiresAt": "Pay before {time}",
+  "@checkoutPayExpiresAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPayIHavePaid": "I have paid",
+  "checkoutPayOpenAgain": "Open payment page again",
+  "checkoutPayRetry": "Retry payment",
+  "checkoutPayExpiredTitle": "Payment window expired",
+  "checkoutPayExpiredBody": "This order was not paid in time. Nothing was charged.",
+  "ordersAll": "All",
+  "ordersOrder": "Order",
+  "ordersTotal": "Total",
+  "ordersMoreItems": "+{count} more",
+  "@ordersMoreItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersPlacedAt": "Placed {date}",
+  "@ordersPlacedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersEmptyTitle": "No orders yet",
+  "ordersEmptyBody": "Your orders appear here once you check out.",
+  "ordersLoadMore": "Load more",
+  "ordersTracking": "Tracking",
+  "ordersTrack": "Track",
+  "ordersReturnRequest": "Return request",
+  "ordersCancelOrder": "Cancel order",
+  "ordersCancelTitle": "Cancel this order?",
+  "ordersCancelBody": "Nothing will be charged and the items go back in stock.",
+  "ordersCancelConfirm": "Cancel order",
+  "ordersKeep": "Keep order",
+  "ordersCancelled": "Order cancelled",
+  "ordersReason": "Reason",
+  "ordersReasonHint": "Choose a reason",
+  "ordersConfirmReceived": "Confirm received",
+  "ordersReceivedTitle": "Received your order?",
+  "ordersReceivedBody": "Confirm only once everything has arrived.",
+  "ordersReceivedDone": "Order received",
+  "ordersRequestReturn": "Request return",
+  "ordersNote": "Note",
+  "ordersReturnNoteHint": "What went wrong?",
+  "ordersPhotos": "Photos",
+  "ordersPhotosHelp": "Up to {max} photos.",
+  "@ordersPhotosHelp": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersReturnConfirmTitle": "Submit this return request?",
+  "ordersReturnConfirmBody": "The seller will be notified.",
+  "ordersReturnSubmit": "Submit return request",
+  "ordersReturnSubmitted": "Return requested",
+  "ordersWriteReview": "Write a review",
+  "ordersReviewBody": "Your review",
+  "ordersReviewBodyHint": "Optional — at least 10 characters",
+  "ordersSellerRating": "Seller rating",
+  "ordersSellerComment": "Comment",
+  "ordersOptional": "Optional",
+  "ordersRateEveryItem": "Rate every item before submitting.",
+  "ordersReviewSubmit": "Submit review",
+  "ordersReviewSubmitted": "Thank you for your review.",
+  "ordersNothingToReview": "Nothing left to review",
+  "accountSave": "Save",
+  "accountDelete": "Delete",
+  "accountDefault": "Default",
+  "accountPhone": "Phone",
+  "accountPreferredLanguage": "Preferred language",
+  "accountEmailUnverified": "Email not verified yet.",
+  "accountProfileSaved": "Profile updated",
+  "accountChangePassword": "Change password",
+  "accountCurrentPassword": "Current password",
+  "accountNewPassword": "New password",
+  "accountPasswordChanged": "Password updated",
+  "accountAddAddress": "Add address",
+  "accountEditAddress": "Edit address",
+  "accountNoAddresses": "No addresses yet",
+  "accountNoAddressesBody": "Add a delivery address to check out faster.",
+  "accountAddressLabel": "Label",
+  "accountAddressLabelHint": "Home, Office…",
+  "accountRecipientName": "Recipient name",
+  "accountLine1": "Address line 1",
+  "accountLine2": "Address line 2",
+  "accountPostcode": "Postcode",
+  "accountCity": "City",
+  "accountState": "State",
+  "accountStateHint": "Choose a state",
+  "accountSetDefault": "Set as default",
+  "accountAddressSaved": "Address saved",
+  "accountDeleteAddressTitle": "Delete this address?",
+  "accountDeleteAddressBody": "You can add it again any time.",
+  "accountWishlistEmpty": "Nothing saved yet",
+  "accountWishlistEmptyBody": "Tap the heart on a product to keep it here.",
+  "accountRemoveFromWishlist": "Remove from wishlist",
+  "accountCoinsBalance": "Balance",
+  "accountCoinsStreak": "Streak",
+  "accountCoinsDays": "{days} days",
+  "@accountCoinsDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "accountCoinsLifetime": "{coins} coins earned in total",
+  "@accountCoinsLifetime": {
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      }
+    }
+  },
+  "accountCoinsExpiring": "Some coins expire {date}",
+  "@accountCoinsExpiring": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountCheckIn": "Check in today",
+  "accountCheckedIn": "Checked in today",
+  "accountCheckedInReason": "You have already checked in today.",
+  "accountCheckInBody": "Check in every day to grow your streak and earn more coins.",
+  "accountCheckInDone": "+{coins} coins · day {streak} streak",
+  "@accountCheckInDone": {
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      },
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "accountCoinsHistory": "History",
+  "accountCoinsNoHistory": "No coin activity yet",
+  "accountCoinsUnavailable": "Coins are not available",
+  "accountCoinsUnavailableBody": "Daily check-in is unavailable right now.",
+  "accountMarkAllRead": "Mark all read",
+  "accountNoNotifications": "No notifications",
+  "accountNoNotificationsBody": "Order updates and messages from sellers show up here.",
+  "accountDeleteWarning": "This cannot be undone.",
+  "accountDeleteBody": "Your personal details are anonymized immediately; order records stay for legal and financial reasons. Enter your password to continue.",
+  "accountDeleteConfirmTitle": "Delete your account?",
+  "accountDeleteConfirmBody": "You will be signed out and cannot sign in again with this account.",
+  "messagesChatWithSeller": "Chat with seller",
+  "messagesEmpty": "No messages yet",
+  "messagesEmptyBody": "Start a chat from any product page.",
+  "messagesNoMessagesYet": "No messages in this conversation yet.",
+  "messagesSayHello": "Say hello to the seller.",
+  "messagesTypeMessage": "Type a message",
+  "messagesSend": "Send",
+  "checkoutPlacedCheckOrders": "Your order was placed. Check your orders.",
+  "checkoutMaybePlaced": "We could not confirm whether the order went through. Check your orders before trying again.",
+  "checkoutPayLinkMissing": "The order was placed but no payment link came back. Pay it from your orders.",
+  "accountWishlistStillSaved": "Still in your wishlist — try again.",
+  "accountUnread": "Unread",
+  "ordersReviewStars": "{n, plural, =1{1 star} other{{n} stars}}",
+  "@ordersReviewStars": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersPaymentStatusPending": "Pending",
+  "ordersPaymentStatusPaid": "Paid",
+  "ordersPaymentStatusFailed": "Failed",
+  "ordersPaymentStatusExpired": "Expired",
+  "ordersPaymentStatusRefunded": "Refunded",
+  "ordersReturnStatusRequested": "Requested",
+  "ordersReturnStatusAccepted": "Accepted",
+  "ordersReturnStatusDisputed": "Disputed",
+  "ordersReturnStatusEscalated": "Escalated",
+  "ordersReturnStatusRefunded": "Refunded",
+  "ordersReturnStatusRejected": "Rejected"
 }

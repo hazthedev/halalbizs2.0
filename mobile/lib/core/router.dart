@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/account/account_api.dart';
 import '../features/account/account_screen.dart';
 import '../features/auth/auth_screens.dart';
+import '../features/cart/cart_api.dart';
 import '../features/cart/cart_screen.dart';
 import '../features/catalog/category_screen.dart';
 import '../features/catalog/product_screen.dart';
 import '../features/catalog/search_screen.dart';
 import '../features/catalog/store_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/messages/messages_api.dart';
+import '../features/orders/orders_api.dart';
 import '../features/orders/orders_screen.dart';
 import '../features/seller_dashboard/seller_dashboard_screen.dart';
 import '../features/seller_earnings/seller_earnings_screen.dart';
@@ -40,6 +44,11 @@ String safeFrom(String? from) {
 /// Where a path (or null) should go for the current [session], or null to
 /// keep it. Pure, so tests can call it without a router.
 String? soukRedirect(SessionState session, Uri uri) {
+  // `halalbizs://pay/{order_no}` (the web return page's deep link) → the pay screen.
+  if (uri.scheme == 'halalbizs') {
+    final orderNo = uri.host == 'pay' ? uri.pathSegments.firstOrNull : null;
+    return orderNo == null || orderNo.isEmpty ? '/home' : '/checkout/pay/${Uri.encodeComponent(orderNo)}';
+  }
   final path = uri.path;
   if (session is SessionLoading) return null;
   if (session is TwoFactorPending) {
@@ -64,7 +73,11 @@ String? soukRedirect(SessionState session, Uri uri) {
 /// `<feature>SubRoutes` getter — never this file.
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = ValueNotifier(0);
-  ref.listen(sessionProvider, (_, _) => notifier.value++);
+  ref.listen(sessionProvider, (prev, next) {
+    notifier.value++;
+    // A different account (or none) is signed in: drop every cached account-scoped read.
+    if (_userId(prev) != _userId(next)) _dropAccountData(ref);
+  });
   ref.onDispose(notifier.dispose);
 
   return GoRouter(
@@ -74,20 +87,41 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) => soukRedirect(ref.read(sessionProvider), state.uri),
     routes: [
       ...authRoutes,
+      // Checkout, pay and done sit outside the tab shell: full screen, no tab
+      // bar, and leaving them disposes the pay screen so its polling stops and
+      // the Cart tab comes back to `/cart` instead of a finished order.
+      ...cartSubRoutes,
       buyerShellRoute(),
       sellerShellRoute(),
     ],
   );
 });
 
+int? _userId(SessionState? s) => s is SignedIn ? s.profile.id : null;
+
+/// Kept-alive providers that hold one user's data (the cart keys itself off
+/// the user id). Add every new account-scoped provider here.
+void _dropAccountData(Ref ref) {
+  ref.invalidate(addressesProvider);
+  ref.invalidate(wishlistProvider);
+  ref.invalidate(coinsProvider);
+  ref.invalidate(notificationsProvider);
+  ref.invalidate(orderBucketsProvider);
+  ref.invalidate(orderDetailProvider);
+  ref.invalidate(conversationsProvider);
+}
+
 /// Buyer shell: `StatefulShellRoute.indexedStack`, one branch per tab
 /// ([buyerTabs]). Pushed pages live under the tab that owns them so deep
 /// links land in the right tab and every tab keeps its own stack.
 RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
-      builder: (context, _, shell) => SoukTabShell(
-        shell: shell,
-        tabs: buyerTabs,
-        labels: [context.l10n.tabHome, context.l10n.tabSearch, context.l10n.tabCart, context.l10n.tabOrders, context.l10n.tabAccount],
+      builder: (context, _, shell) => Consumer(
+        builder: (context, ref, _) => SoukTabShell(
+          shell: shell,
+          tabs: buyerTabs,
+          labels: [context.l10n.tabHome, context.l10n.tabSearch, context.l10n.tabCart, context.l10n.tabOrders, context.l10n.tabAccount],
+          badges: {2: ref.watch(cartCountProvider)},
+        ),
       ),
       branches: [
         StatefulShellBranch(routes: [
@@ -101,8 +135,6 @@ RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
         ]),
         StatefulShellBranch(routes: [
           GoRoute(path: '/cart', builder: (_, _) => const CartScreen()),
-          // /checkout, /checkout/pay/:orderNo, /checkout/done/:orderNo
-          ...cartSubRoutes,
         ]),
         StatefulShellBranch(routes: [
           GoRoute(path: '/orders', builder: (_, _) => const OrdersScreen(), routes: ordersSubRoutes),

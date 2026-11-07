@@ -48,7 +48,7 @@ const finder, so tree-shaking drops glyphs the app uses.
 ```bash
 flutter analyze        # 0 issues in lib/ and test/
 flutter test           # widget tests with a fake ApiClient, never the live API
-flutter build web --release
+flutter build web --release --no-tree-shake-icons --dart-define=API_BASE_URL=http://halalbizs2.0-mobile.test/api/v1
 ```
 
 Tests override `apiClientProvider` (`FakeApi` in `test/helpers.dart`),
@@ -71,20 +71,33 @@ bundled under `assets/fonts` (OFL): Newsreader (display), Instrument Sans
 is formatted for display only (`PriceText` / `formatSen`), never computed in
 the app.
 
-## Built in this slice (4)
+## Built so far
 
-Theme + fonts, the kit, api / auth / db / offline core, the router with both
-shells, auth screens (`/login`, `/register`, `/two-factor`, `/forgot-password`,
-`/verify-email`), home, search, category, product and store pages, l10n en +
-ms, the Account tab root and the Language page.
+Slice 4: theme + fonts, the kit, api / auth / db / offline core, the router
+with both shells, auth screens (`/login`, `/register`, `/two-factor`,
+`/forgot-password`, `/verify-email`), home, search, category, product and
+store pages, l10n en + ms, the Account tab root and the Language page.
+
+Slice 5 (buyer): cart (`features/cart`, `AsyncNotifier` over `GET cart`; the
+tab badge is `cartCountProvider`), checkout + the iPay88 hand-off
+(`features/checkout`: quote → place → `/checkout/pay/:orderNo` opens
+`payment_url` externally and polls `GET orders/{no}/payment`; the
+`halalbizs://pay/{order_no}` deep link lands on the same screen via
+`soukRedirect`), orders (`features/orders`: buckets, detail, cancel / confirm
+received / return with photos / review), account sub-pages (profile,
+addresses, wishlist, coins, notifications, delete account), messages
+(`features/messages`, thread polled every 10 s), "Chat with seller" on the
+product page, and the push stub (`core/push/push_service.dart`:
+`registerDevice` → `POST devices`, `unregister` on sign-out, behind
+`PUSH_ENABLED`).
 
 ## Stubbed for later slices
 
-- Cart, checkout, pay hand-off, orders, account sub-pages, messages (slice 5):
-  `ComingSoonScreen` placeholders under the real routes. "Add to cart" already
-  calls `POST cart/items`; a 404 shows "Cart arrives in the next slice".
 - Seller centre tabs (slice 6): placeholders under `/seller/*`.
-- Push (`core/push`): not present until the Firebase config files exist.
+- Push: `PushService` has no token source until `firebase_messaging` and the
+  Firebase config files exist; `registerDevice` is wired but never called.
+- Review photos (`items[].photos[]`) and the "Become a seller" flow stay on
+  the web.
 - `GET home`, `GET stores/{slug}`, `GET stores/{slug}/products`, product
   filters and `sort` (API slice 2): the app calls them per the plan and falls
   back to `GET products` where the route is missing.

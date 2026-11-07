@@ -1825,6 +1825,1044 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Request a payout of {amount} to your bank account?'**
   String sellerPayoutConfirm(String amount);
+
+  /// No description provided for @cartCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get cartCheckout;
+
+  /// No description provided for @cartContinueShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue shopping'**
+  String get cartContinueShopping;
+
+  /// No description provided for @cartEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cart is empty'**
+  String get cartEmptyTitle;
+
+  /// No description provided for @cartEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Find something halal and good — it will wait for you here.'**
+  String get cartEmptyBody;
+
+  /// No description provided for @cartItemCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String cartItemCount(int count);
+
+  /// No description provided for @cartPurchasingPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchasing is paused — you can browse, but not check out right now.'**
+  String get cartPurchasingPaused;
+
+  /// No description provided for @cartRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cartRemove;
+
+  /// No description provided for @cartSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get cartSelectAll;
+
+  /// No description provided for @cartSelectToCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one item to check out.'**
+  String get cartSelectToCheckout;
+
+  /// No description provided for @cartSelectedSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal · {count} selected'**
+  String cartSelectedSubtotal(int count);
+
+  /// No description provided for @cartUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get cartUnavailable;
+
+  /// No description provided for @cartViewCart.
+  ///
+  /// In en, this message translates to:
+  /// **'View cart'**
+  String get cartViewCart;
+
+  /// No description provided for @checkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get checkoutTitle;
+
+  /// No description provided for @checkoutDeliverTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliver to'**
+  String get checkoutDeliverTo;
+
+  /// No description provided for @checkoutChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get checkoutChange;
+
+  /// No description provided for @checkoutNoAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no delivery address yet — add one to place your order.'**
+  String get checkoutNoAddress;
+
+  /// No description provided for @checkoutChooseMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an available payment method.'**
+  String get checkoutChooseMethod;
+
+  /// No description provided for @checkoutSellerNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note to seller'**
+  String get checkoutSellerNote;
+
+  /// No description provided for @checkoutSellerNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional — e.g. leave at the guard house'**
+  String get checkoutSellerNoteHint;
+
+  /// No description provided for @checkoutVouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'Vouchers'**
+  String get checkoutVouchers;
+
+  /// No description provided for @checkoutPlatformVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'HalalBizs voucher'**
+  String get checkoutPlatformVoucher;
+
+  /// No description provided for @checkoutShopVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop voucher'**
+  String get checkoutShopVoucher;
+
+  /// No description provided for @checkoutVoucherHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Voucher code'**
+  String get checkoutVoucherHint;
+
+  /// No description provided for @checkoutVoucherApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get checkoutVoucherApply;
+
+  /// No description provided for @checkoutVoucherRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get checkoutVoucherRemove;
+
+  /// No description provided for @checkoutVoucherApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'{code} applied · {amount} off'**
+  String checkoutVoucherApplied(String code, String amount);
+
+  /// No description provided for @checkoutUseCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'Use coins (you have {balance})'**
+  String checkoutUseCoins(int balance);
+
+  /// No description provided for @checkoutCoinsToUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins to use'**
+  String get checkoutCoinsToUse;
+
+  /// No description provided for @checkoutCoinsWorth.
+  ///
+  /// In en, this message translates to:
+  /// **'{coins} coins · {amount} off'**
+  String checkoutCoinsWorth(int coins, String amount);
+
+  /// No description provided for @checkoutPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment method'**
+  String get checkoutPaymentMethod;
+
+  /// No description provided for @checkoutMethodCod.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash on delivery'**
+  String get checkoutMethodCod;
+
+  /// No description provided for @checkoutMethodIpay88.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment (FPX, card, e-wallet)'**
+  String get checkoutMethodIpay88;
+
+  /// No description provided for @checkoutMethodUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available for this order.'**
+  String get checkoutMethodUnavailable;
+
+  /// No description provided for @checkoutSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get checkoutSummary;
+
+  /// No description provided for @checkoutSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get checkoutSubtotal;
+
+  /// No description provided for @checkoutShipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping'**
+  String get checkoutShipping;
+
+  /// No description provided for @checkoutShippingPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an address'**
+  String get checkoutShippingPending;
+
+  /// No description provided for @checkoutShippingDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping discount'**
+  String get checkoutShippingDiscount;
+
+  /// No description provided for @checkoutPlatformDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'HalalBizs voucher'**
+  String get checkoutPlatformDiscount;
+
+  /// No description provided for @checkoutShopDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop discount'**
+  String get checkoutShopDiscount;
+
+  /// No description provided for @checkoutTax.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax'**
+  String get checkoutTax;
+
+  /// No description provided for @checkoutGrandTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Grand total'**
+  String get checkoutGrandTotal;
+
+  /// No description provided for @checkoutPlaceOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Place order'**
+  String get checkoutPlaceOrder;
+
+  /// No description provided for @checkoutDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order placed'**
+  String get checkoutDoneTitle;
+
+  /// No description provided for @checkoutDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Order {orderNo} is confirmed. Your orders are here:'**
+  String checkoutDoneBody(String orderNo);
+
+  /// No description provided for @checkoutViewOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'View orders'**
+  String get checkoutViewOrders;
+
+  /// No description provided for @checkoutPayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get checkoutPayTitle;
+
+  /// No description provided for @checkoutPayBrowserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete payment in your browser'**
+  String get checkoutPayBrowserTitle;
+
+  /// No description provided for @checkoutPayBrowserBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Order {orderNo} opened in your browser. Come back here when you are done — we check the payment automatically.'**
+  String checkoutPayBrowserBody(String orderNo);
+
+  /// No description provided for @checkoutPayExpiresAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay before {time}'**
+  String checkoutPayExpiresAt(String time);
+
+  /// No description provided for @checkoutPayIHavePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'I have paid'**
+  String get checkoutPayIHavePaid;
+
+  /// No description provided for @checkoutPayOpenAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Open payment page again'**
+  String get checkoutPayOpenAgain;
+
+  /// No description provided for @checkoutPayRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry payment'**
+  String get checkoutPayRetry;
+
+  /// No description provided for @checkoutPayExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment window expired'**
+  String get checkoutPayExpiredTitle;
+
+  /// No description provided for @checkoutPayExpiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This order was not paid in time. Nothing was charged.'**
+  String get checkoutPayExpiredBody;
+
+  /// No description provided for @ordersAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get ordersAll;
+
+  /// No description provided for @ordersOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get ordersOrder;
+
+  /// No description provided for @ordersTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get ordersTotal;
+
+  /// No description provided for @ordersMoreItems.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more'**
+  String ordersMoreItems(int count);
+
+  /// No description provided for @ordersPlacedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Placed {date}'**
+  String ordersPlacedAt(String date);
+
+  /// No description provided for @ordersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders yet'**
+  String get ordersEmptyTitle;
+
+  /// No description provided for @ordersEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your orders appear here once you check out.'**
+  String get ordersEmptyBody;
+
+  /// No description provided for @ordersLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get ordersLoadMore;
+
+  /// No description provided for @ordersTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking'**
+  String get ordersTracking;
+
+  /// No description provided for @ordersTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get ordersTrack;
+
+  /// No description provided for @ordersReturnRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Return request'**
+  String get ordersReturnRequest;
+
+  /// No description provided for @ordersCancelOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel order'**
+  String get ordersCancelOrder;
+
+  /// No description provided for @ordersCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this order?'**
+  String get ordersCancelTitle;
+
+  /// No description provided for @ordersCancelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing will be charged and the items go back in stock.'**
+  String get ordersCancelBody;
+
+  /// No description provided for @ordersCancelConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel order'**
+  String get ordersCancelConfirm;
+
+  /// No description provided for @ordersKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep order'**
+  String get ordersKeep;
+
+  /// No description provided for @ordersCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Order cancelled'**
+  String get ordersCancelled;
+
+  /// No description provided for @ordersReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get ordersReason;
+
+  /// No description provided for @ordersReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a reason'**
+  String get ordersReasonHint;
+
+  /// No description provided for @ordersConfirmReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm received'**
+  String get ordersConfirmReceived;
+
+  /// No description provided for @ordersReceivedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Received your order?'**
+  String get ordersReceivedTitle;
+
+  /// No description provided for @ordersReceivedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm only once everything has arrived.'**
+  String get ordersReceivedBody;
+
+  /// No description provided for @ordersReceivedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Order received'**
+  String get ordersReceivedDone;
+
+  /// No description provided for @ordersRequestReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Request return'**
+  String get ordersRequestReturn;
+
+  /// No description provided for @ordersNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get ordersNote;
+
+  /// No description provided for @ordersReturnNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What went wrong?'**
+  String get ordersReturnNoteHint;
+
+  /// No description provided for @ordersPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get ordersPhotos;
+
+  /// No description provided for @ordersPhotosHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {max} photos.'**
+  String ordersPhotosHelp(int max);
+
+  /// No description provided for @ordersReturnConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit this return request?'**
+  String get ordersReturnConfirmTitle;
+
+  /// No description provided for @ordersReturnConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The seller will be notified.'**
+  String get ordersReturnConfirmBody;
+
+  /// No description provided for @ordersReturnSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit return request'**
+  String get ordersReturnSubmit;
+
+  /// No description provided for @ordersReturnSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Return requested'**
+  String get ordersReturnSubmitted;
+
+  /// No description provided for @ordersWriteReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a review'**
+  String get ordersWriteReview;
+
+  /// No description provided for @ordersReviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your review'**
+  String get ordersReviewBody;
+
+  /// No description provided for @ordersReviewBodyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional — at least 10 characters'**
+  String get ordersReviewBodyHint;
+
+  /// No description provided for @ordersSellerRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller rating'**
+  String get ordersSellerRating;
+
+  /// No description provided for @ordersSellerComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get ordersSellerComment;
+
+  /// No description provided for @ordersOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get ordersOptional;
+
+  /// No description provided for @ordersRateEveryItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate every item before submitting.'**
+  String get ordersRateEveryItem;
+
+  /// No description provided for @ordersReviewSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit review'**
+  String get ordersReviewSubmit;
+
+  /// No description provided for @ordersReviewSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your review.'**
+  String get ordersReviewSubmitted;
+
+  /// No description provided for @ordersNothingToReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing left to review'**
+  String get ordersNothingToReview;
+
+  /// No description provided for @accountSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get accountSave;
+
+  /// No description provided for @accountDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get accountDelete;
+
+  /// No description provided for @accountDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get accountDefault;
+
+  /// No description provided for @accountPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get accountPhone;
+
+  /// No description provided for @accountPreferredLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred language'**
+  String get accountPreferredLanguage;
+
+  /// No description provided for @accountEmailUnverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email not verified yet.'**
+  String get accountEmailUnverified;
+
+  /// No description provided for @accountProfileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated'**
+  String get accountProfileSaved;
+
+  /// No description provided for @accountChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get accountChangePassword;
+
+  /// No description provided for @accountCurrentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get accountCurrentPassword;
+
+  /// No description provided for @accountNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get accountNewPassword;
+
+  /// No description provided for @accountPasswordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated'**
+  String get accountPasswordChanged;
+
+  /// No description provided for @accountAddAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Add address'**
+  String get accountAddAddress;
+
+  /// No description provided for @accountEditAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit address'**
+  String get accountEditAddress;
+
+  /// No description provided for @accountNoAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'No addresses yet'**
+  String get accountNoAddresses;
+
+  /// No description provided for @accountNoAddressesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a delivery address to check out faster.'**
+  String get accountNoAddressesBody;
+
+  /// No description provided for @accountAddressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get accountAddressLabel;
+
+  /// No description provided for @accountAddressLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Home, Office…'**
+  String get accountAddressLabelHint;
+
+  /// No description provided for @accountRecipientName.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient name'**
+  String get accountRecipientName;
+
+  /// No description provided for @accountLine1.
+  ///
+  /// In en, this message translates to:
+  /// **'Address line 1'**
+  String get accountLine1;
+
+  /// No description provided for @accountLine2.
+  ///
+  /// In en, this message translates to:
+  /// **'Address line 2'**
+  String get accountLine2;
+
+  /// No description provided for @accountPostcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Postcode'**
+  String get accountPostcode;
+
+  /// No description provided for @accountCity.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get accountCity;
+
+  /// No description provided for @accountState.
+  ///
+  /// In en, this message translates to:
+  /// **'State'**
+  String get accountState;
+
+  /// No description provided for @accountStateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a state'**
+  String get accountStateHint;
+
+  /// No description provided for @accountSetDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default'**
+  String get accountSetDefault;
+
+  /// No description provided for @accountAddressSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Address saved'**
+  String get accountAddressSaved;
+
+  /// No description provided for @accountDeleteAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this address?'**
+  String get accountDeleteAddressTitle;
+
+  /// No description provided for @accountDeleteAddressBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add it again any time.'**
+  String get accountDeleteAddressBody;
+
+  /// No description provided for @accountWishlistEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing saved yet'**
+  String get accountWishlistEmpty;
+
+  /// No description provided for @accountWishlistEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the heart on a product to keep it here.'**
+  String get accountWishlistEmptyBody;
+
+  /// No description provided for @accountRemoveFromWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from wishlist'**
+  String get accountRemoveFromWishlist;
+
+  /// No description provided for @accountCoinsBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get accountCoinsBalance;
+
+  /// No description provided for @accountCoinsStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get accountCoinsStreak;
+
+  /// No description provided for @accountCoinsDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days'**
+  String accountCoinsDays(int days);
+
+  /// No description provided for @accountCoinsLifetime.
+  ///
+  /// In en, this message translates to:
+  /// **'{coins} coins earned in total'**
+  String accountCoinsLifetime(int coins);
+
+  /// No description provided for @accountCoinsExpiring.
+  ///
+  /// In en, this message translates to:
+  /// **'Some coins expire {date}'**
+  String accountCoinsExpiring(String date);
+
+  /// No description provided for @accountCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in today'**
+  String get accountCheckIn;
+
+  /// No description provided for @accountCheckedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked in today'**
+  String get accountCheckedIn;
+
+  /// No description provided for @accountCheckedInReason.
+  ///
+  /// In en, this message translates to:
+  /// **'You have already checked in today.'**
+  String get accountCheckedInReason;
+
+  /// No description provided for @accountCheckInBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in every day to grow your streak and earn more coins.'**
+  String get accountCheckInBody;
+
+  /// No description provided for @accountCheckInDone.
+  ///
+  /// In en, this message translates to:
+  /// **'+{coins} coins · day {streak} streak'**
+  String accountCheckInDone(int coins, int streak);
+
+  /// No description provided for @accountCoinsHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get accountCoinsHistory;
+
+  /// No description provided for @accountCoinsNoHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No coin activity yet'**
+  String get accountCoinsNoHistory;
+
+  /// No description provided for @accountCoinsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins are not available'**
+  String get accountCoinsUnavailable;
+
+  /// No description provided for @accountCoinsUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily check-in is unavailable right now.'**
+  String get accountCoinsUnavailableBody;
+
+  /// No description provided for @accountMarkAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get accountMarkAllRead;
+
+  /// No description provided for @accountNoNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications'**
+  String get accountNoNotifications;
+
+  /// No description provided for @accountNoNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Order updates and messages from sellers show up here.'**
+  String get accountNoNotificationsBody;
+
+  /// No description provided for @accountDeleteWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone.'**
+  String get accountDeleteWarning;
+
+  /// No description provided for @accountDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal details are anonymized immediately; order records stay for legal and financial reasons. Enter your password to continue.'**
+  String get accountDeleteBody;
+
+  /// No description provided for @accountDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get accountDeleteConfirmTitle;
+
+  /// No description provided for @accountDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You will be signed out and cannot sign in again with this account.'**
+  String get accountDeleteConfirmBody;
+
+  /// No description provided for @messagesChatWithSeller.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with seller'**
+  String get messagesChatWithSeller;
+
+  /// No description provided for @messagesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get messagesEmpty;
+
+  /// No description provided for @messagesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a chat from any product page.'**
+  String get messagesEmptyBody;
+
+  /// No description provided for @messagesNoMessagesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages in this conversation yet.'**
+  String get messagesNoMessagesYet;
+
+  /// No description provided for @messagesSayHello.
+  ///
+  /// In en, this message translates to:
+  /// **'Say hello to the seller.'**
+  String get messagesSayHello;
+
+  /// No description provided for @messagesTypeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message'**
+  String get messagesTypeMessage;
+
+  /// No description provided for @messagesSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get messagesSend;
+
+  /// No description provided for @checkoutPlacedCheckOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order was placed. Check your orders.'**
+  String get checkoutPlacedCheckOrders;
+
+  /// No description provided for @checkoutMaybePlaced.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not confirm whether the order went through. Check your orders before trying again.'**
+  String get checkoutMaybePlaced;
+
+  /// No description provided for @checkoutPayLinkMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'The order was placed but no payment link came back. Pay it from your orders.'**
+  String get checkoutPayLinkMissing;
+
+  /// No description provided for @accountWishlistStillSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Still in your wishlist — try again.'**
+  String get accountWishlistStillSaved;
+
+  /// No description provided for @accountUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get accountUnread;
+
+  /// No description provided for @ordersReviewStars.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 star} other{{n} stars}}'**
+  String ordersReviewStars(int n);
+
+  /// No description provided for @ordersPaymentStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get ordersPaymentStatusPending;
+
+  /// No description provided for @ordersPaymentStatusPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get ordersPaymentStatusPaid;
+
+  /// No description provided for @ordersPaymentStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get ordersPaymentStatusFailed;
+
+  /// No description provided for @ordersPaymentStatusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get ordersPaymentStatusExpired;
+
+  /// No description provided for @ordersPaymentStatusRefunded.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded'**
+  String get ordersPaymentStatusRefunded;
+
+  /// No description provided for @ordersReturnStatusRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get ordersReturnStatusRequested;
+
+  /// No description provided for @ordersReturnStatusAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get ordersReturnStatusAccepted;
+
+  /// No description provided for @ordersReturnStatusDisputed.
+  ///
+  /// In en, this message translates to:
+  /// **'Disputed'**
+  String get ordersReturnStatusDisputed;
+
+  /// No description provided for @ordersReturnStatusEscalated.
+  ///
+  /// In en, this message translates to:
+  /// **'Escalated'**
+  String get ordersReturnStatusEscalated;
+
+  /// No description provided for @ordersReturnStatusRefunded.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded'**
+  String get ordersReturnStatusRefunded;
+
+  /// No description provided for @ordersReturnStatusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get ordersReturnStatusRejected;
 }
 
 class _AppLocalizationsDelegate

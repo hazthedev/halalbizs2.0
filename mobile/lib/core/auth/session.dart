@@ -6,9 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
 import '../api/json.dart';
 import '../db/app_db.dart';
+import '../push/push_service.dart';
 import 'token_store.dart';
 
-/// The signed-in user as served by `GET me` (and `POST auth/login`).
+/// The signed-in user as served by `GET me` (and `POST auth/login`):
+/// `{id, name, email, phone, email_verified, preferred_locale, roles[],
+/// store{id,slug,name,status}|null, unread_notifications, coins}`
+/// (`UserResource`). Older keys are still read as fallbacks.
 class Profile {
   Profile(this.json);
 
@@ -20,15 +24,22 @@ class Profile {
   String? get phone => asStr(json['phone']);
   String? get avatar => asStr(json['avatar']);
   String? get preferredLocale => asStr(json['preferred_locale']);
-  int get coins => asInt(json['coins_balance'] ?? json['coins']) ?? 0;
+
+  /// Loyalty coins are a count, not money.
+  int get coins => asInt(json['coins'] ?? json['coins_balance']) ?? 0;
   bool get emailVerified => asBool(json['email_verified']) || json['email_verified_at'] != null;
   List<String> get roles => asList(json['roles']).map((r) => '$r').toList();
 
-  /// `{id, slug, status}` of the user's store, if any.
+  /// `{id, slug, name, status}` of the user's store, if any.
   Map<String, dynamic>? get store => json['store'] is Map ? asMap(json['store']) : null;
+  int? get storeId => asInt(store?['id']);
+  String? get storeName => asStr(store?['name']);
   bool get isApprovedSeller => asStr(store?['status']) == 'approved';
-  int get unreadNotifications => asInt(asMap(json['unread'])['notifications']) ?? 0;
-  int get unreadMessages => asInt(asMap(json['unread'])['messages']) ?? 0;
+  int get unreadNotifications =>
+      asInt(json['unread_notifications'] ?? asMap(json['unread'])['notifications']) ?? 0;
+
+  /// Not in `GET me` yet; the conversations list carries per-thread counts.
+  int get unreadMessages => asInt(json['unread_messages'] ?? asMap(json['unread'])['messages']) ?? 0;
 }
 
 sealed class SessionState {
@@ -189,6 +200,10 @@ class SessionController extends Notifier<SessionState> {
     if (_signingOut) return;
     _signingOut = true;
     try {
+      try {
+        // Push registration is per account: drop it while the token still works.
+        await ref.read(pushServiceProvider).unregister().timeout(revokeTimeout);
+      } catch (_) {}
       try {
         await _api.post('auth/logout').timeout(revokeTimeout);
       } catch (_) {

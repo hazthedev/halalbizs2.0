@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/api/api_client.dart';
 import '../../core/auth/session.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../cart/cart_api.dart';
+import '../messages/messages_api.dart';
 import 'catalog_api.dart';
 import 'models.dart';
 
@@ -26,6 +28,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   int _qty = 1;
   int _image = 0;
   bool _adding = false;
+  bool _chatting = false;
 
   Variant? _selected(Product p) {
     final vs = p.variants;
@@ -52,16 +55,44 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     setState(() => _adding = true);
     final l = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
     try {
-      final outcome = await ref.read(cartApiProvider).addItem(variantId: v.id, qty: _qty);
+      await ref.read(cartProvider.notifier).add(variantId: v.id, qty: _qty);
       if (!mounted) return;
       messenger
         ..clearSnackBars()
-        ..showSnackBar(SnackBar(content: Text(outcome == CartOutcome.notReady ? l.cartComingSoon : l.addedToCart)));
+        ..showSnackBar(SnackBar(
+          content: Text(l.addedToCart),
+          action: SnackBarAction(key: const Key('product-view-cart'), label: l.cartViewCart, textColor: SoukColors.onDark, onPressed: () => router.go('/cart')),
+        ));
     } catch (e) {
       if (mounted) showApiError(context, e);
     } finally {
       if (mounted) setState(() => _adding = false);
+    }
+  }
+
+  /// `POST conversations {store_id, product_id}` then the thread. The product
+  /// payload has no store id, so it comes from `GET stores/{slug}`.
+  Future<void> _chat(Product p) async {
+    if (ref.read(sessionProvider) is! SignedIn) {
+      context.push('/login?from=${Uri.encodeComponent('/p/${p.slug}')}');
+      return;
+    }
+    final slug = p.storeSlug;
+    if (slug == null) return;
+    setState(() => _chatting = true);
+    final router = GoRouter.of(context);
+    try {
+      final storeId = (await ref.read(storeProvider(slug).future)).data.id;
+      if (storeId == null) throw ApiException('not_found', 'Store not found.', status: 404);
+      final c = await ref.read(messagesApiProvider).open(storeId: storeId, productId: p.id);
+      if (!mounted) return;
+      router.push('/account/messages/${c.id}');
+    } catch (e) {
+      if (mounted) showApiError(context, e);
+    } finally {
+      if (mounted) setState(() => _chatting = false);
     }
   }
 
@@ -80,6 +111,15 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       fromCache: async.value?.fromCache ?? false,
       cachedAt: async.value?.fetchedAt,
       padding: EdgeInsets.zero,
+      actions: [
+        if (product?.storeSlug != null)
+          SoukIconButton(
+            key: const Key('product-chat'),
+            icon: FontAwesomeIcons.comment,
+            label: l.messagesChatWithSeller,
+            onPressed: _chatting ? null : () => _chat(product!),
+          ),
+      ],
       bottomBar: product == null
           ? null
           : Row(children: [
