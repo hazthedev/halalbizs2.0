@@ -99,3 +99,48 @@ test('submit() refuses a stranger, an incomplete order, a duplicate and a bad ra
 
     expect(Review::count())->toBe(1);
 });
+
+test('submit() refuses more than 5 photos, non-images and oversized photos before writing anything', function () {
+    Storage::fake('public');
+    $buyer = User::factory()->create();
+    $subOrder = reviewServiceSubOrder($buyer);
+    $item = reviewServiceItem($subOrder);
+    $service = app(ReviewService::class);
+    $submit = fn (array $photos) => fn () => $service->submit($subOrder, $buyer, [['order_item_id' => $item->id, 'rating' => 5, 'photos' => $photos]]);
+
+    expect($submit(collect(range(1, 6))->map(fn ($i) => UploadedFile::fake()->image("p{$i}.jpg"))->all()))
+        ->toThrow(InvalidArgumentException::class, 'Up to 5 photos per review.');
+
+    expect($submit([UploadedFile::fake()->create('evil.html', 10, 'text/html')]))
+        ->toThrow(InvalidArgumentException::class, 'Photos must be images');
+
+    expect($submit([UploadedFile::fake()->image('anim.gif')]))
+        ->toThrow(InvalidArgumentException::class, 'Photos must be images');
+
+    expect($submit([UploadedFile::fake()->image('huge.jpg')->size(5000)]))
+        ->toThrow(InvalidArgumentException::class, 'Each photo must be 4MB or smaller.');
+
+    expect(Review::count())->toBe(0);
+});
+
+test('assertReviewable() is the gate the web panel runs before spending a Turnstile token', function () {
+    $buyer = User::factory()->create();
+    $service = app(ReviewService::class);
+
+    $pending = reviewServiceSubOrder($buyer, SubOrderStatus::Delivered);
+    $pendingItem = reviewServiceItem($pending);
+    expect(fn () => $service->assertReviewable($pending, $buyer, $pendingItem->id))
+        ->toThrow(InvalidArgumentException::class, 'once it is completed');
+
+    $subOrder = reviewServiceSubOrder($buyer);
+    $item = reviewServiceItem($subOrder);
+
+    expect($service->assertReviewable($subOrder, $buyer, $item->id)->id)->toBe($item->id)
+        ->and(fn () => $service->assertReviewable($subOrder, User::factory()->create(), $item->id))
+        ->toThrow(AuthorizationException::class);
+
+    $service->submit($subOrder, $buyer, [['order_item_id' => $item->id, 'rating' => 5]]);
+
+    expect(fn () => $service->assertReviewable($subOrder, $buyer, $item->id))
+        ->toThrow(InvalidArgumentException::class, 'already reviewed');
+});

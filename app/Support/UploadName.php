@@ -16,7 +16,7 @@ final class UploadName
 {
     public static function safe(UploadedFile $file, string $prefix = ''): string
     {
-        $extension = $file->guessExtension() ?: $file->getClientOriginalExtension() ?: 'bin';
+        $extension = $file->guessExtension() ?: 'bin';
         $base = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
 
         return $prefix.($base !== '' ? $base : 'photo').'.'.$extension;

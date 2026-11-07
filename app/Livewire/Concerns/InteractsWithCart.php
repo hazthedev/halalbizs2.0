@@ -61,6 +61,8 @@ trait InteractsWithCart
         $product = Product::find($productId);
 
         if ($product === null) {
+            $this->dispatch('toast', message: __('This product is not available right now.'), type: 'error');
+
             return;
         }
 

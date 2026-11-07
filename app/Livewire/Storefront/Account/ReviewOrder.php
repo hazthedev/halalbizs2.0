@@ -63,7 +63,15 @@ class ReviewOrder extends Component
     {
         abort_unless($this->subOrder->order->user_id === auth()->id(), 403);
 
-        $this->subOrder->items()->findOrFail($orderItemId);
+        // Business gate first, so a refused submit burns neither a rate-limit
+        // attempt nor the one-use Turnstile token.
+        try {
+            $reviews->assertReviewable($this->subOrder, auth()->user(), $orderItemId);
+        } catch (InvalidArgumentException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+
+            return;
+        }
 
         $key = 'review-submit:'.auth()->id();
 

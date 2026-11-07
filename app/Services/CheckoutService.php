@@ -183,29 +183,21 @@ class CheckoutService
             $lines = collect();
 
             foreach ($items as $item) {
-                $variant = $variants->get($item->product_variant_id);
-
-                if ($variant === null || ! $variant->product->isLive()) {
-                    throw new CheckoutException(__('An item in your cart is no longer available.'));
-                }
-
-                $store = $variant->product->store;
-
-                if (! $store->isApproved() || $store->holiday_mode) {
-                    throw new CheckoutException(__(':store is not accepting orders right now.', ['store' => $store->name]));
-                }
-
-                if ($variant->stock < $item->qty) {
-                    $label = trim($variant->product->getTranslation('name', 'en').' '.($variant->options_label ?? ''));
-
-                    throw new CheckoutException(__(':item just sold out — only :stock left.', ['item' => $label, 'stock' => $variant->stock]));
-                }
-
-                $lines->push((object) [
-                    'variant' => $variant,
+                $line = (object) [
+                    'variant' => $variants->get($item->product_variant_id),
                     'qty' => $item->qty,
                     'forcedPriceSen' => $item->forced_price_sen ?? null,
-                ]);
+                ];
+
+                // Same refusals the quote drops a line for (blockReason() is
+                // the one home): withdrawn product, closed store, short stock.
+                $reason = $this->blockReason($line);
+
+                if ($reason !== null) {
+                    throw new CheckoutException($reason);
+                }
+
+                $lines->push($line);
             }
 
             // COD constraints (docs/01 §3.5).
@@ -228,10 +220,6 @@ class CheckoutService
             //    previews with exactly the same code.
             $storeTotals = $this->priceByStore($lines, $buyer, $address, $flashItems, $groupMemberships);
 
-            $subtotalSen = (int) array_sum(array_column($storeTotals, 'items_subtotal_sen'));
-            $shippingTotalSen = (int) array_sum(array_column($storeTotals, 'shipping_fee_sen'));
-            $taxTotalSen = (int) array_sum(array_column($storeTotals, 'tax_sen'));
-
             // 3. Vouchers (M8 engine, docs/09 §B): one platform + one shop
             //    code, each re-validated and consumed under lockForUpdate in
             //    THIS transaction — quota can never oversell.
@@ -244,17 +232,21 @@ class CheckoutService
             // discount + shop voucher (Shopee model). Must be a FreeShipping voucher.
             $shippingDiscount = $this->voucherFor($shippingCode, $buyer, $storeSubtotals, null, lock: true);
 
-            // Free-shipping vouchers zero the flagged stores' fees (once each).
-            // Track what each slot waived for its usage row + the sub-order subsidy.
-            $waivedSen = $this->applyFreeShipping($storeTotals, [
+            // Order-level sums after the free-shipping waiver (once per store,
+            // tracked per slot for its usage row + the sub-order subsidy). The
+            // platform share lives at order level (discount_total_sen); the
+            // shop discount lands on its sub-order's shop_discount_sen below.
+            [
+                'subtotal_sen' => $subtotalSen,
+                'shipping_total_sen' => $shippingTotalSen,
+                'tax_total_sen' => $taxTotalSen,
+                'waived_sen' => $waivedSen,
+                'platform_discount_sen' => $discountTotalSen,
+                'shop_discount_sen' => $shopDiscountTotalSen,
+                'pre_coin_total_sen' => $preCoinTotalSen,
+            ] = $this->totals($storeTotals, [
                 'platform' => $platformDiscount, 'shop' => $shopDiscount, 'shipping' => $shippingDiscount,
             ]);
-            $shippingTotalSen -= (int) array_sum($waivedSen);
-
-            // Platform share lives at order level (discount_total_sen); the
-            // shop discount lands on its sub-order's shop_discount_sen below.
-            $shopDiscountTotalSen = $shopDiscount?->totalDiscountSen ?? 0;
-            $discountTotalSen = $this->vouchers->platformDiscountSen($platformDiscount, $shopDiscount, $subtotalSen);
 
             // AL-L1: the same voucher ROW can fill two slots at once — e.g. a
             // shop free-shipping code entered as both $shopCode and
@@ -289,7 +281,6 @@ class CheckoutService
             // (variants → flash-sale → vouchers → wallet). Capped to the wallet
             // balance + per-order ceiling and to leave ≥ 1 sen payable, so it can
             // never zero the bill or oversell the wallet. Default 0 → no-op.
-            $preCoinTotalSen = $subtotalSen + $shippingTotalSen + $taxTotalSen - $discountTotalSen - $shopDiscountTotalSen;
             $coinRedemption = $coinsToRedeem > 0
                 ? $this->coins->redeemForCheckout($buyer, $coinsToRedeem, $preCoinTotalSen)
                 : CoinRedemptionResult::none();
@@ -505,9 +496,6 @@ class CheckoutService
         );
 
         $storeSubtotals = $this->storeSubtotals($storeTotals);
-        $subtotalSen = (int) array_sum($storeSubtotals);
-        $shippingTotalSen = (int) array_sum(array_column($storeTotals, 'shipping_fee_sen'));
-        $taxTotalSen = (int) array_sum(array_column($storeTotals, 'tax_sen'));
 
         // Re-validate every applied voucher on each quote so the discount can
         // never go stale between apply and submit.
@@ -527,14 +515,23 @@ class CheckoutService
             }
         }
 
-        $waivedSen = $this->applyFreeShipping($storeTotals, $discounts);
+        [
+            'subtotal_sen' => $subtotalSen,
+            'shipping_total_sen' => $shippingTotalSen,
+            'tax_total_sen' => $taxTotalSen,
+            'waived_sen' => $waivedSen,
+            'platform_discount_sen' => $platformDiscountSen,
+            'shop_discount_sen' => $shopDiscountSen,
+            'pre_coin_total_sen' => $preCoinTotalSen,
+        ] = $this->totals($storeTotals, $discounts);
         $shippingSubsidySen = (int) array_sum($waivedSen);
-        $shippingTotalSen -= $shippingSubsidySen;
 
-        $platformDiscountSen = $this->vouchers->platformDiscountSen($discounts['platform'], $discounts['shop'], $subtotalSen);
-        $shopDiscountSen = $discounts['shop']?->totalDiscountSen ?? 0;
-
-        $preCoinTotalSen = max($subtotalSen + $shippingTotalSen + $taxTotalSen - $platformDiscountSen - $shopDiscountSen, 0);
+        // The same refusals place() makes before it writes anything.
+        $blockReason = match (true) {
+            $lines->isEmpty() => __('Your cart has no selected items.'),
+            $preCoinTotalSen <= 0 => __('Order total must be above zero.'),
+            default => null,
+        };
 
         $coinsEnabled = $this->coins->enabled();
         $coinBalance = $coinsEnabled ? $this->coins->balance($buyer) : 0;
@@ -590,6 +587,7 @@ class CheckoutService
             codUnavailableReason: $codUnavailableReason,
             ipay88Enabled: $ipay88Enabled,
             paymentMethod: $method,
+            blockReason: $blockReason,
         );
     }
 
@@ -607,14 +605,15 @@ class CheckoutService
     {
         return $this->cartService->groupedByStore($buyer)
             ->map(fn (Collection $lines) => $lines
-                ->filter(fn ($line) => $line->selected && $this->lineIsBuyable($line))
+                ->filter(fn ($line) => $line->selected && $this->blockReason($line) === null)
                 ->values())
             ->filter(fn (Collection $lines) => $lines->isNotEmpty());
     }
 
     /**
-     * Selected lines that CANNOT be bought, so the page can name them instead
-     * of silently dropping them — a total that quietly shrinks is its own bug.
+     * Selected lines that CANNOT be bought, each with the `reason` place()
+     * would refuse it for, so the page can name them instead of silently
+     * dropping them — a total that quietly shrinks is its own bug.
      *
      * @return Collection<int, object>
      */
@@ -622,14 +621,38 @@ class CheckoutService
     {
         return $this->cartService->groupedByStore($buyer)
             ->flatten(1)
-            ->filter(fn ($line) => $line->selected && ! $this->lineIsBuyable($line))
+            ->filter(fn ($line) => $line->selected)
+            ->each(fn ($line) => $line->reason = $this->blockReason($line))
+            ->filter(fn ($line) => $line->reason !== null)
             ->values();
     }
 
-    /** Mirrors CartPage::presentLine()'s `excluded` — live product, in stock. */
-    private function lineIsBuyable(object $line): bool
+    /**
+     * Why this line cannot be bought right now, or null. The one home for the
+     * refusals: place() throws it, selectedGroups() drops the line for it.
+     */
+    private function blockReason(object $line): ?string
     {
-        return $line->variant?->product?->isLive() === true && $line->variant->stock > 0;
+        $variant = $line->variant;
+        $product = $variant?->product;
+
+        if ($product === null || ! $product->isLive()) {
+            return __('An item in your cart is no longer available.');
+        }
+
+        $store = $product->store;
+
+        if ($store === null || ! $store->isApproved() || $store->holiday_mode) {
+            return __(':store is not accepting orders right now.', ['store' => $store?->name]);
+        }
+
+        if ($variant->stock < $line->qty) {
+            $label = trim($product->getTranslation('name', 'en').' '.($variant->options_label ?? ''));
+
+            return __(':item just sold out — only :stock left.', ['item' => $label, 'stock' => $variant->stock]);
+        }
+
+        return null;
     }
 
     /**
@@ -728,6 +751,38 @@ class CheckoutService
         }
 
         return $storeTotals;
+    }
+
+    /**
+     * Order-level sums from the priced stores, after the free-shipping waiver.
+     * The one home for subtotal, shipping, tax, both discounts and the
+     * pre-coin total — place() charges them and quote() previews them.
+     *
+     * @param  array<int, array<string, mixed>>  $storeTotals  mutated by the waiver
+     * @param  array<string, ?VoucherDiscount>  $discounts  keyed platform/shop/shipping
+     * @return array{subtotal_sen: int, shipping_total_sen: int, tax_total_sen: int, waived_sen: array<string, int>, platform_discount_sen: int, shop_discount_sen: int, pre_coin_total_sen: int}
+     */
+    private function totals(array &$storeTotals, array $discounts): array
+    {
+        $subtotalSen = (int) array_sum(array_column($storeTotals, 'items_subtotal_sen'));
+        $shippingTotalSen = (int) array_sum(array_column($storeTotals, 'shipping_fee_sen'));
+        $taxTotalSen = (int) array_sum(array_column($storeTotals, 'tax_sen'));
+
+        $waivedSen = $this->applyFreeShipping($storeTotals, $discounts);
+        $shippingTotalSen -= (int) array_sum($waivedSen);
+
+        $platformDiscountSen = $this->vouchers->platformDiscountSen($discounts['platform'], $discounts['shop'], $subtotalSen);
+        $shopDiscountSen = $discounts['shop']?->totalDiscountSen ?? 0;
+
+        return [
+            'subtotal_sen' => $subtotalSen,
+            'shipping_total_sen' => $shippingTotalSen,
+            'tax_total_sen' => $taxTotalSen,
+            'waived_sen' => $waivedSen,
+            'platform_discount_sen' => $platformDiscountSen,
+            'shop_discount_sen' => $shopDiscountSen,
+            'pre_coin_total_sen' => $subtotalSen + $shippingTotalSen + $taxTotalSen - $platformDiscountSen - $shopDiscountSen,
+        ];
     }
 
     /**
