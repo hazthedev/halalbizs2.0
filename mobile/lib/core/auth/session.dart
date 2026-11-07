@@ -196,6 +196,10 @@ class SessionController extends Notifier<SessionState> {
   /// Sign out of this device. Never hangs and never fails: the server revoke
   /// is bounded by [revokeTimeout] and best-effort; the token, cached data
   /// and session state are always cleared afterwards.
+  /// The server rotated this device's token (password change): keep the
+  /// session, swap the bearer.
+  Future<void> adoptToken(String token) => _tokens.write(token);
+
   Future<void> logout() async {
     if (_signingOut) return;
     _signingOut = true;

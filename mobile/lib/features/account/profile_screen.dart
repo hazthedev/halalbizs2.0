@@ -87,7 +87,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _pwError = null;
     });
     try {
-      await ref.read(accountApiProvider).changePassword(current: _current.text, password: _password.text, confirmation: _confirm.text);
+      final token = await ref
+          .read(accountApiProvider)
+          .changePassword(current: _current.text, password: _password.text, confirmation: _confirm.text);
+      if (token != null) await ref.read(sessionProvider.notifier).adoptToken(token);
       if (!mounted) return;
       _current.clear();
       _password.clear();

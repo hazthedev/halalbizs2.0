@@ -110,6 +110,7 @@ void main() {
     await tester.tap(find.byKey(const Key('checkout-place')));
     await tester.pumpAndSettle();
     expect(api.calls, contains('POST checkout/place'));
+    expect(api.lastHeaders?['Idempotency-Key'], matches(RegExp(r'^[0-9a-f]{32}$')));
     expect((placeBody as Map?)?['payment_method'], 'ipay88');
     expect((placeBody as Map?)?['address_id'], 1);
     expect(h.router.state.uri.path, '/checkout/pay/HB-1001');
@@ -145,10 +146,14 @@ void main() {
     await tester.tap(find.byKey(const Key('checkout-place')));
     await tester.pumpAndSettle();
     expect(h.router.state.uri.path, '/checkout');
+    final key = api.lastHeaders?['Idempotency-Key'];
+    expect(key, matches(RegExp(r'^[0-9a-f]{32}$')));
     await tester.pump(const Duration(seconds: 5)); // let the error snack bar go
     await tester.tap(find.byKey(const Key('checkout-place')));
     await tester.pumpAndSettle();
     expect(api.calls.where((c) => c == 'POST checkout/place').length, 2);
+    // The retry is the same attempt: same key, so the server replays rather than re-places.
+    expect(api.lastHeaders?['Idempotency-Key'], key);
   });
 
   testWidgets('409 checkout_failed puts the per-variant message under its line', (tester) async {

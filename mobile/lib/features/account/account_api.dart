@@ -69,8 +69,12 @@ class AccountApi {
       _api.patch('me', body: {'name': ?name, 'phone': ?phone, 'preferred_locale': ?preferredLocale});
 
   /// `PUT me/password {current_password, password, password_confirmation}`.
-  Future<void> changePassword({required String current, required String password, required String confirmation}) =>
-      _api.put('me/password', body: {'current_password': current, 'password': password, 'password_confirmation': confirmation});
+  /// Every token is revoked server-side; the answer carries this device's fresh one.
+  Future<String?> changePassword({required String current, required String password, required String confirmation}) async {
+    final data = await _api.put('me/password',
+        body: {'current_password': current, 'password': password, 'password_confirmation': confirmation});
+    return data is Map ? data['token'] as String? : null;
+  }
 
   /// `DELETE me {password}` — 409 `account_deletion_blocked` carries the reason.
   Future<void> deleteAccount(String password) => _api.delete('me', body: {'password': password});
