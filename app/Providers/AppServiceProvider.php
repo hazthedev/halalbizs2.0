@@ -49,6 +49,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Livewire;
 
@@ -110,6 +111,28 @@ class AppServiceProvider extends ServiceProvider
         // Public API rate limit (docs/10): 60 req/min per IP. Auth login already
         // self-throttles in the Login component (5 attempts).
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by(ClientIp::bucket($request->ip())));
+
+        // Mobile login (mobile plan §4): the same four buckets Login::login()
+        // keeps by hand — per-email burst 5/min and 20/hour (the account under
+        // attack, no address in the key), then the looser (email, IP) 5/min and
+        // per-IP 20/hour that catch one password sprayed across many emails.
+        // Turnstile has no browser to run in, so these limiters are the bot
+        // defence here; they count every attempt, successes included.
+        RateLimiter::for('api-login', function (Request $request) {
+            $email = Str::lower((string) $request->input('email'));
+            $ip = ClientIp::bucket($request->ip());
+
+            return [
+                Limit::perMinute(5)->by('login-email-burst:'.$email),
+                Limit::perHour(20)->by('login-email:'.$email),
+                Limit::perMinute(5)->by('login:'.$email.'|'.$ip),
+                Limit::perHour(20)->by('login-ip:'.$ip),
+            ];
+        });
+
+        // Mirrors Register::register()'s 5/hour per connection: bounds account
+        // creation and the verification-email spend that comes with it.
+        RateLimiter::for('api-register', fn (Request $request) => Limit::perHour(5)->by('register:'.ClientIp::bucket($request->ip())));
 
         // Register and ResetPassword both validate with Password::defaults(), but
         // nothing ever CONFIGURED the defaults — so the whole marketplace's rule
