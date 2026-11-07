@@ -355,4 +355,515 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get product => 'Product';
+
+  @override
+  String get cartCheckout => 'Checkout';
+
+  @override
+  String get cartContinueShopping => 'Continue shopping';
+
+  @override
+  String get cartEmptyTitle => 'Your cart is empty';
+
+  @override
+  String get cartEmptyBody =>
+      'Find something halal and good — it will wait for you here.';
+
+  @override
+  String cartItemCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get cartPurchasingPaused =>
+      'Purchasing is paused — you can browse, but not check out right now.';
+
+  @override
+  String get cartRemove => 'Remove';
+
+  @override
+  String get cartSelectAll => 'Select all';
+
+  @override
+  String get cartSelectToCheckout => 'Select at least one item to check out.';
+
+  @override
+  String cartSelectedSubtotal(int count) {
+    return 'Subtotal · $count selected';
+  }
+
+  @override
+  String get cartUnavailable => 'Unavailable';
+
+  @override
+  String get cartViewCart => 'View cart';
+
+  @override
+  String get checkoutTitle => 'Checkout';
+
+  @override
+  String get checkoutDeliverTo => 'Deliver to';
+
+  @override
+  String get checkoutChange => 'Change';
+
+  @override
+  String get checkoutNoAddress =>
+      'You have no delivery address yet — add one to place your order.';
+
+  @override
+  String get checkoutChooseMethod => 'Choose an available payment method.';
+
+  @override
+  String get checkoutSellerNote => 'Note to seller';
+
+  @override
+  String get checkoutSellerNoteHint =>
+      'Optional — e.g. leave at the guard house';
+
+  @override
+  String get checkoutVouchers => 'Vouchers';
+
+  @override
+  String get checkoutPlatformVoucher => 'HalalBizs voucher';
+
+  @override
+  String get checkoutShopVoucher => 'Shop voucher';
+
+  @override
+  String get checkoutVoucherHint => 'Voucher code';
+
+  @override
+  String get checkoutVoucherApply => 'Apply';
+
+  @override
+  String get checkoutVoucherRemove => 'Remove';
+
+  @override
+  String checkoutVoucherApplied(String code, String amount) {
+    return '$code applied · $amount off';
+  }
+
+  @override
+  String checkoutUseCoins(int balance) {
+    return 'Use coins (you have $balance)';
+  }
+
+  @override
+  String get checkoutCoinsToUse => 'Coins to use';
+
+  @override
+  String checkoutCoinsWorth(int coins, String amount) {
+    return '$coins coins · $amount off';
+  }
+
+  @override
+  String get checkoutPaymentMethod => 'Payment method';
+
+  @override
+  String get checkoutMethodCod => 'Cash on delivery';
+
+  @override
+  String get checkoutMethodIpay88 => 'Online payment (FPX, card, e-wallet)';
+
+  @override
+  String get checkoutMethodUnavailable => 'Not available for this order.';
+
+  @override
+  String get checkoutSummary => 'Summary';
+
+  @override
+  String get checkoutSubtotal => 'Subtotal';
+
+  @override
+  String get checkoutShipping => 'Shipping';
+
+  @override
+  String get checkoutShippingPending => 'Choose an address';
+
+  @override
+  String get checkoutShippingDiscount => 'Shipping discount';
+
+  @override
+  String get checkoutPlatformDiscount => 'HalalBizs voucher';
+
+  @override
+  String get checkoutShopDiscount => 'Shop discount';
+
+  @override
+  String get checkoutTax => 'Tax';
+
+  @override
+  String get checkoutGrandTotal => 'Grand total';
+
+  @override
+  String get checkoutPlaceOrder => 'Place order';
+
+  @override
+  String get checkoutDoneTitle => 'Order placed';
+
+  @override
+  String checkoutDoneBody(String orderNo) {
+    return 'Order $orderNo is confirmed. Your orders are here:';
+  }
+
+  @override
+  String get checkoutViewOrders => 'View orders';
+
+  @override
+  String get checkoutPayTitle => 'Payment';
+
+  @override
+  String get checkoutPayBrowserTitle => 'Complete payment in your browser';
+
+  @override
+  String checkoutPayBrowserBody(String orderNo) {
+    return 'Order $orderNo opened in your browser. Come back here when you are done — we check the payment automatically.';
+  }
+
+  @override
+  String checkoutPayExpiresAt(String time) {
+    return 'Pay before $time';
+  }
+
+  @override
+  String get checkoutPayIHavePaid => 'I have paid';
+
+  @override
+  String get checkoutPayOpenAgain => 'Open payment page again';
+
+  @override
+  String get checkoutPayRetry => 'Retry payment';
+
+  @override
+  String get checkoutPayExpiredTitle => 'Payment window expired';
+
+  @override
+  String get checkoutPayExpiredBody =>
+      'This order was not paid in time. Nothing was charged.';
+
+  @override
+  String get ordersAll => 'All';
+
+  @override
+  String get ordersOrder => 'Order';
+
+  @override
+  String get ordersTotal => 'Total';
+
+  @override
+  String ordersMoreItems(int count) {
+    return '+$count more';
+  }
+
+  @override
+  String ordersPlacedAt(String date) {
+    return 'Placed $date';
+  }
+
+  @override
+  String get ordersEmptyTitle => 'No orders yet';
+
+  @override
+  String get ordersEmptyBody => 'Your orders appear here once you check out.';
+
+  @override
+  String get ordersLoadMore => 'Load more';
+
+  @override
+  String get ordersTracking => 'Tracking';
+
+  @override
+  String get ordersTrack => 'Track';
+
+  @override
+  String get ordersReturnRequest => 'Return request';
+
+  @override
+  String get ordersCancelOrder => 'Cancel order';
+
+  @override
+  String get ordersCancelTitle => 'Cancel this order?';
+
+  @override
+  String get ordersCancelBody =>
+      'Nothing will be charged and the items go back in stock.';
+
+  @override
+  String get ordersCancelConfirm => 'Cancel order';
+
+  @override
+  String get ordersKeep => 'Keep order';
+
+  @override
+  String get ordersCancelled => 'Order cancelled';
+
+  @override
+  String get ordersReason => 'Reason';
+
+  @override
+  String get ordersReasonHint => 'Choose a reason';
+
+  @override
+  String get ordersConfirmReceived => 'Confirm received';
+
+  @override
+  String get ordersReceivedTitle => 'Received your order?';
+
+  @override
+  String get ordersReceivedBody => 'Confirm only once everything has arrived.';
+
+  @override
+  String get ordersReceivedDone => 'Order received';
+
+  @override
+  String get ordersRequestReturn => 'Request return';
+
+  @override
+  String get ordersNote => 'Note';
+
+  @override
+  String get ordersReturnNoteHint => 'What went wrong?';
+
+  @override
+  String get ordersPhotos => 'Photos';
+
+  @override
+  String ordersPhotosHelp(int max) {
+    return 'Up to $max photos.';
+  }
+
+  @override
+  String get ordersReturnConfirmTitle => 'Submit this return request?';
+
+  @override
+  String get ordersReturnConfirmBody => 'The seller will be notified.';
+
+  @override
+  String get ordersReturnSubmit => 'Submit return request';
+
+  @override
+  String get ordersReturnSubmitted => 'Return requested';
+
+  @override
+  String get ordersWriteReview => 'Write a review';
+
+  @override
+  String get ordersReviewBody => 'Your review';
+
+  @override
+  String get ordersReviewBodyHint => 'Optional — at least 10 characters';
+
+  @override
+  String get ordersSellerRating => 'Seller rating';
+
+  @override
+  String get ordersSellerComment => 'Comment';
+
+  @override
+  String get ordersOptional => 'Optional';
+
+  @override
+  String get ordersRateEveryItem => 'Rate every item before submitting.';
+
+  @override
+  String get ordersReviewSubmit => 'Submit review';
+
+  @override
+  String get ordersReviewSubmitted => 'Thank you for your review.';
+
+  @override
+  String get ordersNothingToReview => 'Nothing left to review';
+
+  @override
+  String get accountSave => 'Save';
+
+  @override
+  String get accountDelete => 'Delete';
+
+  @override
+  String get accountDefault => 'Default';
+
+  @override
+  String get accountPhone => 'Phone';
+
+  @override
+  String get accountPreferredLanguage => 'Preferred language';
+
+  @override
+  String get accountEmailUnverified => 'Email not verified yet.';
+
+  @override
+  String get accountProfileSaved => 'Profile updated';
+
+  @override
+  String get accountChangePassword => 'Change password';
+
+  @override
+  String get accountCurrentPassword => 'Current password';
+
+  @override
+  String get accountNewPassword => 'New password';
+
+  @override
+  String get accountPasswordChanged => 'Password updated';
+
+  @override
+  String get accountAddAddress => 'Add address';
+
+  @override
+  String get accountEditAddress => 'Edit address';
+
+  @override
+  String get accountNoAddresses => 'No addresses yet';
+
+  @override
+  String get accountNoAddressesBody =>
+      'Add a delivery address to check out faster.';
+
+  @override
+  String get accountAddressLabel => 'Label';
+
+  @override
+  String get accountAddressLabelHint => 'Home, Office…';
+
+  @override
+  String get accountRecipientName => 'Recipient name';
+
+  @override
+  String get accountLine1 => 'Address line 1';
+
+  @override
+  String get accountLine2 => 'Address line 2';
+
+  @override
+  String get accountPostcode => 'Postcode';
+
+  @override
+  String get accountCity => 'City';
+
+  @override
+  String get accountState => 'State';
+
+  @override
+  String get accountStateHint => 'Choose a state';
+
+  @override
+  String get accountSetDefault => 'Set as default';
+
+  @override
+  String get accountAddressSaved => 'Address saved';
+
+  @override
+  String get accountDeleteAddressTitle => 'Delete this address?';
+
+  @override
+  String get accountDeleteAddressBody => 'You can add it again any time.';
+
+  @override
+  String get accountWishlistEmpty => 'Nothing saved yet';
+
+  @override
+  String get accountWishlistEmptyBody =>
+      'Tap the heart on a product to keep it here.';
+
+  @override
+  String get accountRemoveFromWishlist => 'Remove from wishlist';
+
+  @override
+  String get accountCoinsBalance => 'Balance';
+
+  @override
+  String get accountCoinsStreak => 'Streak';
+
+  @override
+  String accountCoinsDays(int days) {
+    return '$days days';
+  }
+
+  @override
+  String accountCoinsLifetime(int coins) {
+    return '$coins coins earned in total';
+  }
+
+  @override
+  String accountCoinsExpiring(String date) {
+    return 'Some coins expire $date';
+  }
+
+  @override
+  String get accountCheckIn => 'Check in today';
+
+  @override
+  String get accountCheckedIn => 'Checked in today';
+
+  @override
+  String get accountCheckedInReason => 'You have already checked in today.';
+
+  @override
+  String get accountCheckInBody =>
+      'Check in every day to grow your streak and earn more coins.';
+
+  @override
+  String accountCheckInDone(int coins, int streak) {
+    return '+$coins coins · day $streak streak';
+  }
+
+  @override
+  String get accountCoinsHistory => 'History';
+
+  @override
+  String get accountCoinsNoHistory => 'No coin activity yet';
+
+  @override
+  String get accountCoinsUnavailable => 'Coins are not available';
+
+  @override
+  String get accountCoinsUnavailableBody =>
+      'Daily check-in is unavailable right now.';
+
+  @override
+  String get accountMarkAllRead => 'Mark all read';
+
+  @override
+  String get accountNoNotifications => 'No notifications';
+
+  @override
+  String get accountNoNotificationsBody =>
+      'Order updates and messages from sellers show up here.';
+
+  @override
+  String get accountDeleteWarning => 'This cannot be undone.';
+
+  @override
+  String get accountDeleteBody =>
+      'Your personal details are anonymized immediately; order records stay for legal and financial reasons. Enter your password to continue.';
+
+  @override
+  String get accountDeleteConfirmTitle => 'Delete your account?';
+
+  @override
+  String get accountDeleteConfirmBody =>
+      'You will be signed out and cannot sign in again with this account.';
+
+  @override
+  String get messagesChatWithSeller => 'Chat with seller';
+
+  @override
+  String get messagesEmpty => 'No messages yet';
+
+  @override
+  String get messagesEmptyBody => 'Start a chat from any product page.';
+
+  @override
+  String get messagesNoMessagesYet => 'No messages in this conversation yet.';
+
+  @override
+  String get messagesSayHello => 'Say hello to the seller.';
+
+  @override
+  String get messagesTypeMessage => 'Type a message';
+
+  @override
+  String get messagesSend => 'Send';
 }

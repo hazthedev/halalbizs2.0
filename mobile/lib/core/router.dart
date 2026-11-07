@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/account/account_screen.dart';
 import '../features/auth/auth_screens.dart';
+import '../features/cart/cart_api.dart';
 import '../features/cart/cart_screen.dart';
 import '../features/catalog/category_screen.dart';
 import '../features/catalog/product_screen.dart';
@@ -30,6 +31,11 @@ bool needsAuth(String path) => kAuthPrefixes.any((p) => path == p || path.starts
 /// Where a path (or null) should go for the current [session], or null to
 /// keep it. Pure, so tests can call it without a router.
 String? soukRedirect(SessionState session, Uri uri) {
+  // `halalbizs://pay/{order_no}` (the web return page's deep link) → the pay screen.
+  if (uri.scheme == 'halalbizs') {
+    final orderNo = uri.host == 'pay' ? uri.pathSegments.firstOrNull : null;
+    return orderNo == null || orderNo.isEmpty ? '/home' : '/checkout/pay/$orderNo';
+  }
   final path = uri.path;
   if (session is SessionLoading) return null;
   if (session is TwoFactorPending) return path == '/two-factor' ? null : '/two-factor';
@@ -71,10 +77,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 /// ([buyerTabs]). Pushed pages live under the tab that owns them so deep
 /// links land in the right tab and every tab keeps its own stack.
 RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
-      builder: (context, _, shell) => SoukTabShell(
-        shell: shell,
-        tabs: buyerTabs,
-        labels: [context.l10n.tabHome, context.l10n.tabSearch, context.l10n.tabCart, context.l10n.tabOrders, context.l10n.tabAccount],
+      builder: (context, _, shell) => Consumer(
+        builder: (context, ref, _) => SoukTabShell(
+          shell: shell,
+          tabs: buyerTabs,
+          labels: [context.l10n.tabHome, context.l10n.tabSearch, context.l10n.tabCart, context.l10n.tabOrders, context.l10n.tabAccount],
+          badges: {2: ref.watch(cartCountProvider)},
+        ),
       ),
       branches: [
         StatefulShellBranch(routes: [

@@ -33,13 +33,16 @@ const sellerTabs = [
 
 /// Shell around a `StatefulNavigationShell`: the branch body plus the tab bar.
 class SoukTabShell extends StatelessWidget {
-  const SoukTabShell({super.key, required this.shell, required this.tabs, this.labels});
+  const SoukTabShell({super.key, required this.shell, required this.tabs, this.labels, this.badges = const {}});
 
   final StatefulNavigationShell shell;
   final List<SoukTab> tabs;
 
   /// Translated labels in [tabs] order (defaults to [SoukTab.label]).
   final List<String>? labels;
+
+  /// Tab index → count pill on the icon (cart items, unread). 0 hides it.
+  final Map<int, int> badges;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -48,6 +51,7 @@ class SoukTabShell extends StatelessWidget {
         bottomNavigationBar: SoukTabBar(
           tabs: tabs,
           labels: labels,
+          badges: badges,
           currentIndex: shell.currentIndex,
           onSelect: (i) => shell.goBranch(i, initialLocation: i == shell.currentIndex),
         ),
@@ -57,10 +61,18 @@ class SoukTabShell extends StatelessWidget {
 /// CupertinoTabBar on iOS, Material 3 NavigationBar elsewhere. Labels never
 /// scale with Dynamic Type (five labels must fit one line each).
 class SoukTabBar extends StatelessWidget {
-  const SoukTabBar({super.key, required this.tabs, required this.currentIndex, required this.onSelect, this.labels});
+  const SoukTabBar({
+    super.key,
+    required this.tabs,
+    required this.currentIndex,
+    required this.onSelect,
+    this.labels,
+    this.badges = const {},
+  });
 
   final List<SoukTab> tabs;
   final List<String>? labels;
+  final Map<int, int> badges;
   final int currentIndex;
   final ValueChanged<int> onSelect;
 
@@ -68,6 +80,18 @@ class SoukTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final index = currentIndex.clamp(0, tabs.length - 1);
     String label(int i) => labels != null && i < labels!.length ? labels![i] : tabs[i].label;
+    Widget icon(int i, double size, Color color) {
+      final count = badges[i] ?? 0;
+      final base = FaIcon(tabs[i].icon, size: size, color: color);
+      if (count <= 0) return base;
+      return Badge.count(
+        key: Key('tab-badge-$i'),
+        count: count,
+        backgroundColor: SoukColors.emerald,
+        textColor: Colors.white,
+        child: base,
+      );
+    }
     return MediaQuery.withNoTextScaling(
       child: Builder(builder: (context) {
         if (Theme.of(context).platform == TargetPlatform.iOS) {
@@ -84,7 +108,10 @@ class SoukTabBar extends StatelessWidget {
             items: [
               for (var i = 0; i < tabs.length; i++)
                 BottomNavigationBarItem(
-                  icon: Padding(padding: const EdgeInsets.only(bottom: 2), child: FaIcon(tabs[i].icon, size: 20)),
+                  icon: Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: icon(i, 20, i == index ? SoukColors.emerald : SoukColors.inkFaint),
+                  ),
                   label: label(i),
                 ),
             ],
@@ -98,8 +125,8 @@ class SoukTabBar extends StatelessWidget {
           destinations: [
             for (var i = 0; i < tabs.length; i++)
               NavigationDestination(
-                icon: FaIcon(tabs[i].icon, size: 19, color: SoukColors.inkFaint),
-                selectedIcon: FaIcon(tabs[i].icon, size: 19, color: SoukColors.emerald),
+                icon: icon(i, 19, SoukColors.inkFaint),
+                selectedIcon: icon(i, 19, SoukColors.emerald),
                 label: label(i),
               ),
           ],
