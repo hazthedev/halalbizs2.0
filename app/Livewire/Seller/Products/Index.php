@@ -6,12 +6,12 @@ use App\Enums\ProductStatus;
 use App\Livewire\Concerns\CurrentStore;
 use App\Models\Category;
 use App\Models\Product;
-use App\Services\ProductPublishPolicy;
-use App\Settings\ModerationSettings;
+use App\Services\ProductWriteService;
 use App\Support\JsonSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -125,13 +125,11 @@ class Index extends Component
 
     public function delist(int $productId): void
     {
-        $product = $this->ownProduct($productId);
-
-        if ($product->status !== ProductStatus::Live) {
+        try {
+            app(ProductWriteService::class)->delist($this->ownProduct($productId));
+        } catch (InvalidArgumentException) {
             return;
         }
-
-        $product->update(['status' => ProductStatus::Delisted]);
 
         $this->dispatch('toast', message: __('Product delisted'));
     }
@@ -140,28 +138,21 @@ class Index extends Component
     {
         $product = $this->ownProduct($productId);
 
-        if ($product->status !== ProductStatus::Delisted) {
+        try {
+            // H-6: the service runs the same halal gate as the product form —
+            // a rule enforced at one call site is not a rule.
+            $reason = app(ProductWriteService::class)->relist($product);
+        } catch (InvalidArgumentException) {
             return;
         }
 
-        $needsApproval = app(ModerationSettings::class)->require_product_approval;
-        $status = $needsApproval ? ProductStatus::PendingReview : ProductStatus::Live;
+        if ($reason !== null) {
+            $this->dispatch('toast', message: $reason);
 
-        // H-6, same gate as the product form — a rule enforced at one call site
-        // is not a rule.
-        if ($status === ProductStatus::Live) {
-            $reason = app(ProductPublishPolicy::class)->blockedReason($product);
-
-            if ($reason !== null) {
-                $this->dispatch('toast', message: $reason);
-
-                return;
-            }
+            return;
         }
 
-        $product->update(['status' => $status]);
-
-        $this->dispatch('toast', message: $needsApproval
+        $this->dispatch('toast', message: $product->status === ProductStatus::PendingReview
             ? __('Submitted for review — it goes live once approved.')
             : __('Product relisted'));
     }

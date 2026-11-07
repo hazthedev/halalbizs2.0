@@ -3,14 +3,13 @@
 namespace App\Livewire\Seller;
 
 use App\Enums\LedgerEntryType;
-use App\Enums\ProductStatus;
 use App\Enums\SubOrderStatus;
 use App\Livewire\Concerns\CurrentStore;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\StoreLedgerEntry;
 use App\Models\SubOrder;
+use App\Services\SellerDashboardService;
 use App\Support\DisplayTime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -43,13 +42,7 @@ class Dashboard extends Component
     public const LOW_STOCK_THRESHOLD = 5;
 
     /** Statuses that count as realised revenue (paid + progressing). */
-    private const REVENUE_STATUSES = [
-        SubOrderStatus::Confirmed,
-        SubOrderStatus::Processing,
-        SubOrderStatus::Shipped,
-        SubOrderStatus::Delivered,
-        SubOrderStatus::Completed,
-    ];
+    private const REVENUE_STATUSES = SellerDashboardService::REVENUE_STATUSES;
 
     /** Period option => number of daily buckets. */
     private const PERIODS = [
@@ -71,28 +64,15 @@ class Dashboard extends Component
 
     public int $lowStock = 0;
 
-    public function mount(): void
+    public function mount(SellerDashboardService $dashboard): void
     {
-        $store = $this->currentStore();
+        // Stat cards share their numbers with GET /api/v1/seller/dashboard.
+        $stats = $dashboard->stats($this->currentStore());
 
-        $this->todayOrders = $store->subOrders()
-            ->whereBetween('created_at', [DisplayTime::dayStart(), DisplayTime::dayEnd()])
-            ->count();
-
-        $this->toShip = $store->subOrders()
-            ->whereIn('status', [SubOrderStatus::Confirmed, SubOrderStatus::Processing])
-            ->count();
-
-        $this->liveProducts = $store->products()
-            ->where('status', ProductStatus::Live)
-            ->count();
-
-        $this->lowStock = ProductVariant::query()
-            ->lowStock() // respects each variant's low_stock_threshold (default 5)
-            ->whereHas('product', fn ($query) => $query
-                ->where('store_id', $store->id)
-                ->where('status', ProductStatus::Live))
-            ->count();
+        $this->todayOrders = $stats['today_orders'];
+        $this->toShip = $stats['to_ship'];
+        $this->liveProducts = $stats['live_products'];
+        $this->lowStock = $stats['low_stock'];
 
         $this->dispatchCharts();
     }
@@ -339,15 +319,8 @@ class Dashboard extends Component
 
     public function render()
     {
-        $store = $this->currentStore();
-
-        $recentOrders = $store->subOrders()
-            ->latest()
-            ->limit(5)
-            ->get();
-
         return view('livewire.seller.dashboard', [
-            'recentOrders' => $recentOrders,
+            'recentOrders' => app(SellerDashboardService::class)->recentOrders($this->currentStore()),
             'revenuePayload' => $this->revenuePayload(),
             'statusPayload' => $this->statusPayload(),
             'topProductsPayload' => $this->topProductsPayload(),
