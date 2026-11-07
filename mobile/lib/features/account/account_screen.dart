@@ -7,12 +7,18 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/api_client.dart';
 import '../../core/auth/session.dart';
 import '../../core/locale.dart';
-import '../../core/widgets/coming_soon.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
+import '../messages/conversations_screen.dart';
+import '../messages/messages_api.dart';
+import 'addresses_screen.dart';
+import 'coins_screen.dart';
+import 'delete_account_screen.dart';
+import 'notifications_screen.dart';
+import 'profile_screen.dart';
+import 'wishlist_screen.dart';
 
-/// Account tab root: signed-in header + menu rows. Sub-pages are slice 5
-/// placeholders except Language, which is live.
+/// Account tab root: signed-in header + menu rows to the sub-pages.
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
 
@@ -28,6 +34,7 @@ class AccountScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final me = ref.watch(profileProvider);
+    final unreadMessages = me == null ? 0 : ref.watch(unreadMessagesProvider);
     if (me == null) {
       return SoukPage(
         title: l.tabAccount,
@@ -101,7 +108,7 @@ class AccountScreen extends ConsumerWidget {
                 key: const Key('account-messages'),
                 icon: FontAwesomeIcons.comment,
                 label: l.messages,
-                trailing: me.unreadMessages > 0 ? SoukBadge('${me.unreadMessages}', status: 'sale') : null,
+                trailing: unreadMessages > 0 ? SoukBadge('$unreadMessages', status: 'sale') : null,
                 onTap: () => context.push('/account/messages'),
               ),
               SoukRow(key: const Key('account-language'), icon: FontAwesomeIcons.language, label: l.language, onTap: () => context.push('/account/language')),
@@ -163,17 +170,15 @@ class LanguageScreen extends ConsumerWidget {
 }
 
 List<RouteBase> get accountSubRoutes => [
-      GoRoute(path: 'profile', builder: (_, _) => const ComingSoonScreen(title: 'Profile')),
-      GoRoute(path: 'addresses', builder: (_, _) => const ComingSoonScreen(title: 'Addresses'), routes: [
-        GoRoute(path: 'new', builder: (_, _) => const ComingSoonScreen(title: 'New address')),
-        GoRoute(path: ':id', builder: (_, _) => const ComingSoonScreen(title: 'Address')),
+      GoRoute(path: 'profile', builder: (_, _) => const ProfileScreen()),
+      GoRoute(path: 'addresses', builder: (_, _) => const AddressesScreen(), routes: [
+        GoRoute(path: 'new', builder: (_, _) => const AddressFormScreen()),
+        GoRoute(path: ':id', builder: (_, s) => AddressFormScreen(id: int.tryParse(s.pathParameters['id']!))),
       ]),
-      GoRoute(path: 'wishlist', builder: (_, _) => const ComingSoonScreen(title: 'Wishlist')),
-      GoRoute(path: 'coins', builder: (_, _) => const ComingSoonScreen(title: 'Coins')),
-      GoRoute(path: 'notifications', builder: (_, _) => const ComingSoonScreen(title: 'Notifications')),
-      GoRoute(path: 'messages', builder: (_, _) => const ComingSoonScreen(title: 'Messages'), routes: [
-        GoRoute(path: ':id', builder: (_, _) => const ComingSoonScreen(title: 'Conversation')),
-      ]),
-      GoRoute(path: 'delete', builder: (_, _) => const ComingSoonScreen(title: 'Delete account')),
+      GoRoute(path: 'wishlist', builder: (_, _) => const WishlistScreen()),
+      GoRoute(path: 'coins', builder: (_, _) => const CoinsScreen()),
+      GoRoute(path: 'notifications', builder: (_, _) => const NotificationsScreen()),
+      GoRoute(path: 'messages', builder: (_, _) => const ConversationsScreen(), routes: messagesSubRoutes),
+      GoRoute(path: 'delete', builder: (_, _) => const DeleteAccountScreen()),
       GoRoute(path: 'language', builder: (_, _) => const LanguageScreen()),
     ];
