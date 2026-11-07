@@ -80,7 +80,7 @@ class CartPage extends Component
             $service->addItem(auth()->user(), $variant, $removed['qty'] ?? 1);
 
             if (auth()->check() && ($removed['selected'] ?? true) === false) {
-                $this->cartItems()->where('product_variant_id', $variantId)->update(['selected' => false]);
+                $service->setSelected(auth()->user(), $variant, false);
             }
         }
 
@@ -94,8 +94,11 @@ class CartPage extends Component
             return;
         }
 
-        $item = $this->cartItems()->where('product_variant_id', $variantId)->first();
-        $item?->update(['selected' => ! $item->selected]);
+        $item = $this->cartItems()->with('variant')->where('product_variant_id', $variantId)->first();
+
+        if ($item?->variant !== null) {
+            app(CartService::class)->setSelected(auth()->user(), $item->variant, ! $item->selected);
+        }
 
         $this->reconcile();
     }
@@ -106,10 +109,11 @@ class CartPage extends Component
             return;
         }
 
-        $this->setSelected(
+        $this->toggleItems(
             $this->cartItems()
                 ->whereHas('variant.product', fn ($query) => $query->where('store_id', $storeId))
-                ->get()
+                ->get(),
+            $storeId,
         );
 
         $this->reconcile();
@@ -121,7 +125,7 @@ class CartPage extends Component
             return;
         }
 
-        $this->setSelected($this->cartItems()->get());
+        $this->toggleItems($this->cartItems()->get());
 
         $this->reconcile();
     }
@@ -210,7 +214,7 @@ class CartPage extends Component
      * Shopee-style toggle: if every given item is selected, deselect them
      * all; otherwise select them all.
      */
-    private function setSelected(EloquentCollection $items): void
+    private function toggleItems(EloquentCollection $items, ?int $storeId = null): void
     {
         if ($items->isEmpty()) {
             return;
@@ -218,7 +222,7 @@ class CartPage extends Component
 
         $target = ! $items->every(fn (CartItem $item) => $item->selected);
 
-        CartItem::whereIn('id', $items->modelKeys())->update(['selected' => $target]);
+        app(CartService::class)->setAllSelected(auth()->user(), $target, $storeId);
     }
 
     private function cartItems(): HasMany
