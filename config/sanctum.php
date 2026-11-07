@@ -16,7 +16,8 @@ return [
     // No SPA, so the /sanctum/csrf-cookie route has no caller.
     'routes' => false,
 
-    // Tokens live until the app logs out or the account is deleted.
-    'expiration' => null,
+    // Minutes a token lives after issue (60 days). The app signs in again on
+    // the 401; `sanctum:prune-expired` deletes the rows a day later.
+    'expiration' => (int) env('SANCTUM_EXPIRATION', 60 * 24 * 60),
 
 ];

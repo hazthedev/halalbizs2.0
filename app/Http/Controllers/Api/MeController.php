@@ -57,12 +57,14 @@ class MeController extends Controller
         ]);
 
         $user = $request->user();
+        $device = $user->currentAccessToken()->name;
         $user->update(['password' => $data['password']]);
 
-        // Every other device logs in again with the new password; this one keeps its token.
-        $user->tokens()->whereKeyNot($user->currentAccessToken()->getKey())->delete();
+        // Every token dies, this one included (it may have been copied). The
+        // device that changed the password continues on a fresh token.
+        $user->tokens()->delete();
 
-        return ApiResponse::ok(null);
+        return ApiResponse::ok(['token' => $user->createToken($device)->plainTextToken]);
     }
 
     /**
