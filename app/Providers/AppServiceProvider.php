@@ -138,6 +138,7 @@ class AppServiceProvider extends ServiceProvider
         // (Checkout::place 5/hour, ReviewOrder::submit 3/min), keyed per user.
         RateLimiter::for('api-checkout', fn (Request $request) => Limit::perHour(5)->by('api-checkout:'.$request->user()?->id));
         RateLimiter::for('api-review', fn (Request $request) => Limit::perMinute(3)->by('api-review:'.$request->user()?->id));
+        RateLimiter::for('api-chat', fn (Request $request) => Limit::perMinute(30)->by('api-chat:'.$request->user()?->id));
 
         // Register and ResetPassword both validate with Password::defaults(), but
         // nothing ever CONFIGURED the defaults — so the whole marketplace's rule

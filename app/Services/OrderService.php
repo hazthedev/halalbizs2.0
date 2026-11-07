@@ -51,6 +51,23 @@ class OrderService
     }
 
     /**
+     * Cancel every still-unpaid sub-order of an order that is awaiting
+     * payment, in ONE transaction (docs/06 §F: no partial cancel before
+     * payment). The buyer's "cancel order" button and the API both call this;
+     * each sub-order still goes through cancel() → the status service.
+     */
+    public function cancelUnpaid(Order $order, ActorType $actor, ?int $actorId = null, ?string $reason = null): void
+    {
+        DB::transaction(function () use ($order, $actor, $actorId, $reason) {
+            $pending = $order->subOrders()->where('status', SubOrderStatus::PendingPayment)->lockForUpdate()->get();
+
+            foreach ($pending as $subOrder) {
+                $this->cancel($subOrder, $actor, $actorId, $reason);
+            }
+        });
+    }
+
+    /**
      * Cancelling a sub-order the buyer has already PAID for owes them the money
      * back (audit H-3).
      *

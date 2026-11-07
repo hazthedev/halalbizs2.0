@@ -42,16 +42,18 @@ class SubOrderResource extends JsonResource
                 'name' => $this->store->name,
                 'logo' => $this->store->getFirstMediaUrl('logo', 'thumb') ?: null,
             ],
+            // name / variant_label / prices are the order_items snapshot (hard rule 5);
+            // only product_slug and product_image read the live product, for the link and picture.
             'items' => $items->map(fn (OrderItem $item) => [
                 'id' => $item->id,
                 'product_id' => $item->product_id,
-                'slug' => $item->product?->slug,
+                'product_slug' => $item->product?->slug,
                 'name' => $item->product_name,
                 'variant_label' => $item->variant_label,
                 'qty' => $item->qty,
                 'unit_price_sen' => $item->unit_price_sen,
                 'line_total_sen' => $item->line_total_sen,
-                'image' => $item->product?->getFirstMediaUrl('images', 'thumb') ?: null,
+                'product_image' => $item->product?->getFirstMediaUrl('images', 'thumb') ?: null,
                 'reviewed' => $item->review !== null,
             ])->values()->all(),
             'subtotal_sen' => $this->items_subtotal_sen,

@@ -19,6 +19,9 @@ class WishlistController extends Controller
 
     public function toggle(Request $request, Product $product, WishlistService $wishlist): JsonResponse
     {
+        // Only live products can be saved; an already-saved one can always be removed.
+        abort_unless($product->isLive() || in_array($product->id, $wishlist->ids($request->user()), true), 404);
+
         return ApiResponse::ok(['wishlisted' => $wishlist->toggle($request->user(), $product)]);
     }
 }

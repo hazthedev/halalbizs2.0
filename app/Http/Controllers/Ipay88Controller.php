@@ -43,7 +43,9 @@ class Ipay88Controller extends Controller
             return view('payments.app-return', ['order' => $order, 'payable' => false]);
         }
 
-        $returnUrl = URL::signedRoute('app.pay.return', ['order' => $order->order_no]);
+        // 24h: long enough for any bank-redirect latency, short enough that a leaked
+        // link dies with the order's own payment window.
+        $returnUrl = URL::temporarySignedRoute('app.pay.return', now()->addDay(), ['order' => $order->order_no]);
 
         return $this->entry($order, $ipay88, [
             'success' => URL::temporarySignedRoute('app.pay.mock', now()->addMinutes(15), ['order' => $order->order_no, 'result' => 'success']),
@@ -130,7 +132,7 @@ class Ipay88Controller extends Controller
 
         $this->applyMock($order, $result);
 
-        return redirect()->to(URL::signedRoute('app.pay.return', ['order' => $order->order_no]));
+        return redirect()->to(URL::temporarySignedRoute('app.pay.return', now()->addDay(), ['order' => $order->order_no]));
     }
 
     private function applyMock(Order $order, string $result): void

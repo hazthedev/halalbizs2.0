@@ -98,6 +98,6 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index');
         Route::post('/conversations', [ConversationController::class, 'store'])->name('conversations.store');
         Route::get('/conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
-        Route::post('/conversations/{conversation}/messages', [ConversationController::class, 'send'])->name('conversations.messages.store');
+        Route::post('/conversations/{conversation}/messages', [ConversationController::class, 'send'])->middleware('throttle:api-chat')->name('conversations.messages.store');
     });
 });

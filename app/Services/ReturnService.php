@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\ActorType;
 use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
+use App\Exceptions\BuyerActionException;
 use App\Models\ReturnReason;
 use App\Models\ReturnRequest;
 use App\Models\SubOrder;
@@ -14,7 +15,6 @@ use App\Support\UploadName;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 /**
  * Buyer return requests (docs/09 §D): one request per sub-order, inside the
@@ -48,7 +48,7 @@ class ReturnService
      * @param  list<UploadedFile>  $photos  at most ReturnRequest::MAX_PHOTOS are kept
      *
      * @throws AuthorizationException when the sub-order is not the buyer's
-     * @throws InvalidArgumentException when the sub-order is not eligible
+     * @throws BuyerActionException when the sub-order is not eligible
      */
     public function request(SubOrder $subOrder, User $buyer, ReturnReason $reason, ?string $note, array $photos = []): ReturnRequest
     {
@@ -57,7 +57,7 @@ class ReturnService
         }
 
         if (! $this->canRequest($subOrder)) {
-            throw new InvalidArgumentException(__('This order is no longer eligible for a return.'));
+            throw new BuyerActionException(__('This order is no longer eligible for a return.'));
         }
 
         $note = trim((string) $note);

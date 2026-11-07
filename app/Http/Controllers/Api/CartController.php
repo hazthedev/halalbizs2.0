@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * The buyer's DB cart (mobile plan §4) over CartService — the API has no
  * guest cart, so every route is behind auth:sanctum. Availability checks
- * mirror InteractsWithCart::addToCart; prices mirror CartPage::presentLine.
+ * are CartService::addItem's; prices mirror CartPage::presentLine.
  */
 class CartController extends Controller
 {
@@ -34,15 +34,11 @@ class CartController extends Controller
         $variant = ProductVariant::with('product.store')->findOrFail($data['variant_id']);
         $qty = (int) ($data['qty'] ?? 1);
 
-        if (! $variant->product->isLive() || $variant->product->store?->holiday_mode) {
-            throw ValidationException::withMessages(['variant_id' => __('This product is not available right now.')]);
+        // Live / holiday / sold-out refusals come from CartService::addItem (422 via
+        // BuyerActionException); only an in-stock variant gets the "only N left" check.
+        if ($variant->stock > 0) {
+            $this->ensureStock($variant, $qty);
         }
-
-        if ($variant->stock < 1) {
-            throw ValidationException::withMessages(['variant_id' => __('Sorry — this item just sold out.')]);
-        }
-
-        $this->ensureStock($variant, $qty);
 
         $this->cart->addItem($request->user(), $variant, $qty);
 

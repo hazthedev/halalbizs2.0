@@ -76,13 +76,7 @@ class Orders extends Component
             return;
         }
 
-        $orderService = app(OrderService::class);
-
-        foreach ($order->subOrders as $subOrder) {
-            if ($subOrder->status === SubOrderStatus::PendingPayment) {
-                $orderService->cancel($subOrder, ActorType::Buyer, auth()->id(), __('Cancelled before payment'));
-            }
-        }
+        app(OrderService::class)->cancelUnpaid($order, ActorType::Buyer, auth()->id(), __('Cancelled before payment'));
 
         $this->dispatch('toast', message: __('Order cancelled — nothing was charged.'));
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ProductStatus;
 use App\Models\Conversation;
 use App\Models\Order;
 use App\Models\Product;
@@ -62,6 +63,12 @@ test('wishlist toggles and lists', function () {
     $http->postJson("/api/v1/wishlist/{$product->id}")->assertOk()->assertJsonPath('data.wishlisted', false);
     $http->getJson('/api/v1/wishlist')->assertJsonPath('data', []);
     $http->postJson('/api/v1/wishlist/999999')->assertNotFound();
+
+    // A product that is no longer live cannot be saved, but one already saved can still be removed.
+    $http->postJson("/api/v1/wishlist/{$product->id}")->assertOk()->assertJsonPath('data.wishlisted', true);
+    $product->update(['status' => ProductStatus::Draft]);
+    $http->postJson("/api/v1/wishlist/{$product->id}")->assertOk()->assertJsonPath('data.wishlisted', false);
+    $http->postJson("/api/v1/wishlist/{$product->id}")->assertNotFound();
 });
 
 test('coins show the wallet and check-in once a day', function () {
@@ -96,6 +103,10 @@ test('coins show the wallet and check-in once a day', function () {
         ->assertJsonStructure(['data' => ['lifetime_earned', 'expiring_at', 'ledger' => [['id', 'type', 'type_label', 'amount', 'note', 'created_at']]]]);
 
     expect(DisplayTime::today())->not->toBeNull();
+
+    config(['coins.enabled' => false]);
+    $http->getJson('/api/v1/coins')->assertNotFound();
+    $http->postJson('/api/v1/coins/check-in')->assertNotFound();
 });
 
 test('notifications list with app links and mark as read', function () {

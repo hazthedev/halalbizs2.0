@@ -163,6 +163,32 @@ test('an empty cart is a 409 checkout_failed', function () {
         ->assertJsonPath('error.code', 'checkout_failed');
 });
 
+test("placing with someone else's address is a 404 and writes nothing", function () {
+    [$user, , $http] = apiCheckoutBuyer();
+    apiCheckoutCart($user);
+    $other = Address::factory()->create(['user_id' => User::factory()->create()->id]);
+
+    $http->postJson('/api/v1/checkout/place', ['address_id' => $other->id, 'payment_method' => 'cod'])
+        ->assertNotFound()
+        ->assertJsonPath('error.code', 'not_found');
+
+    expect(Order::count())->toBe(0)->and($user->cart->items()->count())->toBe(1);
+});
+
+test('a selected line that went out of stock blocks place with the line named', function () {
+    [$user, $address, $http] = apiCheckoutBuyer();
+    $product = apiCheckoutCart($user);
+    $variant = $product->variants->first();
+    $variant->update(['stock' => 0]);
+
+    $http->postJson('/api/v1/checkout/place', ['address_id' => $address->id, 'payment_method' => 'cod'])
+        ->assertStatus(409)
+        ->assertJsonPath('error.code', 'checkout_failed')
+        ->assertJsonStructure(['error' => ['fields' => [(string) $variant->id]]]);
+
+    expect(Order::count())->toBe(0);
+});
+
 test('an iPay88 order hands off through a signed web URL that renders the entry form without a session', function () {
     apiCheckoutRealGateway();
     [$user, $address, $http] = apiCheckoutBuyer();
@@ -179,16 +205,23 @@ test('an iPay88 order hands off through a signed web URL that renders the entry 
         ->and($data['payment_url'])->toContain('signature=');
 
     $order = Order::where('order_no', $data['order_no'])->firstOrFail();
-    $returnUrl = URL::signedRoute('app.pay.return', ['order' => $order->order_no]);
 
     // Unauthenticated browser (the app's system browser): the same bridge the web renders.
-    $this->get($data['payment_url'])
+    $page = $this->get($data['payment_url'])
         ->assertOk()
         ->assertSee('Continue to payment')
         ->assertSee('name="RefNo" value="'.$order->order_no.'"', false)
-        ->assertSee('name="ResponseURL" value="'.e($returnUrl).'"', false)
         ->assertSee('name="BackendURL" value="'.e(route('payments.ipay88.backend')).'"', false)
         ->assertSee(app(Ipay88Service::class)->requestSignature($order->order_no, $order->grand_total_sen));
+
+    // ResponseURL is the app's signed return page, with a 24h expiry.
+    preg_match('#name="ResponseURL" value="([^"]+)"#', $page->getContent(), $matches);
+    $returnUrl = html_entity_decode($matches[1]);
+
+    expect($returnUrl)->toStartWith(url("/app/pay/{$order->order_no}/return?expires="))
+        ->and($returnUrl)->toContain('signature=');
+    parse_str((string) parse_url($returnUrl, PHP_URL_QUERY), $query);
+    expect((int) $query['expires'])->toBeGreaterThan(now()->addHours(23)->timestamp)->toBeLessThanOrEqual(now()->addDay()->timestamp);
 
     // The signature is the auth: tampered or expired → 403.
     $this->get($data['payment_url'].'x')->assertForbidden();
@@ -253,6 +286,27 @@ test('in mock mode the signed simulator settles the order exactly like the web s
 
     $http->getJson("/api/v1/orders/{$order->order_no}/payment")->assertJsonPath('data.paid', true);
 
+    // Replaying the signed simulator POST after settlement writes nothing (hard rule 4).
+    $paymentBefore = $order->fresh()->payment->toArray();
+    $this->post($successUrl)->assertNotFound();
+    expect($order->fresh()->payment->toArray())->toBe($paymentBefore)
+        ->and($order->fresh()->payments()->count())->toBe(1);
+
     // Unsigned simulator POST is refused.
     $this->post("/app/pay/{$order->order_no}/mock/success")->assertForbidden();
+});
+
+test('the signed simulator route is a 404 when a real gateway is configured', function () {
+    apiCheckoutRealGateway();
+    [$user, $address, $http] = apiCheckoutBuyer();
+    apiCheckoutCart($user);
+
+    $data = $http->postJson('/api/v1/checkout/place', ['address_id' => $address->id, 'payment_method' => 'ipay88'])->assertCreated()->json('data');
+    $order = Order::where('order_no', $data['order_no'])->firstOrFail();
+
+    $this->post(URL::temporarySignedRoute('app.pay.mock', now()->addMinutes(15), ['order' => $order->order_no, 'result' => 'success']))
+        ->assertNotFound();
+
+    expect($order->fresh()->payment_status)->toBe(PaymentStatus::Pending)
+        ->and($order->fresh()->payment->status)->toBe(GatewayPaymentStatus::Pending);
 });

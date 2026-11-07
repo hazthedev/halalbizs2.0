@@ -54,6 +54,8 @@ class CoinController extends Controller
 
     public function checkIn(Request $request, CoinService $coins): JsonResponse
     {
+        abort_unless($coins->enabled(), 404);
+
         try {
             return ApiResponse::ok($coins->checkIn($request->user()));
         } catch (CheckoutException $e) {

@@ -205,15 +205,16 @@ test('a return request with photos goes through ReturnService', function () {
         ->assertJsonPath('data.return_request.status', 'requested')
         ->assertJsonPath('data.can.return', false);
 
-    // A second request on the same sub-order is refused with the service's message.
+    // A second request on the same sub-order is a state conflict.
     $http->postJson("/api/v1/orders/{$delivered->id}/return", ['reason_id' => $reason->id])
-        ->assertStatus(422)
-        ->assertJsonPath('error.code', 'validation_failed')
+        ->assertStatus(409)
+        ->assertJsonPath('error.code', 'return_not_allowed')
         ->assertJsonPath('error.message', __('This order is no longer eligible for a return.'));
 
-    // Shipped orders are not eligible; inactive reasons fail validation.
+    // Shipped orders are not eligible either; an inactive reason fails validation first.
     $shipped = apiOrdersSubOrder($user, SubOrderStatus::Shipped);
-    $http->postJson("/api/v1/orders/{$shipped->id}/return", ['reason_id' => $reason->id])->assertStatus(422);
+    $http->postJson("/api/v1/orders/{$shipped->id}/return", ['reason_id' => $reason->id])->assertStatus(409)->assertJsonPath('error.code', 'return_not_allowed');
+    $http->postJson("/api/v1/orders/{$shipped->id}/return", ['reason_id' => $reason->id + 1])->assertStatus(422)->assertJsonPath('error.code', 'validation_failed');
 });
 
 test('a review goes through ReviewService once per item, three submits a minute', function () {

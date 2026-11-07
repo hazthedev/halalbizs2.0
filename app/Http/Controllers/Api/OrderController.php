@@ -6,6 +6,7 @@ use App\Enums\ActorType;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\SubOrderStatus;
+use App\Exceptions\InvalidTransitionException;
 use App\Http\Api\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SubOrderResource;
@@ -21,7 +22,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use InvalidArgumentException;
 
 /**
  * The buyer's orders (mobile plan §4): the web Orders tabs as `bucket`, one
@@ -74,13 +74,11 @@ class OrderController extends Controller
 
         try {
             if ($row->status === SubOrderStatus::PendingPayment && $row->order->isAwaitingPayment()) {
-                foreach ($row->order->subOrders()->where('status', SubOrderStatus::PendingPayment)->get() as $sibling) {
-                    $orders->cancel($sibling, ActorType::Buyer, $request->user()->id, $reason ?? __('Cancelled before payment'));
-                }
+                $orders->cancelUnpaid($row->order, ActorType::Buyer, $request->user()->id, $reason ?? __('Cancelled before payment'));
             } else {
                 $orders->cancel($row, ActorType::Buyer, $request->user()->id, $reason);
             }
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidTransitionException $e) {
             return $this->invalidTransition();
         }
 
@@ -93,7 +91,7 @@ class OrderController extends Controller
 
         try {
             $orders->confirmReceived($row, $request->user()->id);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidTransitionException $e) {
             return $this->invalidTransition();
         }
 
@@ -120,6 +118,10 @@ class OrderController extends Controller
         ]);
 
         $row = $this->owned($request, $subOrder);
+
+        if (! $returns->canRequest($row)) {
+            return ApiResponse::error('return_not_allowed', __('This order is no longer eligible for a return.'), 409);
+        }
 
         $returnRequest = $returns->request(
             $row,

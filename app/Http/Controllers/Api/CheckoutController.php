@@ -42,10 +42,22 @@ class CheckoutController extends Controller
     {
         $data = $this->validated($request, placing: true);
         $user = $request->user();
+        $address = $user->addresses()->findOrFail($data['address_id']);
+
+        // A selected line the basket already marks unavailable must be named,
+        // not silently dropped (CheckoutService::blockedLines) — keyed by variant_id.
+        $blocked = $checkout->blockedLines($user);
+
+        if ($blocked->isNotEmpty()) {
+            return ApiResponse::error('checkout_failed', __('Some selected items can no longer be bought.'), 409,
+                $blocked->mapWithKeys(fn (object $line) => [(string) $line->variant->id => [
+                    $line->reason ?? ($line->variant->product?->isLive() ? __('Out of stock') : __('No longer available')),
+                ]])->all());
+        }
 
         $order = $checkout->place(
             $user,
-            $user->addresses()->findOrFail($data['address_id']),
+            $address,
             PaymentMethod::from($data['payment_method']),
             $data['platform_code'] ?? null,
             $data['shop_code'] ?? null,

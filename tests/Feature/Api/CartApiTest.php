@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ProductStatus;
 use App\Models\Product;
 use App\Models\User;
 use App\Settings\GeneralSettings;
@@ -93,7 +94,15 @@ test('asking for more than the stock is a 422 with the message', function () {
 
     $http->postJson('/api/v1/cart/items', ['variant_id' => $variant->id])
         ->assertStatus(422)
-        ->assertJsonPath('error.fields.variant_id.0', __('Sorry — this item just sold out.'));
+        ->assertJsonPath('error.code', 'validation_failed')
+        ->assertJsonPath('error.message', __('Sorry — this item just sold out.'));
+
+    // Unpublished products are refused by CartService::addItem, same as the web button.
+    $variant->update(['stock' => 3]);
+    $variant->product->update(['status' => ProductStatus::Draft]);
+    $http->postJson('/api/v1/cart/items', ['variant_id' => $variant->id])
+        ->assertStatus(422)
+        ->assertJsonPath('error.message', __('This product is not available right now.'));
 });
 
 test('purchasing off is a 409 purchasing_disabled on writes while the cart still reads', function () {

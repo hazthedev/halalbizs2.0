@@ -98,6 +98,10 @@ class Home extends Component
     /** @return Collection<int, Product> */
     public function products(string $source, int $limit): Collection
     {
+        // Public (the API reuses this ranking) and therefore client-callable:
+        // clamp to the range the admin form allows (HomeSections: 1..48).
+        $limit = max(1, min($limit, 48));
+
         // 'top' leads with actively boosted products (flagged Sponsored),
         // then fills the remaining slots organically by sold_count.
         $boosted = $source === 'top' ? $this->boostedProducts($limit) : new Collection;

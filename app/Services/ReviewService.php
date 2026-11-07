@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\SubOrderStatus;
+use App\Exceptions\BuyerActionException;
 use App\Models\Review;
 use App\Models\SubOrder;
 use App\Models\User;
@@ -10,7 +11,6 @@ use App\Support\UploadName;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 /**
  * Buyer product reviews (docs/09 §C). The only-purchased gate is structural:
@@ -28,7 +28,7 @@ class ReviewService
      * @param  list<array{order_item_id: int, rating: int, body?: ?string, photos?: list<UploadedFile>}>  $items
      *
      * @throws AuthorizationException when the sub-order is not the buyer's
-     * @throws InvalidArgumentException when an item cannot be reviewed
+     * @throws BuyerActionException when an item cannot be reviewed
      */
     public function submit(SubOrder $subOrder, User $buyer, array $items, ?int $sellerRating = null, ?string $sellerComment = null): void
     {
@@ -37,11 +37,11 @@ class ReviewService
         }
 
         if ($subOrder->status !== SubOrderStatus::Completed) {
-            throw new InvalidArgumentException(__('You can rate this order once it is completed.'));
+            throw new BuyerActionException(__('You can rate this order once it is completed.'));
         }
 
         if ($sellerRating !== null && ($sellerRating < 1 || $sellerRating > 5)) {
-            throw new InvalidArgumentException(__('Tap a star to rate the seller.'));
+            throw new BuyerActionException(__('Tap a star to rate the seller.'));
         }
 
         DB::transaction(function () use ($subOrder, $buyer, $items, $sellerRating, $sellerComment) {
@@ -54,15 +54,15 @@ class ReviewService
                 $rating = (int) $input['rating'];
 
                 if ($item->review !== null) {
-                    throw new InvalidArgumentException(__('You already reviewed this item.'));
+                    throw new BuyerActionException(__('You already reviewed this item.'));
                 }
 
                 if ($item->product_id === null) {
-                    throw new InvalidArgumentException(__('This product can no longer be reviewed.'));
+                    throw new BuyerActionException(__('This product can no longer be reviewed.'));
                 }
 
                 if ($rating < 1 || $rating > 5) {
-                    throw new InvalidArgumentException(__('Tap a star to rate this item.'));
+                    throw new BuyerActionException(__('Tap a star to rate this item.'));
                 }
 
                 $comment = trim((string) ($input['body'] ?? ''));

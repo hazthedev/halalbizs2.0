@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\BuyerActionException;
 use App\Exceptions\PurchasingDisabledException;
 use App\Models\Cart;
 use App\Models\ProductVariant;
@@ -30,9 +31,21 @@ class CartService
         return Cart::firstOrCreate(['user_id' => $user->id]);
     }
 
+    /**
+     * @throws PurchasingDisabledException when the marketplace is listing-only
+     * @throws BuyerActionException when the product is not live, the store is on holiday, or the variant is sold out
+     */
     public function addItem(?User $user, ProductVariant $variant, int $qty = 1): void
     {
         $this->ensurePurchasingEnabled();
+
+        if (! $variant->product?->isLive() || $variant->product->store?->holiday_mode) {
+            throw new BuyerActionException(__('This product is not available right now.'));
+        }
+
+        if ($variant->stock < 1) {
+            throw new BuyerActionException(__('Sorry — this item just sold out.'));
+        }
 
         $qty = max(1, min($qty, $variant->stock));
 
