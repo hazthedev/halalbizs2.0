@@ -16,7 +16,8 @@ class SoukBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = colors ?? soukStatusColor(status ?? label);
+    // Colour keys off the API status, never the translated label.
+    final c = colors ?? soukStatusColor(status ?? '');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
       decoration: BoxDecoration(

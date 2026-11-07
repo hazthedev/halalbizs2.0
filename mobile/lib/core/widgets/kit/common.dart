@@ -1,25 +1,44 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../api/api_client.dart';
 import '../../theme/souk_theme.dart';
 import 'buttons.dart';
 
+/// User-facing text for any error: client-side codes map to translations,
+/// server envelope messages are shown as sent, anything else is generic.
+String apiMessage(BuildContext context, Object error) {
+  final l = context.l10n;
+  if (error is! ApiException) return l.somethingWentWrong;
+  return switch (error.code) {
+    'offline' => l.errorOffline,
+    'timeout' => l.errorTimeout,
+    'bad_envelope' => l.errorBadResponse,
+    'no_challenge' => l.errorNoChallenge,
+    'token_storage' => l.errorTokenStorage,
+    _ => error.message.isEmpty ? l.somethingWentWrong : error.message,
+  };
+}
+
 /// Uniform error panel for ApiException and anything else, with retry.
 /// Every async screen renders this on first-load failure.
 class ErrorPane extends StatelessWidget {
-  const ErrorPane({super.key, required this.error, this.onRetry, this.retryLabel = 'Retry'});
+  const ErrorPane({super.key, required this.error, this.onRetry, this.retryLabel});
 
   final Object error;
   final VoidCallback? onRetry;
-  final String retryLabel;
+
+  /// Defaults to the translated "Retry".
+  final String? retryLabel;
 
   @override
   Widget build(BuildContext context) {
     final e = error;
     final offline = e is ApiException && e.isOffline;
-    final message = e is ApiException ? e.message : 'Something went wrong.';
-    if (e is! ApiException) debugPrint('ErrorPane: $e');
+    final message = apiMessage(context, e);
+    if (kDebugMode && e is! ApiException) debugPrint('ErrorPane: $e');
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(SoukSpace.s6),
@@ -32,7 +51,7 @@ class ErrorPane extends StatelessWidget {
             const SizedBox(height: SoukSpace.s4),
             SoukButton(
               key: const Key('error-retry'),
-              label: retryLabel,
+              label: retryLabel ?? context.l10n.retry,
               icon: FontAwesomeIcons.arrowsRotate,
               onPressed: onRetry,
             ),
@@ -47,7 +66,7 @@ class ErrorPane extends StatelessWidget {
 /// validation messages.
 void showApiError(BuildContext context, Object error) {
   final e = error;
-  var message = e is ApiException ? e.message : 'Something went wrong.';
+  var message = apiMessage(context, e);
   if (e is ApiException && e.fields.isNotEmpty) {
     message = e.fields.values.expand((m) => m).take(3).join('\n');
   }
@@ -68,10 +87,11 @@ Future<bool> showSoukConfirm(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmLabel = 'Confirm',
-  String cancelLabel = 'Cancel',
+  String? confirmLabel,
+  String? cancelLabel,
   bool danger = false,
 }) async {
+  final l = context.l10n;
   final ok = await showDialog<bool>(
     context: context,
     useRootNavigator: true,
@@ -82,13 +102,13 @@ Future<bool> showSoukConfirm(
       actions: [
         SoukButton(
           key: const Key('souk-confirm-cancel'),
-          label: cancelLabel,
+          label: cancelLabel ?? l.cancel,
           variant: SoukButtonVariant.ghost,
           onPressed: () => Navigator.of(ctx).pop(false),
         ),
         SoukButton(
           key: const Key('souk-confirm-ok'),
-          label: confirmLabel,
+          label: confirmLabel ?? l.confirm,
           variant: danger ? SoukButtonVariant.danger : SoukButtonVariant.primary,
           onPressed: () => Navigator.of(ctx).pop(true),
         ),

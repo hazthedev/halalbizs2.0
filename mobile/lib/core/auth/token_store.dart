@@ -28,11 +28,11 @@ class TokenStore {
     _cached = token;
   }
 
+  /// Throws if the keychain refuses the delete, so the caller decides what a
+  /// lingering token means (sign-out still completes locally).
   Future<void> clear() async {
     _cached = null;
-    try {
-      await _storage.delete(key: _kToken);
-    } catch (_) {}
+    await _storage.delete(key: _kToken);
   }
 
   /// Stable per-install suffix so two identical devices ("iPhone") never share
@@ -51,7 +51,8 @@ class TokenStore {
     }
   }
 
-  /// Human-recognisable device name for `POST auth/login` (e.g. "iPhone · ios · k3f9q1").
+  /// Device model + install suffix for `POST auth/login` (e.g. "iPhone · ios ·
+  /// k3f9q1"). Never the owner's device name ("Haze's iPhone").
   Future<String> deviceName() async {
     final suffix = await _installId();
     return '${await _baseDeviceName()} · $suffix';
@@ -63,7 +64,7 @@ class TokenStore {
     try {
       if (defaultTargetPlatform == TargetPlatform.iOS) {
         final i = await info.iosInfo;
-        return '${i.name} · ios';
+        return '${i.model} · ios';
       }
       if (defaultTargetPlatform == TargetPlatform.android) {
         final a = await info.androidInfo;

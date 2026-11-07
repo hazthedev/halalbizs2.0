@@ -13,8 +13,8 @@ class OrdersScreen extends StatelessWidget {
 }
 
 List<RouteBase> get ordersSubRoutes => [
-      GoRoute(path: ':id', builder: (_, s) => ComingSoonScreen(title: 'Order ${s.pathParameters['id']}'), routes: [
-        GoRoute(path: 'return', builder: (_, _) => const ComingSoonScreen(title: 'Return')),
-        GoRoute(path: 'review', builder: (_, _) => const ComingSoonScreen(title: 'Review')),
+      GoRoute(path: ':id', builder: (c, _) => ComingSoonScreen(title: c.l10n.orderDetails), routes: [
+        GoRoute(path: 'return', builder: (c, _) => ComingSoonScreen(title: c.l10n.orderReturn)),
+        GoRoute(path: 'review', builder: (c, _) => ComingSoonScreen(title: c.l10n.orderReview)),
       ]),
     ];

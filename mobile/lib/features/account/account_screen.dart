@@ -163,17 +163,17 @@ class LanguageScreen extends ConsumerWidget {
 }
 
 List<RouteBase> get accountSubRoutes => [
-      GoRoute(path: 'profile', builder: (_, _) => const ComingSoonScreen(title: 'Profile')),
-      GoRoute(path: 'addresses', builder: (_, _) => const ComingSoonScreen(title: 'Addresses'), routes: [
-        GoRoute(path: 'new', builder: (_, _) => const ComingSoonScreen(title: 'New address')),
-        GoRoute(path: ':id', builder: (_, _) => const ComingSoonScreen(title: 'Address')),
+      GoRoute(path: 'profile', builder: (c, _) => ComingSoonScreen(title: c.l10n.profile)),
+      GoRoute(path: 'addresses', builder: (c, _) => ComingSoonScreen(title: c.l10n.addresses), routes: [
+        GoRoute(path: 'new', builder: (c, _) => ComingSoonScreen(title: c.l10n.newAddress)),
+        GoRoute(path: ':id', builder: (c, _) => ComingSoonScreen(title: c.l10n.address)),
       ]),
-      GoRoute(path: 'wishlist', builder: (_, _) => const ComingSoonScreen(title: 'Wishlist')),
-      GoRoute(path: 'coins', builder: (_, _) => const ComingSoonScreen(title: 'Coins')),
-      GoRoute(path: 'notifications', builder: (_, _) => const ComingSoonScreen(title: 'Notifications')),
-      GoRoute(path: 'messages', builder: (_, _) => const ComingSoonScreen(title: 'Messages'), routes: [
-        GoRoute(path: ':id', builder: (_, _) => const ComingSoonScreen(title: 'Conversation')),
+      GoRoute(path: 'wishlist', builder: (c, _) => ComingSoonScreen(title: c.l10n.wishlist)),
+      GoRoute(path: 'coins', builder: (c, _) => ComingSoonScreen(title: c.l10n.coins)),
+      GoRoute(path: 'notifications', builder: (c, _) => ComingSoonScreen(title: c.l10n.notifications)),
+      GoRoute(path: 'messages', builder: (c, _) => ComingSoonScreen(title: c.l10n.messages), routes: [
+        GoRoute(path: ':id', builder: (c, _) => ComingSoonScreen(title: c.l10n.conversation)),
       ]),
-      GoRoute(path: 'delete', builder: (_, _) => const ComingSoonScreen(title: 'Delete account')),
+      GoRoute(path: 'delete', builder: (c, _) => ComingSoonScreen(title: c.l10n.deleteAccount)),
       GoRoute(path: 'language', builder: (_, _) => const LanguageScreen()),
     ];

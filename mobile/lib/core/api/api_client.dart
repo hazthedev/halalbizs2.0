@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/token_store.dart';
@@ -8,11 +9,24 @@ import '../locale.dart';
 
 /// Base URL, overridable per build:
 /// `flutter build apk --dart-define=API_BASE_URL=https://halalbizs.com/api/v1`.
+/// The local Herd host is a debug default only — see [assertApiBaseUrl].
 const kApiBaseUrl =
     String.fromEnvironment('API_BASE_URL', defaultValue: 'http://halalbizs2.0-mobile.test/api/v1');
 
+/// Release builds must name their API: fail at startup, loudly, rather than
+/// ship a build that talks to a developer's machine.
+void assertApiBaseUrl() {
+  if (kReleaseMode && !const bool.hasEnvironment('API_BASE_URL')) {
+    throw StateError('API_BASE_URL is not set. Build with --dart-define=API_BASE_URL=https://<host>/api/v1');
+  }
+}
+
 /// Error the whole app throws for API failures. Mirrors the server envelope
 /// `{"ok":false,"error":{code,message,fields}}` (mobile plan §1).
+///
+/// [message] is the server's text (shown as sent) or, for client-side codes
+/// (`offline`, `timeout`, `bad_envelope`, `no_challenge`, `token_storage`),
+/// a developer note — the UI translates those by [code] (`apiMessage`).
 class ApiException implements Exception {
   ApiException(this.code, this.message, {this.status, this.fields = const {}});
 
@@ -29,8 +43,10 @@ class ApiException implements Exception {
   bool get isValidation => code == 'validation_failed' || status == 422;
   bool get isOffline => code == 'offline';
 
-  static ApiException offline() =>
-      ApiException('offline', 'No connection. Showing cached data where available.');
+  static ApiException offline() => ApiException('offline', 'No connection.');
+
+  /// The server was reached but did not answer in time (send/receive timeout).
+  static ApiException timeout() => ApiException('timeout', 'The server took too long to respond.');
 
   @override
   String toString() => 'ApiException($status $code): $message';
@@ -94,12 +110,14 @@ class ApiClient {
 
   /// Tolerant of the pre-slice-1 Laravel paginator shape (`{data, links,
   /// meta}` without `ok`): any 2xx whose body has no `ok` key is a success.
+  /// A 2xx carrying `ok:false` is parsed like any other envelope error.
   Future<dynamic> _unwrap(
       Future<Response<dynamic>> Function() run, void Function(Map<String, dynamic>)? meta) async {
     try {
       final res = await run();
       final body = res.data;
-      if (body is Map<String, dynamic> && (body['ok'] == true || !body.containsKey('ok'))) {
+      if (body is Map<String, dynamic>) {
+        if (body['ok'] == false) throw _parseError(res.statusCode, body);
         if (meta != null && body['meta'] is Map<String, dynamic>) {
           meta(body['meta'] as Map<String, dynamic>);
         }
@@ -112,29 +130,27 @@ class ApiClient {
     }
   }
 
-  ApiException _toApiException(DioException e) {
-    if (e.type == DioExceptionType.connectionError ||
-        e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout) {
-      return ApiException.offline();
+  ApiException _toApiException(DioException e) => switch (e.type) {
+        DioExceptionType.connectionError || DioExceptionType.connectionTimeout => ApiException.offline(),
+        DioExceptionType.sendTimeout || DioExceptionType.receiveTimeout => ApiException.timeout(),
+        _ => _parseError(e.response?.statusCode, e.response?.data),
+      };
+
+  /// Envelope error, or Laravel's default `{message, errors}` for routes that
+  /// predate the envelope. No JSON body → empty message (the UI shows its
+  /// generic text, never Dio's).
+  static ApiException _parseError(int? status, dynamic body) {
+    if (body is! Map<String, dynamic>) return ApiException('http_$status', '', status: status);
+    final err = body['error'] is Map<String, dynamic> ? body['error'] as Map<String, dynamic> : body;
+    final fields = <String, List<String>>{};
+    final rawFields = err['fields'] ?? err['errors'];
+    if (rawFields is Map) {
+      rawFields.forEach((k, v) {
+        fields['$k'] = (v is List) ? v.map((m) => '$m').toList() : ['$v'];
+      });
     }
-    final status = e.response?.statusCode;
-    final body = e.response?.data;
-    if (body is Map<String, dynamic>) {
-      // Envelope error, or Laravel's default {message, errors} for routes
-      // that predate the envelope.
-      final err = body['error'] is Map<String, dynamic> ? body['error'] as Map<String, dynamic> : body;
-      final fields = <String, List<String>>{};
-      final rawFields = err['fields'] ?? err['errors'];
-      if (rawFields is Map) {
-        rawFields.forEach((k, v) {
-          fields['$k'] = (v is List) ? v.map((m) => '$m').toList() : ['$v'];
-        });
-      }
-      final code = '${err['code'] ?? (status == 404 ? 'not_found' : status == 422 ? 'validation_failed' : 'http_$status')}';
-      return ApiException(code, '${err['message'] ?? 'Request failed.'}', status: status, fields: fields);
-    }
-    return ApiException('http_$status', e.message ?? 'Request failed.', status: status);
+    final code = '${err['code'] ?? (status == 404 ? 'not_found' : status == 422 ? 'validation_failed' : 'http_$status')}';
+    return ApiException(code, '${err['message'] ?? ''}', status: status, fields: fields);
   }
 }
 
