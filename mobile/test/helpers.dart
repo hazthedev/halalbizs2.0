@@ -27,7 +27,8 @@ class FakeApi extends ApiClient {
       void Function(Map<String, dynamic>)? metaCb) {
     calls.add('$method $path${query == null || query.isEmpty ? '' : '?${OfflineRepo.cacheKey('', query).substring(1)}'}');
     final h = routes['$method $path'];
-    if (h == null) throw ApiException('not_found', 'Not found.', status: 404);
+    // Mirrors Laravel's missing-route answer (what CartApi's stub keys on).
+    if (h == null) throw ApiException('not_found', 'The route api/v1/$path could not be found.', status: 404);
     final out = h(query, body);
     if (out is ApiException) throw out;
     if (metaCb != null && meta != null) metaCb(meta!);

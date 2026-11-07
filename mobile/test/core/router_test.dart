@@ -24,6 +24,7 @@ void main() {
       const tf = TwoFactorPending('abc', 'email');
       expect(soukRedirect(tf, Uri.parse('/home')), '/two-factor');
       expect(soukRedirect(tf, Uri.parse('/two-factor')), isNull);
+      expect(soukRedirect(tf, Uri.parse('/login?from=%2Fcart')), '/two-factor?from=%2Fcart');
       expect(soukRedirect(const SignedOut(), Uri.parse('/two-factor')), '/login');
     });
 
@@ -35,6 +36,16 @@ void main() {
       final seller = SignedIn(Profile(fakeUser(storeStatus: 'approved')));
       expect(soukRedirect(seller, Uri.parse('/seller/orders')), isNull);
       expect(soukRedirect(const SessionLoading(), Uri.parse('/cart')), isNull);
+    });
+
+    test('from is honoured only for in-app, non-auth paths', () {
+      final buyer = SignedIn(Profile(fakeUser()));
+      expect(soukRedirect(buyer, Uri.parse('/login?from=%2Forders%2F12%3Ftab%3Dall')), '/orders/12?tab=all');
+      expect(soukRedirect(buyer, Uri.parse('/login?from=https%3A%2F%2Fevil.test')), '/home');
+      expect(soukRedirect(buyer, Uri.parse('/login?from=%2F%2Fevil.test')), '/home');
+      expect(soukRedirect(buyer, Uri.parse('/login?from=%2Flogin')), '/home');
+      expect(safeFrom('/two-factor?from=%2Fcart'), '/home');
+      expect(safeFrom(null), '/home');
     });
   });
 

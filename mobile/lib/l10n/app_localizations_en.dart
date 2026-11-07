@@ -355,4 +355,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get product => 'Product';
+
+  @override
+  String get errorOffline =>
+      'No connection. Showing cached data where available.';
+
+  @override
+  String get errorTimeout => 'The server took too long to respond. Try again.';
+
+  @override
+  String get errorBadResponse => 'Unexpected server response.';
+
+  @override
+  String get errorNoChallenge => 'Sign in again to get a new code.';
+
+  @override
+  String get errorTokenStorage =>
+      'This device refused to store the sign-in token securely. Check the app\'s keychain access and try again.';
+
+  @override
+  String get sessionEnded => 'Your session has ended. Please sign in again.';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get justNow => 'just now';
+
+  @override
+  String minutesOld(int count) {
+    return '$count min old';
+  }
+
+  @override
+  String hoursOld(int count) {
+    return '$count h old';
+  }
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get any => 'Any';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get newAddress => 'New address';
+
+  @override
+  String get address => 'Address';
+
+  @override
+  String get conversation => 'Conversation';
+
+  @override
+  String get checkout => 'Checkout';
+
+  @override
+  String get payment => 'Payment';
+
+  @override
+  String get orderPlaced => 'Order placed';
+
+  @override
+  String get orderDetails => 'Order details';
+
+  @override
+  String get orderReturn => 'Return';
+
+  @override
+  String get orderReview => 'Review';
 }

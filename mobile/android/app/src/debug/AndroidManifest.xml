@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Plain-HTTP API host (halalbizs2.0-mobile.test) is reachable in debug builds only. -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

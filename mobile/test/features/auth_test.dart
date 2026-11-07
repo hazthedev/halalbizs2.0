@@ -24,6 +24,7 @@ void main() {
 
   testWidgets('login → two-factor challenge → code → signed in', (tester) async {
     usePhone(tester);
+    Object? tfBody;
     final api = FakeApi(routes: {
       'GET products': (_, _) => [],
       'GET categories': (_, _) => [],
@@ -31,8 +32,7 @@ void main() {
             'two_factor': {'challenge': 'chal-1', 'method': 'email'},
           },
       'POST auth/two-factor': (_, body) {
-        expect((body as Map)['challenge'], 'chal-1');
-        expect(body['code'], '123456');
+        tfBody = body;
         return {'token': 'tok', 'user': fakeUser()};
       },
     });
@@ -55,6 +55,9 @@ void main() {
 
     expect(h.container.read(sessionProvider), isA<SignedIn>());
     expect(h.router.state.uri.path, '/cart');
+    final tf = tfBody as Map;
+    expect(tf['challenge'], 'chal-1');
+    expect(tf['code'], '123456');
   });
 
   testWidgets('422 from login lands on the email field', (tester) async {

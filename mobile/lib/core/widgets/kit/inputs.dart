@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../theme/souk_theme.dart';
 
 /// Label above, control, then help / error text — the web form-field anatomy.
@@ -106,6 +107,11 @@ class SoukTextField extends StatelessWidget {
           validator: validator,
           style: SoukText.body,
           decoration: InputDecoration(
+            // Screen readers get the label from the decoration; the visible
+            // label is SoukField's. Outline borders reserve no height for it.
+            labelText: label,
+            floatingLabelBehavior: FloatingLabelBehavior.never,
+            labelStyle: const TextStyle(fontSize: 0, height: 0, color: Colors.transparent),
             hintText: hint,
             prefixIcon: prefixIcon == null
                 ? null
@@ -175,7 +181,8 @@ class _SoukPasswordFieldState extends State<SoukPasswordField> {
         validator: widget.validator,
         autocorrect: false,
         suffix: IconButton(
-          tooltip: _obscure ? 'Show password' : 'Hide password',
+          key: const Key('souk-password-toggle'),
+          tooltip: _obscure ? context.l10n.showPassword : context.l10n.hidePassword,
           onPressed: () => setState(() => _obscure = !_obscure),
           icon: FaIcon(_obscure ? FontAwesomeIcons.eyeSlash : FontAwesomeIcons.eye, size: 15, color: SoukColors.inkFaint),
         ),
@@ -190,7 +197,7 @@ class SoukDropdown<T> extends StatelessWidget {
     required this.options,
     required this.value,
     required this.onChanged,
-    this.hint = 'Any',
+    this.hint,
     this.error,
     this.required = false,
     this.enabled = true,
@@ -201,7 +208,9 @@ class SoukDropdown<T> extends StatelessWidget {
   final Map<T, String> options;
   final T? value;
   final ValueChanged<T?> onChanged;
-  final String hint;
+
+  /// Null-option text; defaults to the translated "Any".
+  final String? hint;
   final String? error;
   final bool required;
   final bool enabled;
@@ -210,7 +219,9 @@ class SoukDropdown<T> extends StatelessWidget {
   final bool allowNull;
 
   @override
-  Widget build(BuildContext context) => SoukField(
+  Widget build(BuildContext context) {
+    final hint = this.hint ?? context.l10n.any;
+    return SoukField(
         label: label,
         error: error,
         required: required,
@@ -230,6 +241,7 @@ class SoukDropdown<T> extends StatelessWidget {
           onChanged: enabled ? onChanged : null,
         ),
       );
+  }
 }
 
 /// Selectable pill chip (variant picker, category filter, sort).
@@ -259,7 +271,7 @@ class SoukChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(SoukRadius.pill),
           onTap: enabled ? onTap : null,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 40),
+            constraints: const BoxConstraints(minHeight: SoukSpace.minTap),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s4),
               child: Center(

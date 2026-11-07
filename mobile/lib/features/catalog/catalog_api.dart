@@ -43,7 +43,7 @@ class CatalogApi {
   }
 
   Future<CachedResult<Product>> product(String slug) async {
-    final r = await _repo.getJson('products/$slug');
+    final r = await _repo.getJson('products/${Uri.encodeComponent(slug)}');
     return CachedResult(Product(asMap(r.data)), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
   }
 
@@ -67,7 +67,7 @@ class CatalogApi {
   /// the slug alone (name filled from the first product's `store`).
   Future<CachedResult<Store>> store(String slug) async {
     try {
-      final r = await _repo.getJson('stores/$slug');
+      final r = await _repo.getJson('stores/${Uri.encodeComponent(slug)}');
       return CachedResult(Store(asMap(r.data)), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
     } on ApiException catch (e) {
       if (!e.isNotFound) rethrow;
@@ -79,7 +79,7 @@ class CatalogApi {
   /// `GET products?store={slug}` while the route is missing.
   Future<ProductPage> storeProducts(String slug, {int page = 1}) async {
     try {
-      final r = await _repo.getJson('stores/$slug/products', query: {if (page > 1) 'page': page});
+      final r = await _repo.getJson('stores/${Uri.encodeComponent(slug)}/products', query: {if (page > 1) 'page': page});
       return ProductPage.from(r);
     } on ApiException catch (e) {
       if (!e.isNotFound) rethrow;

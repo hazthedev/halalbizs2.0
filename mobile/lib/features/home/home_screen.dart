@@ -42,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
         children: [
           categories.when(
             skipLoadingOnRefresh: true,
-            loading: () => const SoukSkeleton.block(height: 40),
+            loading: () => const SoukSkeleton.block(height: SoukSpace.minTap),
             error: (_, _) => const SizedBox.shrink(),
             data: (c) => _CategoryStrip(c.data),
           ),
@@ -60,7 +60,7 @@ class HomeScreen extends ConsumerWidget {
                     message: l.noProductsBody,
                     action: SoukButton(label: l.retry, onPressed: () => _refresh(ref)),
                   )
-                : ProductGrid(p.items, soldLabel: l.sold, onTap: (p) => context.push('/p/${p.slug}')),
+                : ProductGrid(p.items, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
           ),
         ],
       ),
@@ -78,7 +78,7 @@ class _CategoryStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     if (categories.isEmpty) return const SizedBox.shrink();
     return SizedBox(
-      height: 40,
+      height: SoukSpace.minTap,
       child: ListView.separated(
         key: const Key('home-categories'),
         scrollDirection: Axis.horizontal,
@@ -88,7 +88,7 @@ class _CategoryStrip extends StatelessWidget {
           key: Key('home-category-${categories[i].slug}'),
           label: categories[i].name,
           selected: false,
-          onTap: () => context.push('/c/${categories[i].slug}'),
+          onTap: () => context.push('/c/${Uri.encodeComponent(categories[i].slug)}'),
         ),
       ),
     );
