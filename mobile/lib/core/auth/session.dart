@@ -40,8 +40,11 @@ class SessionLoading extends SessionState {
 }
 
 class SignedOut extends SessionState {
-  const SignedOut({this.message});
+  const SignedOut({this.message, this.sessionEnded = false});
   final String? message;
+
+  /// The server revoked the token (401): the login form explains why.
+  final bool sessionEnded;
 }
 
 /// Login answered 202 `{two_factor: {challenge, method}}`: the user must
@@ -64,6 +67,7 @@ class SignedIn extends SessionState {
 
 class SessionController extends Notifier<SessionState> {
   static const _kProfile = 'session.profile';
+  static const _kUserId = 'session.user_id';
 
   @override
   SessionState build() {
@@ -90,9 +94,9 @@ class SessionController extends Notifier<SessionState> {
       state = SignedIn(Profile(me));
     } on ApiException catch (e) {
       if (e.isOffline) {
-        final cached = await _kvGet(_kProfile);
+        final cached = _decode(await _kvGet(_kProfile));
         if (cached != null) {
-          state = SignedIn(Profile(asMap(jsonDecode(cached))), offline: true);
+          state = SignedIn(Profile(cached), offline: true);
           return;
         }
       }
@@ -144,21 +148,25 @@ class SessionController extends Notifier<SessionState> {
   }
 
   Future<void> _signIn(Map<String, dynamic> data) async {
-    final previousUser = await _kvGet(_kProfile);
+    final token = data['token'];
+    if (token is! String || token.isEmpty) {
+      throw ApiException('bad_envelope', 'Sign-in response carried no token.');
+    }
+    final previousId = await _kvGet(_kUserId);
     try {
-      await _tokens.write('${data['token']}');
+      await _tokens.write(token);
     } catch (_) {
-      throw ApiException('token_storage',
-          'Signed in, but this device refused to store the sign-in token securely. Check the app\'s keychain access and try again.');
+      throw ApiException('token_storage', 'This device refused to store the sign-in token securely.');
     }
     var user = data['user'] is Map ? asMap(data['user']) : null;
     user ??= asMap(await _api.get('me'));
     // A different account must not see the previous account's cached data.
-    if (previousUser != null && asMap(jsonDecode(previousUser))['id'] != user['id']) {
+    if (previousId != null && previousId != '${user['id']}') {
       try {
         await _db.wipe();
       } catch (_) {}
     }
+    await _kvPut(_kUserId, '${user['id']}');
     await _kvPut(_kProfile, jsonEncode(user));
     state = SignedIn(Profile(user));
   }
@@ -209,11 +217,15 @@ class SessionController extends Notifier<SessionState> {
     // A 401 from POST auth/logout itself is expected — logout() finishes.
     if (_signingOut) return;
     if (state is SignedIn || state is SessionLoading) {
-      await _tokens.clear();
+      try {
+        await _tokens.clear();
+      } catch (_) {
+        // The keychain refused the delete; the token is already dead server-side.
+      }
       try {
         await _db.wipeCaches();
       } catch (_) {}
-      state = const SignedOut(message: 'Your session has ended. Please sign in again.');
+      state = const SignedOut(sessionEnded: true);
     }
   }
 
@@ -231,6 +243,17 @@ class SessionController extends Notifier<SessionState> {
     try {
       await _db.kvPut(k, v);
     } catch (_) {}
+  }
+
+  /// A corrupt cached profile counts as no cache.
+  static Map<String, dynamic>? _decode(String? json) {
+    if (json == null) return null;
+    try {
+      final v = jsonDecode(json);
+      return v is Map<String, dynamic> ? v : null;
+    } catch (_) {
+      return null;
+    }
   }
 }
 

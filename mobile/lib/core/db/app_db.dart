@@ -70,12 +70,16 @@ class AppDb extends _$AppDb {
     await delete(kv).go();
   }
 
-  /// Wipe cached data on sign-out / session revocation, keeping the cached
-  /// profile (account-switch detection) and UI preferences (`ui.*`).
+  /// Wipe cached data on sign-out / session revocation, keeping only the last
+  /// user id (account-switch detection) and UI preferences (`ui.*`).
   Future<void> wipeCaches() async {
     await delete(responseCache).go();
-    await (delete(kv)..where((t) => t.k.equals('session.profile').not() & t.k.like('ui.%').not())).go();
+    await (delete(kv)..where((t) => t.k.equals('session.user_id').not() & t.k.like('ui.%').not())).go();
   }
 }
 
-final appDbProvider = Provider<AppDb>((ref) => AppDb());
+final appDbProvider = Provider<AppDb>((ref) {
+  final db = AppDb();
+  ref.onDispose(db.close);
+  return db;
+});

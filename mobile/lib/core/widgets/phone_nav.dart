@@ -8,38 +8,37 @@ import '../theme/souk_theme.dart';
 /// One bottom tab = one `StatefulShellBranch` (ASTRA phone model). Tab tap →
 /// `goBranch(i)` restores that tab's stack; re-tap → back to the tab root.
 class SoukTab {
-  const SoukTab({required this.label, required this.icon, required this.root});
+  const SoukTab({required this.icon, required this.root});
 
-  final String label;
   final FaIconData icon;
   final String root;
 }
 
 const buyerTabs = [
-  SoukTab(label: 'Home', icon: FontAwesomeIcons.house, root: '/home'),
-  SoukTab(label: 'Search', icon: FontAwesomeIcons.magnifyingGlass, root: '/search'),
-  SoukTab(label: 'Cart', icon: FontAwesomeIcons.cartShopping, root: '/cart'),
-  SoukTab(label: 'Orders', icon: FontAwesomeIcons.boxOpen, root: '/orders'),
-  SoukTab(label: 'Account', icon: FontAwesomeIcons.circleUser, root: '/account'),
+  SoukTab(icon: FontAwesomeIcons.house, root: '/home'),
+  SoukTab(icon: FontAwesomeIcons.magnifyingGlass, root: '/search'),
+  SoukTab(icon: FontAwesomeIcons.cartShopping, root: '/cart'),
+  SoukTab(icon: FontAwesomeIcons.boxOpen, root: '/orders'),
+  SoukTab(icon: FontAwesomeIcons.circleUser, root: '/account'),
 ];
 
 const sellerTabs = [
-  SoukTab(label: 'Dashboard', icon: FontAwesomeIcons.gaugeHigh, root: '/seller'),
-  SoukTab(label: 'Orders', icon: FontAwesomeIcons.boxOpen, root: '/seller/orders'),
-  SoukTab(label: 'Products', icon: FontAwesomeIcons.tags, root: '/seller/products'),
-  SoukTab(label: 'Earnings', icon: FontAwesomeIcons.wallet, root: '/seller/earnings'),
-  SoukTab(label: 'Store', icon: FontAwesomeIcons.store, root: '/seller/store'),
+  SoukTab(icon: FontAwesomeIcons.gaugeHigh, root: '/seller'),
+  SoukTab(icon: FontAwesomeIcons.boxOpen, root: '/seller/orders'),
+  SoukTab(icon: FontAwesomeIcons.tags, root: '/seller/products'),
+  SoukTab(icon: FontAwesomeIcons.wallet, root: '/seller/earnings'),
+  SoukTab(icon: FontAwesomeIcons.store, root: '/seller/store'),
 ];
 
 /// Shell around a `StatefulNavigationShell`: the branch body plus the tab bar.
 class SoukTabShell extends StatelessWidget {
-  const SoukTabShell({super.key, required this.shell, required this.tabs, this.labels});
+  const SoukTabShell({super.key, required this.shell, required this.tabs, required this.labels});
 
   final StatefulNavigationShell shell;
   final List<SoukTab> tabs;
 
-  /// Translated labels in [tabs] order (defaults to [SoukTab.label]).
-  final List<String>? labels;
+  /// Translated labels in [tabs] order.
+  final List<String> labels;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -54,21 +53,22 @@ class SoukTabShell extends StatelessWidget {
       );
 }
 
-/// CupertinoTabBar on iOS, Material 3 NavigationBar elsewhere. Labels never
-/// scale with Dynamic Type (five labels must fit one line each).
+/// CupertinoTabBar on iOS, Material 3 NavigationBar elsewhere. Labels scale
+/// with Dynamic Type up to 1.2× (five labels must fit one line each).
 class SoukTabBar extends StatelessWidget {
-  const SoukTabBar({super.key, required this.tabs, required this.currentIndex, required this.onSelect, this.labels});
+  const SoukTabBar({super.key, required this.tabs, required this.currentIndex, required this.onSelect, required this.labels});
 
   final List<SoukTab> tabs;
-  final List<String>? labels;
+  final List<String> labels;
   final int currentIndex;
   final ValueChanged<int> onSelect;
 
   @override
   Widget build(BuildContext context) {
     final index = currentIndex.clamp(0, tabs.length - 1);
-    String label(int i) => labels != null && i < labels!.length ? labels![i] : tabs[i].label;
-    return MediaQuery.withNoTextScaling(
+    String label(int i) => i < labels.length ? labels[i] : '';
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.2,
       child: Builder(builder: (context) {
         if (Theme.of(context).platform == TargetPlatform.iOS) {
           return CupertinoTabBar(

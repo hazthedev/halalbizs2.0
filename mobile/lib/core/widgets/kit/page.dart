@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../offline/offline.dart';
 import '../../theme/souk_theme.dart';
 import 'empty_state.dart';
@@ -83,7 +84,7 @@ class SoukPage extends StatelessWidget {
             (canPop
                 ? IconButton(
                     key: const Key('souk-back'),
-                    tooltip: 'Back',
+                    tooltip: context.l10n.back,
                     icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                     onPressed: () => router != null && router.canPop() ? router.pop() : Navigator.of(context).maybePop(),
                   )
@@ -144,12 +145,12 @@ class SoukOfflineStrip extends StatelessWidget {
           width: double.infinity,
           color: SoukColors.emeraldNight,
           padding: const EdgeInsets.symmetric(horizontal: SoukSpace.page, vertical: SoukSpace.s2),
-          child: const Row(children: [
-            Icon(Icons.wifi_off_rounded, size: 16, color: SoukColors.onDark),
-            SizedBox(width: SoukSpace.s2),
+          child: Row(children: [
+            const Icon(Icons.wifi_off_rounded, size: 16, color: SoukColors.onDark),
+            const SizedBox(width: SoukSpace.s2),
             Expanded(
-              child: Text('Offline · showing cached data',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: SoukColors.onDark)),
+              child: Text(context.l10n.offlineStrip,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: SoukColors.onDark)),
             ),
           ]),
         ),
@@ -158,13 +159,15 @@ class SoukOfflineStrip extends StatelessWidget {
   }
 }
 
-/// "just now" / "12 min old" / "2 h old" / "17 Oct 14:05" (≥ 1 day).
-String soukCachedAge(DateTime fetchedAt, {DateTime? now}) {
+/// "just now" / "12 min old" / "2 h old" / "17 Oct 14:05" (≥ 1 day), in the
+/// app locale.
+String soukCachedAge(BuildContext context, DateTime fetchedAt, {DateTime? now}) {
+  final l = context.l10n;
   final d = (now ?? DateTime.now()).difference(fetchedAt);
-  if (d.isNegative || d.inMinutes < 1) return 'just now';
-  if (d.inMinutes < 60) return '${d.inMinutes} min old';
-  if (d.inHours < 24) return '${d.inHours} h old';
-  return DateFormat('d MMM HH:mm').format(fetchedAt);
+  if (d.isNegative || d.inMinutes < 1) return l.justNow;
+  if (d.inMinutes < 60) return l.minutesOld(d.inMinutes);
+  if (d.inHours < 24) return l.hoursOld(d.inHours);
+  return DateFormat('d MMM HH:mm', Localizations.localeOf(context).toString()).format(fetchedAt);
 }
 
 /// Warm strip under the nav bar while the page shows a snapshot.
@@ -184,7 +187,7 @@ class SoukCachedStrip extends StatelessWidget {
           const SizedBox(width: SoukSpace.s2),
           Expanded(
             child: Text(
-              'Showing cached data${fetchedAt == null ? '' : ' · ${soukCachedAge(fetchedAt!)}'}',
+              '${context.l10n.cachedStrip}${fetchedAt == null ? '' : ' · ${soukCachedAge(context, fetchedAt!)}'}',
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: SoukColors.warn),
             ),
           ),
@@ -207,7 +210,7 @@ class CachedChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(SoukRadius.pill),
         ),
         child: Text(
-          'Cached${fetchedAt == null ? '' : ' · ${soukCachedAge(fetchedAt!)}'}',
+          '${context.l10n.cachedChip}${fetchedAt == null ? '' : ' · ${soukCachedAge(context, fetchedAt!)}'}',
           style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: SoukColors.warn),
         ),
       );

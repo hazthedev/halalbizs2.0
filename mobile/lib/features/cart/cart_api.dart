@@ -23,7 +23,9 @@ class CartApi {
       return CartOutcome.added;
     } on ApiException catch (e) {
       // ponytail: stub until slice 2 ships the cart API; remove this branch then.
-      if (e.isNotFound) return CartOutcome.notReady;
+      // Only Laravel's missing-route 404 ("The route … could not be found."):
+      // a product/variant 404 carries its own message and must surface.
+      if (e.status == 404 && e.message.startsWith('The route ')) return CartOutcome.notReady;
       rethrow;
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../offline/offline.dart';
 import '../../theme/souk_theme.dart';
 
@@ -59,7 +60,7 @@ class SoukButton extends StatelessWidget {
   }
 
   Widget _build(BuildContext context, {required bool offline}) {
-    final reason = disabledReason ?? (offline ? 'Needs a connection' : null);
+    final reason = disabledReason ?? (offline ? context.l10n.needsConnection : null);
     final enabled = onPressed != null && reason == null && !busy;
     final (bg, fg, border) = switch (variant) {
       SoukButtonVariant.primary => (SoukColors.emerald, Colors.white, null),

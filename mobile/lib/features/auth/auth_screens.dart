@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/json.dart';
 import '../../core/auth/session.dart';
+import '../../core/router.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 
@@ -107,7 +108,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (s is TwoFactorPending) {
         router.go('/two-factor${from == null ? '' : '?from=${Uri.encodeComponent(from)}'}');
       } else if (s is SignedIn) {
-        router.go(from ?? '/home');
+        router.go(safeFrom(from));
       }
     } catch (e) {
       if (!mounted) return;
@@ -122,7 +123,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final sessionMsg = switch (ref.watch(sessionProvider)) {
-      SignedOut(:final message) => message,
+      SignedOut(:final message, :final sessionEnded) => sessionEnded ? l.sessionEnded : message,
       _ => null,
     };
     return _AuthFrame(
@@ -240,7 +241,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       TextInput.finishAutofillContext();
       if (!mounted) return;
       final me = ref.read(profileProvider);
-      router.go(me != null && !me.emailVerified ? '/verify-email' : (widget.from ?? '/home'));
+      router.go(me != null && !me.emailVerified ? '/verify-email' : safeFrom(widget.from));
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
@@ -365,7 +366,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     try {
       await ref.read(sessionProvider.notifier).verifyTwoFactor(_code.text.trim());
       if (!mounted) return;
-      router.go(widget.from ?? '/home');
+      router.go(safeFrom(widget.from));
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);

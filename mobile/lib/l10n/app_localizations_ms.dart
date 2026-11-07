@@ -362,6 +362,82 @@ class AppLocalizationsMs extends AppLocalizations {
   String get product => 'Produk';
 
   @override
+  String get errorOffline => 'Tiada sambungan. Memaparkan data cache jika ada.';
+
+  @override
+  String get errorTimeout =>
+      'Pelayan mengambil masa terlalu lama untuk membalas. Cuba lagi.';
+
+  @override
+  String get errorBadResponse => 'Balasan pelayan tidak dijangka.';
+
+  @override
+  String get errorNoChallenge =>
+      'Log masuk semula untuk mendapatkan kod baharu.';
+
+  @override
+  String get errorTokenStorage =>
+      'Peranti ini enggan menyimpan token log masuk dengan selamat. Semak akses rantai kunci aplikasi dan cuba lagi.';
+
+  @override
+  String get sessionEnded => 'Sesi anda telah tamat. Sila log masuk semula.';
+
+  @override
+  String get back => 'Kembali';
+
+  @override
+  String get justNow => 'baru sahaja';
+
+  @override
+  String minutesOld(int count) {
+    return '$count min lalu';
+  }
+
+  @override
+  String hoursOld(int count) {
+    return '$count jam lalu';
+  }
+
+  @override
+  String get showPassword => 'Tunjukkan kata laluan';
+
+  @override
+  String get hidePassword => 'Sembunyikan kata laluan';
+
+  @override
+  String get any => 'Mana-mana';
+
+  @override
+  String get clear => 'Kosongkan';
+
+  @override
+  String get newAddress => 'Alamat baharu';
+
+  @override
+  String get address => 'Alamat';
+
+  @override
+  String get conversation => 'Perbualan';
+
+  @override
+  String get checkout => 'Daftar keluar';
+
+  @override
+  String get payment => 'Pembayaran';
+
+  @override
+  String get orderPlaced => 'Pesanan dibuat';
+
+  @override
+  String get orderDetails => 'Butiran pesanan';
+
+  @override
+  String get orderReturn => 'Pemulangan';
+
+  @override
+  String get orderReview => 'Ulasan';
+
+  @override
   String get sellerBackToBuying => 'Kembali membeli';
 
   @override

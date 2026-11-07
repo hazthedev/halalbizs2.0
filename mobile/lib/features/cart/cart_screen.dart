@@ -15,8 +15,8 @@ class CartScreen extends StatelessWidget {
 
 /// Absolute routes that share the Cart tab's branch.
 List<RouteBase> get cartSubRoutes => [
-      GoRoute(path: '/checkout', builder: (_, _) => const ComingSoonScreen(title: 'Checkout'), routes: [
-        GoRoute(path: 'pay/:orderNo', builder: (_, _) => const ComingSoonScreen(title: 'Payment')),
-        GoRoute(path: 'done/:orderNo', builder: (_, _) => const ComingSoonScreen(title: 'Order placed')),
+      GoRoute(path: '/checkout', builder: (c, _) => ComingSoonScreen(title: c.l10n.checkout), routes: [
+        GoRoute(path: 'pay/:orderNo', builder: (c, _) => ComingSoonScreen(title: c.l10n.payment)),
+        GoRoute(path: 'done/:orderNo', builder: (c, _) => ComingSoonScreen(title: c.l10n.orderPlaced)),
       ]),
     ];

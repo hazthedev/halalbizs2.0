@@ -27,18 +27,31 @@ const kAuthPrefixes = ['/cart', '/checkout', '/orders', '/account', '/seller'];
 
 bool needsAuth(String path) => kAuthPrefixes.any((p) => path == p || path.startsWith('$p/'));
 
+/// A `from` return path is honoured only when it is an in-app path (one
+/// leading slash — never `//host` or `https://…`) that is not an auth page;
+/// anything else lands on `/home`.
+String safeFrom(String? from) {
+  if (from == null || !from.startsWith('/') || from.startsWith('//')) return '/home';
+  final path = Uri.tryParse(from)?.path;
+  if (path == null || path == '/login' || path == '/register' || path == '/two-factor') return '/home';
+  return from;
+}
+
 /// Where a path (or null) should go for the current [session], or null to
 /// keep it. Pure, so tests can call it without a router.
 String? soukRedirect(SessionState session, Uri uri) {
   final path = uri.path;
   if (session is SessionLoading) return null;
-  if (session is TwoFactorPending) return path == '/two-factor' ? null : '/two-factor';
+  if (session is TwoFactorPending) {
+    // Keep the query so `from` survives the detour.
+    return path == '/two-factor' ? null : '/two-factor${uri.hasQuery ? '?${uri.query}' : ''}';
+  }
   if (path == '/two-factor') return '/login';
   if (session is SignedOut) {
     return needsAuth(path) ? '/login?from=${Uri.encodeComponent(uri.toString())}' : null;
   }
   // Signed in: auth pages are done (verify-email stays reachable).
-  if (path == '/login' || path == '/register') return uri.queryParameters['from'] ?? '/home';
+  if (path == '/login' || path == '/register') return safeFrom(uri.queryParameters['from']);
   if (path == '/seller' || path.startsWith('/seller/')) {
     final me = (session as SignedIn).profile;
     if (!me.isApprovedSeller) return '/account';
