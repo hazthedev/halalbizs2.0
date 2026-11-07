@@ -63,7 +63,7 @@ Route::prefix('v1')->name('api.')->group(function () {
         | seller group's `verified`. Ids are plain ints resolved through the
         | store's relations, so another store's row is a 404.
         */
-        Route::prefix('seller')->name('seller.')->middleware(['verified.api', 'seller.api'])->group(function () {
+        Route::prefix('seller')->name('seller.')->middleware(['throttle:api', 'verified.api', 'seller.api'])->group(function () {
             Route::get('/dashboard', SellerDashboardController::class)->name('dashboard');
 
             Route::get('/couriers', [SellerOrderController::class, 'couriers'])->name('couriers');

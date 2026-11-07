@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Seller;
 
+use App\Exceptions\ProductPublishBlockedException;
 use App\Http\Api\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Store;
@@ -25,7 +26,8 @@ abstract class SellerController extends Controller
 
     /**
      * Run a service call; an InvalidArgumentException (illegal transition,
-     * wrong state) becomes a 409 envelope carrying the service's own message.
+     * wrong state) becomes a 409 envelope carrying the service's own message,
+     * and a halal-policy refusal a 409 `halal_blocked` with the policy's reason.
      */
     protected function attempt(Closure $action, string $code = 'invalid_transition'): JsonResponse
     {
@@ -33,6 +35,8 @@ abstract class SellerController extends Controller
             return $action();
         } catch (InvalidArgumentException $e) {
             return ApiResponse::error($code, $e->getMessage(), 409);
+        } catch (ProductPublishBlockedException $e) {
+            return ApiResponse::error('halal_blocked', $e->getMessage(), 409);
         }
     }
 }

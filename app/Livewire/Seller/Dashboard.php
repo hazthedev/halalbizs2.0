@@ -67,7 +67,7 @@ class Dashboard extends Component
     public function mount(SellerDashboardService $dashboard): void
     {
         // Stat cards share their numbers with GET /api/v1/seller/dashboard.
-        $stats = $dashboard->stats($this->currentStore());
+        $stats = $dashboard->counts($this->currentStore());
 
         $this->todayOrders = $stats['today_orders'];
         $this->toShip = $stats['to_ship'];

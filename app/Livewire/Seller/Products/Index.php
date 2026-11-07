@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller\Products;
 
 use App\Enums\ProductStatus;
+use App\Exceptions\ProductPublishBlockedException;
 use App\Livewire\Concerns\CurrentStore;
 use App\Models\Category;
 use App\Models\Product;
@@ -141,13 +142,11 @@ class Index extends Component
         try {
             // H-6: the service runs the same halal gate as the product form —
             // a rule enforced at one call site is not a rule.
-            $reason = app(ProductWriteService::class)->relist($product);
+            app(ProductWriteService::class)->relist($product);
         } catch (InvalidArgumentException) {
             return;
-        }
-
-        if ($reason !== null) {
-            $this->dispatch('toast', message: $reason);
+        } catch (ProductPublishBlockedException $e) {
+            $this->dispatch('toast', message: $e->getMessage());
 
             return;
         }

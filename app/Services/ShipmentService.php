@@ -6,6 +6,7 @@ use App\Enums\ActorType;
 use App\Enums\SubOrderStatus;
 use App\Jobs\RegisterAfterShipTracking;
 use App\Models\SubOrder;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 /**
@@ -31,26 +32,39 @@ class ShipmentService
      */
     public function ship(SubOrder $subOrder, string $courier, ?string $courierOther, string $trackingNo, int $actorId): SubOrder
     {
-        if ($subOrder->status !== SubOrderStatus::Processing) {
-            throw new InvalidArgumentException(__('This order can no longer be shipped from its current status.'));
-        }
+        $shipped = DB::transaction(function () use ($subOrder, $courier, $courierOther, $trackingNo, $actorId): SubOrder {
+            // Lock and re-read FIRST: two ships racing from `processing` used
+            // to both pass an unlocked status check, the loser overwrote the
+            // winner's tracking and then hit transition()'s same-state no-op
+            // as if it had shipped. Under the lock the loser sees `shipped`
+            // and is refused before writing anything.
+            $locked = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->firstOrFail();
 
-        // Tracking fields only — never the status.
-        $subOrder->forceFill([
-            'tracking_courier' => $courier === 'other' ? trim((string) $courierOther) : $courier,
-            'tracking_no' => trim($trackingNo),
-        ])->save();
+            if ($locked->status !== SubOrderStatus::Processing) {
+                throw new InvalidArgumentException(__('This order can no longer be shipped from its current status.'));
+            }
 
-        $this->statusService->transition($subOrder, SubOrderStatus::Shipped, ActorType::Seller, $actorId);
+            // Tracking goes in BEFORE the status change, still under the lock:
+            // the buyer's "Order shipped" notification and the order webhook
+            // read tracking_no off the sub-order when SubOrderStatusChanged
+            // fires inside transition(). Tracking fields only — never the status.
+            $locked->forceFill([
+                'tracking_courier' => $courier === 'other' ? trim((string) $courierOther) : $courier,
+                'tracking_no' => trim($trackingNo),
+            ])->save();
 
-        // Book a real courier shipment when the store uses EasyParcel (no-op
-        // otherwise) — augments the manual tracking with an AWB + label.
-        $this->easyParcel->bookIfEnabled($subOrder);
+            return $this->statusService->transition($locked, SubOrderStatus::Shipped, ActorType::Seller, $actorId);
+        });
+
+        // After commit (no network call while the row is locked). Book a real
+        // courier shipment when the store uses EasyParcel (no-op otherwise) —
+        // augments the manual tracking with an AWB + label.
+        $this->easyParcel->bookIfEnabled($shipped);
 
         // Disabled/unkeyed by default. Once AfterShip credentials are added,
         // registration happens off-request and works for any courier/country.
-        RegisterAfterShipTracking::dispatch($subOrder->id)->afterCommit();
+        RegisterAfterShipTracking::dispatch($shipped->id)->afterCommit();
 
-        return $subOrder->fresh();
+        return $shipped->fresh();
     }
 }

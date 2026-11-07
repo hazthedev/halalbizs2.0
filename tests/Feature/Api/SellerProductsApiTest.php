@@ -204,6 +204,16 @@ test('images upload appends up to nine, then can be deleted', function () {
 
     $mediaId = $response->json('data.images.0.id');
 
+    // Another product's media id through this product's URL is a 404.
+    $other = sellerApiProductWithImage(Product::factory()->create(['store_id' => $seller->store->id]));
+    $otherMediaId = $other->getFirstMedia('images')->id;
+
+    sellerApiAs($seller)->deleteJson("/api/v1/seller/products/{$product->id}/images/{$otherMediaId}")
+        ->assertNotFound()
+        ->assertJsonPath('error.code', 'not_found');
+
+    expect($other->fresh()->getMedia('images'))->toHaveCount(1);
+
     sellerApiAs($seller)->deleteJson("/api/v1/seller/products/{$product->id}/images/{$mediaId}")->assertOk();
     sellerApiAs($seller)->deleteJson("/api/v1/seller/products/{$product->id}/images/{$mediaId}")->assertNotFound();
 
@@ -221,6 +231,18 @@ test('publish needs an image, then goes live (or pending review under moderation
         ->assertJsonStructure(['error' => ['fields' => ['images']]]);
 
     sellerApiProductWithImage($product);
+
+    // Same category re-check as the web form's validateCategory(): a parent is refused.
+    $parent = Category::factory()->create();
+    Category::factory()->create(['parent_id' => $parent->id]);
+    $leaf = $product->category_id;
+    $product->update(['category_id' => $parent->id]);
+
+    sellerApiAs($seller)->postJson("/api/v1/seller/products/{$product->id}/publish")
+        ->assertStatus(422)
+        ->assertJsonPath('error.fields.category_id.0', __('Pick the most specific category — this one has sub-categories.'));
+
+    $product->update(['category_id' => $leaf]);
 
     sellerApiAs($seller)->postJson("/api/v1/seller/products/{$product->id}/publish")
         ->assertOk()
@@ -271,4 +293,27 @@ test('publish is a 409 halal_blocked when the category needs a certificate the p
         ->assertJsonPath('error.code', 'halal_blocked');
 
     expect($product->fresh()->status)->toBe(ProductStatus::Draft);
+});
+
+test('PATCH moving a live product into a gated category is a 409 halal_blocked and rolls back', function () {
+    config(['halal.gate_enforced_from' => now()->subDay()->toDateString()]);
+
+    $seller = sellerApiUser();
+    $open = Category::factory()->create();
+    $gated = Category::factory()->create(['requires_halal_certificate' => true]);
+    $product = Product::factory()->create(['store_id' => $seller->store->id, 'category_id' => $open->id]);
+
+    sellerApiAs($seller)->patchJson("/api/v1/seller/products/{$product->id}", ['name' => ['en' => 'Still fine'], 'category_id' => $gated->id])
+        ->assertStatus(409)
+        ->assertJsonPath('error.code', 'halal_blocked');
+
+    $product->refresh();
+    expect($product->category_id)->toBe($open->id)
+        ->and($product->getTranslation('name', 'en'))->not->toBe('Still fine')
+        ->and($product->status)->toBe(ProductStatus::Live);
+
+    // Without a category change the gate is not consulted.
+    sellerApiAs($seller)->patchJson("/api/v1/seller/products/{$product->id}", ['name' => ['en' => 'Renamed only']])
+        ->assertOk()
+        ->assertJsonPath('data.name', 'Renamed only');
 });

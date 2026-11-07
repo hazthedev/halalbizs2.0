@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\ProductStatus;
 use App\Enums\StockMovementType;
+use App\Exceptions\ProductPublishBlockedException;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
@@ -83,6 +85,9 @@ class ProductWriteService
      * stock?, sku?}]`). A variant id outside this product is a 404.
      *
      * @param  array<string, mixed>  $data
+     *
+     * @throws ProductPublishBlockedException when a live product is moved into
+     *                                        a category the halal policy blocks (rolled back).
      */
     public function update(Product $product, array $data): Product
     {
@@ -90,10 +95,18 @@ class ProductWriteService
             $this->fill($product, $data);
             $product->save();
 
+            // A live listing cannot sidestep the publish gate by changing
+            // category after the fact (H-6). Fresh relation: the eager-loaded
+            // category predates the fill.
+            if ($product->status === ProductStatus::Live && array_key_exists('category_id', $data)) {
+                $this->assertAllowed($product->unsetRelation('category'));
+            }
+
             $rows = [];
 
             if (Arr::hasAny($data, self::VARIANT_KEYS)) {
-                $default = $product->variants()->where('is_default', true)->first() ?? $product->variants()->first();
+                $default = $product->variants()->lockForUpdate()->where('is_default', true)->first()
+                    ?? $product->variants()->lockForUpdate()->first();
 
                 if ($default !== null) {
                     $rows[''] = ['id' => $default->id] + Arr::only($data, self::VARIANT_KEYS);
@@ -105,7 +118,9 @@ class ProductWriteService
             }
 
             foreach ($rows as $prefix => $row) {
-                $this->applyVariant($product->variants()->findOrFail($row['id']), $row, $prefix);
+                // Locked read: the stock delta below is computed against the
+                // row as it is NOW, not the copy the request was built from.
+                $this->applyVariant($product->variants()->lockForUpdate()->findOrFail($row['id']), $row, $prefix);
             }
 
             return $product->fresh();
@@ -115,28 +130,52 @@ class ProductWriteService
     /**
      * Same gate as Form::publish for an existing product: PendingReview when
      * moderation requires approval, else Live — unless the halal policy
-     * blocks it (H-6). Returns the block reason, or null once published.
+     * blocks it (H-6).
      *
-     * @throws ValidationException without an image (the form's publish rule).
+     * @throws ValidationException without an image or a leaf category (the form's publish rules).
      * @throws InvalidArgumentException for a banned product.
+     * @throws ProductPublishBlockedException with the policy's reason.
      */
-    public function publish(Product $product): ?string
+    public function publish(Product $product): Product
     {
         if ($product->status === ProductStatus::Banned) {
             throw new InvalidArgumentException(__('A banned product cannot be published.'));
+        }
+
+        if (($problem = self::categoryProblem($product->category_id)) !== null) {
+            throw ValidationException::withMessages(['category_id' => $problem]);
         }
 
         if ($product->getMedia('images')->isEmpty()) {
             throw ValidationException::withMessages(['images' => __('Add at least one image before publishing.')]);
         }
 
-        $reason = $this->goLive($product);
+        $this->goLive($product);
 
-        if ($reason === null && $product->status === ProductStatus::Live && $product->published_at === null) {
+        if ($product->status === ProductStatus::Live && $product->published_at === null) {
             $product->update(['published_at' => now()]);
         }
 
-        return $reason;
+        return $product;
+    }
+
+    /**
+     * The form's validateCategory(): active, and a leaf. Null when fine, else
+     * the seller-facing message. Shared with the API's request rule.
+     */
+    public static function categoryProblem(?int $categoryId): ?string
+    {
+        $category = $categoryId === null ? null : Category::query()->active()->find($categoryId);
+
+        if ($category === null) {
+            return __('Choose a category.');
+        }
+
+        if ($category->children()->active()->exists()) {
+            return __('Pick the most specific category — this one has sub-categories.');
+        }
+
+        return null;
     }
 
     /** @throws InvalidArgumentException unless the product is live. */
@@ -153,17 +192,20 @@ class ProductWriteService
 
     /**
      * Delisted → Live (or PendingReview), through the same halal gate as
-     * publish. Returns the block reason, or null once relisted.
+     * publish.
      *
      * @throws InvalidArgumentException unless the product is delisted.
+     * @throws ProductPublishBlockedException with the policy's reason.
      */
-    public function relist(Product $product): ?string
+    public function relist(Product $product): Product
     {
         if ($product->status !== ProductStatus::Delisted) {
             throw new InvalidArgumentException(__('Only a delisted product can be relisted.'));
         }
 
-        return $this->goLive($product);
+        $this->goLive($product);
+
+        return $product;
     }
 
     /**
@@ -175,39 +217,48 @@ class ProductWriteService
      */
     public function addImages(Product $product, array $files): void
     {
-        $total = $product->getMedia('images')->count() + count($files);
+        DB::transaction(function () use ($product, $files) {
+            // Count under the product row lock, so two parallel uploads cannot
+            // both see 8 and land 16.
+            $locked = Product::whereKey($product->getKey())->lockForUpdate()->firstOrFail();
+            $total = $locked->media()->where('collection_name', 'images')->count() + count($files);
 
-        if ($total > self::MAX_IMAGES) {
-            throw ValidationException::withMessages(['images' => __('A product can have up to :max images — remove :excess.', [
-                'max' => self::MAX_IMAGES,
-                'excess' => $total - self::MAX_IMAGES,
-            ])]);
-        }
+            if ($total > self::MAX_IMAGES) {
+                throw ValidationException::withMessages(['images' => __('A product can have up to :max images — remove :excess.', [
+                    'max' => self::MAX_IMAGES,
+                    'excess' => $total - self::MAX_IMAGES,
+                ])]);
+            }
 
-        foreach ($files as $file) {
-            $product->addMedia($file->getRealPath())
-                ->usingFileName($file->getClientOriginalName())
-                ->toMediaCollection('images');
-        }
+            foreach ($files as $file) {
+                $locked->addMedia($file->getRealPath())
+                    ->usingFileName($file->getClientOriginalName())
+                    ->toMediaCollection('images');
+            }
+        });
     }
 
-    private function goLive(Product $product): ?string
+    private function goLive(Product $product): void
     {
         $status = $this->moderation->require_product_approval
             ? ProductStatus::PendingReview
             : ProductStatus::Live;
 
         if ($status === ProductStatus::Live) {
-            $reason = $this->policy->blockedReason($product);
-
-            if ($reason !== null) {
-                return $reason;
-            }
+            $this->assertAllowed($product);
         }
 
         $product->update(['status' => $status]);
+    }
 
-        return null;
+    /** @throws ProductPublishBlockedException */
+    private function assertAllowed(Product $product): void
+    {
+        $reason = $this->policy->blockedReason($product);
+
+        if ($reason !== null) {
+            throw new ProductPublishBlockedException($reason);
+        }
     }
 
     /** @param array<string, mixed> $data */

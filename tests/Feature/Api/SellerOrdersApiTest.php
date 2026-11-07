@@ -4,6 +4,8 @@ use App\Enums\ActorType;
 use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
 use App\Jobs\RegisterAfterShipTracking;
+use App\Models\SubOrder;
+use App\Services\ShipmentService;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -69,7 +71,53 @@ test("GET seller/orders/{id} includes the history; another store's sub-order is 
 
     sellerApiAs($seller)->postJson("/api/v1/seller/orders/{$foreign->id}/pack")->assertNotFound();
 
-    expect($foreign->fresh()->status)->toBe(SubOrderStatus::Confirmed);
+    $foreignProcessing = sellerApiSubOrder(sellerApiUser()->store, SubOrderStatus::Processing);
+
+    sellerApiAs($seller)->postJson("/api/v1/seller/orders/{$foreignProcessing->id}/ship", ['courier' => 'GDEX', 'tracking_no' => 'GD123456'])
+        ->assertNotFound()
+        ->assertJsonPath('error.code', 'not_found');
+
+    expect($foreign->fresh()->status)->toBe(SubOrderStatus::Confirmed)
+        ->and($foreignProcessing->fresh()->status)->toBe(SubOrderStatus::Processing)
+        ->and($foreignProcessing->fresh()->tracking_no)->toBeNull();
+});
+
+test('a second ship racing the first is refused: tracking kept, status shipped once, EasyParcel booked once', function () {
+    Queue::fake();
+    config(['shipping.easyparcel.enabled' => true, 'shipping.easyparcel.api_key' => 'test']);
+    Http::fake([
+        '*/api/v1/order-submission' => Http::response(['result' => [['awb' => 'EP123', 'awb_id_link' => 'https://easyparcel.test/label/EP123']]]),
+        '*' => Http::response([]),
+    ]);
+
+    $seller = sellerApiUser();
+    $seller->store->update(['shipping_mode' => 'easyparcel']);
+    $subOrder = sellerApiSubOrder($seller->store, SubOrderStatus::Processing);
+
+    // The loser's copy, loaded while the row was still `processing`.
+    $stale = SubOrder::find($subOrder->id);
+
+    $service = app(ShipmentService::class);
+    $service->ship($subOrder, 'GDEX', null, 'GD123456', $seller->id);
+
+    expect(fn () => $service->ship($stale, 'Pos Laju', null, 'PL999999', $seller->id))
+        ->toThrow(InvalidArgumentException::class, __('This order can no longer be shipped from its current status.'));
+
+    $subOrder->refresh();
+    expect($subOrder->status)->toBe(SubOrderStatus::Shipped)
+        ->and($subOrder->tracking_courier)->toBe('GDEX')
+        ->and($subOrder->tracking_no)->toBe('GD123456')
+        ->and($subOrder->awb_no)->toBe('EP123')
+        ->and($subOrder->statusHistories()->where('to_status', 'shipped')->count())->toBe(1);
+
+    Http::assertSentCount(1);
+    Queue::assertPushed(RegisterAfterShipTracking::class, 1);
+
+    sellerApiAs($seller)->postJson("/api/v1/seller/orders/{$subOrder->id}/ship", ['courier' => 'Pos Laju', 'tracking_no' => 'PL999999'])
+        ->assertStatus(409)
+        ->assertJsonPath('error.code', 'invalid_transition');
+
+    expect($subOrder->fresh()->tracking_no)->toBe('GD123456');
 });
 
 test('pack moves confirmed → processing with a seller history row; from shipped it is a 409', function () {

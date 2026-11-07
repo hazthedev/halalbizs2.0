@@ -45,7 +45,10 @@ class SellerOrderResource extends JsonResource
                 'qty' => $item->qty,
                 'unit_price_sen' => $item->unit_price_sen,
                 'line_total_sen' => $item->line_total_sen,
-                'image' => $item->product?->getFirstMediaUrl('images', 'thumb') ?: null,
+                // Display only: name/variant/price above are the order_items
+                // snapshot (hard rule 5); the picture is the live product's,
+                // as on the web seller page. Null once the product is gone.
+                'product_image' => $item->product?->getFirstMediaUrl('images', 'thumb') ?: null,
             ])->values()),
             'subtotal_sen' => $this->items_subtotal_sen,
             'shipping_sen' => $this->shipping_fee_sen,

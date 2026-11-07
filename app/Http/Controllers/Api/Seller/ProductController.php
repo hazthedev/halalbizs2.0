@@ -6,7 +6,6 @@ use App\Enums\ProductStatus;
 use App\Http\Api\ApiResponse;
 use App\Http\Resources\SellerProductDetailResource;
 use App\Http\Resources\SellerProductResource;
-use App\Models\Category;
 use App\Models\Product;
 use App\Services\ProductWriteService;
 use App\Support\JsonSearch;
@@ -67,10 +66,13 @@ class ProductController extends SellerController
     public function update(Request $request, int $product, ProductWriteService $products): JsonResponse
     {
         $row = $this->product($request, $product);
+        $data = $this->validated($request, creating: false);
 
-        $products->update($row, $this->validated($request, creating: false));
+        return $this->attempt(function () use ($request, $row, $products, $data) {
+            $products->update($row, $data);
 
-        return $this->detail($request, $row->id);
+            return $this->detail($request, $row->id);
+        });
     }
 
     public function images(Request $request, int $product, ProductWriteService $products): JsonResponse
@@ -99,11 +101,9 @@ class ProductController extends SellerController
         $row = $this->product($request, $product);
 
         return $this->attempt(function () use ($request, $row, $products) {
-            $reason = $products->publish($row);
+            $products->publish($row);
 
-            return $reason === null
-                ? $this->detail($request, $row->id)
-                : ApiResponse::error('halal_blocked', $reason, 409);
+            return $this->detail($request, $row->id);
         });
     }
 
@@ -123,11 +123,9 @@ class ProductController extends SellerController
         $row = $this->product($request, $product);
 
         return $this->attempt(function () use ($request, $row, $products) {
-            $reason = $products->relist($row);
+            $products->relist($row);
 
-            return $reason === null
-                ? $this->detail($request, $row->id)
-                : ApiResponse::error('halal_blocked', $reason, 409);
+            return $this->detail($request, $row->id);
         });
     }
 
@@ -152,11 +150,10 @@ class ProductController extends SellerController
             'description.vi' => ['nullable', 'string', 'max:65000'],
             'category_id' => [
                 $base, 'integer',
-                Rule::exists('categories', 'id')->where('is_active', true),
-                // Same rule as the form's cascader: only a leaf may be chosen.
+                // Same rule as the form's cascader: active, and a leaf.
                 function (string $attribute, mixed $value, \Closure $fail) {
-                    if (Category::query()->whereKey($value)->whereHas('children', fn (Builder $q) => $q->active())->exists()) {
-                        $fail(__('Pick the most specific category — this one has sub-categories.'));
+                    if (($problem = ProductWriteService::categoryProblem((int) $value)) !== null) {
+                        $fail($problem);
                     }
                 },
             ],

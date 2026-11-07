@@ -29,6 +29,9 @@ class SellerDashboardService
     public function __construct(private LedgerService $ledger) {}
 
     /**
+     * Everything the API dashboard shows: the counts plus balances and the
+     * recent orders.
+     *
      * @return array{
      *     today_sales_sen: int,
      *     today_orders: int,
@@ -42,6 +45,27 @@ class SellerDashboardService
      * }
      */
     public function stats(Store $store): array
+    {
+        return $this->counts($store) + [
+            'available_sen' => $this->ledger->availableBalanceSen($store),
+            'held_sen' => $store->heldBalanceSen(),
+            'recent_orders' => $this->recentOrders($store),
+        ];
+    }
+
+    /**
+     * The cheap count queries only — what the Livewire stat cards need.
+     *
+     * @return array{
+     *     today_sales_sen: int,
+     *     today_orders: int,
+     *     orders_by_status: array<string, int>,
+     *     to_ship: int,
+     *     live_products: int,
+     *     low_stock: int
+     * }
+     */
+    public function counts(Store $store): array
     {
         $today = [DisplayTime::dayStart(), DisplayTime::dayEnd()];
 
@@ -67,9 +91,6 @@ class SellerDashboardService
                     ->where('store_id', $store->id)
                     ->where('status', ProductStatus::Live))
                 ->count(),
-            'available_sen' => $this->ledger->availableBalanceSen($store),
-            'held_sen' => $store->heldBalanceSen(),
-            'recent_orders' => $this->recentOrders($store),
         ];
     }
 
