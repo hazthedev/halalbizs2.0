@@ -70,6 +70,34 @@ void main() {
     expect(h.router.state.uri.path, '/account/addresses/new', reason: 'stays on the form');
   });
 
+  testWidgets('a password change adopts the rotated token the server returns', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => realMe(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'PUT me/password': (_, _) => {'token': 'rotated-token'},
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/account/profile');
+
+    for (final (key, text) in [
+      ('password-current', 'password'),
+      ('password-new', 'new-long-password'),
+      ('password-confirm', 'new-long-password'),
+    ]) {
+      await tester.ensureVisible(find.byKey(Key(key)));
+      await tester.enterText(find.byKey(Key(key)), text);
+    }
+    await tester.ensureVisible(find.byKey(const Key('password-save')));
+    await tester.tap(find.byKey(const Key('password-save')));
+    await tester.pumpAndSettle();
+
+    expect(api.calls, contains('PUT me/password'));
+    expect(await h.container.read(tokenStoreProvider).read(), 'rotated-token');
+    expect(h.container.read(sessionProvider), isA<SignedIn>());
+  });
+
   testWidgets('delete account calls DELETE me, signs out and leaves the account area', (tester) async {
     usePhone(tester);
     Object? deleteBody;

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
@@ -135,15 +137,19 @@ class CheckoutApi {
       CheckoutQuote(asMap(await _api.post('checkout/quote',
           body: _body(addressId: addressId, paymentMethod: paymentMethod, platformCode: platformCode, shopCode: shopCode, coins: coins))));
 
+  /// [idempotencyKey]: one per checkout attempt, reused on retry — the server
+  /// replays the order that key already placed instead of placing a second.
   Future<PlacedOrder> place({
     required int addressId,
     required String paymentMethod,
+    required String idempotencyKey,
     String? platformCode,
     String? shopCode,
     int coins = 0,
     Map<int, String>? sellerNotes,
   }) async =>
       PlacedOrder(asMap(await _api.post('checkout/place',
+          headers: {'Idempotency-Key': idempotencyKey},
           body: _body(
             addressId: addressId,
             paymentMethod: paymentMethod,
@@ -155,6 +161,12 @@ class CheckoutApi {
 
   Future<PaymentState> payment(String orderNo) async =>
       PaymentState(asMap(await _api.get('orders/${Uri.encodeComponent(orderNo)}/payment')));
+}
+
+/// 32 hex chars from the secure RNG — server accepts `[A-Za-z0-9_-]{8,64}`.
+String newIdempotencyKey() {
+  final r = Random.secure();
+  return List.generate(16, (_) => r.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
 }
 
 final checkoutApiProvider = Provider<CheckoutApi>((ref) => CheckoutApi(ref.watch(apiClientProvider)));

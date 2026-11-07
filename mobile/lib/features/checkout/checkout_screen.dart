@@ -49,6 +49,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   ApiException? _placeError;
   bool _quoting = false;
   bool _placing = false;
+  // One key per attempt; a retry after a timeout reuses it, a placed order renews it.
+  String _idempotencyKey = newIdempotencyKey();
   int _seq = 0;
 
   @override
@@ -141,12 +143,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final placed = await ref.read(checkoutApiProvider).place(
             addressId: addressId,
             paymentMethod: method,
+            idempotencyKey: _idempotencyKey,
             platformCode: _platformCode,
             shopCode: _shopCode,
             coins: _useCoins ? _coins : 0,
             sellerNotes: {for (final e in _notes.entries) if (e.value.text.trim().isNotEmpty) e.key: e.value.text.trim()},
           );
       if (!mounted) return;
+      _idempotencyKey = newIdempotencyKey();
       ref.invalidate(cartProvider);
       final orderNo = Uri.encodeComponent(placed.orderNo);
       if (placed.paymentMethod != 'ipay88') {
