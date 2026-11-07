@@ -97,13 +97,25 @@ class GroupBuyService
      */
     public function lockRedeemableFor(User $user, array $variantIds): Collection
     {
+        return $this->redeemableFor($user, $variantIds, lock: true);
+    }
+
+    /**
+     * The same memberships as lockRedeemableFor(), read without a lock — for
+     * the checkout quote, which previews prices outside the transaction.
+     *
+     * @param  array<int, int>  $variantIds
+     * @return Collection<int, GroupBuyMember>
+     */
+    public function redeemableFor(User $user, array $variantIds, bool $lock = false): Collection
+    {
         if (! $this->enabled() || $variantIds === []) {
             return collect();
         }
 
         $members = $this->redeemableQuery($user, $variantIds)
             ->orderByDesc('group_buys.id')
-            ->lockForUpdate()
+            ->when($lock, fn ($query) => $query->lockForUpdate())
             ->get();
 
         $members->load('team.groupBuy');
