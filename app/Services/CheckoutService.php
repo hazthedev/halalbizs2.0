@@ -12,6 +12,7 @@ use App\Enums\TaxClass;
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
 use App\Exceptions\CheckoutException;
+use App\Exceptions\PurchasingDisabledException;
 use App\Models\Address;
 use App\Models\Cart;
 use App\Models\FlashSaleItem;
@@ -89,7 +90,7 @@ class CheckoutService
         ?array $explicitLines = null,
     ): Order {
         if (! $this->generalSettings->purchasing_enabled) {
-            throw new CheckoutException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
+            throw new PurchasingDisabledException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
         }
 
         // Three attempts, because the stock lock at :133 is a genuine collision

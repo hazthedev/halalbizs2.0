@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Concerns;
 
+use App\Exceptions\BuyerActionException;
 use App\Exceptions\CheckoutException;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -23,23 +24,18 @@ trait InteractsWithCart
             return false;
         }
 
-        $variant = ProductVariant::with('product')->find($variantId);
+        $variant = ProductVariant::with('product.store')->find($variantId);
 
-        if ($variant === null || ! $variant->product->isLive() || $variant->product->store?->holiday_mode) {
+        if ($variant === null) {
             $this->reconcileCart(__('This product is not available right now.'), error: true);
 
             return false;
         }
 
-        if ($variant->stock < 1) {
-            $this->reconcileCart(__('Sorry — this item just sold out.'), error: true);
-
-            return false;
-        }
-
+        // Live / holiday / sold-out checks live in CartService::addItem (shared with the API).
         try {
             app(CartService::class)->addItem(auth()->user(), $variant, $qty);
-        } catch (CheckoutException $e) {
+        } catch (CheckoutException|BuyerActionException $e) {
             $this->reconcileCart($e->getMessage(), error: true);
 
             return false;

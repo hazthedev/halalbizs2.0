@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\BuyerActionException;
 use App\Enums\ActorType;
 use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
@@ -16,7 +17,6 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use InvalidArgumentException;
 
 /**
  * Buyer return requests (docs/09 §D): one request per sub-order, inside the
@@ -51,7 +51,7 @@ class ReturnService
      * @param  list<UploadedFile>  $photos  images, at most ReturnRequest::MAX_PHOTOS, 2MB each
      *
      * @throws AuthorizationException when the sub-order is not the buyer's
-     * @throws InvalidArgumentException when the sub-order is not eligible or a photo is refused
+     * @throws BuyerActionException when the sub-order is not eligible or a photo is refused
      */
     public function request(SubOrder $subOrder, User $buyer, ReturnReason $reason, ?string $note, array $photos = []): ReturnRequest
     {
@@ -60,7 +60,7 @@ class ReturnService
         }
 
         if (! $this->canRequest($subOrder)) {
-            throw new InvalidArgumentException(__('This order is no longer eligible for a return.'));
+            throw new BuyerActionException(__('This order is no longer eligible for a return.'));
         }
 
         $this->validatePhotos($photos);
@@ -71,7 +71,7 @@ class ReturnService
             $locked = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->firstOrFail();
 
             if (! $this->canRequest($locked)) {
-                throw new InvalidArgumentException(__('This order is no longer eligible for a return.'));
+                throw new BuyerActionException(__('This order is no longer eligible for a return.'));
             }
 
             try {
@@ -83,7 +83,7 @@ class ReturnService
                     'respond_by' => now()->addHours($this->settings->return_seller_response_hours),
                 ]);
             } catch (UniqueConstraintViolationException) {
-                throw new InvalidArgumentException(__('This order is no longer eligible for a return.'));
+                throw new BuyerActionException(__('This order is no longer eligible for a return.'));
             }
 
             foreach ($photos as $photo) {
@@ -116,7 +116,7 @@ class ReturnService
         ]);
 
         if ($validator->fails()) {
-            throw new InvalidArgumentException($validator->errors()->first());
+            throw new BuyerActionException($validator->errors()->first());
         }
     }
 }

@@ -136,6 +136,12 @@ class AppServiceProvider extends ServiceProvider
         // creation and the verification-email spend that comes with it.
         RateLimiter::for('api-register', fn (Request $request) => Limit::perHour(5)->by('register:'.ClientIp::bucket($request->ip())));
 
+        // Mobile checkout and reviews mirror the web's hand-kept buckets
+        // (Checkout::place 5/hour, ReviewOrder::submit 3/min), keyed per user.
+        RateLimiter::for('api-checkout', fn (Request $request) => Limit::perHour(5)->by('api-checkout:'.$request->user()?->id));
+        RateLimiter::for('api-review', fn (Request $request) => Limit::perMinute(3)->by('api-review:'.$request->user()?->id));
+        RateLimiter::for('api-chat', fn (Request $request) => Limit::perMinute(30)->by('api-chat:'.$request->user()?->id));
+
         // Reset-link requests per (email, connection). ForgotPassword::sendResetLink()
         // allows 5/minute; an hour here because every hit is an email to the victim.
         RateLimiter::for('api-forgot', fn (Request $request) => Limit::perHour(5)->by(

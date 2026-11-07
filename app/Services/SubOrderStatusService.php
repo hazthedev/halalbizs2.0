@@ -5,11 +5,11 @@ namespace App\Services;
 use App\Enums\ActorType;
 use App\Enums\SubOrderStatus;
 use App\Events\SubOrderStatusChanged;
+use App\Exceptions\InvalidTransitionException;
 use App\Models\SubOrder;
 use App\Settings\OrderSettings;
 use Closure;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 /**
  * The ONLY path for sub-order status changes (CLAUDE.md hard rule 2).
@@ -66,7 +66,7 @@ class SubOrderStatusService
             }
 
             if (! $this->canTransition($locked, $to)) {
-                throw new InvalidArgumentException(
+                throw new InvalidTransitionException(
                     "Invalid sub-order transition [{$from->value} → {$to->value}] on {$locked->sub_order_no}."
                 );
             }

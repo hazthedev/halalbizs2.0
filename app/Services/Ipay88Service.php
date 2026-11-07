@@ -122,7 +122,7 @@ class Ipay88Service implements PaymentGateway
     /**
      * POST fields for the auto-submitting bridge form (docs/06 §D1).
      */
-    public function entryFields(Order $order, Payment $payment): array
+    public function entryFields(Order $order, Payment $payment, ?string $responseUrl = null): array
     {
         $user = $order->user;
 
@@ -140,7 +140,7 @@ class Ipay88Service implements PaymentGateway
             'Lang' => 'UTF-8',
             'SignatureType' => 'SHA256',
             'Signature' => $this->requestSignature($payment->ref_no, $payment->amount_sen),
-            'ResponseURL' => route('payments.ipay88.response'),
+            'ResponseURL' => $responseUrl ?? route('payments.ipay88.response'),
             'BackendURL' => route('payments.ipay88.backend'),
         ];
     }

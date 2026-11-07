@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\BuyerActionException;
 use App\Enums\SubOrderStatus;
 use App\Models\OrderItem;
 use App\Models\Review;
@@ -13,7 +14,6 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use InvalidArgumentException;
 
 /**
  * Buyer product reviews (docs/09 §C). The only-purchased gate is structural:
@@ -32,7 +32,7 @@ class ReviewService
      * yet. The web panel runs it before spending a Turnstile token.
      *
      * @throws AuthorizationException when the sub-order is not the buyer's
-     * @throws InvalidArgumentException with a buyer-safe reason
+     * @throws BuyerActionException with a buyer-safe reason
      */
     public function assertReviewable(SubOrder $subOrder, User $buyer, int $orderItemId): OrderItem
     {
@@ -41,17 +41,17 @@ class ReviewService
         }
 
         if ($subOrder->status !== SubOrderStatus::Completed) {
-            throw new InvalidArgumentException(__('You can rate this order once it is completed.'));
+            throw new BuyerActionException(__('You can rate this order once it is completed.'));
         }
 
         $item = $subOrder->items()->with('review')->findOrFail($orderItemId);
 
         if ($item->review !== null) {
-            throw new InvalidArgumentException(__('You already reviewed this item.'));
+            throw new BuyerActionException(__('You already reviewed this item.'));
         }
 
         if ($item->product_id === null) {
-            throw new InvalidArgumentException(__('This product can no longer be reviewed.'));
+            throw new BuyerActionException(__('This product can no longer be reviewed.'));
         }
 
         return $item;
@@ -66,7 +66,7 @@ class ReviewService
      * @param  list<array{order_item_id: int, rating: int, body?: ?string, photos?: list<UploadedFile>}>  $items
      *
      * @throws AuthorizationException when the sub-order is not the buyer's
-     * @throws InvalidArgumentException when an item cannot be reviewed
+     * @throws BuyerActionException when an item cannot be reviewed
      */
     public function submit(SubOrder $subOrder, User $buyer, array $items, ?int $sellerRating = null, ?string $sellerComment = null): void
     {
@@ -75,14 +75,14 @@ class ReviewService
         }
 
         if ($sellerRating !== null && ($sellerRating < 1 || $sellerRating > 5)) {
-            throw new InvalidArgumentException(__('Tap a star to rate the seller.'));
+            throw new BuyerActionException(__('Tap a star to rate the seller.'));
         }
 
         foreach ($items as $input) {
             $rating = (int) $input['rating'];
 
             if ($rating < 1 || $rating > 5) {
-                throw new InvalidArgumentException(__('Tap a star to rate this item.'));
+                throw new BuyerActionException(__('Tap a star to rate this item.'));
             }
 
             $this->validatePhotos($input['photos'] ?? []);
@@ -114,7 +114,7 @@ class ReviewService
                         'seller_comment' => $sellerRating !== null && $sellerNote !== '' ? $sellerNote : null,
                     ]);
                 } catch (UniqueConstraintViolationException) {
-                    throw new InvalidArgumentException(__('You already reviewed this item.'));
+                    throw new BuyerActionException(__('You already reviewed this item.'));
                 }
 
                 foreach ($input['photos'] ?? [] as $photo) {
@@ -158,7 +158,7 @@ class ReviewService
         ]);
 
         if ($validator->fails()) {
-            throw new InvalidArgumentException($validator->errors()->first());
+            throw new BuyerActionException($validator->errors()->first());
         }
     }
 }
