@@ -10,7 +10,8 @@ import '../checkout/done_screen.dart';
 import '../checkout/pay_screen.dart';
 import 'cart_api.dart';
 
-/// Absolute routes that share the Cart tab's branch.
+/// `/checkout`, `/checkout/pay/:orderNo`, `/checkout/done/:orderNo` — top-level
+/// routes outside the tab shell (registered in `router.dart`).
 List<RouteBase> get cartSubRoutes => [
       GoRoute(path: '/checkout', builder: (_, _) => const CheckoutScreen(), routes: [
         GoRoute(

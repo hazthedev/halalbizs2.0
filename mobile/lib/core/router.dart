@@ -80,6 +80,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) => soukRedirect(ref.read(sessionProvider), state.uri),
     routes: [
       ...authRoutes,
+      // Checkout, pay and done sit outside the tab shell: full screen, no tab
+      // bar, and leaving them disposes the pay screen so its polling stops and
+      // the Cart tab comes back to `/cart` instead of a finished order.
+      ...cartSubRoutes,
       buyerShellRoute(),
       sellerShellRoute(),
     ],
@@ -110,8 +114,6 @@ RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
         ]),
         StatefulShellBranch(routes: [
           GoRoute(path: '/cart', builder: (_, _) => const CartScreen()),
-          // /checkout, /checkout/pay/:orderNo, /checkout/done/:orderNo
-          ...cartSubRoutes,
         ]),
         StatefulShellBranch(routes: [
           GoRoute(path: '/orders', builder: (_, _) => const OrdersScreen(), routes: ordersSubRoutes),

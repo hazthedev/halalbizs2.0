@@ -37,16 +37,26 @@ Build defines:
 - `PUSH_ENABLED=true` — registers the device for push (slice 5; no-op until
   the Firebase config files exist).
 
-Release builds: `flutter build apk --release --dart-define=API_BASE_URL=…`,
-`flutter build ipa --release --dart-define=API_BASE_URL=…` (needs Xcode),
-`flutter build web --release` (used for the Playwright smoke).
+Release builds (every one needs `--no-tree-shake-icons`, see below):
+`flutter build apk --release --no-tree-shake-icons --dart-define=API_BASE_URL=…`,
+`flutter build ipa --release --no-tree-shake-icons --dart-define=API_BASE_URL=…` (needs Xcode),
+`flutter build web --release --no-tree-shake-icons --dart-define=API_BASE_URL=…` (used for the Playwright smoke).
+
+`--no-tree-shake-icons` is mandatory: font_awesome_flutter 11 wraps every icon
+in `FaIconData`, and Flutter's icon tree shaker (`const_finder`) visits each
+constant once, so an icon whose first visit happens inside the
+`@staticIconProvider` class is dropped even when a screen uses it. Which
+icons survive depends on library order in the kernel file (slice 5 lost
+`check`, `plus`, `ticket`, `creditCard`, `arrowUpRightFromSquare`,
+`hourglassEnd` — rendered as tofu boxes). Cost: ~500 KB of Font Awesome
+fonts shipped untrimmed.
 
 ## Gates
 
 ```bash
 flutter analyze        # 0 issues in lib/ and test/
 flutter test           # widget tests with a fake ApiClient, never the live API
-flutter build web --release
+flutter build web --release --no-tree-shake-icons --dart-define=API_BASE_URL=http://halalbizs2.0-mobile.test/api/v1
 ```
 
 Tests override `apiClientProvider` (`FakeApi` in `test/helpers.dart`),
