@@ -21,4 +21,13 @@ void main() {
     expect(find.byKey(const Key('seller-order-5')), findsOneWidget);
     expect(find.byKey(const Key('seller-back-to-buying')), findsOneWidget);
   });
+
+  testWidgets('a buyer without an approved store never reaches the seller shell', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {...sellerBaseRoutes(), 'GET me': (_, _) => fakeUser()});
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller');
+    expect(h.router.state.uri.path, '/account');
+    expect(api.calls.where((c) => c.startsWith('GET seller/')), isEmpty);
+  });
 }
