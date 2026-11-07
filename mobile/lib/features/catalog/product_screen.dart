@@ -287,7 +287,7 @@ class _ProductBody extends StatelessWidget {
                 SoukCard(
                   key: const Key('product-store'),
                   padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s4, vertical: SoukSpace.s3),
-                  onTap: () => context.push('/s/${p.storeSlug}'),
+                  onTap: () => context.push('/s/${Uri.encodeComponent(p.storeSlug!)}'),
                   child: Row(children: [
                     const FaIcon(FontAwesomeIcons.store, size: 16, color: SoukColors.inkFaint),
                     const SizedBox(width: SoukSpace.s3),

@@ -758,6 +758,144 @@ abstract class AppLocalizations {
   /// **'Product'**
   String get product;
 
+  /// No description provided for @errorOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Showing cached data where available.'**
+  String get errorOffline;
+
+  /// No description provided for @errorTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The server took too long to respond. Try again.'**
+  String get errorTimeout;
+
+  /// No description provided for @errorBadResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected server response.'**
+  String get errorBadResponse;
+
+  /// No description provided for @errorNoChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again to get a new code.'**
+  String get errorNoChallenge;
+
+  /// No description provided for @errorTokenStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'This device refused to store the sign-in token securely. Check the app\'s keychain access and try again.'**
+  String get errorTokenStorage;
+
+  /// No description provided for @sessionEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has ended. Please sign in again.'**
+  String get sessionEnded;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get justNow;
+
+  /// No description provided for @minutesOld.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min old'**
+  String minutesOld(int count);
+
+  /// No description provided for @hoursOld.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} h old'**
+  String hoursOld(int count);
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
+  /// No description provided for @any.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get any;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @newAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'New address'**
+  String get newAddress;
+
+  /// No description provided for @address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get address;
+
+  /// No description provided for @conversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation'**
+  String get conversation;
+
+  /// No description provided for @checkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get checkout;
+
+  /// No description provided for @payment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get payment;
+
+  /// No description provided for @orderPlaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Order placed'**
+  String get orderPlaced;
+
+  /// No description provided for @orderDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Order details'**
+  String get orderDetails;
+
+  /// No description provided for @orderReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Return'**
+  String get orderReturn;
+
+  /// No description provided for @orderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get orderReview;
+
   /// No description provided for @cartCheckout.
   ///
   /// In en, this message translates to:

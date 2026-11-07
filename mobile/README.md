@@ -31,7 +31,9 @@ flutter run --dart-define=API_BASE_URL=https://halalbizs.com/api/v1
 Build defines:
 
 - `API_BASE_URL` — API root, default `http://halalbizs2.0-mobile.test/api/v1`
-  (Herd). Production: `https://halalbizs.com/api/v1`.
+  (Herd, debug builds only). Production: `https://halalbizs.com/api/v1`.
+  Release builds refuse to start without it (`assertApiBaseUrl`), so the web
+  smoke must pass it too: `flutter build web --release --dart-define=API_BASE_URL=…`.
 - `PUSH_ENABLED=true` — registers the device for push (slice 5; no-op until
   the Firebase config files exist).
 

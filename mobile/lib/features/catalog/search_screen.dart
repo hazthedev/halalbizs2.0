@@ -44,6 +44,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Future<void> _run() async {
+    // Bumped first so a cleared box also discards any in-flight result.
+    final id = ++_request;
     final q = _query.text.trim();
     if (q.length < 2) {
       setState(() => _results = null);
@@ -53,7 +55,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       setState(() => _results = AsyncValue.error(ApiException.offline(), StackTrace.current));
       return;
     }
-    final id = ++_request;
     setState(() => _results = const AsyncValue.loading());
     try {
       final page = await ref.read(catalogApiProvider).search(q,
@@ -105,7 +106,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ? const SizedBox.shrink()
                 : IconButton(
                     key: const Key('search-clear'),
-                    tooltip: l.cancel,
+                    tooltip: l.clear,
                     icon: const Icon(Icons.close_rounded, size: 18, color: SoukColors.inkFaint),
                     onPressed: () {
                       _query.clear();
@@ -121,7 +122,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         children: [
           if (categories.isNotEmpty)
             SizedBox(
-              height: 40,
+              height: SoukSpace.minTap,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
@@ -204,7 +205,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               message: l.searchNoResultsBody,
               action: SoukButton(label: l.tabHome, onPressed: () => context.go('/home')),
             )
-          : ProductGrid(p.items, soldLabel: l.sold, onTap: (p) => context.push('/p/${p.slug}')),
+          : ProductGrid(p.items, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
     );
   }
 }

@@ -59,7 +59,7 @@ class SoukSectionHeading extends StatelessWidget {
         children: [
           Expanded(child: Text(title, style: SoukText.displayH3, maxLines: 1, overflow: TextOverflow.ellipsis)),
           if (linkLabel != null && onLink != null)
-            TextButton(onPressed: onLink, child: Text(linkLabel!)),
+            TextButton(key: const Key('souk-section-link'), onPressed: onLink, child: Text(linkLabel!)),
         ],
       );
 }

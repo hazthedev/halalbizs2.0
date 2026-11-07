@@ -44,7 +44,7 @@ class CategoryScreen extends ConsumerWidget {
                 message: l.noProductsBody,
                 action: SoukButton(label: l.backToHome, onPressed: () => context.go('/home')),
               )
-            : ProductGrid(p.items, soldLabel: l.sold, onTap: (p) => context.push('/p/${p.slug}')),
+            : ProductGrid(p.items, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
       ),
     );
   }

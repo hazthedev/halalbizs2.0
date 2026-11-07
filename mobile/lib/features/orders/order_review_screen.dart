@@ -108,7 +108,7 @@ class _OrderReviewScreenState extends ConsumerState<OrderReviewScreen> {
             ? SoukEmptyState(title: l.ordersNothingToReview, action: SoukButton(label: l.backToHome, onPressed: () => context.go('/orders')))
             : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 if (_error is ApiException && (_error! as ApiException).fields.isEmpty) ...[
-                  SoukAlert((_error! as ApiException).message, status: 'danger'),
+                  SoukAlert(apiMessage(context, _error!), status: 'danger'),
                   const SizedBox(height: SoukSpace.s3),
                 ],
                 for (var i = 0; i < items.length; i++) ...[

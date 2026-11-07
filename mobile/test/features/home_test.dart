@@ -7,8 +7,7 @@ void main() {
   testWidgets('home renders categories and the featured grid from the API payload', (tester) async {
     usePhone(tester);
     final api = FakeApi(routes: {
-      'GET products': (q, _) {
-        expect(q?['sort'], 'popular');
+      'GET products': (_, _) {
         return [
           fakeProduct(id: 1, slug: 'madu-tualang', name: 'Madu Tualang Asli', priceSen: 4590),
           fakeProduct(id: 2, slug: 'kurma-ajwa', name: 'Kurma Ajwa Premium', priceSen: 3200),
@@ -24,6 +23,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(h.router.state.uri.path, '/home');
+    expect(api.calls, contains('GET products?sort=popular'));
     expect(find.byKey(const Key('home-categories')), findsOneWidget);
     expect(find.text('Makanan'), findsOneWidget);
     expect(find.byKey(const Key('product-card-madu-tualang')), findsOneWidget);

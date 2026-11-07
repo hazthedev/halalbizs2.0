@@ -46,7 +46,7 @@ class OfflineRepo {
   static String cacheKey(String path, [Map<String, dynamic>? query]) {
     if (query == null || query.isEmpty) return path;
     final keys = query.keys.toList()..sort();
-    return '$path?${keys.map((k) => '$k=${query[k]}').join('&')}';
+    return Uri(path: path, queryParameters: {for (final k in keys) k: '${query[k]}'}).toString();
   }
 
   Future<CachedResult<dynamic>> getJson(String path,

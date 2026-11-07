@@ -250,7 +250,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ? const SoukSkeleton.list(rows: 5)
               : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   if (_error != null) ...[
-                    SoukAlert(_error is ApiException ? (_error! as ApiException).message : l.somethingWentWrong, status: 'danger'),
+                    SoukAlert(apiMessage(context, _error!), status: 'danger'),
                     const SizedBox(height: SoukSpace.s3),
                   ],
                   if (q.blockReason != null) ...[

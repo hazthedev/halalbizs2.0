@@ -43,8 +43,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
-  assets:
-    - assets/img/
   # Souk type: Newsreader (display), Instrument Sans (body), IBM Plex Mono
   # (prices, ids). Static OFL builds from Google Fonts; licences beside them.
   fonts:
