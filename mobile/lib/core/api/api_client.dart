@@ -16,8 +16,13 @@ const kApiBaseUrl =
 /// Release builds must name their API: fail at startup, loudly, rather than
 /// ship a build that talks to a developer's machine.
 void assertApiBaseUrl() {
-  if (kReleaseMode && !const bool.hasEnvironment('API_BASE_URL')) {
+  if (!kReleaseMode) return;
+  if (!const bool.hasEnvironment('API_BASE_URL')) {
     throw StateError('API_BASE_URL is not set. Build with --dart-define=API_BASE_URL=https://<host>/api/v1');
+  }
+  // Bearer tokens and payment hand-offs never travel in clear: https only.
+  if (!kApiBaseUrl.startsWith('https://')) {
+    throw StateError('API_BASE_URL must start with https:// in a release build (got $kApiBaseUrl).');
   }
 }
 
@@ -99,8 +104,14 @@ class ApiClient {
   }
 
   Future<dynamic> post(String path,
-          {Object? body, Map<String, dynamic>? query, void Function(Map<String, dynamic>)? meta}) =>
-      _unwrap(() => dio.post(path, data: body, queryParameters: query), meta);
+          {Object? body,
+          Map<String, dynamic>? query,
+          Map<String, String>? headers,
+          void Function(Map<String, dynamic>)? meta}) =>
+      _unwrap(
+          () => dio.post(path,
+              data: body, queryParameters: query, options: headers == null ? null : Options(headers: headers)),
+          meta);
 
   Future<dynamic> patch(String path, {Object? body}) => _unwrap(() => dio.patch(path, data: body), null);
 
