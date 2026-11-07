@@ -156,7 +156,11 @@ class CartService
         $variants = ProductVariant::whereIn('id', array_keys($sessionItems))->get();
 
         foreach ($variants as $variant) {
-            $this->addItem($user, $variant, $sessionItems[$variant->id]);
+            try {
+                $this->addItem($user, $variant, $sessionItems[$variant->id]);
+            } catch (BuyerActionException) {
+                // Sold out or withdrawn while the guest browsed: drop the line, keep the sign-in.
+            }
         }
 
         Session::forget(self::SESSION_KEY);
