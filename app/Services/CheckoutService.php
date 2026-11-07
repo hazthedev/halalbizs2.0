@@ -88,6 +88,7 @@ class CheckoutService
         ?string $shippingCode = null,
         int $coinsToRedeem = 0,
         ?array $explicitLines = null,
+        ?string $idempotencyKey = null,
     ): Order {
         if (! $this->generalSettings->purchasing_enabled) {
             throw new PurchasingDisabledException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
@@ -107,7 +108,7 @@ class CheckoutService
         // attempt takes its queued jobs with it and the retry re-inserts exactly
         // one. A CheckoutException is not a concurrency error, so a genuine
         // refusal (quota gone, stock gone) still surfaces on the first pass.
-        return DB::transaction(function () use ($buyer, $address, $method, $platformCode, $shopCode, $shippingCode, $sellerNotes, $coinsToRedeem, $explicitLines) {
+        return DB::transaction(function () use ($buyer, $address, $method, $platformCode, $shopCode, $shippingCode, $sellerNotes, $coinsToRedeem, $explicitLines, $idempotencyKey) {
             // 0. AL-M4 idempotency guard (cart-based checkout only — an
             //    explicit-lines/subscription order never touches a cart).
             //    Canonical lock order, extended: cart → buyer (COD only) →
@@ -142,6 +143,18 @@ class CheckoutService
                     if ($duplicate !== null) {
                         return $duplicate->fresh(['subOrders.items', 'payment']);
                     }
+                }
+            }
+
+            // 0b. Persisted idempotency (the mobile app sends an Idempotency-Key
+            //     per checkout attempt and reuses it on retry): behind the cart
+            //     lock, so two retries with one key serialise here and the second
+            //     finds the first's order. Outlives the one-minute heuristic above.
+            if ($idempotencyKey !== null) {
+                $replay = Order::where('user_id', $buyer->id)->where('idempotency_key', $idempotencyKey)->first();
+
+                if ($replay !== null) {
+                    return $replay->fresh(['subOrders.items', 'payment']);
                 }
             }
 
@@ -302,6 +315,7 @@ class CheckoutService
             $order = Order::create([
                 'order_no' => Order::generateOrderNo(),
                 'user_id' => $buyer->id,
+                'idempotency_key' => $idempotencyKey,
                 'payment_method' => $method,
                 'payment_status' => PaymentStatus::Pending,
                 'shipping_address' => $address->toSnapshot(),

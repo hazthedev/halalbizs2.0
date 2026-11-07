@@ -39,6 +39,9 @@ Schedule::command('subscriptions:process')->hourly();
 // Ops — daily database + .env backup, then prune old ones (docs/10).
 Schedule::command('backup:run')->dailyAt('02:00');
 Schedule::command('backup:clean')->dailyAt('02:30');
+// Mobile API — expired bearer tokens (config/sanctum.php `expiration`) are
+// already refused; this just deletes the rows a day after they lapse.
+Schedule::command('sanctum:prune-expired --hours=24')->dailyAt('03:00');
 
 // Async queue drain — shared cPanel hosting has no supervisor / persistent worker,
 // so ride the scheduler cron: a short-lived worker each minute that processes the

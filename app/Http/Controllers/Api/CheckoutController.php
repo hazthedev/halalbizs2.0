@@ -44,6 +44,15 @@ class CheckoutController extends Controller
         $user = $request->user();
         $address = $user->addresses()->findOrFail($data['address_id']);
 
+        // One key per checkout attempt, reused on retry: the same key replays
+        // the order it placed (CheckoutService::place), however late the retry.
+        $idempotencyKey = $request->header('Idempotency-Key');
+
+        if ($idempotencyKey !== null && ! preg_match('/^[A-Za-z0-9_-]{8,64}$/', $idempotencyKey)) {
+            return ApiResponse::error('validation_failed', __('The Idempotency-Key header must be 8 to 64 letters, digits, - or _.'), 422,
+                ['idempotency_key' => [__('Invalid Idempotency-Key header.')]]);
+        }
+
         // A selected line the basket already marks unavailable must be named,
         // not silently dropped (CheckoutService::blockedLines) — keyed by variant_id.
         $blocked = $checkout->blockedLines($user);
@@ -62,6 +71,7 @@ class CheckoutController extends Controller
             array_map('strval', $data['seller_notes'] ?? []),
             $data['shipping_code'] ?? null,
             (int) ($data['coins'] ?? 0),
+            idempotencyKey: $idempotencyKey,
         );
 
         $order->loadMissing('subOrders.store');

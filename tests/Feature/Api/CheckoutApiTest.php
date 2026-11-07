@@ -310,3 +310,38 @@ test('the signed simulator route is a 404 when a real gateway is configured', fu
     expect($order->fresh()->payment_status)->toBe(PaymentStatus::Pending)
         ->and($order->fresh()->payment->status)->toBe(GatewayPaymentStatus::Pending);
 });
+
+// Independent review 2026-11-07: the one-minute cart heuristic above is not a
+// contract. A retry minutes later (or after the basket was refilled) must
+// replay the original order when it carries the same Idempotency-Key.
+test('the same Idempotency-Key replays the original order even after the cart was refilled', function () {
+    [$user, $address, $http] = apiCheckoutBuyer();
+    apiCheckoutCart($user);
+    $payload = ['address_id' => $address->id, 'payment_method' => 'cod'];
+
+    $first = $http->withHeader('Idempotency-Key', 'phone-attempt-0001')
+        ->postJson('/api/v1/checkout/place', $payload)->assertCreated()->json('data.order_no');
+
+    apiCheckoutCart($user);
+    test()->travel(2)->minutes();
+
+    $replay = $http->withHeader('Idempotency-Key', 'phone-attempt-0001')
+        ->postJson('/api/v1/checkout/place', $payload)->assertCreated()->json('data.order_no');
+    $second = $http->withHeader('Idempotency-Key', 'phone-attempt-0002')
+        ->postJson('/api/v1/checkout/place', $payload)->assertCreated()->json('data.order_no');
+
+    expect($replay)->toBe($first)
+        ->and($second)->not->toBe($first)
+        ->and(Order::where('user_id', $user->id)->count())->toBe(2)
+        ->and(Order::where('order_no', $first)->value('idempotency_key'))->toBe('phone-attempt-0001');
+});
+
+test('a malformed Idempotency-Key is a 422', function () {
+    [$user, $address, $http] = apiCheckoutBuyer();
+    apiCheckoutCart($user);
+
+    $http->withHeader('Idempotency-Key', 'bad key!')
+        ->postJson('/api/v1/checkout/place', ['address_id' => $address->id, 'payment_method' => 'cod'])
+        ->assertStatus(422)
+        ->assertJsonStructure(['error' => ['fields' => ['idempotency_key']]]);
+});
