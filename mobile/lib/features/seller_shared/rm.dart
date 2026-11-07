@@ -4,10 +4,11 @@
 library;
 
 int? parseRm(String input) {
-  final s = input.trim().replaceAll(',', '').replaceFirst(RegExp(r'^RM\s*', caseSensitive: false), '');
-  final m = RegExp(r'^(\d{1,10})(?:\.(\d{1,2}))?$').firstMatch(s);
+  final s = input.trim().replaceFirst(RegExp(r'^RM\s*', caseSensitive: false), '');
+  // Thousands separators only as full 3-digit groups ("1,234.56"), never "12,3".
+  final m = RegExp(r'^(\d{1,3}(?:,\d{3})*|\d{1,10})(?:\.(\d{1,2}))?$').firstMatch(s);
   if (m == null) return null;
-  final units = int.parse(m.group(1)!);
+  final units = int.parse(m.group(1)!.replaceAll(',', ''));
   final minor = int.parse((m.group(2) ?? '').padRight(2, '0'));
   return units * 100 + minor;
 }

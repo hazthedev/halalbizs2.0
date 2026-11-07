@@ -89,7 +89,7 @@ class _Body extends StatelessWidget {
               key: Key('seller-status-${e.key}'),
               label: '${sellerStatusLabel(l, e.key)} · ${e.value}',
               selected: false,
-              onTap: () => context.go('/seller/orders?status=${e.key}'),
+              onTap: () => context.go('/seller/orders?status=${Uri.encodeQueryComponent(e.key)}'),
             ),
         ]),
       const SizedBox(height: SoukSpace.s5),

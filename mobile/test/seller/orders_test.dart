@@ -119,4 +119,45 @@ void main() {
     expect(find.byKey(const Key('seller-order-received')), findsOneWidget);
     expect(find.byKey(const Key('seller-order-accept')), findsNothing);
   });
+
+  testWidgets('a 403 seller_required on refresh leaves the seller shell for /account', (tester) async {
+    usePhone(tester);
+    var calls = 0;
+    final api = FakeApi(routes: {
+      ...sellerBaseRoutes(),
+      'GET seller/orders': (_, _) => ++calls == 1
+          ? [fakeSellerOrder(detail: false)]
+          : ApiException('seller_required', 'Your store is no longer approved.', status: 403),
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller/orders');
+    expect(find.byKey(const Key('seller-order-5')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('seller-orders-tab-pending_payment'))); // first chip, on screen at 390px
+    await tester.pumpAndSettle();
+    // The account screen's SoukRow-in-SoukCard debug assertion (foundation) is not under test here.
+    while (tester.takeException() != null) {}
+    expect(h.router.state.uri.path, '/account');
+    expect(find.text('Your store is no longer approved.'), findsOneWidget);
+  });
+
+  testWidgets('accepting a return asks first', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      ...sellerBaseRoutes(),
+      'GET seller/orders/5': (_, _) => fakeSellerOrder(
+            status: 'return_requested',
+            returnRequest: {'id': 1, 'status': 'requested', 'status_label': 'Requested', 'reason': 'Damaged', 'description': null, 'respond_by': null},
+          ),
+      'POST seller/orders/5/return/accept': (_, _) => fakeSellerOrder(status: 'return_requested'),
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller/orders/5');
+    await tester.tap(find.byKey(const Key('seller-order-accept')));
+    await tester.pumpAndSettle();
+    expect(api.calls, isNot(contains('POST seller/orders/5/return/accept')));
+    await tester.tap(find.byKey(const Key('souk-confirm-ok')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('POST seller/orders/5/return/accept'));
+  });
 }

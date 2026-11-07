@@ -932,12 +932,6 @@ abstract class AppLocalizations {
   /// **'Low stock'**
   String get sellerLowStock;
 
-  /// No description provided for @sellerLiveProducts.
-  ///
-  /// In en, this message translates to:
-  /// **'Live products'**
-  String get sellerLiveProducts;
-
   /// No description provided for @sellerAvailable.
   ///
   /// In en, this message translates to:
@@ -1580,12 +1574,6 @@ abstract class AppLocalizations {
   /// **'Payout requested'**
   String get sellerPayoutRequested;
 
-  /// No description provided for @sellerPayoutOpen.
-  ///
-  /// In en, this message translates to:
-  /// **'A payout request is already open.'**
-  String get sellerPayoutOpen;
-
   /// No description provided for @sellerPayoutBelowMin.
   ///
   /// In en, this message translates to:
@@ -1633,12 +1621,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Load more'**
   String get sellerLoadMore;
-
-  /// No description provided for @sellerStoreName.
-  ///
-  /// In en, this message translates to:
-  /// **'Store name'**
-  String get sellerStoreName;
 
   /// No description provided for @sellerStoreDescription.
   ///
@@ -1783,6 +1765,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Store saved'**
   String get sellerStoreSaved;
+
+  /// No description provided for @sellerStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get sellerStatusPending;
+
+  /// No description provided for @sellerStatusPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get sellerStatusPaid;
+
+  /// No description provided for @sellerStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get sellerStatusFailed;
+
+  /// No description provided for @sellerStatusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get sellerStatusExpired;
+
+  /// No description provided for @sellerDefaultVariant.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get sellerDefaultVariant;
+
+  /// No description provided for @sellerImageTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an image under {kb} KB.'**
+  String sellerImageTooLarge(int kb);
+
+  /// No description provided for @sellerAcceptReturnConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept this return? The buyer will be asked to send the item back.'**
+  String get sellerAcceptReturnConfirm;
+
+  /// No description provided for @sellerDisputeConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispute this return? HalalBizs will review the case with your reason.'**
+  String get sellerDisputeConfirm;
+
+  /// No description provided for @sellerDelistConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delist this product? Buyers will no longer see it until you relist it.'**
+  String get sellerDelistConfirm;
+
+  /// No description provided for @sellerPayoutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a payout of {amount} to your bank account?'**
+  String sellerPayoutConfirm(String amount);
 }
 
 class _AppLocalizationsDelegate

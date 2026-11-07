@@ -456,9 +456,6 @@ class AppLocalizationsMs extends AppLocalizations {
   String get sellerLowStock => 'Stok rendah';
 
   @override
-  String get sellerLiveProducts => 'Produk langsung';
-
-  @override
   String get sellerAvailable => 'Tersedia';
 
   @override
@@ -801,9 +798,6 @@ class AppLocalizationsMs extends AppLocalizations {
   String get sellerPayoutRequested => 'Pembayaran dimohon';
 
   @override
-  String get sellerPayoutOpen => 'Satu permohonan pembayaran masih terbuka.';
-
-  @override
   String get sellerPayoutBelowMin => 'Kurang daripada pembayaran minimum.';
 
   @override
@@ -827,9 +821,6 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get sellerLoadMore => 'Muatkan lagi';
-
-  @override
-  String get sellerStoreName => 'Nama kedai';
 
   @override
   String get sellerStoreDescription => 'Penerangan';
@@ -908,4 +899,41 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get sellerStoreSaved => 'Kedai disimpan';
+
+  @override
+  String get sellerStatusPending => 'Menunggu';
+
+  @override
+  String get sellerStatusPaid => 'Dibayar';
+
+  @override
+  String get sellerStatusFailed => 'Gagal';
+
+  @override
+  String get sellerStatusExpired => 'Tamat tempoh';
+
+  @override
+  String get sellerDefaultVariant => 'Lalai';
+
+  @override
+  String sellerImageTooLarge(int kb) {
+    return 'Pilih imej di bawah $kb KB.';
+  }
+
+  @override
+  String get sellerAcceptReturnConfirm =>
+      'Terima pemulangan ini? Pembeli akan diminta menghantar barang kembali.';
+
+  @override
+  String get sellerDisputeConfirm =>
+      'Pertikai pemulangan ini? HalalBizs akan menyemak kes ini dengan sebab anda.';
+
+  @override
+  String get sellerDelistConfirm =>
+      'Nyahsenarai produk ini? Pembeli tidak akan melihatnya sehingga anda menyenaraikannya semula.';
+
+  @override
+  String sellerPayoutConfirm(String amount) {
+    return 'Mohon pembayaran sebanyak $amount ke akaun bank anda?';
+  }
 }

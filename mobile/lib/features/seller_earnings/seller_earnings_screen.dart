@@ -63,6 +63,7 @@ class _SellerEarningsScreenState extends ConsumerState<SellerEarningsScreen> {
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
         ..showSnackBar(SnackBar(content: Text(l.sellerPayoutRequested)));
+      ref.read(sellerRefreshProvider.notifier).bump(); // the dashboard's available balance
       await _refresh();
     }
   }
@@ -107,7 +108,7 @@ class _SellerEarningsScreenState extends ConsumerState<SellerEarningsScreen> {
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(l.sellerPayoutPending, style: SoukText.label),
-                      Text('${open.payoutNo} · ${sellerDate(open.requestedAt)}', style: SoukText.meta),
+                      Text('${open.payoutNo} · ${sellerDate(context, open.requestedAt)}', style: SoukText.meta),
                     ]),
                   ),
                   PriceText(open.amountSen),
@@ -165,7 +166,7 @@ class _SellerEarningsScreenState extends ConsumerState<SellerEarningsScreen> {
                       ListTile(
                       key: Key('seller-payout-${p.id}'),
                       title: Text(p.payoutNo, style: SoukText.mono.copyWith(color: SoukColors.ink)),
-                      subtitle: Text(sellerDate(p.paidAt ?? p.requestedAt), style: SoukText.meta),
+                      subtitle: Text(sellerDate(context, p.paidAt ?? p.requestedAt), style: SoukText.meta),
                       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                         PriceText(p.amountSen),
                         const SizedBox(width: SoukSpace.s2),
@@ -198,15 +199,13 @@ class _LedgerRow extends StatelessWidget {
       key: Key('seller-ledger-${e.id}'),
       title: Text(e.typeLabel, style: SoukText.label),
       subtitle: Text(
-        [e.reference, sellerDate(e.createdAt)].nonNulls.where((s) => s.isNotEmpty).join(' · '),
+        [e.reference, sellerDate(context, e.createdAt)].nonNulls.where((s) => s.isNotEmpty).join(' · '),
         style: SoukText.meta,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-        if (positive) Text('+', style: SoukText.price.copyWith(color: color)),
-        PriceText(e.amountSen, style: SoukText.price.copyWith(color: color)),
-      ]),
+      // formatSen already carries the minus; fold the plus into the same string.
+      trailing: Text('${positive ? '+' : ''}${formatSen(e.amountSen)}', style: SoukText.price.copyWith(color: color)),
       shape: const Border(bottom: BorderSide(color: SoukColors.line)),
     );
   }
@@ -249,6 +248,10 @@ class _PayoutSheetState extends ConsumerState<_PayoutSheet> {
   Future<void> _submit() async {
     final sen = _sen;
     if (sen == null) return;
+    final l = context.l10n;
+    final ok = await showSoukConfirm(context,
+        title: l.sellerRequestPayout, message: l.sellerPayoutConfirm(formatSen(sen)), confirmLabel: l.sellerRequestPayout, danger: true);
+    if (!ok || !mounted) return;
     setState(() {
       _busy = true;
       _error = null;
@@ -292,7 +295,7 @@ class _PayoutSheetState extends ConsumerState<_PayoutSheet> {
         expand: true,
         busy: _busy,
         requiresOnline: true,
-        disabledReason: valid ? null : (problem ?? l.sellerPayoutBelowMin),
+        disabledReason: valid ? null : (problem ?? l.fieldRequired),
         onPressed: valid ? _submit : null,
       ),
     ]);

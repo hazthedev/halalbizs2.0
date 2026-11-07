@@ -21,7 +21,7 @@ void main() {
     await h.pump(tester, location: '/seller/earnings');
 
     expect(find.text('RM 500.00'), findsOneWidget); // available
-    expect(find.text('RM 23.75'), findsOneWidget); // ledger sale
+    expect(find.text('+RM 23.75'), findsOneWidget); // ledger sale, signed
     expect(find.text('-RM 1.25'), findsOneWidget); // ledger commission, signed
     expect(find.byKey(const Key('seller-payout-1')), findsOneWidget);
 
@@ -37,6 +37,10 @@ void main() {
     await tester.enterText(find.byKey(const Key('seller-payout-amount')), '150.00');
     await tester.pump();
     await tester.tap(find.byKey(const Key('seller-payout-submit')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('RM 150.00'), findsWidgets); // the confirm names the amount
+    expect(sent, isNull);
+    await tester.tap(find.byKey(const Key('souk-confirm-ok')));
     await tester.pumpAndSettle();
     expect(sent, {'amount_sen': 15000});
     expect(find.text('Payout requested'), findsOneWidget);
@@ -54,6 +58,8 @@ void main() {
     await tester.tap(find.byKey(const Key('seller-earnings-request-payout')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('seller-payout-submit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('souk-confirm-ok')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('seller-payout-submit')), findsOneWidget);
     expect(find.text('A payout request is already open.'), findsOneWidget);

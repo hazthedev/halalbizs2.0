@@ -9,6 +9,8 @@ void main() {
     expect(parseRm('0.05'), 5);
     expect(parseRm('RM 1,234.56'), 123456);
     expect(parseRm('12.345'), isNull);
+    expect(parseRm('12,3'), isNull); // comma not a 3-digit group
+    expect(parseRm('1,23,456'), isNull);
     expect(parseRm('abc'), isNull);
     expect(parseRm(''), isNull);
     expect(parseRm('-5'), isNull);

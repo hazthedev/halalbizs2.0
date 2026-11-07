@@ -450,9 +450,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellerLowStock => 'Low stock';
 
   @override
-  String get sellerLiveProducts => 'Live products';
-
-  @override
   String get sellerAvailable => 'Available';
 
   @override
@@ -792,9 +789,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellerPayoutRequested => 'Payout requested';
 
   @override
-  String get sellerPayoutOpen => 'A payout request is already open.';
-
-  @override
   String get sellerPayoutBelowMin => 'Below the minimum payout.';
 
   @override
@@ -818,9 +812,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sellerLoadMore => 'Load more';
-
-  @override
-  String get sellerStoreName => 'Store name';
 
   @override
   String get sellerStoreDescription => 'Description';
@@ -898,4 +889,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sellerStoreSaved => 'Store saved';
+
+  @override
+  String get sellerStatusPending => 'Pending';
+
+  @override
+  String get sellerStatusPaid => 'Paid';
+
+  @override
+  String get sellerStatusFailed => 'Failed';
+
+  @override
+  String get sellerStatusExpired => 'Expired';
+
+  @override
+  String get sellerDefaultVariant => 'Default';
+
+  @override
+  String sellerImageTooLarge(int kb) {
+    return 'Choose an image under $kb KB.';
+  }
+
+  @override
+  String get sellerAcceptReturnConfirm =>
+      'Accept this return? The buyer will be asked to send the item back.';
+
+  @override
+  String get sellerDisputeConfirm =>
+      'Dispute this return? HalalBizs will review the case with your reason.';
+
+  @override
+  String get sellerDelistConfirm =>
+      'Delist this product? Buyers will no longer see it until you relist it.';
+
+  @override
+  String sellerPayoutConfirm(String amount) {
+    return 'Request a payout of $amount to your bank account?';
+  }
 }

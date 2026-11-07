@@ -63,10 +63,12 @@ class _SellerErrorPaneState extends State<SellerErrorPane> {
       ErrorPane(error: widget.error, onRetry: widget.onRetry, retryLabel: context.l10n.retry);
 }
 
-/// "7 Nov 2026, 15:52" in the device's zone; '' for null / unparsable.
-String sellerDate(String? iso) {
+/// "7 Nov 2026, 15:52" in the UI locale and the device's zone (right on a
+/// phone); '' for null / unparsable.
+String sellerDate(BuildContext context, String? iso) {
   final d = iso == null ? null : DateTime.tryParse(iso);
-  return d == null ? '' : DateFormat('d MMM yyyy, HH:mm').format(d.toLocal());
+  if (d == null) return '';
+  return DateFormat('d MMM yyyy, HH:mm', Localizations.localeOf(context).toString()).format(d.toLocal());
 }
 
 /// Translated label for a sub-order or product status code; the raw code
@@ -87,6 +89,11 @@ String sellerStatusLabel(AppLocalizations l, String status) => switch (status) {
       'live' => l.sellerStatusLive,
       'delisted' => l.sellerStatusDelisted,
       'banned' => l.sellerStatusBanned,
+      // payment statuses
+      'pending' => l.sellerStatusPending,
+      'paid' => l.sellerStatusPaid,
+      'failed' => l.sellerStatusFailed,
+      'expired' => l.sellerStatusExpired,
       _ => status,
     };
 
@@ -149,7 +156,7 @@ class SellerOrderRow extends StatelessWidget {
         ),
         const SizedBox(height: SoukSpace.s1),
         Row(children: [
-          Expanded(child: Text(sellerDate(o.placedAt), style: SoukText.meta)),
+          Expanded(child: Text(sellerDate(context, o.placedAt), style: SoukText.meta)),
           PriceText(o.totalSen),
         ]),
       ]),
@@ -157,9 +164,10 @@ class SellerOrderRow extends StatelessWidget {
   }
 }
 
-/// Gallery-or-camera picker. Null when the user cancels or the platform
-/// has no picker (web camera, tests).
-Future<XFile?> pickSellerImage(BuildContext context) async {
+/// Gallery-or-camera picker. Null when the user cancels, the platform has
+/// no picker (web camera, tests), or the file is over [maxKb] (the server's
+/// `image|max:` rule — refused here with a snackbar instead of a 422).
+Future<XFile?> pickSellerImage(BuildContext context, {required int maxKb}) async {
   final l = context.l10n;
   final source = await showModalBottomSheet<ImageSource>(
     context: context,
@@ -182,11 +190,22 @@ Future<XFile?> pickSellerImage(BuildContext context) async {
     ),
   );
   if (source == null) return null;
+  final XFile? file;
   try {
-    return await ImagePicker().pickImage(source: source, maxWidth: 1600, imageQuality: 85);
+    file = await ImagePicker().pickImage(source: source, maxWidth: 1600, imageQuality: 85);
   } catch (_) {
     return null;
   }
+  if (file == null) return null;
+  if (await file.length() > maxKb * 1024) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(SnackBar(content: Text(l.sellerImageTooLarge(maxKb)), backgroundColor: SoukColors.danger));
+    }
+    return null;
+  }
+  return file;
 }
 
 /// Bottom sheet with a serif title, keyboard inset and the kit padding.
@@ -274,6 +293,8 @@ class _SellerPagedListState<T> extends State<SellerPagedList<T>> {
       });
     } catch (e) {
       if (!mounted || id != _request) return;
+      // A 403 means the store lost its approval: leave the shell.
+      if (sellerGuardBounce(context, e)) return;
       setState(() => _error = e);
     } finally {
       if (mounted && id == _request) setState(() => _loading = false);

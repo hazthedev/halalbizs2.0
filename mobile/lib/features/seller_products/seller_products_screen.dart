@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/router.dart' show SoukNotFoundScreen;
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../seller_shared/models.dart';
@@ -48,6 +49,7 @@ class _SellerProductsScreenState extends ConsumerState<SellerProductsScreen> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final api = ref.watch(sellerApiProvider);
+    final bumped = ref.watch(sellerRefreshProvider);
     return SoukPage(
       title: l.sellerTabProducts,
       leading: const SellerBackToBuying(),
@@ -70,7 +72,8 @@ class _SellerProductsScreenState extends ConsumerState<SellerProductsScreen> {
           textInputAction: TextInputAction.search,
           style: SoukText.body,
           decoration: InputDecoration(
-            hintText: l.sellerSearchProducts,
+            labelText: l.sellerSearchProducts,
+            floatingLabelBehavior: FloatingLabelBehavior.never,
             prefixIcon: const Padding(
               padding: EdgeInsets.only(left: SoukSpace.s3, right: SoukSpace.s2),
               child: Center(widthFactor: 1, child: FaIcon(FontAwesomeIcons.magnifyingGlass, size: 14, color: SoukColors.inkFaint)),
@@ -103,7 +106,7 @@ class _SellerProductsScreenState extends ConsumerState<SellerProductsScreen> {
         ),
         const SizedBox(height: SoukSpace.s4),
         SellerPagedList<SellerProduct>(
-          signature: '${_status ?? ''}|$_q#$_refresh',
+          signature: '${_status ?? ''}|$_q#$_refresh#$bumped',
           fetch: (page) => api.products(status: _status, q: _q, page: page),
           itemBuilder: (context, p) => _ProductRow(p, onTap: () => context.push('/seller/products/${p.id}')),
           empty: SoukEmptyState(
@@ -161,6 +164,9 @@ List<RouteBase> get sellerProductsSubRoutes => [
       GoRoute(path: 'new', builder: (_, _) => const SellerProductFormScreen()),
       GoRoute(
         path: ':id',
-        builder: (_, s) => SellerProductFormScreen(id: int.tryParse(s.pathParameters['id'] ?? '')),
+        builder: (_, s) {
+          final id = int.tryParse(s.pathParameters['id'] ?? '');
+          return id == null ? SoukNotFoundScreen(location: s.uri.toString()) : SellerProductFormScreen(id: id);
+        },
       ),
     ];

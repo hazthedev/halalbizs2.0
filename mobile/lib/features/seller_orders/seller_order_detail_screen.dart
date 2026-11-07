@@ -36,13 +36,19 @@ class _SellerOrderDetailScreenState extends ConsumerState<SellerOrderDetailScree
 
   /// One-shot action (pack, delivered, return/accept, return/received).
   /// A 409 `invalid_transition` shows the server's message and reloads.
-  Future<void> _run(String action) async {
-    setState(() => _busy = true);
+  /// [confirm] asks first (money-moving: accepting a return).
+  Future<void> _run(String action, {String? confirm}) async {
     final l = context.l10n;
+    if (confirm != null) {
+      final ok = await showSoukConfirm(context, title: l.sellerAcceptReturn, message: confirm, danger: true);
+      if (!ok || !mounted) return;
+    }
+    setState(() => _busy = true);
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(sellerApiProvider).orderAction(widget.id, action);
       if (!mounted) return;
+      ref.read(sellerRefreshProvider.notifier).bump();
       messenger
         ..clearSnackBars()
         ..showSnackBar(SnackBar(content: Text(l.sellerOrderUpdated)));
@@ -56,7 +62,14 @@ class _SellerOrderDetailScreenState extends ConsumerState<SellerOrderDetailScree
 
   Future<void> _sheet(Widget sheet, String title) async {
     final ok = await showSellerSheet<bool>(context, title: title, child: sheet);
-    if (ok != null) await _reload();
+    if (ok == null || !mounted) return;
+    if (ok) ref.read(sellerRefreshProvider.notifier).bump();
+    await _reload();
+  }
+
+  void _ship(SellerOrder o) {
+    ref.invalidate(sellerCouriersProvider); // the list is cheap; never ship with a stale one
+    _sheet(_ShipSheet(orderId: o.id), context.l10n.sellerShipTitle);
   }
 
   @override
@@ -101,7 +114,7 @@ class _SellerOrderDetailScreenState extends ConsumerState<SellerOrderDetailScree
     return switch (o.status) {
       'confirmed' => Row(children: [primary('seller-order-pack', l.sellerPack, () => _run('pack'))]),
       'processing' => Row(children: [
-          primary('seller-order-ship', l.sellerShip, () => _sheet(_ShipSheet(orderId: o.id), l.sellerShipTitle)),
+          primary('seller-order-ship', l.sellerShip, () => _ship(o)),
         ]),
       'shipped' => Row(children: [primary('seller-order-delivered', l.sellerMarkDelivered, () => _run('delivered'))]),
       'return_requested' when rrStatus == 'requested' => Row(children: [
@@ -115,7 +128,7 @@ class _SellerOrderDetailScreenState extends ConsumerState<SellerOrderDetailScree
             ),
           ),
           const SizedBox(width: SoukSpace.s3),
-          primary('seller-order-accept', l.sellerAcceptReturn, () => _run('return/accept')),
+          primary('seller-order-accept', l.sellerAcceptReturn, () => _run('return/accept', confirm: l.sellerAcceptReturnConfirm)),
         ]),
       _ => null,
     };
@@ -140,7 +153,9 @@ class _Body extends StatelessWidget {
     ].nonNulls.where((s) => s.isNotEmpty).toList();
     final tracking = o.tracking;
     final trackingNo = asStr(tracking['no']);
-    final trackingUrl = asStr(tracking['url']);
+    // Only an https link opens the browser; anything else stays text.
+    final trackingUri = Uri.tryParse(asStr(tracking['url']) ?? '');
+    final trackingUrl = trackingUri != null && trackingUri.scheme == 'https' ? trackingUri : null;
     final rr = o.returnRequest;
     final paymentLabel = switch (o.paymentMethod) {
       'cod' => l.sellerPaymentCod,
@@ -150,7 +165,7 @@ class _Body extends StatelessWidget {
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
-        Expanded(child: Text(sellerDate(o.placedAt), style: SoukText.meta)),
+        Expanded(child: Text(sellerDate(context, o.placedAt), style: SoukText.meta)),
         SoukBadge(o.statusLabel, key: const Key('seller-order-status'), status: o.status),
       ]),
       if (o.orderNo != null) Text('${l.sellerOrder} ${o.orderNo}', style: SoukText.monoLabel),
@@ -174,7 +189,7 @@ class _Body extends StatelessWidget {
             ],
             if (asStr(rr['respond_by']) != null) ...[
               const SizedBox(height: SoukSpace.s2),
-              Text(l.sellerRespondBy(sellerDate(asStr(rr['respond_by']))), style: SoukText.meta.copyWith(color: SoukColors.danger)),
+              Text(l.sellerRespondBy(sellerDate(context, asStr(rr['respond_by']))), style: SoukText.meta.copyWith(color: SoukColors.danger)),
             ],
           ]),
         ),
@@ -233,7 +248,7 @@ class _Body extends StatelessWidget {
               Text(paymentLabel, style: SoukText.small),
               if (o.paymentStatus != null) ...[
                 const SizedBox(width: SoukSpace.s2),
-                SoukBadge(o.paymentStatus!, status: o.paymentStatus),
+                SoukBadge(sellerStatusLabel(l, o.paymentStatus!), status: o.paymentStatus),
               ],
             ]),
           ),
@@ -255,7 +270,7 @@ class _Body extends StatelessWidget {
             ),
             if (trackingUrl != null)
               TextButton.icon(
-                onPressed: () => launchUrl(Uri.parse(trackingUrl), mode: LaunchMode.externalApplication),
+                onPressed: () => launchUrl(trackingUrl, mode: LaunchMode.externalApplication),
                 icon: const FaIcon(FontAwesomeIcons.arrowUpRightFromSquare, size: 13),
                 label: Text(l.sellerTrack),
               ),
@@ -282,7 +297,7 @@ class _Body extends StatelessWidget {
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(sellerStatusLabel(l, asStr(h['status']) ?? ''), style: SoukText.label),
                       Text(
-                        [sellerDate(asStr(h['at'])), asStr(h['actor'])].nonNulls.where((s) => s.isNotEmpty).join(' · '),
+                        [sellerDate(context, asStr(h['at'])), asStr(h['actor'])].nonNulls.where((s) => s.isNotEmpty).join(' · '),
                         style: SoukText.meta,
                       ),
                       if (asStr(h['note']) != null) Text(asStr(h['note'])!, style: SoukText.small),
@@ -443,10 +458,10 @@ class _DisputeSheetState extends ConsumerState<_DisputeSheet> {
       setState(() => _error = l.sellerDisputeReasonMin);
       return;
     }
-    setState(() {
-      _error = null;
-      _busy = true;
-    });
+    setState(() => _error = null);
+    final ok = await showSoukConfirm(context, title: l.sellerDisputeTitle, message: l.sellerDisputeConfirm, danger: true);
+    if (!ok || !mounted) return;
+    setState(() => _busy = true);
     try {
       await ref.read(sellerApiProvider).orderAction(widget.orderId, 'return/dispute', body: {'reason': reason});
       if (mounted) Navigator.of(context).pop(true);

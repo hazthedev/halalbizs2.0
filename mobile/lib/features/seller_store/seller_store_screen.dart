@@ -60,13 +60,24 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
       final r = await ref.read(sellerApiProvider).store();
       if (!mounted) return;
       setState(() {
-        _populate(r.data);
+        // Only the first load (or a save) fills the fields: a pull-to-refresh
+        // must not wipe what the seller has typed.
+        if (_store == null) {
+          _populate(r.data);
+        } else {
+          _store = r.data;
+        }
         _fromCache = r.fromCache;
         _fetchedAt = r.fetchedAt;
         _reviewsRefresh++;
       });
     } catch (e) {
-      if (mounted) setState(() => _loadError = e);
+      if (!mounted) return;
+      if (_store == null) {
+        setState(() => _loadError = e);
+      } else {
+        showSellerError(context, e); // refresh failed (or 403 → bounce); keep the form
+      }
     }
   }
 
@@ -151,7 +162,7 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
   }
 
   Future<void> _upload(String kind) async {
-    final file = await pickSellerImage(context);
+    final file = await pickSellerImage(context, maxKb: kind == 'logo' ? 2048 : 4096);
     if (file == null || !mounted) return;
     setState(() => _busy = kind);
     try {
@@ -208,20 +219,24 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
                     child: InkWell(
                       key: const Key('seller-store-logo'),
                       onTap: _busy == null ? () => _upload('logo') : null,
-                      child: Container(
-                        width: 76,
-                        height: 76,
-                        decoration: BoxDecoration(
-                          color: SoukColors.surface,
-                          borderRadius: BorderRadius.circular(SoukRadius.card),
-                          border: Border.all(color: SoukColors.line),
-                          boxShadow: SoukShadow.card,
+                      child: Semantics(
+                        button: true,
+                        label: l.sellerChangeLogo,
+                        child: Container(
+                          width: 76,
+                          height: 76,
+                          decoration: BoxDecoration(
+                            color: SoukColors.surface,
+                            borderRadius: BorderRadius.circular(SoukRadius.card),
+                            border: Border.all(color: SoukColors.line),
+                            boxShadow: SoukShadow.card,
+                          ),
+                          padding: const EdgeInsets.all(3),
+                          child: Stack(fit: StackFit.expand, children: [
+                            ProductImage(s.logo, radius: SoukRadius.control),
+                            if (_busy == 'logo') const Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))),
+                          ]),
                         ),
-                        padding: const EdgeInsets.all(3),
-                        child: Stack(fit: StackFit.expand, children: [
-                          ProductImage(s.logo, radius: SoukRadius.control),
-                          if (_busy == 'logo') const Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))),
-                        ]),
                       ),
                     ),
                   ),
@@ -339,7 +354,7 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
               SellerPagedList<SellerReview>(
                 signature: 'reviews#$_reviewsRefresh',
                 fetch: (page) => api.reviews(page: page),
-                itemBuilder: (context, r) => _ReviewCard(r),
+                itemBuilder: (context, r) => _ReviewCard(r, key: ValueKey(r.id)),
                 empty: SoukEmptyState(
                   key: const Key('seller-reviews-empty'),
                   title: l.sellerNoReviews,
@@ -392,7 +407,7 @@ class _CameraChip extends StatelessWidget {
 /// One review: brass stars, body, buyer · product, the reply or the reply
 /// box when `can_reply`. A 409 `reply_locked` surfaces as a snackbar.
 class _ReviewCard extends ConsumerStatefulWidget {
-  const _ReviewCard(this.initial);
+  const _ReviewCard(this.initial, {super.key});
 
   final SellerReview initial;
 
@@ -456,7 +471,7 @@ class _ReviewCardState extends ConsumerState<_ReviewCard> {
               child: FaIcon(i <= r.rating ? FontAwesomeIcons.solidStar : FontAwesomeIcons.star, size: 12, color: SoukColors.brass),
             ),
           const SizedBox(width: SoukSpace.s2),
-          Expanded(child: Text(sellerDate(r.createdAt), style: SoukText.meta, textAlign: TextAlign.end)),
+          Expanded(child: Text(sellerDate(context, r.createdAt), style: SoukText.meta, textAlign: TextAlign.end)),
         ]),
         if (r.body != null) ...[
           const SizedBox(height: SoukSpace.s2),
@@ -474,7 +489,7 @@ class _ReviewCardState extends ConsumerState<_ReviewCard> {
               Text(l.sellerYourReply.toUpperCase(), style: SoukText.eyebrow),
               const SizedBox(height: SoukSpace.s1),
               Text(r.replyBody!, style: SoukText.small),
-              if (r.replyAt != null) Text(sellerDate(r.replyAt), style: SoukText.meta),
+              if (r.replyAt != null) Text(sellerDate(context, r.replyAt), style: SoukText.meta),
             ]),
           ),
         ],

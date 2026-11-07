@@ -188,7 +188,6 @@
   "sellerTodayOrders": "Today's orders",
   "sellerToShip": "To ship",
   "sellerLowStock": "Low stock",
-  "sellerLiveProducts": "Live products",
   "sellerAvailable": "Available",
   "sellerHeld": "Held",
   "sellerPaidOut": "Paid out",
@@ -331,7 +330,6 @@
   },
   "sellerPayoutAmountRm": "Amount (RM)",
   "sellerPayoutRequested": "Payout requested",
-  "sellerPayoutOpen": "A payout request is already open.",
   "sellerPayoutBelowMin": "Below the minimum payout.",
   "sellerPayoutAboveAvailable": "More than the available balance.",
   "sellerLedger": "Ledger",
@@ -340,7 +338,6 @@
   "sellerPayouts": "Payouts",
   "sellerNoPayouts": "No payouts yet",
   "sellerLoadMore": "Load more",
-  "sellerStoreName": "Store name",
   "sellerStoreDescription": "Description",
   "sellerState": "State",
   "sellerHolidayMode": "Holiday mode",
@@ -371,5 +368,29 @@
   "sellerPostReply": "Post reply",
   "sellerYourReply": "Your reply",
   "sellerReplyMin": "Write at least 5 characters.",
-  "sellerStoreSaved": "Store saved"
+  "sellerStoreSaved": "Store saved",
+  "sellerStatusPending": "Pending",
+  "sellerStatusPaid": "Paid",
+  "sellerStatusFailed": "Failed",
+  "sellerStatusExpired": "Expired",
+  "sellerDefaultVariant": "Default",
+  "sellerImageTooLarge": "Choose an image under {kb} KB.",
+  "@sellerImageTooLarge": {
+    "placeholders": {
+      "kb": {
+        "type": "int"
+      }
+    }
+  },
+  "sellerAcceptReturnConfirm": "Accept this return? The buyer will be asked to send the item back.",
+  "sellerDisputeConfirm": "Dispute this return? HalalBizs will review the case with your reason.",
+  "sellerDelistConfirm": "Delist this product? Buyers will no longer see it until you relist it.",
+  "sellerPayoutConfirm": "Request a payout of {amount} to your bank account?",
+  "@sellerPayoutConfirm": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

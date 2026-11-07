@@ -115,4 +115,55 @@ void main() {
     await tester.pumpAndSettle();
     expect(api.calls, contains('GET seller/products?q=madu&status=draft'));
   });
+
+  testWidgets('delist asks for confirmation before POST and refreshes the row status', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      ...sellerBaseRoutes(),
+      'GET seller/products/7': (_, _) => fakeSellerProduct(status: 'live'),
+      'POST seller/products/7/delist': (_, _) => fakeSellerProduct(status: 'delisted'),
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller/products/7');
+    await tester.tap(find.byKey(const Key('seller-product-delist')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('souk-confirm-ok')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('souk-confirm-cancel')));
+    await tester.pumpAndSettle();
+    expect(api.calls, isNot(contains('POST seller/products/7/delist')));
+
+    await tester.tap(find.byKey(const Key('seller-product-delist')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('souk-confirm-ok')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('POST seller/products/7/delist'));
+    expect(find.byKey(const Key('seller-product-relist')), findsOneWidget);
+  });
+
+  testWidgets('a 422 on images.0 shows the images banner; an unknown field falls back to the snackbar', (tester) async {
+    usePhone(tester);
+    var attempt = 0;
+    final api = FakeApi(routes: {
+      ...sellerBaseRoutes(),
+      'GET seller/products/7': (_, _) => fakeSellerProduct(),
+      'PATCH seller/products/7': (_, _) => fakeSellerProduct(),
+      'POST seller/products/7/publish': (_, _) => ++attempt == 1
+          ? validation({'images.0': ['The image must not be greater than 4096 kilobytes.']})
+          : validation({'condition': ['The selected condition is invalid.']}),
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller/products/7');
+    await tester.tap(find.byKey(const Key('seller-product-publish')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('seller-product-images-error')), findsOneWidget);
+    expect(find.text('The image must not be greater than 4096 kilobytes.'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 5)); // let the "Saved" snackbar leave the bottom bar
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('seller-product-publish')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('seller-product-images-error')), findsNothing);
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('The selected condition is invalid.'), findsOneWidget);
+  });
 }

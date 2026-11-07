@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/router.dart' show SoukNotFoundScreen;
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../seller_shared/models.dart';
@@ -40,6 +41,7 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final api = ref.watch(sellerApiProvider);
+    final bumped = ref.watch(sellerRefreshProvider);
     return SoukPage(
       title: l.sellerTabOrders,
       leading: const SellerBackToBuying(),
@@ -73,7 +75,7 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen> {
         ),
         const SizedBox(height: SoukSpace.s4),
         SellerPagedList<SellerOrder>(
-          signature: '${_status ?? ''}#$_refresh',
+          signature: '${_status ?? ''}#$_refresh#$bumped',
           fetch: (page) => api.orders(status: _status, page: page),
           itemBuilder: (context, o) => SellerOrderRow(o, onTap: () => context.push('/seller/orders/${o.id}')),
           empty: SoukEmptyState(key: const Key('seller-orders-empty'), title: l.sellerNoOrders, message: l.sellerNoOrdersBody),
@@ -86,6 +88,9 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen> {
 List<RouteBase> get sellerOrdersSubRoutes => [
       GoRoute(
         path: ':id',
-        builder: (_, s) => SellerOrderDetailScreen(id: int.tryParse(s.pathParameters['id'] ?? '') ?? 0),
+        builder: (_, s) {
+          final id = int.tryParse(s.pathParameters['id'] ?? '');
+          return id == null ? SoukNotFoundScreen(location: s.uri.toString()) : SellerOrderDetailScreen(id: id);
+        },
       ),
     ];

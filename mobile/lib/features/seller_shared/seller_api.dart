@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/json.dart';
+import '../../core/auth/session.dart';
 import '../../core/offline/offline.dart';
 import 'models.dart';
 
@@ -64,7 +65,7 @@ class SellerApi {
   Future<SellerProduct> uploadImages(int id, List<XFile> files) async {
     final form = FormData();
     for (final f in files) {
-      form.files.add(MapEntry('images[]', MultipartFile.fromBytes(await f.readAsBytes(), filename: f.name)));
+      form.files.add(MapEntry('images[]', await _part(f)));
     }
     return SellerProduct(asMap(await _api.post('seller/products/$id/images', body: form)));
   }
@@ -88,9 +89,17 @@ class SellerApi {
 
   /// [kind] is `logo` or `banner`; the server replaces the previous file.
   Future<SellerStore> uploadStoreImage(String kind, XFile file) async {
-    final form = FormData.fromMap({kind: MultipartFile.fromBytes(await file.readAsBytes(), filename: file.name)});
+    final form = FormData.fromMap({kind: await _part(file)});
     return SellerStore(asMap(await _api.post('seller/store/$kind', body: form)));
   }
+
+  /// Multipart part with the picker's MIME type (Laravel's `image` rule
+  /// checks it); falls back to octet-stream when the platform gives none.
+  static Future<MultipartFile> _part(XFile f) async => MultipartFile.fromBytes(
+        await f.readAsBytes(),
+        filename: f.name,
+        contentType: f.mimeType == null ? null : DioMediaType.parse(f.mimeType!),
+      );
 
   // Reviews
   Future<SellerPage<SellerReview>> reviews({int page = 1}) =>
@@ -100,8 +109,28 @@ class SellerApi {
       SellerReview(asMap(await _api.post('seller/reviews/$id/reply', body: {'body': body})));
 }
 
-final sellerApiProvider =
-    Provider<SellerApi>((ref) => SellerApi(ref.watch(offlineRepoProvider), ref.watch(apiClientProvider)));
+/// Rebuilt whenever the signed-in user changes, so every seller provider
+/// below (they all watch it) drops the previous account's data on sign-out
+/// or an account switch.
+final sellerApiProvider = Provider<SellerApi>((ref) {
+  ref.watch(sessionProvider.select((s) => s is SignedIn ? s.profile.id : null));
+  return SellerApi(ref.watch(offlineRepoProvider), ref.watch(apiClientProvider));
+});
+
+/// Bumped after every seller mutation (pack, ship, publish, payout…): the
+/// list screens fold it into their fetch signature and the dashboard is
+/// invalidated, so no tab shows a stale row after an action.
+class SellerRefresh extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() {
+    state++;
+    ref.invalidate(sellerDashboardProvider);
+  }
+}
+
+final sellerRefreshProvider = NotifierProvider<SellerRefresh, int>(SellerRefresh.new);
 
 final sellerDashboardProvider =
     FutureProvider<CachedResult<Dashboard>>((ref) => ref.watch(sellerApiProvider).dashboard());

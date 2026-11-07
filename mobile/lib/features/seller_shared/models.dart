@@ -73,7 +73,8 @@ class SellerVariant {
   final Map<String, dynamic> json;
 
   int get id => asInt(json['id']) ?? 0;
-  String get label => asStr(json['options_label']) ?? 'Default';
+  /// Null for the implicit default variant of a no-variation product.
+  String? get optionsLabel => asStr(json['options_label']);
   String? get sku => asStr(json['sku']);
   int get priceSen => asInt(json['price_sen']) ?? 0;
   int? get salePriceSen => asInt(json['sale_price_sen']);

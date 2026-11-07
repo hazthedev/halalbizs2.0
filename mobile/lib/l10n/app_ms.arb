@@ -188,7 +188,6 @@
   "sellerTodayOrders": "Pesanan hari ini",
   "sellerToShip": "Untuk dihantar",
   "sellerLowStock": "Stok rendah",
-  "sellerLiveProducts": "Produk langsung",
   "sellerAvailable": "Tersedia",
   "sellerHeld": "Ditahan",
   "sellerPaidOut": "Telah dibayar",
@@ -331,7 +330,6 @@
   },
   "sellerPayoutAmountRm": "Jumlah (RM)",
   "sellerPayoutRequested": "Pembayaran dimohon",
-  "sellerPayoutOpen": "Satu permohonan pembayaran masih terbuka.",
   "sellerPayoutBelowMin": "Kurang daripada pembayaran minimum.",
   "sellerPayoutAboveAvailable": "Melebihi baki tersedia.",
   "sellerLedger": "Lejar",
@@ -340,7 +338,6 @@
   "sellerPayouts": "Pembayaran",
   "sellerNoPayouts": "Tiada pembayaran lagi",
   "sellerLoadMore": "Muatkan lagi",
-  "sellerStoreName": "Nama kedai",
   "sellerStoreDescription": "Penerangan",
   "sellerState": "Negeri",
   "sellerHolidayMode": "Mod cuti",
@@ -371,5 +368,29 @@
   "sellerPostReply": "Hantar balasan",
   "sellerYourReply": "Balasan anda",
   "sellerReplyMin": "Tulis sekurang-kurangnya 5 aksara.",
-  "sellerStoreSaved": "Kedai disimpan"
+  "sellerStoreSaved": "Kedai disimpan",
+  "sellerStatusPending": "Menunggu",
+  "sellerStatusPaid": "Dibayar",
+  "sellerStatusFailed": "Gagal",
+  "sellerStatusExpired": "Tamat tempoh",
+  "sellerDefaultVariant": "Lalai",
+  "sellerImageTooLarge": "Pilih imej di bawah {kb} KB.",
+  "@sellerImageTooLarge": {
+    "placeholders": {
+      "kb": {
+        "type": "int"
+      }
+    }
+  },
+  "sellerAcceptReturnConfirm": "Terima pemulangan ini? Pembeli akan diminta menghantar barang kembali.",
+  "sellerDisputeConfirm": "Pertikai pemulangan ini? HalalBizs akan menyemak kes ini dengan sebab anda.",
+  "sellerDelistConfirm": "Nyahsenarai produk ini? Pembeli tidak akan melihatnya sehingga anda menyenaraikannya semula.",
+  "sellerPayoutConfirm": "Mohon pembayaran sebanyak {amount} ke akaun bank anda?",
+  "@sellerPayoutConfirm": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

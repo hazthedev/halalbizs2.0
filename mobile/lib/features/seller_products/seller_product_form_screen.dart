@@ -30,14 +30,14 @@ class SellerProductFormScreen extends ConsumerStatefulWidget {
 class _VariantEdit {
   _VariantEdit(SellerVariant v)
       : id = v.id,
-        label = v.label,
+        label = v.optionsLabel,
         price = TextEditingController(text: rmInput(v.priceSen)),
         sale = TextEditingController(text: rmInput(v.salePriceSen)),
         stock = TextEditingController(text: '${v.stock}'),
         sku = TextEditingController(text: v.sku ?? '');
 
   final int id;
-  final String label;
+  final String? label;
   final TextEditingController price;
   final TextEditingController sale;
   final TextEditingController stock;
@@ -138,6 +138,15 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
 
   String? _err(String path) => _local[path] ?? fieldError(_remote, path);
 
+  /// The images rule reports per file (`images.0`), the publish gate as `images`.
+  String? get _imagesError {
+    final key = _remote?.fields.keys.where((k) => k == 'images' || k.startsWith('images.')).firstOrNull;
+    return key == null ? null : fieldError(_remote, key);
+  }
+
+  /// Every 422 path the form can show; anything else falls back to a snackbar.
+  static final _knownFields = RegExp(r'^(name|description|variants)\.|^(category_id|price_sen|sale_price_sen|stock|sku|weight_grams|length_mm|width_mm|height_mm|cod_enabled|images)');
+
   String? _orNull(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
 
   /// Local checks, then the request body — null when a field is wrong.
@@ -219,6 +228,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
   void _fail(Object e) {
     if (e is ApiException && e.isValidation) {
       setState(() => _remote = e);
+      if (!e.fields.keys.any(_knownFields.hasMatch)) showApiError(context, e);
     } else if (e is ApiException && e.code == 'halal_blocked') {
       setState(() => _blocked = e.message);
     } else {
@@ -236,6 +246,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
       final p = _isNew ? await api.createProduct(body) : await api.updateProduct(_product!.id, body);
       if (!mounted) return false;
       setState(() => _populate(p));
+      ref.read(sellerRefreshProvider.notifier).bump();
       _snack(l.sellerSaved);
       if (_isNew) context.replace('/seller/products/${p.id}');
       return true;
@@ -247,12 +258,17 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
     }
   }
 
-  /// `publish` / `delist` / `relist`; publish saves the form first.
+  /// `publish` / `delist` / `relist`; publish saves the form first, delist
+  /// asks first (it takes the listing off the storefront).
   Future<void> _action(String action) async {
+    final l = context.l10n;
+    if (action == 'delist') {
+      final ok = await showSoukConfirm(context, title: l.sellerDelist, message: l.sellerDelistConfirm, danger: true);
+      if (!ok || !mounted) return;
+    }
     if (action == 'publish' && !await _save()) return;
     if (!mounted) return;
     setState(() => _busy = action);
-    final l = context.l10n;
     try {
       final p = await ref.read(sellerApiProvider).productAction(_product!.id, action);
       if (!mounted) return;
@@ -260,6 +276,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
         _populate(p);
         _blocked = p.blockedReason;
       });
+      ref.read(sellerRefreshProvider.notifier).bump();
       _snack('${l.sellerSaved} · ${p.statusLabel}');
     } catch (e) {
       if (mounted) _fail(e);
@@ -269,7 +286,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
   }
 
   Future<void> _addImage() async {
-    final file = await pickSellerImage(context);
+    final file = await pickSellerImage(context, maxKb: 4096);
     if (file == null || !mounted) return;
     setState(() => _busy = 'image');
     try {
@@ -368,9 +385,9 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
                     const SizedBox(height: SoukSpace.s3),
                     SoukAlert('${l.sellerHalalBlocked}: $_blocked', key: const Key('seller-product-halal-blocked'), status: 'warn'),
                   ],
-                  if (_err('images') != null) ...[
+                  if (_imagesError != null) ...[
                     const SizedBox(height: SoukSpace.s3),
-                    SoukAlert(_err('images')!, status: 'danger'),
+                    SoukAlert(_imagesError!, key: const Key('seller-product-images-error'), status: 'danger'),
                   ],
                   const SizedBox(height: SoukSpace.s4),
                   _field('seller-product-name-en', l.sellerNameEn, _name['en']!, path: 'name.en', required: true),
@@ -417,7 +434,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
                         child: SoukCard(
                           key: Key('seller-variant-${v.id}'),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                            Text(v.label, style: SoukText.displayName),
+                            Text(v.label ?? l.sellerDefaultVariant, style: SoukText.displayName),
                             const SizedBox(height: SoukSpace.s3),
                             Row(children: [
                               Expanded(child: _field('seller-variant-${v.id}-price', l.sellerPriceRm, v.price, path: 'variants.$i.price_sen', required: true, decimal: true)),
@@ -511,7 +528,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
                     child: IconButton(
                       key: Key('seller-product-image-${img.id}-remove'),
                       tooltip: l.sellerRemoveImage,
-                      visualDensity: VisualDensity.compact,
+                      style: IconButton.styleFrom(minimumSize: const Size(SoukSpace.minTap, SoukSpace.minTap)),
                       icon: const Icon(Icons.close_rounded, size: 16, color: SoukColors.danger),
                       onPressed: _busy == null ? () => _removeImage(img) : null,
                     ),
