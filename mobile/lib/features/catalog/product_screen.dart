@@ -1,0 +1,277 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/auth/session.dart';
+import '../../core/widgets/souk_kit.dart';
+import '../../l10n/l10n.dart';
+import '../cart/cart_api.dart';
+import 'catalog_api.dart';
+import 'models.dart';
+
+/// `/p/:slug` — gallery, name, price (sale strike-through), variant chips,
+/// stock, store row, description, sold / rating, pinned "Add to cart".
+class ProductScreen extends ConsumerStatefulWidget {
+  const ProductScreen({super.key, required this.slug});
+
+  final String slug;
+
+  @override
+  ConsumerState<ProductScreen> createState() => _ProductScreenState();
+}
+
+class _ProductScreenState extends ConsumerState<ProductScreen> {
+  int? _variantId;
+  int _qty = 1;
+  int _image = 0;
+  bool _adding = false;
+
+  Variant? _selected(Product p) {
+    final vs = p.variants;
+    if (vs.isEmpty) return null;
+    return vs.firstWhere((v) => v.id == _variantId, orElse: () => vs.firstWhere((v) => v.inStock, orElse: () => vs.first));
+  }
+
+  Future<void> _refresh() async {
+    ref.invalidate(productProvider(widget.slug));
+    try {
+      await ref.read(productProvider(widget.slug).future);
+    } catch (_) {
+      // surfaced by the ErrorPane
+    }
+  }
+
+  Future<void> _addToCart(Product p) async {
+    final v = _selected(p);
+    if (v == null) return;
+    if (ref.read(sessionProvider) is! SignedIn) {
+      context.push('/login?from=${Uri.encodeComponent('/p/${p.slug}')}');
+      return;
+    }
+    setState(() => _adding = true);
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final outcome = await ref.read(cartApiProvider).addItem(variantId: v.id, qty: _qty);
+      if (!mounted) return;
+      messenger
+        ..clearSnackBars()
+        ..showSnackBar(SnackBar(content: Text(outcome == CartOutcome.notReady ? l.cartComingSoon : l.addedToCart)));
+    } catch (e) {
+      if (mounted) showApiError(context, e);
+    } finally {
+      if (mounted) setState(() => _adding = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final async = ref.watch(productProvider(widget.slug));
+    final product = async.value?.data;
+    final variant = product == null ? null : _selected(product);
+    final canBuy = product != null && (variant?.inStock ?? product.inStock);
+
+    return SoukPage(
+      title: product?.name ?? l.product,
+      scrollable: true,
+      onRefresh: _refresh,
+      fromCache: async.value?.fromCache ?? false,
+      cachedAt: async.value?.fetchedAt,
+      padding: EdgeInsets.zero,
+      bottomBar: product == null
+          ? null
+          : Row(children: [
+              QtyStepper(value: _qty, max: variant?.stock, enabled: canBuy, onChanged: (v) => setState(() => _qty = v)),
+              const SizedBox(width: SoukSpace.s3),
+              Expanded(
+                child: SoukButton(
+                  key: const Key('product-add-to-cart'),
+                  label: canBuy ? l.addToCart : l.outOfStock,
+                  icon: FontAwesomeIcons.cartPlus,
+                  variant: SoukButtonVariant.primary,
+                  expand: true,
+                  busy: _adding,
+                  requiresOnline: true,
+                  onPressed: canBuy ? () => _addToCart(product) : null,
+                ),
+              ),
+            ]),
+      body: async.when(
+        skipLoadingOnRefresh: true,
+        loading: () => const Padding(
+          padding: EdgeInsets.all(SoukSpace.page),
+          child: Column(children: [
+            AspectRatio(aspectRatio: 1, child: SoukSkeleton.block(height: double.infinity, radius: SoukRadius.card)),
+            SizedBox(height: SoukSpace.s4),
+            SoukSkeleton.list(rows: 3),
+          ]),
+        ),
+        error: (e, _) => ErrorPane(error: e, onRetry: _refresh, retryLabel: l.retry),
+        data: (r) => _ProductBody(
+          product: r.data,
+          variant: variant,
+          image: _image,
+          onImage: (i) => setState(() => _image = i),
+          onVariant: (v) => setState(() {
+            _variantId = v.id;
+            if (v.stock > 0 && _qty > v.stock) _qty = v.stock;
+          }),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProductBody extends StatelessWidget {
+  const _ProductBody({
+    required this.product,
+    required this.variant,
+    required this.image,
+    required this.onImage,
+    required this.onVariant,
+  });
+
+  final Product product;
+  final Variant? variant;
+  final int image;
+  final ValueChanged<int> onImage;
+  final ValueChanged<Variant> onVariant;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final p = product;
+    final images = p.images;
+    final price = variant?.priceSen ?? p.minPriceSen;
+    final regular = variant?.regularPriceSen;
+    final stock = variant?.stock;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Gallery
+        AspectRatio(
+          aspectRatio: 1,
+          child: images.isEmpty
+              ? const ProductImage(null, radius: 0)
+              : PageView.builder(
+                  key: const Key('product-gallery'),
+                  itemCount: images.length,
+                  onPageChanged: onImage,
+                  itemBuilder: (_, i) => ProductImage(images[i], radius: 0),
+                ),
+        ),
+        if (images.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: SoukSpace.s2),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              for (var i = 0; i < images.length; i++)
+                Container(
+                  width: i == image ? 18 : 6,
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: i == image ? SoukColors.emerald : SoukColors.lineStrong,
+                    borderRadius: BorderRadius.circular(SoukRadius.pill),
+                  ),
+                ),
+            ]),
+          ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(SoukSpace.page, SoukSpace.s4, SoukSpace.page, SoukSpace.s6),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(p.name, key: const Key('product-name'), style: SoukText.displayH2),
+              const SizedBox(height: SoukSpace.s3),
+              Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                PriceText(price, key: const Key('product-price'), large: true),
+                if (regular != null) ...[
+                  const SizedBox(width: SoukSpace.s2),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: PriceText(regular, key: const Key('product-regular-price'), strike: true),
+                  ),
+                ],
+              ]),
+              const SizedBox(height: SoukSpace.s2),
+              Row(children: [
+                if (p.ratingAvg > 0) ...[
+                  const FaIcon(FontAwesomeIcons.solidStar, size: 11, color: SoukColors.brass),
+                  const SizedBox(width: 4),
+                  Text(p.ratingAvg.toStringAsFixed(1), style: SoukText.mono),
+                  if (p.reviewCount > 0) Text('  ·  ${l.reviewsCount(p.reviewCount)}', style: SoukText.meta),
+                  const SizedBox(width: SoukSpace.s3),
+                ],
+                Text('${p.soldCount} ${l.sold}', style: SoukText.mono),
+              ]),
+              if (p.variants.length > 1) ...[
+                const SizedBox(height: SoukSpace.s5),
+                Text(l.variant.toUpperCase(), style: SoukText.eyebrow),
+                const SizedBox(height: SoukSpace.s2),
+                Wrap(
+                  spacing: SoukSpace.s2,
+                  runSpacing: SoukSpace.s2,
+                  children: [
+                    for (final v in p.variants)
+                      SoukChip(
+                        key: Key('product-variant-${v.id}'),
+                        label: v.label,
+                        selected: v.id == variant?.id,
+                        enabled: v.inStock,
+                        onTap: () => onVariant(v),
+                      ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: SoukSpace.s3),
+              if (stock != null)
+                Text(
+                  key: const Key('product-stock'),
+                  stock <= 0
+                      ? l.outOfStock
+                      : stock <= 5
+                          ? l.onlyLeft(stock)
+                          : l.inStock(stock),
+                  style: SoukText.mono.copyWith(color: stock <= 0 ? SoukColors.danger : (stock <= 5 ? SoukColors.warn : SoukColors.inkMoss)),
+                ),
+              if (variant != null && variant!.sku.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text('SKU ${variant!.sku}', style: SoukText.monoLabel),
+                ),
+              if (p.storeSlug != null) ...[
+                const SizedBox(height: SoukSpace.s5),
+                SoukCard(
+                  key: const Key('product-store'),
+                  padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s4, vertical: SoukSpace.s3),
+                  onTap: () => context.push('/s/${p.storeSlug}'),
+                  child: Row(children: [
+                    const FaIcon(FontAwesomeIcons.store, size: 16, color: SoukColors.inkFaint),
+                    const SizedBox(width: SoukSpace.s3),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(l.soldBy.toUpperCase(), style: SoukText.eyebrow),
+                        Text(p.storeName ?? p.storeSlug!, style: SoukText.displayName, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ]),
+                    ),
+                    Text(l.visitStore, style: SoukText.small.copyWith(color: SoukColors.emerald, fontWeight: FontWeight.w600)),
+                    const Icon(Icons.chevron_right_rounded, color: SoukColors.emerald),
+                  ]),
+                ),
+              ],
+              if (p.description.isNotEmpty) ...[
+                const SizedBox(height: SoukSpace.s6),
+                Text(l.description, style: SoukText.displayH3),
+                const SizedBox(height: SoukSpace.s2),
+                Text(p.description, style: SoukText.bodySoft),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
