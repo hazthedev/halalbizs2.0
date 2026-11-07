@@ -1,9 +1,14 @@
 <?php
 
+use App\Http\Api\ApiResponse;
+use App\Http\Middleware\ApiLocale;
+use App\Http\Middleware\ApiNotSuspended;
+use App\Http\Middleware\ApiVerified;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureSeller;
 use App\Http\Middleware\HandleUrlRedirects;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SellerApi;
 use App\Http\Middleware\SetDisplayCurrency;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -39,6 +44,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SetLocale::class,
             SetDisplayCurrency::class,
+        ]);
+
+        // The API's stateless twin of the two above: Accept-Language and
+        // X-Display-Currency headers instead of the session (mobile plan §1).
+        $middleware->api(append: [
+            ApiLocale::class,
         ]);
 
         // SecurityHeaders is registered on the application's GLOBAL
@@ -118,6 +129,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'payments/ipay88/response',
             'payments/ipay88/backend',
+            'app/pay/*/return',
             'shipping/easyparcel/tracking',
             'shipping/aftership/tracking',
         ]);
@@ -125,6 +137,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'seller' => EnsureSeller::class,
             'admin' => EnsureAdmin::class,
+            'verified.api' => ApiVerified::class,
+            'suspended.api' => ApiNotSuspended::class,
+            'seller.api' => SellerApi::class,
         ]);
 
         // The `auth` middleware bounces guests before a section guard runs, so
@@ -147,4 +162,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        // Every api/* failure wears the mobile envelope (mobile plan §1), so the
+        // app maps one shape to its error pane. Non-API requests fall through
+        // (null) to the normal HTML/JSON rendering.
+        $exceptions->render(function (Throwable $e, Request $request) {
+            return $request->is('api/*') ? ApiResponse::fromThrowable($e) : null;
+        });
     })->create();

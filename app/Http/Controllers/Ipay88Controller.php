@@ -10,6 +10,7 @@ use App\Services\Ipay88Service;
 use App\Settings\Ipay88Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class Ipay88Controller extends Controller
 {
@@ -22,10 +23,46 @@ class Ipay88Controller extends Controller
         abort_unless($order->user_id === $request->user()->id, 403);
         abort_unless($order->isAwaitingPayment(), 404);
 
-        $payment = $order->payments()
-            ->where('status', GatewayPaymentStatus::Pending)
-            ->latest('id')
-            ->first();
+        return $this->entry($order, $ipay88, [
+            'success' => route('payments.ipay88.mock', ['order' => $order->order_no, 'result' => 'success']),
+            'fail' => route('payments.ipay88.mock', ['order' => $order->order_no, 'result' => 'fail']),
+            'cancel' => route('checkout'),
+        ]);
+    }
+
+    /**
+     * Mobile hand-off (mobile plan §4): the SAME entry page as pay(), reached
+     * from the app through a 15-minute signed URL — the signature is the auth,
+     * there is no session. ResponseURL points at the app's return page; the
+     * BackendURL is unchanged, so fulfilment still only ever comes from the
+     * server-to-server callback + requery (hard rule 4).
+     */
+    public function appPay(Order $order, Ipay88Service $ipay88)
+    {
+        if (! $order->isAwaitingPayment()) {
+            return view('payments.app-return', ['order' => $order, 'payable' => false]);
+        }
+
+        // 24h: long enough for any bank-redirect latency, short enough that a leaked
+        // link dies with the order's own payment window.
+        $returnUrl = URL::temporarySignedRoute('app.pay.return', now()->addDay(), ['order' => $order->order_no]);
+
+        return $this->entry($order, $ipay88, [
+            'success' => URL::temporarySignedRoute('app.pay.mock', now()->addMinutes(15), ['order' => $order->order_no, 'result' => 'success']),
+            'fail' => URL::temporarySignedRoute('app.pay.mock', now()->addMinutes(15), ['order' => $order->order_no, 'result' => 'fail']),
+            'cancel' => $returnUrl,
+        ], $returnUrl);
+    }
+
+    /**
+     * The one code path behind both entry pages: find or open the pending
+     * payment attempt, then the simulator (mock mode) or the gateway bridge.
+     *
+     * @param  array{success: string, fail: string, cancel: string}  $mockActions  where the simulator's buttons go
+     */
+    private function entry(Order $order, Ipay88Service $ipay88, array $mockActions, ?string $responseUrl = null)
+    {
+        $payment = $this->pendingPayment($order);
 
         if ($payment === null) {
             // New attempt after a failed/expired one (docs/06 §D5 decision).
@@ -44,10 +81,10 @@ class Ipay88Controller extends Controller
         // No real gateway configured → built-in simulator (lets a preview finish
         // online-payment checkouts). Production sets a merchant code → real bridge.
         if ($ipay88->isMock()) {
-            return view('payments.mock', ['order' => $order, 'payment' => $payment]);
+            return view('payments.mock', ['order' => $order, 'payment' => $payment, 'actions' => $mockActions]);
         }
 
-        $fields = $ipay88->entryFields($order, $payment);
+        $fields = $ipay88->entryFields($order, $payment, $responseUrl);
 
         $payment->update(['request_payload' => $fields]);
 
@@ -56,6 +93,14 @@ class Ipay88Controller extends Controller
             'fields' => $fields,
             'entryUrl' => $ipay88->entryUrl(),
         ]);
+    }
+
+    private function pendingPayment(Order $order): ?Payment
+    {
+        return $order->payments()
+            ->where('status', GatewayPaymentStatus::Pending)
+            ->latest('id')
+            ->first();
     }
 
     /**
@@ -67,12 +112,34 @@ class Ipay88Controller extends Controller
     {
         abort_unless($ipay88->isMock(), 404);
         abort_unless($order->user_id === $request->user()->id, 403);
+
+        $this->applyMock($order, $result);
+
+        if ($result === 'success') {
+            return redirect()->route('checkout.success', ['order' => $order->order_no]);
+        }
+
+        return redirect()->route('checkout')->with('toast', [
+            'type' => 'error',
+            'message' => __('Payment was not completed. Please try again.'),
+        ]);
+    }
+
+    /** The app simulator: same outcome as mockConfirm(), then the app's return page. */
+    public function appMock(Order $order, string $result, Ipay88Service $ipay88)
+    {
+        abort_unless($ipay88->isMock(), 404);
+
+        $this->applyMock($order, $result);
+
+        return redirect()->to(URL::temporarySignedRoute('app.pay.return', now()->addDay(), ['order' => $order->order_no]));
+    }
+
+    private function applyMock(Order $order, string $result): void
+    {
         abort_unless($order->isAwaitingPayment(), 404);
 
-        $payment = $order->payments()
-            ->where('status', GatewayPaymentStatus::Pending)
-            ->latest('id')
-            ->first();
+        $payment = $this->pendingPayment($order);
 
         abort_if($payment === null, 404);
 
@@ -85,18 +152,23 @@ class Ipay88Controller extends Controller
                 'Status' => '1',
             ]);
 
-            return redirect()->route('checkout.success', ['order' => $order->order_no]);
+            return;
         }
 
         $payment->update([
             'status' => GatewayPaymentStatus::Failed,
             'requery_result' => 'MOCK-FAILED',
         ]);
+    }
 
-        return redirect()->route('checkout')->with('toast', [
-            'type' => 'error',
-            'message' => __('Payment was not completed. Please try again.'),
-        ]);
+    /**
+     * The app's ResponseURL (GET from the simulator, POST from iPay88): a
+     * plain "back to the app" page. UX only — it writes nothing, the app asks
+     * the API for the payment status, which only the BackendURL path changes.
+     */
+    public function appReturn(Order $order)
+    {
+        return view('payments.app-return', ['order' => $order, 'payable' => true]);
     }
 
     /**

@@ -15,6 +15,13 @@ return [
         'enabled' => env('CONCIERGE_ENABLED', true),
     ],
 
+    // Firebase Cloud Messaging (mobile plan §5): path to the service-account
+    // JSON. Unset = FcmChannel is a silent no-op, so a host without a Firebase
+    // project still sends every database/mail notification as before.
+    'fcm' => [
+        'credentials' => env('FCM_CREDENTIALS'),
+    ],
+
     // iPay88 optional refund endpoint (M0.4 automated refund).
     'ipay88' => [
         'refund_url' => env('IPAY88_REFUND_URL'),

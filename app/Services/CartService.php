@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Exceptions\CheckoutException;
+use App\Exceptions\BuyerActionException;
+use App\Exceptions\PurchasingDisabledException;
 use App\Models\Cart;
 use App\Models\ProductVariant;
 use App\Models\User;
@@ -30,9 +31,21 @@ class CartService
         return Cart::firstOrCreate(['user_id' => $user->id]);
     }
 
+    /**
+     * @throws PurchasingDisabledException when the marketplace is listing-only
+     * @throws BuyerActionException when the product is not live, the store is on holiday, or the variant is sold out
+     */
     public function addItem(?User $user, ProductVariant $variant, int $qty = 1): void
     {
         $this->ensurePurchasingEnabled();
+
+        if (! $variant->product?->isLive() || $variant->product->store?->holiday_mode) {
+            throw new BuyerActionException(__('This product is not available right now.'));
+        }
+
+        if ($variant->stock < 1) {
+            throw new BuyerActionException(__('Sorry — this item just sold out.'));
+        }
 
         $qty = max(1, min($qty, $variant->stock));
 
@@ -94,6 +107,23 @@ class CartService
         $this->cartFor($user)->items()->where('product_variant_id', $variant->id)->delete();
     }
 
+    /** Tick or untick one line for checkout (buyer carts only — guest lines are always selected). */
+    public function setSelected(User $user, ProductVariant $variant, bool $selected): void
+    {
+        $this->cartFor($user)->items()
+            ->where('product_variant_id', $variant->id)
+            ->first()
+            ?->update(['selected' => $selected]);
+    }
+
+    /** Tick or untick every line, or only one store's lines when $storeId is given. */
+    public function setAllSelected(User $user, bool $selected, ?int $storeId = null): void
+    {
+        $this->cartFor($user)->items()
+            ->when($storeId !== null, fn ($query) => $query->whereHas('variant.product', fn ($product) => $product->where('store_id', $storeId)))
+            ->update(['selected' => $selected]);
+    }
+
     public function hasItem(?User $user, int $variantId): bool
     {
         if ($user === null) {
@@ -126,7 +156,11 @@ class CartService
         $variants = ProductVariant::whereIn('id', array_keys($sessionItems))->get();
 
         foreach ($variants as $variant) {
-            $this->addItem($user, $variant, $sessionItems[$variant->id]);
+            try {
+                $this->addItem($user, $variant, $sessionItems[$variant->id]);
+            } catch (BuyerActionException) {
+                // Sold out or withdrawn while the guest browsed: drop the line, keep the sign-in.
+            }
         }
 
         Session::forget(self::SESSION_KEY);
@@ -180,7 +214,7 @@ class CartService
     private function ensurePurchasingEnabled(): void
     {
         if (! $this->purchasingEnabled()) {
-            throw new CheckoutException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
+            throw new PurchasingDisabledException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
         }
     }
 }

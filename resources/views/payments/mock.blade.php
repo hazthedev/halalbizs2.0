@@ -14,19 +14,19 @@
         <p class="mt-4 text-2xl font-bold tnum">@money($order->grand_total_sen)</p>
         <p class="mt-1 text-[13px] text-ink-faint">{{ __('This is a stand-in for iPay88 — no real charge is made.') }}</p>
 
-        <form method="POST" action="{{ route('payments.ipay88.mock', ['order' => $order->order_no, 'result' => 'success']) }}" class="mt-6">
+        <form method="POST" action="{{ $actions['success'] }}" class="mt-6">
             @csrf
             <button type="submit" class="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald px-6 text-sm font-semibold text-white hover:bg-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                 {{ __('Simulate successful payment') }}
             </button>
         </form>
-        <form method="POST" action="{{ route('payments.ipay88.mock', ['order' => $order->order_no, 'result' => 'fail']) }}" class="mt-2">
+        <form method="POST" action="{{ $actions['fail'] }}" class="mt-2">
             @csrf
             <button type="submit" class="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-line-strong px-6 text-sm font-medium text-ink-soft hover:border-ink focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Simulate failure') }}
             </button>
         </form>
-        <a href="{{ route('checkout') }}" class="mt-3 inline-block min-h-11 text-[13px] leading-[44px] text-ink-soft hover:text-ink">{{ __('Cancel') }}</a>
+        <a href="{{ $actions['cancel'] }}" class="mt-3 inline-block min-h-11 text-[13px] leading-[44px] text-ink-soft hover:text-ink">{{ __('Cancel') }}</a>
     </div>
 </body>
 </html>

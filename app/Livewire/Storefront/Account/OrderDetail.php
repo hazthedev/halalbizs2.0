@@ -3,17 +3,14 @@
 namespace App\Livewire\Storefront\Account;
 
 use App\Enums\ActorType;
-use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
 use App\Models\CancellationReason;
 use App\Models\ReturnReason;
 use App\Models\ReturnRequest;
 use App\Models\SubOrder;
 use App\Services\OrderService;
-use App\Services\SubOrderStatusService;
+use App\Services\ReturnService;
 use App\Settings\OrderSettings;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -98,11 +95,11 @@ class OrderDetail extends Component
     }
 
     /**
-     * Buyer requests a return (docs/09 §D): create the request and move the
-     * sub-order to return_requested in one transaction. The status service
-     * fires the event that notifies the seller.
+     * Buyer requests a return (docs/09 §D): ReturnService creates the request
+     * and moves the sub-order to return_requested in one transaction. The
+     * status service fires the event that notifies the seller.
      */
-    public function submitReturn(): void
+    public function submitReturn(ReturnService $returns): void
     {
         if (! $this->canRequestReturn()) {
             $this->dispatch('toast', message: __('This order is no longer eligible for a return.'), type: 'error');
@@ -125,28 +122,13 @@ class OrderDetail extends Component
 
         $responseHours = app(OrderSettings::class)->return_seller_response_hours;
 
-        DB::transaction(function () use ($responseHours) {
-            $request = ReturnRequest::create([
-                'sub_order_id' => $this->subOrder->id,
-                'return_reason_id' => $this->returnReasonId,
-                'description' => trim($this->returnDescription) !== '' ? trim($this->returnDescription) : null,
-                'status' => ReturnStatus::Requested,
-                'respond_by' => now()->addHours($responseHours),
-            ]);
-
-            foreach (array_slice($this->returnPhotos, 0, ReturnRequest::MAX_PHOTOS) as $photo) {
-                $request->addMedia($photo->getRealPath())
-                    ->usingFileName('return-'.self::safeUploadName($photo))
-                    ->toMediaCollection('photos');
-            }
-
-            app(SubOrderStatusService::class)->transition(
-                $this->subOrder,
-                SubOrderStatus::ReturnRequested,
-                ActorType::Buyer,
-                auth()->id(),
-            );
-        });
+        $returns->request(
+            $this->subOrder,
+            auth()->user(),
+            ReturnReason::query()->findOrFail($this->returnReasonId),
+            $this->returnDescription,
+            $this->returnPhotos,
+        );
 
         $this->reset('requestingReturn', 'returnReasonId', 'returnDescription', 'returnPhotos');
         $this->loadSubOrder();
@@ -179,10 +161,7 @@ class OrderDetail extends Component
      */
     private function canRequestReturn(): bool
     {
-        return in_array($this->subOrder->status, [SubOrderStatus::Delivered, SubOrderStatus::Completed], true)
-            && $this->subOrder->delivered_at !== null
-            && now()->lte($this->subOrder->delivered_at->copy()->addDays(app(OrderSettings::class)->return_window_days))
-            && $this->subOrder->returnRequest === null;
+        return app(ReturnService::class)->canRequest($this->subOrder);
     }
 
     /** Invoice exists from confirmed onwards (never for unpaid or cancelled orders). */
@@ -211,20 +190,5 @@ class OrderDetail extends Component
             'items.product.media', 'statusHistories', 'trackingEvents', 'store', 'order.payment',
             'returnRequest.reason', 'returnRequest.media',
         ]);
-    }
-
-    /**
-     * Stored filename with a SERVER-DETECTED extension (AL-M2, security
-     * audit). Media-library only blocks PHP-family extensions, not e.g.
-     * .html/.htm, and MEDIA_DISK defaults to the public disk — trusting the
-     * client's filename would let an image-content polyglot uploaded as
-     * "x.html" be served back as text/html from the app's own origin.
-     */
-    private static function safeUploadName(TemporaryUploadedFile $photo): string
-    {
-        $extension = $photo->guessExtension() ?: $photo->getClientOriginalExtension() ?: 'bin';
-        $base = Str::slug(pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME));
-
-        return ($base !== '' ? $base : 'photo').'.'.$extension;
     }
 }
