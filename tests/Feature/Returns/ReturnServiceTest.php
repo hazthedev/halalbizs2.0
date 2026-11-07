@@ -67,15 +67,30 @@ test('request() creates the row, attaches the photos and transitions the sub-ord
     Notification::assertSentTo($subOrder->store->user, SubOrderStatusNotification::class);
 });
 
-test('request() keeps at most MAX_PHOTOS photos and stores an empty note as null', function () {
+test('request() refuses more than MAX_PHOTOS photos, non-images and oversized photos before writing anything', function () {
     Storage::fake('public');
     $subOrder = returnServiceSubOrder();
+    $buyer = $subOrder->order->user;
+    $reason = returnServiceReason();
+    $service = app(ReturnService::class);
 
-    $request = app(ReturnService::class)->request($subOrder, $subOrder->order->user, returnServiceReason(), '   ',
-        collect(range(1, 7))->map(fn ($i) => UploadedFile::fake()->image("p{$i}.jpg"))->all());
+    expect(fn () => $service->request($subOrder, $buyer, $reason, null,
+        collect(range(1, 6))->map(fn ($i) => UploadedFile::fake()->image("p{$i}.jpg"))->all()))
+        ->toThrow(InvalidArgumentException::class, 'You can attach up to 5 photos.');
+
+    expect(fn () => $service->request($subOrder, $buyer, $reason, null, [UploadedFile::fake()->create('evil.html', 10, 'text/html')]))
+        ->toThrow(InvalidArgumentException::class, 'Photos must be images');
+
+    expect(fn () => $service->request($subOrder, $buyer, $reason, null, [UploadedFile::fake()->image('huge.jpg')->size(3000)]))
+        ->toThrow(InvalidArgumentException::class, 'Each photo must be 2MB or smaller.');
+
+    expect(ReturnRequest::count())->toBe(0)
+        ->and($subOrder->fresh()->status)->toBe(SubOrderStatus::Delivered);
+
+    $request = $service->request($subOrder, $buyer, $reason, '   ');
 
     expect($request->description)->toBeNull()
-        ->and($request->getMedia('photos'))->toHaveCount(ReturnRequest::MAX_PHOTOS);
+        ->and($request->getMedia('photos'))->toHaveCount(0);
 });
 
 test('request() refuses a stranger, an order outside the window and a second request', function () {

@@ -45,6 +45,8 @@ final class CheckoutQuote
         public readonly ?string $codUnavailableReason,
         public readonly bool $ipay88Enabled,
         public readonly ?PaymentMethod $paymentMethod,
+        /** Why place() would refuse this cart outright (nothing selected, total ≤ 0), or null. */
+        public readonly ?string $blockReason = null,
     ) {}
 
     /** Whether at least one payment method can take this order. */
@@ -135,6 +137,7 @@ final class CheckoutQuote
             ],
             'payment_method' => $this->paymentMethod?->value,
             'payment_method_available' => $this->paymentMethodAvailable(),
+            'block_reason' => $this->blockReason,
         ];
     }
 }

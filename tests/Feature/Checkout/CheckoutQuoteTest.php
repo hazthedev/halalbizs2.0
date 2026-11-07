@@ -6,6 +6,7 @@ use App\Enums\SubOrderStatus;
 use App\Enums\TaxClass;
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
+use App\Exceptions\CheckoutException;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
@@ -101,13 +102,18 @@ function expectQuoteToMatchOrder(CheckoutQuote $quote, Order $order): void
             ->and($group->itemsSubtotalSen)->toBe((int) $subOrder->items_subtotal_sen)
             ->and($group->taxSen)->toBe((int) $subOrder->tax_sen)
             ->and($group->shippingSubsidySen)->toBe((int) $subOrder->shipping_subsidy_sen)
-            // The buyer-facing fee: what the buyer pays for this store's shipping.
-            ->and($group->shippingFeeSen)->toBe((int) $subOrder->shipping_fee_sen - (int) $subOrder->shipping_subsidy_sen);
+            // The buyer-facing fee: a waived store ships free whoever funds it
+            // (platform-funded keeps the fee on the sub-order, seller-funded zeroes it).
+            ->and($group->shippingFeeSen)->toBe((int) $subOrder->shipping_subsidy_sen > 0 ? 0 : (int) $subOrder->shipping_fee_sen)
+            ->and($group->lines)->toHaveCount($subOrder->items->count());
 
         foreach ($group->lines as $line) {
             $item = $subOrder->items->firstWhere('product_variant_id', $line->variant->id);
 
-            expect($line->unitPriceSen)->toBe((int) $item->unit_price_sen)
+            expect($item)->not->toBeNull()
+                ->and($line->qty)->toBe((int) $item->qty)
+                ->and($line->unitPriceSen)->toBe((int) $item->unit_price_sen)
+                ->and($line->unitPriceSen * $line->qty)->toBe((int) $item->line_total_sen)
                 ->and($line->listPriceSen)->toBe((int) $item->list_price_sen)
                 ->and($line->taxSen)->toBe((int) $item->tax_sen);
         }
@@ -182,6 +188,33 @@ test('an iPay88 quote with SST, a free-shipping voucher, a shop voucher and coin
     expect($order->subOrders->first()->status)->toBe(SubOrderStatus::PendingPayment);
 });
 
+test('a seller-funded free-shipping voucher zeroes the buyer-facing fee in the quote exactly as on the sub-order', function () {
+    [$buyer, $address] = quoteBuyer();
+    $productA = quoteProduct(10000, flatFeeSen: 700);
+    $productB = quoteProduct(5000, flatFeeSen: 900);
+    quoteVoucher(['scope' => VoucherScope::Shop, 'store_id' => $productA->store_id, 'code' => 'SHIPFREEA', 'type' => VoucherType::FreeShipping]);
+
+    app(CartService::class)->addItem($buyer, $productA->variants->first(), 1);
+    app(CartService::class)->addItem($buyer, $productB->variants->first(), 1);
+
+    $checkout = app(CheckoutService::class);
+    $quote = $checkout->quote($buyer, $address, shopCode: 'SHIPFREEA', method: PaymentMethod::Cod);
+    $groupA = $quote->groups->firstWhere('store.id', $productA->store_id);
+
+    expect($quote->shippingTotalSen)->toBe(900)
+        ->and($quote->shippingSubsidySen)->toBe(700)
+        ->and($groupA->shippingFeeSen)->toBe(0)
+        ->and($groupA->shippingSubsidySen)->toBe(700);
+
+    $order = $checkout->place($buyer, $address, PaymentMethod::Cod, null, 'SHIPFREEA');
+    $subA = $order->subOrders->firstWhere('store_id', $productA->store_id);
+
+    expect((int) $subA->shipping_fee_sen)->toBe(0)          // seller absorbs it
+        ->and((int) $subA->shipping_subsidy_sen)->toBe(700);
+
+    expectQuoteToMatchOrder($quote, $order);
+});
+
 test('a quote without an address has no shipping or tax yet', function () {
     [$buyer] = quoteBuyer();
     $product = quoteProduct(10000, sst: true);
@@ -254,22 +287,62 @@ test('COD block reasons: switched off, item not eligible, over the cap, open-ord
     expect($checkout->quote($buyer, $address)->codUnavailableReason)->toBe('COD unavailable: cash on delivery is switched off right now.');
 });
 
-test('a quote skips unselected and unbuyable lines and names the blocked ones', function () {
+test('a quote drops exactly the lines place() refuses and names each with its reason', function () {
     [$buyer, $address] = quoteBuyer();
     $kept = quoteProduct(10000, flatFeeSen: 0);
     $unticked = quoteProduct(2500, flatFeeSen: 0);
     $soldOut = quoteProduct(4000, flatFeeSen: 0);
+    $short = quoteProduct(3000, flatFeeSen: 0);
+    $closed = quoteProduct(2000, flatFeeSen: 0);
 
     $cart = app(CartService::class);
     $cart->addItem($buyer, $kept->variants->first(), 1);
     $cart->addItem($buyer, $unticked->variants->first(), 1);
     $cart->addItem($buyer, $soldOut->variants->first(), 1);
+    $cart->addItem($buyer, $short->variants->first(), 2);
+    $cart->addItem($buyer, $closed->variants->first(), 1);
     $cart->setSelected($buyer, $unticked->variants->first(), false);
     $soldOut->variants->first()->update(['stock' => 0]);
+    $short->variants->first()->update(['stock' => 1]);     // qty 2 > stock 1
+    $closed->store->update(['holiday_mode' => true]);
 
     $checkout = app(CheckoutService::class);
+    $blocked = $checkout->blockedLines($buyer)->keyBy('variant.id');
 
     expect($checkout->quote($buyer, $address)->grandTotalSen)->toBe(10000)
         ->and($checkout->selectedGroups($buyer))->toHaveCount(1)
-        ->and($checkout->blockedLines($buyer)->pluck('variant.id')->all())->toBe([$soldOut->variants->first()->id]);
+        ->and($blocked)->toHaveCount(3)
+        ->and($blocked[$soldOut->variants->first()->id]->reason)->toContain('just sold out — only 0 left')
+        ->and($blocked[$short->variants->first()->id]->reason)->toContain('just sold out — only 1 left')
+        ->and($blocked[$closed->variants->first()->id]->reason)->toBe($closed->store->name.' is not accepting orders right now.');
+
+    // The same three refusals place() makes — same wording, because it is the same code.
+    $cart->setSelected($buyer, $kept->variants->first(), false);
+    $cart->setSelected($buyer, $soldOut->variants->first(), false);
+    $cart->setSelected($buyer, $short->variants->first(), false);
+
+    expect(fn () => $checkout->place($buyer, $address, PaymentMethod::Cod))
+        ->toThrow(CheckoutException::class, $closed->store->name.' is not accepting orders right now.');
+});
+
+test('a quote names the outright blockers place() throws: nothing selected, total not above zero', function () {
+    [$buyer, $address] = quoteBuyer();
+    $checkout = app(CheckoutService::class);
+
+    expect($checkout->quote($buyer, $address)->blockReason)->toBe('Your cart has no selected items.')
+        ->and(fn () => $checkout->place($buyer, $address, PaymentMethod::Cod))
+        ->toThrow(CheckoutException::class, 'Your cart has no selected items.');
+
+    $product = quoteProduct(10000, flatFeeSen: 0);
+    quoteVoucher(['code' => 'ALLOFF', 'type' => VoucherType::Percent, 'percent' => 100, 'value_sen' => null]);
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+
+    $quote = $checkout->quote($buyer, $address, platformCode: 'ALLOFF');
+
+    expect($quote->platformDiscountSen)->toBe(10000)
+        ->and($quote->grandTotalSen)->toBe(0)
+        ->and($quote->blockReason)->toBe('Order total must be above zero.')
+        ->and($quote->toArray()['block_reason'])->toBe('Order total must be above zero.')
+        ->and(fn () => $checkout->place($buyer, $address, PaymentMethod::Cod, 'ALLOFF'))
+        ->toThrow(CheckoutException::class, 'Order total must be above zero.');
 });

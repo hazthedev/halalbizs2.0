@@ -50,9 +50,7 @@ class CheckoutController extends Controller
 
         if ($blocked->isNotEmpty()) {
             return ApiResponse::error('checkout_failed', __('Some selected items can no longer be bought.'), 409,
-                $blocked->mapWithKeys(fn (object $line) => [(string) $line->variant->id => [
-                    $line->reason ?? ($line->variant->product?->isLive() ? __('Out of stock') : __('No longer available')),
-                ]])->all());
+                $blocked->mapWithKeys(fn (object $line) => [(string) $line->variant->id => [$line->reason]])->all());
         }
 
         $order = $checkout->place(
