@@ -109,6 +109,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('payments.ipay88.status');
 });
 
+// ===== Mobile payment hand-off (mobile plan §4) =====
+// Reached from the app through URLs the API signs; the signature is the auth
+// (no session). The return page is CSRF-exempt in bootstrap/app.php because
+// iPay88 POSTs to it; it writes nothing (hard rule 4).
+Route::middleware('signed')->prefix('app/pay')->group(function () {
+    Route::get('/{order:order_no}', [Ipay88Controller::class, 'appPay'])->name('app.pay');
+    Route::post('/{order:order_no}/mock/{result}', [Ipay88Controller::class, 'appMock'])
+        ->whereIn('result', ['success', 'fail'])
+        ->name('app.pay.mock');
+    Route::match(['get', 'post'], '/{order:order_no}/return', [Ipay88Controller::class, 'appReturn'])->name('app.pay.return');
+});
+
 // Gateway callbacks — CSRF-exempt (bootstrap/app.php), signature-gated instead.
 Route::post('/payments/ipay88/response', [Ipay88Controller::class, 'response'])->name('payments.ipay88.response');
 Route::post('/payments/ipay88/backend', [Ipay88Controller::class, 'backend'])->name('payments.ipay88.backend');

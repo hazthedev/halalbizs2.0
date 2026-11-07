@@ -127,6 +127,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'payments/ipay88/response',
             'payments/ipay88/backend',
+            'app/pay/*/return',
             'shipping/easyparcel/tracking',
             'shipping/aftership/tracking',
         ]);
