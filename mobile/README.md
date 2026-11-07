@@ -37,19 +37,11 @@ Build defines:
 - `PUSH_ENABLED=true` — registers the device for push (slice 5; no-op until
   the Firebase config files exist).
 
-Release builds (every one needs `--no-tree-shake-icons`, see below):
-`flutter build apk --release --no-tree-shake-icons --dart-define=API_BASE_URL=…`,
-`flutter build ipa --release --no-tree-shake-icons --dart-define=API_BASE_URL=…` (needs Xcode),
-`flutter build web --release --no-tree-shake-icons --dart-define=API_BASE_URL=…` (used for the Playwright smoke).
-
-`--no-tree-shake-icons` is mandatory: font_awesome_flutter 11 wraps every icon
-in `FaIconData`, and Flutter's icon tree shaker (`const_finder`) visits each
-constant once, so an icon whose first visit happens inside the
-`@staticIconProvider` class is dropped even when a screen uses it. Which
-icons survive depends on library order in the kernel file (slice 5 lost
-`check`, `plus`, `ticket`, `creditCard`, `arrowUpRightFromSquare`,
-`hourglassEnd` — rendered as tofu boxes). Cost: ~500 KB of Font Awesome
-fonts shipped untrimmed.
+Release builds: `flutter build apk --release --dart-define=API_BASE_URL=…`,
+`flutter build ipa --release --dart-define=API_BASE_URL=…` (needs Xcode),
+`flutter build web --release` (used for the Playwright smoke). Always add
+`--no-tree-shake-icons`: font_awesome_flutter 11's `FaIconData` defeats the
+const finder, so tree-shaking drops glyphs the app uses.
 
 ## Gates
 

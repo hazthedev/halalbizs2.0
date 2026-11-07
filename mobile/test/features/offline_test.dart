@@ -14,7 +14,7 @@ void main() {
     usePhone(tester);
     final db = AppDb.test(NativeDatabase.memory());
     await db.putResponse(
-      OfflineRepo.cacheKey('products', {'sort': 'popular'}),
+      OfflineRepo.cacheKey('products', {'sort': 'top'}),
       jsonEncode([fakeProduct(name: 'Madu Tualang Asli (cached)')]),
       jsonEncode({'current_page': 1, 'last_page': 1, 'total': 1}),
     );
