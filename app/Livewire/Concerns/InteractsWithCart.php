@@ -3,9 +3,10 @@
 namespace App\Livewire\Concerns;
 
 use App\Exceptions\CheckoutException;
+use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Wishlist;
 use App\Services\CartService;
+use App\Services\WishlistService;
 
 /**
  * Shared cart + wishlist actions for any Livewire component that renders
@@ -57,16 +58,17 @@ trait InteractsWithCart
             return;
         }
 
-        $existing = Wishlist::where('user_id', auth()->id())->where('product_id', $productId)->first();
+        $product = Product::find($productId);
 
-        if ($existing !== null) {
-            $existing->delete();
-            $this->dispatch('toast', message: __('Removed from wishlist'));
-        } else {
-            Wishlist::firstOrCreate(['user_id' => auth()->id(), 'product_id' => $productId]);
-            $this->dispatch('toast', message: __('Saved to wishlist'));
+        if ($product === null) {
+            $this->dispatch('toast', message: __('This product is not available right now.'), type: 'error');
+
+            return;
         }
 
+        $saved = app(WishlistService::class)->toggle(auth()->user(), $product);
+
+        $this->dispatch('toast', message: $saved ? __('Saved to wishlist') : __('Removed from wishlist'));
         $this->dispatch('wishlist-updated');
     }
 
@@ -77,15 +79,7 @@ trait InteractsWithCart
             return [];
         }
 
-        // Cast to int: every caller tests membership with in_array(..., true), and
-        // a plucked column can arrive as a numeric STRING, in which case the
-        // strict compare is always false and no heart ever fills. Proven on the
-        // preview — the row is written and the toast fires, but the button is
-        // byte-identical afterwards and stays that way through a full reload.
-        return Wishlist::where('user_id', auth()->id())
-            ->pluck('product_id')
-            ->map(static fn ($id): int => (int) $id)
-            ->all();
+        return app(WishlistService::class)->ids(auth()->user());
     }
 
     private function reconcileCart(string $message, bool $error = false, ?string $actionLabel = null, ?string $actionEvent = null): void

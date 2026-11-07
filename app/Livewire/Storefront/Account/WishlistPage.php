@@ -3,8 +3,7 @@
 namespace App\Livewire\Storefront\Account;
 
 use App\Livewire\Concerns\InteractsWithCart;
-use App\Models\Product;
-use App\Models\Wishlist;
+use App\Services\WishlistService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -22,18 +21,8 @@ class WishlistPage extends Component
 
     public function render()
     {
-        $productIds = Wishlist::where('user_id', auth()->id())
-            ->latest()
-            ->pluck('product_id');
-
-        $products = Product::with(['halalCertificate', 'variants', 'store', 'media'])
-            ->whereIn('id', $productIds)
-            ->get()
-            ->sortBy(fn (Product $product) => $productIds->search($product->id))
-            ->values();
-
         return view('livewire.storefront.account.wishlist-page', [
-            'products' => $products,
+            'products' => app(WishlistService::class)->products(auth()->user()),
         ])->title(__('Wishlist'));
     }
 }

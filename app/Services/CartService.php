@@ -94,6 +94,23 @@ class CartService
         $this->cartFor($user)->items()->where('product_variant_id', $variant->id)->delete();
     }
 
+    /** Tick or untick one line for checkout (buyer carts only — guest lines are always selected). */
+    public function setSelected(User $user, ProductVariant $variant, bool $selected): void
+    {
+        $this->cartFor($user)->items()
+            ->where('product_variant_id', $variant->id)
+            ->first()
+            ?->update(['selected' => $selected]);
+    }
+
+    /** Tick or untick every line, or only one store's lines when $storeId is given. */
+    public function setAllSelected(User $user, bool $selected, ?int $storeId = null): void
+    {
+        $this->cartFor($user)->items()
+            ->when($storeId !== null, fn ($query) => $query->whereHas('variant.product', fn ($product) => $product->where('store_id', $storeId)))
+            ->update(['selected' => $selected]);
+    }
+
     public function hasItem(?User $user, int $variantId): bool
     {
         if ($user === null) {
