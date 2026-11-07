@@ -355,4 +355,472 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get product => 'Product';
+
+  @override
+  String get sellerBackToBuying => 'Back to buying';
+
+  @override
+  String get sellerRequired => 'Your account is not an approved seller.';
+
+  @override
+  String get sellerTodaySales => 'Today\'s sales';
+
+  @override
+  String get sellerTodayOrders => 'Today\'s orders';
+
+  @override
+  String get sellerToShip => 'To ship';
+
+  @override
+  String get sellerLowStock => 'Low stock';
+
+  @override
+  String get sellerLiveProducts => 'Live products';
+
+  @override
+  String get sellerAvailable => 'Available';
+
+  @override
+  String get sellerHeld => 'Held';
+
+  @override
+  String get sellerPaidOut => 'Paid out';
+
+  @override
+  String get sellerOrdersByStatus => 'Orders by status';
+
+  @override
+  String get sellerRecentOrders => 'Recent orders';
+
+  @override
+  String get sellerNoOrders => 'No orders yet';
+
+  @override
+  String get sellerNoOrdersBody => 'Orders appear here as buyers check out.';
+
+  @override
+  String get sellerAllStatuses => 'All';
+
+  @override
+  String get sellerStatusPendingPayment => 'Pending payment';
+
+  @override
+  String get sellerStatusConfirmed => 'Confirmed';
+
+  @override
+  String get sellerStatusProcessing => 'Processing';
+
+  @override
+  String get sellerStatusShipped => 'Shipped';
+
+  @override
+  String get sellerStatusDelivered => 'Delivered';
+
+  @override
+  String get sellerStatusCompleted => 'Completed';
+
+  @override
+  String get sellerStatusCancelled => 'Cancelled';
+
+  @override
+  String get sellerStatusReturnRequested => 'Return requested';
+
+  @override
+  String get sellerStatusReturned => 'Returned';
+
+  @override
+  String get sellerStatusRefunded => 'Refunded';
+
+  @override
+  String sellerItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sellerOrder => 'Order';
+
+  @override
+  String get sellerBuyer => 'Buyer';
+
+  @override
+  String get sellerItems => 'Items';
+
+  @override
+  String get sellerSubtotal => 'Subtotal';
+
+  @override
+  String get sellerShippingFee => 'Shipping';
+
+  @override
+  String get sellerDiscount => 'Discount';
+
+  @override
+  String get sellerTax => 'Tax';
+
+  @override
+  String get sellerTotal => 'Total';
+
+  @override
+  String get sellerCommission => 'Commission';
+
+  @override
+  String get sellerPayment => 'Payment';
+
+  @override
+  String get sellerPaymentCod => 'Cash on delivery';
+
+  @override
+  String get sellerPaymentOnline => 'Online payment';
+
+  @override
+  String get sellerTracking => 'Tracking';
+
+  @override
+  String get sellerTrack => 'Track parcel';
+
+  @override
+  String get sellerHistory => 'History';
+
+  @override
+  String get sellerReturnRequest => 'Return request';
+
+  @override
+  String sellerRespondBy(String date) {
+    return 'Respond by $date';
+  }
+
+  @override
+  String get sellerPack => 'Pack';
+
+  @override
+  String get sellerShip => 'Ship';
+
+  @override
+  String get sellerMarkDelivered => 'Mark delivered';
+
+  @override
+  String get sellerAcceptReturn => 'Accept return';
+
+  @override
+  String get sellerDisputeReturn => 'Dispute';
+
+  @override
+  String get sellerConfirmReceived => 'Confirm item received';
+
+  @override
+  String get sellerShipTitle => 'Ship this order';
+
+  @override
+  String get sellerCourier => 'Courier';
+
+  @override
+  String get sellerCourierOther => 'Other';
+
+  @override
+  String get sellerCourierName => 'Courier name';
+
+  @override
+  String get sellerTrackingNo => 'Tracking number';
+
+  @override
+  String get sellerTrackingNoLength => 'Enter 6 to 64 characters.';
+
+  @override
+  String get sellerDisputeTitle => 'Dispute this return';
+
+  @override
+  String get sellerDisputeReason => 'Reason';
+
+  @override
+  String get sellerDisputeReasonMin => 'Write at least 10 characters.';
+
+  @override
+  String get sellerSubmit => 'Submit';
+
+  @override
+  String get sellerOrderUpdated => 'Order updated';
+
+  @override
+  String get sellerSearchProducts => 'Search products or SKU';
+
+  @override
+  String get sellerNoProducts => 'No products yet';
+
+  @override
+  String get sellerNoProductsBody => 'Add your first product to start selling.';
+
+  @override
+  String get sellerNewProduct => 'New product';
+
+  @override
+  String get sellerEditProduct => 'Edit product';
+
+  @override
+  String get sellerStatusDraft => 'Draft';
+
+  @override
+  String get sellerStatusPendingReview => 'Pending review';
+
+  @override
+  String get sellerStatusLive => 'Live';
+
+  @override
+  String get sellerStatusDelisted => 'Delisted';
+
+  @override
+  String get sellerStatusBanned => 'Banned';
+
+  @override
+  String get sellerStock => 'Stock';
+
+  @override
+  String sellerStockCount(int count) {
+    return 'Stock $count';
+  }
+
+  @override
+  String get sellerCod => 'COD';
+
+  @override
+  String get sellerNameEn => 'Name (English)';
+
+  @override
+  String get sellerNameMs => 'Name (Malay)';
+
+  @override
+  String get sellerNameVi => 'Name (Vietnamese)';
+
+  @override
+  String get sellerDescriptionEn => 'Description (English)';
+
+  @override
+  String get sellerDescriptionMs => 'Description (Malay)';
+
+  @override
+  String get sellerDescriptionVi => 'Description (Vietnamese)';
+
+  @override
+  String get sellerCategory => 'Category';
+
+  @override
+  String get sellerChooseCategory => 'Choose a category';
+
+  @override
+  String get sellerPriceRm => 'Price (RM)';
+
+  @override
+  String get sellerSalePriceRm => 'Sale price (RM)';
+
+  @override
+  String get sellerPriceFormat => 'Enter an amount like 12.50.';
+
+  @override
+  String get sellerSku => 'SKU';
+
+  @override
+  String get sellerWeightG => 'Weight (g)';
+
+  @override
+  String get sellerLengthMm => 'Length (mm)';
+
+  @override
+  String get sellerWidthMm => 'Width (mm)';
+
+  @override
+  String get sellerHeightMm => 'Height (mm)';
+
+  @override
+  String get sellerCodEnabled => 'Cash on delivery';
+
+  @override
+  String get sellerCodEnabledHelp =>
+      'Let buyers pay on delivery for this product.';
+
+  @override
+  String get sellerVariants => 'Variants';
+
+  @override
+  String get sellerImages => 'Images';
+
+  @override
+  String get sellerImagesHelp => 'Up to 9 images.';
+
+  @override
+  String get sellerImagesSaveFirst => 'Save the product first to add images.';
+
+  @override
+  String get sellerAddImage => 'Add image';
+
+  @override
+  String get sellerRemoveImage => 'Remove image';
+
+  @override
+  String get sellerRemoveImageBody =>
+      'This image will be removed from the listing.';
+
+  @override
+  String get sellerRemove => 'Remove';
+
+  @override
+  String get sellerGallery => 'Choose from gallery';
+
+  @override
+  String get sellerCamera => 'Take a photo';
+
+  @override
+  String get sellerSave => 'Save';
+
+  @override
+  String get sellerSaved => 'Saved';
+
+  @override
+  String get sellerPublish => 'Publish';
+
+  @override
+  String get sellerDelist => 'Delist';
+
+  @override
+  String get sellerRelist => 'Relist';
+
+  @override
+  String get sellerHalalBlocked => 'Publishing blocked';
+
+  @override
+  String get sellerNumberInvalid => 'Enter a whole number.';
+
+  @override
+  String get sellerRequestPayout => 'Request payout';
+
+  @override
+  String get sellerPayoutPending => 'Payout pending';
+
+  @override
+  String sellerPayoutMin(String amount) {
+    return 'Minimum payout $amount';
+  }
+
+  @override
+  String sellerPayoutMax(String amount) {
+    return 'Up to $amount available';
+  }
+
+  @override
+  String get sellerPayoutAmountRm => 'Amount (RM)';
+
+  @override
+  String get sellerPayoutRequested => 'Payout requested';
+
+  @override
+  String get sellerPayoutOpen => 'A payout request is already open.';
+
+  @override
+  String get sellerPayoutBelowMin => 'Below the minimum payout.';
+
+  @override
+  String get sellerPayoutAboveAvailable => 'More than the available balance.';
+
+  @override
+  String get sellerLedger => 'Ledger';
+
+  @override
+  String get sellerNoLedger => 'No activity yet';
+
+  @override
+  String get sellerNoLedgerBody =>
+      'Sales and fees show up here once orders complete.';
+
+  @override
+  String get sellerPayouts => 'Payouts';
+
+  @override
+  String get sellerNoPayouts => 'No payouts yet';
+
+  @override
+  String get sellerLoadMore => 'Load more';
+
+  @override
+  String get sellerStoreName => 'Store name';
+
+  @override
+  String get sellerStoreDescription => 'Description';
+
+  @override
+  String get sellerState => 'State';
+
+  @override
+  String get sellerHolidayMode => 'Holiday mode';
+
+  @override
+  String get sellerHolidayModeHelp => 'Hide your products while you are away.';
+
+  @override
+  String get sellerShipping => 'Shipping';
+
+  @override
+  String get sellerShippingMatrix =>
+      'Per-state rates are managed in the web seller centre.';
+
+  @override
+  String get sellerFlatFeeRm => 'Flat fee (RM)';
+
+  @override
+  String get sellerFreeAboveRm => 'Free shipping above (RM)';
+
+  @override
+  String get sellerBank => 'Bank details';
+
+  @override
+  String get sellerBankName => 'Bank';
+
+  @override
+  String get sellerAccountName => 'Account name';
+
+  @override
+  String get sellerAccountNumber => 'Account number';
+
+  @override
+  String sellerAccountNumberHelp(String masked) {
+    return 'Enter the full number to replace $masked.';
+  }
+
+  @override
+  String get sellerBankHelp =>
+      'Enter the full account number to change bank details.';
+
+  @override
+  String get sellerChangeLogo => 'Change logo';
+
+  @override
+  String get sellerChangeBanner => 'Change banner';
+
+  @override
+  String get sellerReviews => 'Reviews';
+
+  @override
+  String get sellerNoReviews => 'No reviews yet';
+
+  @override
+  String get sellerNoReviewsBody =>
+      'Buyer reviews of your products appear here.';
+
+  @override
+  String get sellerReplyHint => 'Write a reply to this buyer';
+
+  @override
+  String get sellerPostReply => 'Post reply';
+
+  @override
+  String get sellerYourReply => 'Your reply';
+
+  @override
+  String get sellerReplyMin => 'Write at least 5 characters.';
+
+  @override
+  String get sellerStoreSaved => 'Store saved';
 }
