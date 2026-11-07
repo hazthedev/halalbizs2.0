@@ -10,6 +10,7 @@ import 'core/widgets/souk_kit.dart';
 import 'l10n/l10n.dart';
 
 void main() {
+  assertApiBaseUrl();
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(retry: soukRetry, child: HalalBizsApp()));
 }
