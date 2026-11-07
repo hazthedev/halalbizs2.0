@@ -87,15 +87,32 @@ test('PUT me/password needs the current password and the password rules', functi
 
     $user->createToken('tablet');
 
-    apiAs($user)->putJson('/api/v1/me/password', [
+    $old = $user->createToken('pest-phone')->plainTextToken;
+    app('auth')->forgetGuards();
+
+    $fresh = test()->withToken($old)->putJson('/api/v1/me/password', [
         'current_password' => 'password',
         'password' => 'new-long-password',
         'password_confirmation' => 'new-long-password',
-    ])->assertOk();
+    ])->assertOk()->assertJsonStructure(['data' => ['token']])->json('data.token');
 
     expect(Hash::check('new-long-password', $user->fresh()->password))->toBeTrue()
-        // Every other device is logged out; the one that changed the password keeps its token.
+        // Every token dies, this one included (it may have been copied); the
+        // device that changed the password continues on the fresh one.
         ->and($user->tokens()->pluck('name')->all())->toBe(['pest-phone']);
+
+    app('auth')->forgetGuards();
+    test()->withToken($old)->getJson('/api/v1/me')->assertStatus(401);
+    app('auth')->forgetGuards();
+    test()->withToken($fresh)->getJson('/api/v1/me')->assertOk();
+});
+
+test('a bearer token older than the expiry window is rejected', function () {
+    $user = apiBuyer();
+    $token = $user->createToken('pest-phone');
+    $token->accessToken->forceFill(['created_at' => now()->subMinutes(config('sanctum.expiration') + 1)])->save();
+
+    test()->withToken($token->plainTextToken)->getJson('/api/v1/me')->assertStatus(401);
 });
 
 test('PUT me/password allows five guesses a minute per user', function () {
