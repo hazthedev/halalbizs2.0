@@ -96,7 +96,7 @@ class Home extends Component
     }
 
     /** @return Collection<int, Product> */
-    protected function products(string $source, int $limit): Collection
+    public function products(string $source, int $limit): Collection
     {
         // 'top' leads with actively boosted products (flagged Sponsored),
         // then fills the remaining slots organically by sold_count.
