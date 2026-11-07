@@ -2,10 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:halalbizs/core/api/api_client.dart';
 import 'package:halalbizs/core/auth/session.dart';
+import 'package:halalbizs/core/widgets/kit/empty_state.dart';
 
 import '../helpers.dart';
 
 void main() {
+  testWidgets('the login mark stays 44pt and sits above the title (never stretches behind it)', (tester) async {
+    usePhone(tester);
+    await Harness().pump(tester, location: '/login');
+
+    final paint = find.descendant(of: find.byType(KhatamMark), matching: find.byType(CustomPaint));
+    expect(tester.getSize(paint), const Size(44, 44));
+    expect(tester.getRect(paint).bottom, lessThanOrEqualTo(tester.getRect(find.text('Welcome back')).top));
+  });
+
   testWidgets('login form validates before calling the API', (tester) async {
     usePhone(tester);
     final h = Harness();

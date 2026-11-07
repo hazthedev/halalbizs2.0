@@ -14,13 +14,21 @@ class KhatamMark extends StatelessWidget {
   final Color color;
   final double? strokeWidth;
 
+  // Align + SizedBox: a tight parent (a stretched Column on the auth
+  // screens) can widen the Align but never the painted box, so the mark
+  // stays [size] square and never draws behind the content beside it.
   @override
   Widget build(BuildContext context) => Semantics(
         label: 'HalalBizs',
         image: true,
-        child: CustomPaint(
-          size: Size.square(size),
-          painter: _KhatamPainter(color, strokeWidth ?? size / 12.6),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          widthFactor: 1,
+          heightFactor: 1,
+          child: SizedBox.square(
+            dimension: size,
+            child: CustomPaint(painter: _KhatamPainter(color, strokeWidth ?? size / 12.6)),
+          ),
         ),
       );
 }
@@ -34,7 +42,7 @@ class _KhatamPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // favicon.svg: viewBox 24, square 13.2 at 5.4, dot r 2.1 — scaled to size.
-    final s = size.width / 24;
+    final s = math.min(size.width, size.height) / 24;
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
