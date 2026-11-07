@@ -51,6 +51,11 @@ test('addresses CRUD: the first address is the default, updates and deletes work
 
     expect(Address::find($first)->is_default)->toBeFalse();
 
+    // Unflagging the current default is ignored: the book always keeps one.
+    $http->patchJson("/api/v1/addresses/{$second}", apiAddressPayload(['state' => 'Selangor', 'is_default' => false]))
+        ->assertOk()
+        ->assertJsonPath('data.is_default', true);
+
     // The default cannot go while another address exists.
     $http->deleteJson("/api/v1/addresses/{$second}")
         ->assertStatus(409)

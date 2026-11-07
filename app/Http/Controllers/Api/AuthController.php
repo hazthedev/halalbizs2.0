@@ -110,34 +110,41 @@ class AuthController extends Controller
         ]);
 
         $key = 'api:2fa:'.$data['challenge'];
-        $pending = Cache::get($key);
-        $user = is_array($pending) ? User::find($pending['user_id']) : null;
 
-        if ($user === null || ! $user->hasTwoFactor() || $user->isSuspended()) {
-            Cache::forget($key);
+        // One request at a time per challenge: the attempt count and the
+        // single-use forget are a read-modify-write on the cache, so parallel
+        // posts would all see attempts=0 and a parallel success would mint
+        // several tokens.
+        return Cache::lock('lock:'.$key, 5)->block(3, function () use ($key, $data, $request, $verifier) {
+            $pending = Cache::get($key);
+            $user = is_array($pending) ? User::find($pending['user_id']) : null;
 
-            throw ValidationException::withMessages([
-                'challenge' => __('That login attempt has expired — log in again to start a new check.'),
-            ]);
-        }
-
-        if (($error = $verifier->check($user, $data['code'])) !== null) {
-            // Five misses end the challenge; the next try starts from the
-            // password again, behind the login limiter.
-            if (++$pending['attempts'] >= self::CHALLENGE_MAX_ATTEMPTS) {
+            if ($user === null || ! $user->hasTwoFactor() || $user->isSuspended()) {
                 Cache::forget($key);
-            } else {
-                Cache::put($key, $pending, now()->addMinutes(self::CHALLENGE_TTL_MINUTES));
+
+                throw ValidationException::withMessages([
+                    'challenge' => __('That login attempt has expired — log in again to start a new check.'),
+                ]);
             }
 
-            throw ValidationException::withMessages(['code' => $error]);
-        }
+            if (($error = $verifier->check($user, $data['code'])) !== null) {
+                // Five misses end the challenge; the next try starts from the
+                // password again, behind the login limiter.
+                if (++$pending['attempts'] >= self::CHALLENGE_MAX_ATTEMPTS) {
+                    Cache::forget($key);
+                } else {
+                    Cache::put($key, $pending, now()->addMinutes(self::CHALLENGE_TTL_MINUTES));
+                }
 
-        Cache::forget($key);
+                throw ValidationException::withMessages(['code' => $error]);
+            }
 
-        app(DeviceGuard::class)->record($user, $request);
+            Cache::forget($key);
 
-        return $this->issueToken($user, $data['device_name']);
+            app(DeviceGuard::class)->record($user, $request);
+
+            return $this->issueToken($user, $data['device_name']);
+        });
     }
 
     public function logout(Request $request): JsonResponse

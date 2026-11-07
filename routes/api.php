@@ -51,19 +51,21 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:api-register')->name('register');
         Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:api-login')->name('login');
         Route::post('/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:api')->name('two-factor');
-        Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:api')->name('forgot-password');
+        Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware(['throttle:api', 'throttle:api-forgot'])->name('forgot-password');
 
-        Route::middleware('auth:sanctum')->group(function () {
+        Route::middleware(['auth:sanctum', 'suspended.api', 'throttle:api'])->group(function () {
             Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-            Route::post('/verification/resend', [AuthController::class, 'resendVerification'])->name('verification.resend');
+            // throttle:5,60 keys on the user id: five verification mails per hour, as Profile's phone codes.
+            Route::post('/verification/resend', [AuthController::class, 'resendVerification'])->middleware('throttle:5,60')->name('verification.resend');
         });
     });
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'suspended.api', 'throttle:api'])->group(function () {
         Route::get('/me', [MeController::class, 'show'])->name('me.show');
         Route::patch('/me', [MeController::class, 'update'])->name('me.update');
-        Route::put('/me/password', [MeController::class, 'password'])->name('me.password');
-        Route::delete('/me', [MeController::class, 'destroy'])->name('me.destroy');
+        // Both take the current password: five guesses a minute per user (throttle keys on the user id).
+        Route::put('/me/password', [MeController::class, 'password'])->middleware('throttle:5,1,sensitive')->name('me.password');
+        Route::delete('/me', [MeController::class, 'destroy'])->middleware('throttle:5,1,sensitive')->name('me.destroy');
 
         Route::apiResource('addresses', AddressController::class)->except('show');
 
@@ -111,7 +113,7 @@ Route::prefix('v1')->name('api.')->group(function () {
         | seller group's `verified`. Ids are plain ints resolved through the
         | store's relations, so another store's row is a 404.
         */
-        Route::prefix('seller')->name('seller.')->middleware(['throttle:api', 'verified.api', 'seller.api'])->group(function () {
+        Route::prefix('seller')->name('seller.')->middleware(['verified.api', 'seller.api'])->group(function () {
             Route::get('/dashboard', SellerDashboardController::class)->name('dashboard');
 
             Route::get('/couriers', [SellerOrderController::class, 'couriers'])->name('couriers');

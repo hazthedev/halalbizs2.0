@@ -41,7 +41,8 @@ class AccountDeletionService
 
     /**
      * Anonymize, then soft delete: the row stays so order history keeps its
-     * user_id, but every personal identifier is gone. Call blocker() first.
+     * user_id, but every personal identifier is gone. Mobile API tokens and
+     * push tokens go with it, whichever surface asked. Call blocker() first.
      */
     public function delete(User $user): void
     {
@@ -50,6 +51,9 @@ class AccountDeletionService
             'email' => 'deleted-'.$user->id.'@anonymized.local',
             'phone' => null,
         ])->save();
+
+        $user->tokens()->delete();
+        $user->deviceTokens()->delete();
 
         $user->delete();
     }

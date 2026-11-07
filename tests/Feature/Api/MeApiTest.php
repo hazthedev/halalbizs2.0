@@ -85,13 +85,30 @@ test('PUT me/password needs the current password and the password rules', functi
         'password_confirmation' => 'new-long-password',
     ])->assertStatus(422)->assertJsonStructure(['error' => ['fields' => ['current_password']]]);
 
+    $user->createToken('tablet');
+
     apiAs($user)->putJson('/api/v1/me/password', [
         'current_password' => 'password',
         'password' => 'new-long-password',
         'password_confirmation' => 'new-long-password',
     ])->assertOk();
 
-    expect(Hash::check('new-long-password', $user->fresh()->password))->toBeTrue();
+    expect(Hash::check('new-long-password', $user->fresh()->password))->toBeTrue()
+        // Every other device is logged out; the one that changed the password keeps its token.
+        ->and($user->tokens()->pluck('name')->all())->toBe(['pest-phone']);
+});
+
+test('PUT me/password allows five guesses a minute per user', function () {
+    $user = apiBuyer();
+    $http = apiAs($user);
+
+    foreach (range(1, 5) as $attempt) {
+        $http->putJson('/api/v1/me/password', ['current_password' => 'wrong', 'password' => 'x', 'password_confirmation' => 'x'])->assertStatus(422);
+    }
+
+    $http->putJson('/api/v1/me/password', ['current_password' => 'wrong', 'password' => 'x', 'password_confirmation' => 'x'])
+        ->assertStatus(429)
+        ->assertJsonPath('error.code', 'throttled');
 });
 
 test('DELETE me anonymises, soft-deletes and revokes every token', function () {

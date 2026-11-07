@@ -8,6 +8,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -59,12 +60,14 @@ class FcmChannel
         $endpoint = "https://fcm.googleapis.com/v1/projects/{$credentials['project_id']}/messages:send";
 
         foreach ($tokens as $token) {
-            $response = Http::withToken($accessToken)->post($endpoint, [
+            $response = Http::withToken($accessToken)->timeout(10)->post($endpoint, [
                 'message' => $message + ['token' => $token],
             ]);
 
             if ($this->unregistered($response)) {
                 DeviceToken::where('token', $token)->delete();
+            } elseif (! $response->successful()) {
+                Log::warning('FCM push failed', ['status' => $response->status(), 'body' => $response->body()]);
             }
         }
     }
@@ -95,8 +98,10 @@ class FcmChannel
      */
     private function accessToken(array $credentials): string
     {
-        return Cache::remember('fcm:access_token', now()->addMinutes(50), function () use ($credentials) {
-            $response = Http::asForm()->post(self::TOKEN_URL, [
+        $cacheKey = 'fcm:access_token:'.sha1($credentials['client_email']);
+
+        return Cache::remember($cacheKey, now()->addMinutes(50), function () use ($credentials) {
+            $response = Http::asForm()->timeout(10)->post(self::TOKEN_URL, [
                 'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
                 'assertion' => $this->jwt($credentials),
             ]);
