@@ -23,7 +23,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(h.router.state.uri.path, '/home');
-    expect(api.calls, contains('GET products?sort=popular'));
+    expect(api.calls, contains('GET products?sort=top'));
     expect(find.byKey(const Key('home-categories')), findsOneWidget);
     expect(find.text('Makanan'), findsOneWidget);
     expect(find.byKey(const Key('product-card-madu-tualang')), findsOneWidget);

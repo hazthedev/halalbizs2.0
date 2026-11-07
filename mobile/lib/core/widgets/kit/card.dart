@@ -28,12 +28,9 @@ class SoukCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(SoukRadius.card);
     Widget body = Padding(padding: padding, child: child);
-    if (onTap != null) {
-      body = Material(
-        type: MaterialType.transparency,
-        child: InkWell(onTap: onTap, borderRadius: radius, child: body),
-      );
-    }
+    if (onTap != null) body = InkWell(onTap: onTap, borderRadius: radius, child: body);
+    // Always a Material: ListTile / InkWell children need one, the box is not.
+    body = Material(type: MaterialType.transparency, child: body);
     return Container(
       decoration: BoxDecoration(
         color: color ?? (cream ? SoukColors.cream : SoukColors.surface),
