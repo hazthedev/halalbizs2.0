@@ -38,6 +38,10 @@ class Detail extends Component
 
         $this->user->forceFill(['status' => 'suspended'])->save();
 
+        // Mobile sessions end with the account: the API also refuses a
+        // suspended user per request, but a dead token cannot be replayed at all.
+        $this->user->tokens()->delete();
+
         activity()
             ->causedBy(auth()->user())
             ->performedOn($this->user)

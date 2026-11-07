@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\MalaysianStates;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\Rule;
 
 class Address extends Model
 {
@@ -31,6 +33,26 @@ class Address extends Model
                     ->update(['is_default' => false]);
             }
         });
+    }
+
+    /**
+     * Validation for the address form, shared by the web account page and the
+     * mobile API so both accept exactly the same shape.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    public static function rules(): array
+    {
+        return [
+            'label' => ['nullable', 'string', 'max:50'],
+            'recipient_name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
+            'line1' => ['required', 'string', 'max:255'],
+            'line2' => ['nullable', 'string', 'max:255'],
+            'postcode' => ['required', 'digits:5'],
+            'city' => ['required', 'string', 'max:120'],
+            'state' => ['required', Rule::in(MalaysianStates::ALL)],
+        ];
     }
 
     public function user(): BelongsTo
