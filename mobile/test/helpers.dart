@@ -8,7 +8,16 @@ import 'package:halalbizs/core/auth/token_store.dart';
 import 'package:halalbizs/core/db/app_db.dart';
 import 'package:halalbizs/core/offline/offline.dart';
 import 'package:halalbizs/core/router.dart';
+import 'package:halalbizs/features/cart/cart_api.dart';
 import 'package:halalbizs/main.dart';
+
+export 'package:halalbizs/features/cart/cart_api.dart' show cartProvider;
+
+/// The cart controller, for tests that swap the fake's answer and refresh.
+final cartProviderForTest = cartProvider;
+
+/// `verified.api` 403 envelope.
+ApiException unverifiedError() => ApiException('email_unverified', 'Verify your email address to continue.', status: 403);
 
 typedef FakeHandler = dynamic Function(Map<String, dynamic>? query, Object? body);
 
