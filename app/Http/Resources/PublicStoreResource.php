@@ -6,7 +6,12 @@ use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** The public store page (buyer side); the owner's own store is StoreResource. @mixin Store */
+/**
+ * The public store page (buyer side, mobile plan §4). The owner's own store
+ * with its bank and shipping settings is StoreResource (seller slice).
+ *
+ * @mixin Store
+ */
 class PublicStoreResource extends JsonResource
 {
     /** @return array<string, mixed> */
