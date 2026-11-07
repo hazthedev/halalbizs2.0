@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Storefront\Account;
 
+use App\Models\Address;
 use App\Support\MalaysianStates;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -56,16 +56,7 @@ class Addresses extends Component
 
     public function save(): void
     {
-        $data = $this->validate([
-            'label' => ['nullable', 'string', 'max:50'],
-            'recipient_name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:30'],
-            'line1' => ['required', 'string', 'max:255'],
-            'line2' => ['nullable', 'string', 'max:255'],
-            'postcode' => ['required', 'digits:5'],
-            'city' => ['required', 'string', 'max:120'],
-            'state' => ['required', Rule::in(MalaysianStates::ALL)],
-        ], [
+        $data = $this->validate(Address::rules(), [
             'postcode.digits' => __('Postcode must be exactly 5 digits, like 50450.'),
         ]);
 

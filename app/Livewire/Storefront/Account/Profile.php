@@ -2,12 +2,12 @@
 
 namespace App\Livewire\Storefront\Account;
 
-use App\Enums\SubOrderStatus;
 use App\Enums\TwoFactorMethod;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\SubOrder;
+use App\Services\AccountDeletionService;
 use App\Services\DeviceGuard;
 use App\Services\OtpService;
 use App\Settings\GeneralSettings;
@@ -469,10 +469,8 @@ class Profile extends Component
     }
 
     /**
-     * PDPA "delete my account" (docs/09 §F) = anonymize + soft delete.
-     * Orders, sub-orders and their item snapshots are KEPT — they are
-     * legal/financial records (tax, payouts, disputes); the retention
-     * stance is documented on the privacy page.
+     * PDPA "delete my account" (docs/09 §F): the rules and the anonymize +
+     * soft delete live in AccountDeletionService, shared with the mobile API.
      */
     public function deleteAccount()
     {
@@ -485,38 +483,15 @@ class Profile extends Component
         ]);
 
         $user = auth()->user();
+        $deletion = app(AccountDeletionService::class);
 
-        // Sellers must settle their ledger first — a non-zero balance is
-        // either money we owe them or commission they owe us.
-        if ($user->store !== null && $user->store->availableBalanceSen() !== 0) {
-            $this->dispatch('toast', message: __('Your store still has a ledger balance — settle it (payout or commission) before deleting your account.'), type: 'error');
-
-            return;
-        }
-
-        $openOrders = $user->orders()
-            ->whereHas('subOrders', fn ($query) => $query->whereNotIn('status', [
-                SubOrderStatus::Completed,
-                SubOrderStatus::Cancelled,
-                SubOrderStatus::Refunded,
-            ]))
-            ->exists();
-
-        if ($openOrders) {
-            $this->dispatch('toast', message: __('You still have orders in progress — wait for them to complete (or cancel them) first.'), type: 'error');
+        if (($blocker = $deletion->blocker($user)) !== null) {
+            $this->dispatch('toast', message: $blocker, type: 'error');
 
             return;
         }
 
-        // Anonymize, then soft delete: the row stays so order history keeps
-        // its user_id, but every personal identifier is gone.
-        $user->forceFill([
-            'name' => 'Deleted user',
-            'email' => 'deleted-'.$user->id.'@anonymized.local',
-            'phone' => null,
-        ])->save();
-
-        $user->delete();
+        $deletion->delete($user);
 
         Auth::logout();
         session()->invalidate();
