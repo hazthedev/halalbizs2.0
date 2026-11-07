@@ -65,6 +65,12 @@ class AddressController extends Controller
             'postcode.digits' => __('Postcode must be exactly 5 digits, like 50450.'),
         ]);
 
+        // "Not default" is not a state you can set: unflagging the current
+        // default would leave the book with none. Flag another one instead.
+        if (($data['is_default'] ?? null) === false) {
+            unset($data['is_default']);
+        }
+
         $data['label'] = ($data['label'] ?? null) ?: null;
         $data['line2'] = ($data['line2'] ?? null) ?: null;
         $data['country'] = 'MY';

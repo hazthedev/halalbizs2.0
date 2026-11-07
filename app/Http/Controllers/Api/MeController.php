@@ -56,14 +56,18 @@ class MeController extends Controller
             'current_password.current_password' => __('That doesn\'t match your current password — try again.'),
         ]);
 
-        $request->user()->update(['password' => $data['password']]);
+        $user = $request->user();
+        $user->update(['password' => $data['password']]);
+
+        // Every other device logs in again with the new password; this one keeps its token.
+        $user->tokens()->whereKeyNot($user->currentAccessToken()->getKey())->delete();
 
         return ApiResponse::ok(null);
     }
 
     /**
      * Apple 5.1.1(v) / Google Play account deletion in-app: the web's PDPA
-     * flow, then every token of this account dies with it.
+     * flow (which also revokes every token and device token).
      */
     public function destroy(Request $request, AccountDeletionService $deletion): JsonResponse
     {
@@ -80,9 +84,6 @@ class MeController extends Controller
         }
 
         $deletion->delete($user);
-
-        $user->tokens()->delete();
-        $user->deviceTokens()->delete();
 
         return ApiResponse::ok(null);
     }

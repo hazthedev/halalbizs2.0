@@ -15,9 +15,10 @@ use Symfony\Component\HttpFoundation\Response;
  * not enabled.
  *
  * The currency is written to the session store on purpose even though the api
- * group has no StartSession: nothing persists it, so it is request-scoped
- * memory — exactly what CurrencyConverter::display() and CheckoutService read
- * via session('display_currency'), so they keep working unchanged.
+ * group has no StartSession: nothing persists it, so it is in-memory for this
+ * request under PHP-FPM — exactly what CurrencyConverter::display() and
+ * CheckoutService read via session('display_currency'), so they keep working
+ * unchanged. Not safe under Octane, where the store would outlive the request.
  */
 class ApiLocale
 {

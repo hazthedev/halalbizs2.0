@@ -112,10 +112,12 @@ class AppServiceProvider extends ServiceProvider
         // self-throttles in the Login component (5 attempts).
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by(ClientIp::bucket($request->ip())));
 
-        // Mobile login (mobile plan §4): the same four buckets Login::login()
+        // Mobile login (mobile plan §4): the same four numbers Login::login()
         // keeps by hand — per-email burst 5/min and 20/hour (the account under
         // attack, no address in the key), then the looser (email, IP) 5/min and
         // per-IP 20/hour that catch one password sprayed across many emails.
+        // Named limiters keep their own counters, so these mirror the web's
+        // numbers, not its buckets: web and app failures do not add up.
         // Turnstile has no browser to run in, so these limiters are the bot
         // defence here; they count every attempt, successes included.
         RateLimiter::for('api-login', function (Request $request) {
@@ -133,6 +135,12 @@ class AppServiceProvider extends ServiceProvider
         // Mirrors Register::register()'s 5/hour per connection: bounds account
         // creation and the verification-email spend that comes with it.
         RateLimiter::for('api-register', fn (Request $request) => Limit::perHour(5)->by('register:'.ClientIp::bucket($request->ip())));
+
+        // Reset-link requests per (email, connection). ForgotPassword::sendResetLink()
+        // allows 5/minute; an hour here because every hit is an email to the victim.
+        RateLimiter::for('api-forgot', fn (Request $request) => Limit::perHour(5)->by(
+            'forgot-password:'.Str::lower((string) $request->input('email')).'|'.ClientIp::bucket($request->ip()),
+        ));
 
         // Register and ResetPassword both validate with Password::defaults(), but
         // nothing ever CONFIGURED the defaults — so the whole marketplace's rule
