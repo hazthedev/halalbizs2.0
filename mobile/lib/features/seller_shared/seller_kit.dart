@@ -103,7 +103,8 @@ class KpiTile extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
           Text(label.toUpperCase(), style: SoukText.eyebrow, maxLines: 1, overflow: TextOverflow.ellipsis),
           const SizedBox(height: SoukSpace.s1),
-          value,
+          // A large figure ("RM 2,315.91") must stay whole in a half-width tile.
+          FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: value),
         ]),
       );
 }
