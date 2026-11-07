@@ -131,7 +131,11 @@ RouteBase sellerShellRoute() => StatefulShellRoute.indexedStack(
           GoRoute(path: '/seller', builder: (_, _) => const SellerDashboardScreen(), routes: sellerDashboardSubRoutes),
         ]),
         StatefulShellBranch(routes: [
-          GoRoute(path: '/seller/orders', builder: (_, _) => const SellerOrdersScreen(), routes: sellerOrdersSubRoutes),
+          GoRoute(
+            path: '/seller/orders',
+            builder: (_, s) => SellerOrdersScreen(initialStatus: s.uri.queryParameters['status']),
+            routes: sellerOrdersSubRoutes,
+          ),
         ]),
         StatefulShellBranch(routes: [
           GoRoute(path: '/seller/products', builder: (_, _) => const SellerProductsScreen(), routes: sellerProductsSubRoutes),

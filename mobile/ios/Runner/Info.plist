@@ -82,5 +82,9 @@
 				</dict>
 			</dict>
 		</dict>
-	</dict>
+		<key>NSPhotoLibraryUsageDescription</key>
+	<string>HalalBizs uses your photo library to add product, logo and banner images to your store.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>HalalBizs uses the camera to photograph products for your store.</string>
+</dict>
 </plist>

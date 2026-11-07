@@ -895,6 +895,936 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review'**
   String get orderReview;
+
+  /// No description provided for @sellerBackToBuying.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to buying'**
+  String get sellerBackToBuying;
+
+  /// No description provided for @sellerRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is not an approved seller.'**
+  String get sellerRequired;
+
+  /// No description provided for @sellerTodaySales.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s sales'**
+  String get sellerTodaySales;
+
+  /// No description provided for @sellerTodayOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s orders'**
+  String get sellerTodayOrders;
+
+  /// No description provided for @sellerToShip.
+  ///
+  /// In en, this message translates to:
+  /// **'To ship'**
+  String get sellerToShip;
+
+  /// No description provided for @sellerLowStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock'**
+  String get sellerLowStock;
+
+  /// No description provided for @sellerAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get sellerAvailable;
+
+  /// No description provided for @sellerHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Held'**
+  String get sellerHeld;
+
+  /// No description provided for @sellerPaidOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid out'**
+  String get sellerPaidOut;
+
+  /// No description provided for @sellerOrdersByStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders by status'**
+  String get sellerOrdersByStatus;
+
+  /// No description provided for @sellerRecentOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent orders'**
+  String get sellerRecentOrders;
+
+  /// No description provided for @sellerNoOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders yet'**
+  String get sellerNoOrders;
+
+  /// No description provided for @sellerNoOrdersBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders appear here as buyers check out.'**
+  String get sellerNoOrdersBody;
+
+  /// No description provided for @sellerAllStatuses.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get sellerAllStatuses;
+
+  /// No description provided for @sellerStatusPendingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending payment'**
+  String get sellerStatusPendingPayment;
+
+  /// No description provided for @sellerStatusConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get sellerStatusConfirmed;
+
+  /// No description provided for @sellerStatusProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get sellerStatusProcessing;
+
+  /// No description provided for @sellerStatusShipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipped'**
+  String get sellerStatusShipped;
+
+  /// No description provided for @sellerStatusDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get sellerStatusDelivered;
+
+  /// No description provided for @sellerStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get sellerStatusCompleted;
+
+  /// No description provided for @sellerStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get sellerStatusCancelled;
+
+  /// No description provided for @sellerStatusReturnRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Return requested'**
+  String get sellerStatusReturnRequested;
+
+  /// No description provided for @sellerStatusReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned'**
+  String get sellerStatusReturned;
+
+  /// No description provided for @sellerStatusRefunded.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded'**
+  String get sellerStatusRefunded;
+
+  /// No description provided for @sellerItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String sellerItemsCount(int count);
+
+  /// No description provided for @sellerOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get sellerOrder;
+
+  /// No description provided for @sellerBuyer.
+  ///
+  /// In en, this message translates to:
+  /// **'Buyer'**
+  String get sellerBuyer;
+
+  /// No description provided for @sellerItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get sellerItems;
+
+  /// No description provided for @sellerSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get sellerSubtotal;
+
+  /// No description provided for @sellerShippingFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping'**
+  String get sellerShippingFee;
+
+  /// No description provided for @sellerDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get sellerDiscount;
+
+  /// No description provided for @sellerTax.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax'**
+  String get sellerTax;
+
+  /// No description provided for @sellerTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get sellerTotal;
+
+  /// No description provided for @sellerCommission.
+  ///
+  /// In en, this message translates to:
+  /// **'Commission'**
+  String get sellerCommission;
+
+  /// No description provided for @sellerPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get sellerPayment;
+
+  /// No description provided for @sellerPaymentCod.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash on delivery'**
+  String get sellerPaymentCod;
+
+  /// No description provided for @sellerPaymentOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online payment'**
+  String get sellerPaymentOnline;
+
+  /// No description provided for @sellerTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking'**
+  String get sellerTracking;
+
+  /// No description provided for @sellerTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Track parcel'**
+  String get sellerTrack;
+
+  /// No description provided for @sellerHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get sellerHistory;
+
+  /// No description provided for @sellerReturnRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Return request'**
+  String get sellerReturnRequest;
+
+  /// No description provided for @sellerRespondBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Respond by {date}'**
+  String sellerRespondBy(String date);
+
+  /// No description provided for @sellerPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Pack'**
+  String get sellerPack;
+
+  /// No description provided for @sellerShip.
+  ///
+  /// In en, this message translates to:
+  /// **'Ship'**
+  String get sellerShip;
+
+  /// No description provided for @sellerMarkDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark delivered'**
+  String get sellerMarkDelivered;
+
+  /// No description provided for @sellerAcceptReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept return'**
+  String get sellerAcceptReturn;
+
+  /// No description provided for @sellerDisputeReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispute'**
+  String get sellerDisputeReturn;
+
+  /// No description provided for @sellerConfirmReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm item received'**
+  String get sellerConfirmReceived;
+
+  /// No description provided for @sellerShipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ship this order'**
+  String get sellerShipTitle;
+
+  /// No description provided for @sellerCourier.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier'**
+  String get sellerCourier;
+
+  /// No description provided for @sellerCourierOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get sellerCourierOther;
+
+  /// No description provided for @sellerCourierName.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier name'**
+  String get sellerCourierName;
+
+  /// No description provided for @sellerTrackingNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking number'**
+  String get sellerTrackingNo;
+
+  /// No description provided for @sellerTrackingNoLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 6 to 64 characters.'**
+  String get sellerTrackingNoLength;
+
+  /// No description provided for @sellerDisputeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispute this return'**
+  String get sellerDisputeTitle;
+
+  /// No description provided for @sellerDisputeReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get sellerDisputeReason;
+
+  /// No description provided for @sellerDisputeReasonMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least 10 characters.'**
+  String get sellerDisputeReasonMin;
+
+  /// No description provided for @sellerSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get sellerSubmit;
+
+  /// No description provided for @sellerOrderUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Order updated'**
+  String get sellerOrderUpdated;
+
+  /// No description provided for @sellerSearchProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search products or SKU'**
+  String get sellerSearchProducts;
+
+  /// No description provided for @sellerNoProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'No products yet'**
+  String get sellerNoProducts;
+
+  /// No description provided for @sellerNoProductsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first product to start selling.'**
+  String get sellerNoProductsBody;
+
+  /// No description provided for @sellerNewProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'New product'**
+  String get sellerNewProduct;
+
+  /// No description provided for @sellerEditProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit product'**
+  String get sellerEditProduct;
+
+  /// No description provided for @sellerStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get sellerStatusDraft;
+
+  /// No description provided for @sellerStatusPendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending review'**
+  String get sellerStatusPendingReview;
+
+  /// No description provided for @sellerStatusLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get sellerStatusLive;
+
+  /// No description provided for @sellerStatusDelisted.
+  ///
+  /// In en, this message translates to:
+  /// **'Delisted'**
+  String get sellerStatusDelisted;
+
+  /// No description provided for @sellerStatusBanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Banned'**
+  String get sellerStatusBanned;
+
+  /// No description provided for @sellerStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock'**
+  String get sellerStock;
+
+  /// No description provided for @sellerStockCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock {count}'**
+  String sellerStockCount(int count);
+
+  /// No description provided for @sellerCod.
+  ///
+  /// In en, this message translates to:
+  /// **'COD'**
+  String get sellerCod;
+
+  /// No description provided for @sellerNameEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (English)'**
+  String get sellerNameEn;
+
+  /// No description provided for @sellerNameMs.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (Malay)'**
+  String get sellerNameMs;
+
+  /// No description provided for @sellerNameVi.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (Vietnamese)'**
+  String get sellerNameVi;
+
+  /// No description provided for @sellerDescriptionEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (English)'**
+  String get sellerDescriptionEn;
+
+  /// No description provided for @sellerDescriptionMs.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (Malay)'**
+  String get sellerDescriptionMs;
+
+  /// No description provided for @sellerDescriptionVi.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (Vietnamese)'**
+  String get sellerDescriptionVi;
+
+  /// No description provided for @sellerCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get sellerCategory;
+
+  /// No description provided for @sellerChooseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a category'**
+  String get sellerChooseCategory;
+
+  /// No description provided for @sellerPriceRm.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (RM)'**
+  String get sellerPriceRm;
+
+  /// No description provided for @sellerSalePriceRm.
+  ///
+  /// In en, this message translates to:
+  /// **'Sale price (RM)'**
+  String get sellerSalePriceRm;
+
+  /// No description provided for @sellerPriceFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount like 12.50.'**
+  String get sellerPriceFormat;
+
+  /// No description provided for @sellerSku.
+  ///
+  /// In en, this message translates to:
+  /// **'SKU'**
+  String get sellerSku;
+
+  /// No description provided for @sellerWeightG.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (g)'**
+  String get sellerWeightG;
+
+  /// No description provided for @sellerLengthMm.
+  ///
+  /// In en, this message translates to:
+  /// **'Length (mm)'**
+  String get sellerLengthMm;
+
+  /// No description provided for @sellerWidthMm.
+  ///
+  /// In en, this message translates to:
+  /// **'Width (mm)'**
+  String get sellerWidthMm;
+
+  /// No description provided for @sellerHeightMm.
+  ///
+  /// In en, this message translates to:
+  /// **'Height (mm)'**
+  String get sellerHeightMm;
+
+  /// No description provided for @sellerCodEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash on delivery'**
+  String get sellerCodEnabled;
+
+  /// No description provided for @sellerCodEnabledHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Let buyers pay on delivery for this product.'**
+  String get sellerCodEnabledHelp;
+
+  /// No description provided for @sellerVariants.
+  ///
+  /// In en, this message translates to:
+  /// **'Variants'**
+  String get sellerVariants;
+
+  /// No description provided for @sellerImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get sellerImages;
+
+  /// No description provided for @sellerImagesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 9 images.'**
+  String get sellerImagesHelp;
+
+  /// No description provided for @sellerImagesSaveFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the product first to add images.'**
+  String get sellerImagesSaveFirst;
+
+  /// No description provided for @sellerAddImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add image'**
+  String get sellerAddImage;
+
+  /// No description provided for @sellerRemoveImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove image'**
+  String get sellerRemoveImage;
+
+  /// No description provided for @sellerRemoveImageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This image will be removed from the listing.'**
+  String get sellerRemoveImageBody;
+
+  /// No description provided for @sellerRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get sellerRemove;
+
+  /// No description provided for @sellerGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get sellerGallery;
+
+  /// No description provided for @sellerCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get sellerCamera;
+
+  /// No description provided for @sellerSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get sellerSave;
+
+  /// No description provided for @sellerSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get sellerSaved;
+
+  /// No description provided for @sellerPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get sellerPublish;
+
+  /// No description provided for @sellerDelist.
+  ///
+  /// In en, this message translates to:
+  /// **'Delist'**
+  String get sellerDelist;
+
+  /// No description provided for @sellerRelist.
+  ///
+  /// In en, this message translates to:
+  /// **'Relist'**
+  String get sellerRelist;
+
+  /// No description provided for @sellerHalalBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Publishing blocked'**
+  String get sellerHalalBlocked;
+
+  /// No description provided for @sellerNumberInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number.'**
+  String get sellerNumberInvalid;
+
+  /// No description provided for @sellerRequestPayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Request payout'**
+  String get sellerRequestPayout;
+
+  /// No description provided for @sellerPayoutPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout pending'**
+  String get sellerPayoutPending;
+
+  /// No description provided for @sellerPayoutMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum payout {amount}'**
+  String sellerPayoutMin(String amount);
+
+  /// No description provided for @sellerPayoutMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {amount} available'**
+  String sellerPayoutMax(String amount);
+
+  /// No description provided for @sellerPayoutAmountRm.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (RM)'**
+  String get sellerPayoutAmountRm;
+
+  /// No description provided for @sellerPayoutRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout requested'**
+  String get sellerPayoutRequested;
+
+  /// No description provided for @sellerPayoutBelowMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Below the minimum payout.'**
+  String get sellerPayoutBelowMin;
+
+  /// No description provided for @sellerPayoutAboveAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'More than the available balance.'**
+  String get sellerPayoutAboveAvailable;
+
+  /// No description provided for @sellerLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger'**
+  String get sellerLedger;
+
+  /// No description provided for @sellerNoLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity yet'**
+  String get sellerNoLedger;
+
+  /// No description provided for @sellerNoLedgerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales and fees show up here once orders complete.'**
+  String get sellerNoLedgerBody;
+
+  /// No description provided for @sellerPayouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Payouts'**
+  String get sellerPayouts;
+
+  /// No description provided for @sellerNoPayouts.
+  ///
+  /// In en, this message translates to:
+  /// **'No payouts yet'**
+  String get sellerNoPayouts;
+
+  /// No description provided for @sellerLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get sellerLoadMore;
+
+  /// No description provided for @sellerStoreDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get sellerStoreDescription;
+
+  /// No description provided for @sellerState.
+  ///
+  /// In en, this message translates to:
+  /// **'State'**
+  String get sellerState;
+
+  /// No description provided for @sellerHolidayMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday mode'**
+  String get sellerHolidayMode;
+
+  /// No description provided for @sellerHolidayModeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide your products while you are away.'**
+  String get sellerHolidayModeHelp;
+
+  /// No description provided for @sellerShipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping'**
+  String get sellerShipping;
+
+  /// No description provided for @sellerShippingMatrix.
+  ///
+  /// In en, this message translates to:
+  /// **'Per-state rates are managed in the web seller centre.'**
+  String get sellerShippingMatrix;
+
+  /// No description provided for @sellerFlatFeeRm.
+  ///
+  /// In en, this message translates to:
+  /// **'Flat fee (RM)'**
+  String get sellerFlatFeeRm;
+
+  /// No description provided for @sellerFreeAboveRm.
+  ///
+  /// In en, this message translates to:
+  /// **'Free shipping above (RM)'**
+  String get sellerFreeAboveRm;
+
+  /// No description provided for @sellerBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank details'**
+  String get sellerBank;
+
+  /// No description provided for @sellerBankName.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get sellerBankName;
+
+  /// No description provided for @sellerAccountName.
+  ///
+  /// In en, this message translates to:
+  /// **'Account name'**
+  String get sellerAccountName;
+
+  /// No description provided for @sellerAccountNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Account number'**
+  String get sellerAccountNumber;
+
+  /// No description provided for @sellerAccountNumberHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the full number to replace {masked}.'**
+  String sellerAccountNumberHelp(String masked);
+
+  /// No description provided for @sellerBankHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the full account number to change bank details.'**
+  String get sellerBankHelp;
+
+  /// No description provided for @sellerChangeLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Change logo'**
+  String get sellerChangeLogo;
+
+  /// No description provided for @sellerChangeBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Change banner'**
+  String get sellerChangeBanner;
+
+  /// No description provided for @sellerReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get sellerReviews;
+
+  /// No description provided for @sellerNoReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet'**
+  String get sellerNoReviews;
+
+  /// No description provided for @sellerNoReviewsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Buyer reviews of your products appear here.'**
+  String get sellerNoReviewsBody;
+
+  /// No description provided for @sellerReplyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a reply to this buyer'**
+  String get sellerReplyHint;
+
+  /// No description provided for @sellerPostReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Post reply'**
+  String get sellerPostReply;
+
+  /// No description provided for @sellerYourReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply'**
+  String get sellerYourReply;
+
+  /// No description provided for @sellerReplyMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least 5 characters.'**
+  String get sellerReplyMin;
+
+  /// No description provided for @sellerStoreSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Store saved'**
+  String get sellerStoreSaved;
+
+  /// No description provided for @sellerStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get sellerStatusPending;
+
+  /// No description provided for @sellerStatusPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get sellerStatusPaid;
+
+  /// No description provided for @sellerStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get sellerStatusFailed;
+
+  /// No description provided for @sellerStatusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get sellerStatusExpired;
+
+  /// No description provided for @sellerDefaultVariant.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get sellerDefaultVariant;
+
+  /// No description provided for @sellerImageTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an image under {kb} KB.'**
+  String sellerImageTooLarge(int kb);
+
+  /// No description provided for @sellerAcceptReturnConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept this return? The buyer will be asked to send the item back.'**
+  String get sellerAcceptReturnConfirm;
+
+  /// No description provided for @sellerDisputeConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispute this return? HalalBizs will review the case with your reason.'**
+  String get sellerDisputeConfirm;
+
+  /// No description provided for @sellerDelistConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delist this product? Buyers will no longer see it until you relist it.'**
+  String get sellerDelistConfirm;
+
+  /// No description provided for @sellerPayoutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a payout of {amount} to your bank account?'**
+  String sellerPayoutConfirm(String amount);
 }
 
 class _AppLocalizationsDelegate
