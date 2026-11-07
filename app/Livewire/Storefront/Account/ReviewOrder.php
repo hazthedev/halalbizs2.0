@@ -2,13 +2,12 @@
 
 namespace App\Livewire\Storefront\Account;
 
-use App\Enums\SubOrderStatus;
 use App\Models\OrderItem;
-use App\Models\Review;
 use App\Models\SubOrder;
+use App\Services\ReviewService;
 use App\Services\Turnstile;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -60,29 +59,11 @@ class ReviewOrder extends Component
         $this->open = ! $this->open;
     }
 
-    public function submit(int $orderItemId): void
+    public function submit(int $orderItemId, ReviewService $reviews): void
     {
         abort_unless($this->subOrder->order->user_id === auth()->id(), 403);
 
-        $item = $this->subOrder->items()->with('review')->findOrFail($orderItemId);
-
-        if ($this->subOrder->status !== SubOrderStatus::Completed) {
-            $this->dispatch('toast', message: __('You can rate this order once it is completed.'), type: 'error');
-
-            return;
-        }
-
-        if ($item->review !== null) {
-            $this->dispatch('toast', message: __('You already reviewed this item.'), type: 'error');
-
-            return;
-        }
-
-        if ($item->product_id === null) {
-            $this->dispatch('toast', message: __('This product can no longer be reviewed.'), type: 'error');
-
-            return;
-        }
+        $this->subOrder->items()->findOrFail($orderItemId);
 
         $key = 'review-submit:'.auth()->id();
 
@@ -117,32 +98,25 @@ class ReviewOrder extends Component
             return;
         }
 
-        $comment = trim($this->comments[$orderItemId] ?? '');
-
         // The seller service rating attaches to the FIRST review of this
         // sub-order only — later item reviews must not duplicate it.
         $sellerRating = $this->sellerRatingForThisSubmit();
-        $sellerComment = trim($this->sellerComment);
 
-        $review = Review::create([
-            'order_item_id' => $item->id,
-            'product_id' => $item->product_id,
-            'store_id' => $this->subOrder->store_id,
-            'user_id' => auth()->id(),
-            'rating' => (int) $this->ratings[$orderItemId],
-            'comment' => $comment !== '' ? $comment : null,
-            'seller_rating' => $sellerRating,
-            'seller_comment' => $sellerRating !== null && $sellerComment !== '' ? $sellerComment : null,
-        ]);
+        try {
+            $reviews->submit($this->subOrder, auth()->user(), [[
+                'order_item_id' => $orderItemId,
+                'rating' => (int) $this->ratings[$orderItemId],
+                'body' => $this->comments[$orderItemId] ?? null,
+                'photos' => $this->photos[$orderItemId] ?? [],
+            ]], $sellerRating, $this->sellerComment);
+        } catch (InvalidArgumentException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+
+            return;
+        }
 
         if ($sellerRating !== null) {
             $this->reset('sellerRating', 'sellerComment');
-        }
-
-        foreach ($this->photos[$orderItemId] ?? [] as $photo) {
-            $review->addMedia($photo->getRealPath())
-                ->usingFileName(self::safeUploadName($photo))
-                ->toMediaCollection('photos');
         }
 
         RateLimiter::hit($key, 60);
@@ -176,24 +150,6 @@ class ReviewOrder extends Component
     /** One service rating per sub-order: does any of its reviews carry one? */
     private function sellerAlreadyRated(): bool
     {
-        return Review::query()
-            ->whereIn('order_item_id', $this->subOrder->items()->select('id'))
-            ->whereNotNull('seller_rating')
-            ->exists();
-    }
-
-    /**
-     * Stored filename with a SERVER-DETECTED extension (AL-M2, security
-     * audit). Media-library only blocks PHP-family extensions, not e.g.
-     * .html/.htm, and MEDIA_DISK defaults to the public disk — trusting the
-     * client's filename would let an image-content polyglot uploaded as
-     * "x.html" be served back as text/html from the app's own origin.
-     */
-    private static function safeUploadName(TemporaryUploadedFile $photo): string
-    {
-        $extension = $photo->guessExtension() ?: $photo->getClientOriginalExtension() ?: 'bin';
-        $base = Str::slug(pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME));
-
-        return ($base !== '' ? $base : 'photo').'.'.$extension;
+        return app(ReviewService::class)->sellerRated($this->subOrder);
     }
 }
