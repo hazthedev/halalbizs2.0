@@ -125,7 +125,8 @@ class SoukButton extends StatelessWidget {
       );
     }
     if (expand) button = SizedBox(width: double.infinity, child: button);
-    return Semantics(button: true, enabled: enabled, label: label, child: button);
+    // No label here: the Text child supplies it (a second one is read twice).
+    return Semantics(button: true, enabled: enabled, child: button);
   }
 }
 

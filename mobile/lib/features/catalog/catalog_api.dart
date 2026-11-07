@@ -91,9 +91,10 @@ class CatalogApi {
 final catalogApiProvider =
     Provider<CatalogApi>((ref) => CatalogApi(ref.watch(offlineRepoProvider), ref.watch(apiClientProvider)));
 
-/// Home: featured products (`sort=popular`) — `GET home` replaces this in slice 2.
+/// Home: featured products (`sort=top`; the API accepts `latest|top|price_asc|price_desc`)
+/// — `GET home` replaces this in slice 2.
 final featuredProductsProvider =
-    FutureProvider<ProductPage>((ref) => ref.watch(catalogApiProvider).products(sort: 'popular'));
+    FutureProvider<ProductPage>((ref) => ref.watch(catalogApiProvider).products(sort: 'top'));
 
 final categoriesProvider =
     FutureProvider<CachedResult<List<Category>>>((ref) => ref.watch(catalogApiProvider).categories());
