@@ -32,14 +32,17 @@ Build defines:
 
 - `API_BASE_URL` — API root, default `http://halalbizs2.0-mobile.test/api/v1`
   (Herd, debug builds only). Production: `https://halalbizs.com/api/v1`.
-  Release builds refuse to start without it (`assertApiBaseUrl`), so the web
-  smoke must pass it too: `flutter build web --release --dart-define=API_BASE_URL=…`.
+  Release builds refuse to start without it and refuse a non-`https://` value
+  (`assertApiBaseUrl`), so a web proof against the local `http://` Herd host
+  must be a profile build: `flutter build web --profile --no-tree-shake-icons
+  --dart-define=API_BASE_URL=http://halalbizs2.0-mobile.test/api/v1`.
 - `PUSH_ENABLED=true` — registers the device for push (slice 5; no-op until
   the Firebase config files exist).
 
 Release builds: `flutter build apk --release --dart-define=API_BASE_URL=…`,
 `flutter build ipa --release --dart-define=API_BASE_URL=…` (needs Xcode),
-`flutter build web --release` (used for the Playwright smoke). Always add
+`flutter build web --release` (production host only; local Playwright proofs
+use `--profile`, see above). Always add
 `--no-tree-shake-icons`: font_awesome_flutter 11's `FaIconData` defeats the
 const finder, so tree-shaking drops glyphs the app uses.
 
