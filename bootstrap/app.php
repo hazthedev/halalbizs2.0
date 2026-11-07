@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureSeller;
 use App\Http\Middleware\HandleUrlRedirects;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SellerApi;
 use App\Http\Middleware\SetDisplayCurrency;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -136,6 +137,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller' => EnsureSeller::class,
             'admin' => EnsureAdmin::class,
             'verified.api' => ApiVerified::class,
+            'seller.api' => SellerApi::class,
         ]);
 
         // The `auth` middleware bounces guests before a section guard runs, so

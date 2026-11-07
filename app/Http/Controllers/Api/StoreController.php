@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Api\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
-use App\Http\Resources\StoreResource;
+use App\Http\Resources\PublicStoreResource;
 use App\Models\ProductVariant;
 use App\Models\Store;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +19,7 @@ class StoreController extends Controller
     {
         abort_unless($store->isApproved(), 404);
 
-        return ApiResponse::ok(new StoreResource($store));
+        return ApiResponse::ok(new PublicStoreResource($store));
     }
 
     /** Same sort keys as StorePage::SORTS. */

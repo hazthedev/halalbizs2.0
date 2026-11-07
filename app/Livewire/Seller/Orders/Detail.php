@@ -3,15 +3,16 @@
 namespace App\Livewire\Seller\Orders;
 
 use App\Enums\ActorType;
-use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
 use App\Livewire\Concerns\CurrentStore;
 use App\Livewire\Seller\Orders\Concerns\ManagesShipment;
 use App\Models\CancellationReason;
 use App\Models\SubOrder;
 use App\Services\OrderService;
+use App\Services\SellerReturnService;
 use App\Services\SubOrderStatusService;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -106,13 +107,11 @@ class Detail extends Component
      */
     public function acceptReturn(): void
     {
-        $request = $this->subOrder->returnRequest;
-
-        if ($this->subOrder->status !== SubOrderStatus::ReturnRequested || $request?->status !== ReturnStatus::Requested) {
+        try {
+            app(SellerReturnService::class)->accept($this->subOrder);
+        } catch (InvalidArgumentException) {
             return;
         }
-
-        $request->update(['status' => ReturnStatus::Accepted]);
 
         $this->refreshSubOrder();
 
@@ -122,19 +121,11 @@ class Detail extends Component
     /** Step 2: item came back → returned. The refund itself is an admin task. */
     public function confirmItemReceived(): void
     {
-        $request = $this->subOrder->returnRequest;
-
-        if ($this->subOrder->status !== SubOrderStatus::ReturnRequested || $request?->status !== ReturnStatus::Accepted) {
+        try {
+            app(SellerReturnService::class)->received($this->subOrder, auth()->id());
+        } catch (InvalidArgumentException) {
             return;
         }
-
-        app(SubOrderStatusService::class)->transition(
-            $this->subOrder,
-            SubOrderStatus::Returned,
-            ActorType::Seller,
-            auth()->id(),
-            __('Returned item received by the seller'),
-        );
 
         $this->refreshSubOrder();
 
@@ -150,17 +141,11 @@ class Detail extends Component
             ['disputeReason' => __('dispute reason')],
         );
 
-        $request = $this->subOrder->returnRequest;
-
-        if ($this->subOrder->status !== SubOrderStatus::ReturnRequested || $request?->status !== ReturnStatus::Requested) {
+        try {
+            app(SellerReturnService::class)->dispute($this->subOrder, $this->disputeReason);
+        } catch (InvalidArgumentException) {
             return;
         }
-
-        $request->update([
-            'status' => ReturnStatus::Disputed,
-            'seller_response' => trim($this->disputeReason),
-            'escalated_at' => now(),
-        ]);
 
         $this->refreshSubOrder();
 

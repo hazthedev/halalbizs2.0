@@ -13,6 +13,12 @@ use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\Seller\DashboardController as SellerDashboardController;
+use App\Http\Controllers\Api\Seller\EarningsController as SellerEarningsController;
+use App\Http\Controllers\Api\Seller\OrderController as SellerOrderController;
+use App\Http\Controllers\Api\Seller\ProductController as SellerProductController;
+use App\Http\Controllers\Api\Seller\ReviewController as SellerReviewController;
+use App\Http\Controllers\Api\Seller\StoreController as SellerStoreController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\WishlistController;
 use Illuminate\Support\Facades\Route;
@@ -36,7 +42,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
 | Mobile app API, slice 1 (mobile plan §4): Sanctum bearer tokens, the
 | {ok,data,meta}/{ok,error} envelope from App\Http\Api\ApiResponse, errors
 | shaped in bootstrap/app.php. Slice 2 adds cart, checkout, the payment
-| hand-off, orders and the account extras; seller endpoints are a later slice.
+| hand-off, orders and the account extras; slice 3 is the seller centre below.
 */
 Route::prefix('v1')->name('api.')->group(function () {
     Route::get('/config', ConfigController::class)->middleware('throttle:api')->name('config');
@@ -99,5 +105,45 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::post('/conversations', [ConversationController::class, 'store'])->name('conversations.store');
         Route::get('/conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
         Route::post('/conversations/{conversation}/messages', [ConversationController::class, 'send'])->middleware('throttle:api-chat')->name('conversations.messages.store');
+        /*
+        | Seller centre, slice 3 (mobile plan §4). `seller.api` = seller role +
+        | approved store as a 403 envelope; `verified.api` mirrors the web
+        | seller group's `verified`. Ids are plain ints resolved through the
+        | store's relations, so another store's row is a 404.
+        */
+        Route::prefix('seller')->name('seller.')->middleware(['throttle:api', 'verified.api', 'seller.api'])->group(function () {
+            Route::get('/dashboard', SellerDashboardController::class)->name('dashboard');
+
+            Route::get('/couriers', [SellerOrderController::class, 'couriers'])->name('couriers');
+            Route::get('/orders', [SellerOrderController::class, 'index'])->name('orders.index');
+            Route::get('/orders/{subOrder}', [SellerOrderController::class, 'show'])->name('orders.show');
+            Route::post('/orders/{subOrder}/pack', [SellerOrderController::class, 'pack'])->name('orders.pack');
+            Route::post('/orders/{subOrder}/ship', [SellerOrderController::class, 'ship'])->name('orders.ship');
+            Route::post('/orders/{subOrder}/delivered', [SellerOrderController::class, 'delivered'])->name('orders.delivered');
+            Route::post('/orders/{subOrder}/return/accept', [SellerOrderController::class, 'returnAccept'])->name('orders.return.accept');
+            Route::post('/orders/{subOrder}/return/dispute', [SellerOrderController::class, 'returnDispute'])->name('orders.return.dispute');
+            Route::post('/orders/{subOrder}/return/received', [SellerOrderController::class, 'returnReceived'])->name('orders.return.received');
+
+            Route::get('/products', [SellerProductController::class, 'index'])->name('products.index');
+            Route::post('/products', [SellerProductController::class, 'store'])->name('products.store');
+            Route::get('/products/{product}', [SellerProductController::class, 'show'])->name('products.show');
+            Route::patch('/products/{product}', [SellerProductController::class, 'update'])->name('products.update');
+            Route::post('/products/{product}/images', [SellerProductController::class, 'images'])->name('products.images');
+            Route::delete('/products/{product}/images/{media}', [SellerProductController::class, 'destroyImage'])->name('products.images.destroy');
+            Route::post('/products/{product}/publish', [SellerProductController::class, 'publish'])->name('products.publish');
+            Route::post('/products/{product}/delist', [SellerProductController::class, 'delist'])->name('products.delist');
+            Route::post('/products/{product}/relist', [SellerProductController::class, 'relist'])->name('products.relist');
+
+            Route::get('/earnings', [SellerEarningsController::class, 'index'])->name('earnings');
+            Route::post('/payouts', [SellerEarningsController::class, 'requestPayout'])->name('payouts.store');
+
+            Route::get('/store', [SellerStoreController::class, 'show'])->name('store.show');
+            Route::patch('/store', [SellerStoreController::class, 'update'])->name('store.update');
+            Route::post('/store/logo', [SellerStoreController::class, 'logo'])->name('store.logo');
+            Route::post('/store/banner', [SellerStoreController::class, 'banner'])->name('store.banner');
+
+            Route::get('/reviews', [SellerReviewController::class, 'index'])->name('reviews.index');
+            Route::post('/reviews/{review}/reply', [SellerReviewController::class, 'reply'])->name('reviews.reply');
+        });
     });
 });
