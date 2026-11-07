@@ -2,6 +2,7 @@
 
 use App\Http\Api\ApiResponse;
 use App\Http\Middleware\ApiLocale;
+use App\Http\Middleware\ApiNotSuspended;
 use App\Http\Middleware\ApiVerified;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureSeller;
@@ -135,6 +136,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller' => EnsureSeller::class,
             'admin' => EnsureAdmin::class,
             'verified.api' => ApiVerified::class,
+            'suspended.api' => ApiNotSuspended::class,
         ]);
 
         // The `auth` middleware bounces guests before a section guard runs, so

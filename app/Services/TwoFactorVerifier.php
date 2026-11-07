@@ -48,20 +48,13 @@ class TwoFactorVerifier
     }
 
     /**
-     * True the first time this exact code is seen for this user; false (and
-     * memoized either way is a no-op) on replay. TTL of 120s comfortably
-     * covers Totp::verify()'s ±1 period (30s) window plus clock drift.
+     * True the first time this exact code is seen for this user; false on
+     * replay. Cache::add() is atomic, so two simultaneous posts of the same
+     * code cannot both pass. TTL of 120s comfortably covers Totp::verify()'s
+     * ±1 period (30s) window plus clock drift.
      */
     private function rememberTotpCodeUnused(int $userId, string $code): bool
     {
-        $key = 'totp-used:'.$userId.':'.preg_replace('/\s+/', '', $code);
-
-        if (Cache::has($key)) {
-            return false;
-        }
-
-        Cache::put($key, true, 120);
-
-        return true;
+        return Cache::add('totp-used:'.$userId.':'.preg_replace('/\s+/', '', $code), true, 120);
     }
 }

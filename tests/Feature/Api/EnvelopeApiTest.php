@@ -68,17 +68,11 @@ test('verified.api answers 403 email_unverified until the email is verified', fu
         ->assertJsonPath('data.fine', true);
 });
 
-test('unknown API routes and server errors wear the envelope', function () {
+test('unknown API routes wear the envelope', function () {
     $this->getJson('/api/v1/does-not-exist')
         ->assertNotFound()
         ->assertJsonPath('error.code', 'not_found');
-
-    Route::middleware('api')->get('/api/v1/_boom', fn () => throw new RuntimeException('secret detail'));
-
-    config(['app.debug' => false]);
-
-    $this->withoutExceptionHandling()->getJson('/api/v1/_boom');
-})->throws(RuntimeException::class);
+});
 
 test('a server error hides its message unless app.debug is on', function () {
     Route::middleware('api')->get('/api/v1/_boom', fn () => throw new RuntimeException('secret detail'));

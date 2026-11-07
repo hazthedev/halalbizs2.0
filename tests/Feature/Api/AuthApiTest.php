@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\Buyers\Detail;
 use App\Models\User;
 use App\Notifications\TwoFactorCodeNotification;
 use App\Support\Totp;
@@ -8,6 +9,7 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
+use Livewire\Livewire;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
 
@@ -128,6 +130,35 @@ test('a suspended user cannot log in', function () {
     expect($user->tokens()->count())->toBe(0);
 });
 
+test('suspending a user ends their bearer sessions: the admin screen deletes the tokens, and a leftover token is refused', function () {
+    $user = User::factory()->create();
+    $user->assignRole('buyer');
+    $token = apiLogin($user)->assertOk()->json('data.token');
+
+    app('auth')->forgetGuards();
+    $this->withToken($token)->getJson('/api/v1/me')->assertOk();
+
+    // The admin screen revokes every token outright...
+    $admin = makeAdmin(User::factory()->create());
+    Livewire::actingAs($admin)
+        ->test(Detail::class, ['user' => $user])
+        ->set('suspendReason', 'Abuse pattern on returns')
+        ->call('suspend')
+        ->assertHasNoErrors();
+
+    expect($user->tokens()->count())->toBe(0);
+
+    // ...and a token minted some other way dies on its first request.
+    $leftover = $user->createToken('leftover')->plainTextToken;
+
+    app('auth')->forgetGuards();
+    $this->withToken($leftover)->getJson('/api/v1/me')
+        ->assertStatus(401)
+        ->assertJsonPath('error.code', 'unauthenticated');
+
+    expect($user->tokens()->count())->toBe(0);
+});
+
 // ── Two-factor ──────────────────────────────────────────────────────────
 
 test('email 2FA: login answers 202 with a challenge, wrong codes 422, the right code a token', function () {
@@ -218,6 +249,14 @@ test('forgot password always answers 200 and sends the reset link when the accou
     $this->postJson('/api/v1/auth/forgot-password', ['email' => 'nobody@example.com'])->assertOk()->assertJsonPath('ok', true);
 
     Notification::assertSentTo($user, ResetPassword::class);
+
+    // Five per hour per (email, connection), then 429.
+    foreach (range(1, 4) as $attempt) {
+        $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])->assertOk();
+    }
+    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])
+        ->assertStatus(429)
+        ->assertJsonPath('error.code', 'throttled');
 });
 
 test('verification resend sends the email for an unverified user only', function () {
