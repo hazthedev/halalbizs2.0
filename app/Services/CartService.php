@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Exceptions\CheckoutException;
+use App\Exceptions\PurchasingDisabledException;
 use App\Models\Cart;
 use App\Models\ProductVariant;
 use App\Models\User;
@@ -197,7 +197,7 @@ class CartService
     private function ensurePurchasingEnabled(): void
     {
         if (! $this->purchasingEnabled()) {
-            throw new CheckoutException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
+            throw new PurchasingDisabledException(__('This marketplace is currently in listing-only mode. Purchasing is unavailable.'));
         }
     }
 }

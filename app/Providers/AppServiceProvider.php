@@ -134,6 +134,11 @@ class AppServiceProvider extends ServiceProvider
         // creation and the verification-email spend that comes with it.
         RateLimiter::for('api-register', fn (Request $request) => Limit::perHour(5)->by('register:'.ClientIp::bucket($request->ip())));
 
+        // Mobile checkout and reviews mirror the web's hand-kept buckets
+        // (Checkout::place 5/hour, ReviewOrder::submit 3/min), keyed per user.
+        RateLimiter::for('api-checkout', fn (Request $request) => Limit::perHour(5)->by('api-checkout:'.$request->user()?->id));
+        RateLimiter::for('api-review', fn (Request $request) => Limit::perMinute(3)->by('api-review:'.$request->user()?->id));
+
         // Register and ResetPassword both validate with Password::defaults(), but
         // nothing ever CONFIGURED the defaults — so the whole marketplace's rule
         // was `min(8)` and the reset form accepted `12345678` (found 2026-08-10

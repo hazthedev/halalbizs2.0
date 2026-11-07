@@ -3,6 +3,7 @@
 namespace App\Http\Api;
 
 use App\Exceptions\CheckoutException;
+use App\Exceptions\PurchasingDisabledException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -11,6 +12,7 @@ use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -84,7 +86,10 @@ final class ApiResponse
             $e instanceof AuthorizationException => self::error('forbidden', $e->getMessage(), 403),
             $e instanceof ModelNotFoundException, $e instanceof NotFoundHttpException => self::error('not_found', __('Not found.'), 404),
             $e instanceof ThrottleRequestsException => self::error('throttled', __('Too many requests. Try again shortly.'), 429, null, $e->getHeaders()),
+            $e instanceof PurchasingDisabledException => self::error('purchasing_disabled', $e->getMessage(), 409),
             $e instanceof CheckoutException => self::error('checkout_failed', $e->getMessage(), 409),
+            // Return/Review/Chat services refuse with a buyer-safe InvalidArgumentException.
+            $e instanceof InvalidArgumentException => self::error('validation_failed', $e->getMessage(), 422),
             $e instanceof HttpExceptionInterface => self::error(
                 $e->getStatusCode() === 403 ? 'forbidden' : 'http_error',
                 $e->getMessage() !== '' ? $e->getMessage() : __('Request failed.'),
