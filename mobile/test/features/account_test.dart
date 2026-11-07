@@ -72,12 +72,13 @@ void main() {
 
   testWidgets('delete account calls DELETE me, signs out and leaves the account area', (tester) async {
     usePhone(tester);
+    Object? deleteBody;
     final api = FakeApi(routes: {
       'GET me': (_, _) => realMe(),
       'GET products': (_, _) => [],
       'GET categories': (_, _) => [],
       'DELETE me': (_, body) {
-        expect((body as Map)['password'], 'password');
+        deleteBody = body;
         return null;
       },
       'POST auth/logout': (_, _) => null,
@@ -92,6 +93,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(api.calls, contains('DELETE me'));
+    expect((deleteBody as Map?)?['password'], 'password');
     expect(h.container.read(sessionProvider), isA<SignedOut>());
     expect(h.router.state.uri.path, '/home');
   });

@@ -1831,6 +1831,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send'**
   String get messagesSend;
+
+  /// No description provided for @checkoutPlacedCheckOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order was placed. Check your orders.'**
+  String get checkoutPlacedCheckOrders;
+
+  /// No description provided for @checkoutMaybePlaced.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not confirm whether the order went through. Check your orders before trying again.'**
+  String get checkoutMaybePlaced;
+
+  /// No description provided for @checkoutPayLinkMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'The order was placed but no payment link came back. Pay it from your orders.'**
+  String get checkoutPayLinkMissing;
+
+  /// No description provided for @accountWishlistStillSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Still in your wishlist — try again.'**
+  String get accountWishlistStillSaved;
+
+  /// No description provided for @accountUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get accountUnread;
+
+  /// No description provided for @ordersReviewStars.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 star} other{{n} stars}}'**
+  String ordersReviewStars(int n);
+
+  /// No description provided for @ordersPaymentStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get ordersPaymentStatusPending;
+
+  /// No description provided for @ordersPaymentStatusPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get ordersPaymentStatusPaid;
+
+  /// No description provided for @ordersPaymentStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get ordersPaymentStatusFailed;
+
+  /// No description provided for @ordersPaymentStatusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get ordersPaymentStatusExpired;
+
+  /// No description provided for @ordersPaymentStatusRefunded.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded'**
+  String get ordersPaymentStatusRefunded;
+
+  /// No description provided for @ordersReturnStatusRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get ordersReturnStatusRequested;
+
+  /// No description provided for @ordersReturnStatusAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get ordersReturnStatusAccepted;
+
+  /// No description provided for @ordersReturnStatusDisputed.
+  ///
+  /// In en, this message translates to:
+  /// **'Disputed'**
+  String get ordersReturnStatusDisputed;
+
+  /// No description provided for @ordersReturnStatusEscalated.
+  ///
+  /// In en, this message translates to:
+  /// **'Escalated'**
+  String get ordersReturnStatusEscalated;
+
+  /// No description provided for @ordersReturnStatusRefunded.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded'**
+  String get ordersReturnStatusRefunded;
+
+  /// No description provided for @ordersReturnStatusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get ordersReturnStatusRejected;
 }
 
 class _AppLocalizationsDelegate

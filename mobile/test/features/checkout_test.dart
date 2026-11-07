@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:halalbizs/core/api/api_client.dart';
+import 'package:halalbizs/core/auth/session.dart';
+import 'package:halalbizs/core/router.dart';
 import 'package:halalbizs/features/checkout/pay_screen.dart';
 
 import '../helpers.dart';
@@ -54,27 +57,46 @@ Map<String, dynamic> fakeQuote() => {
       'block_reason': null,
     };
 
-void main() {
-  testWidgets('checkout shows the quote totals verbatim and greys an unavailable payment method', (tester) async {
-    usePhone(tester);
-    final api = FakeApi(routes: {
+/// `GET cart` after a place attempt: [selected] lines still there or gone.
+Map<String, dynamic> cartAfter({required int selected}) => {
+      'groups': [],
+      'item_count': selected,
+      'selected_count': selected,
+      'selected_subtotal_sen': selected * 5000,
+      'purchasing_enabled': true,
+    };
+
+/// Routes every checkout test needs; [extra] adds or overrides.
+Map<String, FakeHandler> checkoutRoutes([Map<String, FakeHandler> extra = const {}]) => {
       'GET me': (_, _) => fakeUser(),
       'GET products': (_, _) => [],
       'GET categories': (_, _) => [],
       'GET addresses': (_, _) => [fakeAddress()],
+      'POST checkout/quote': (_, _) => fakeQuote(),
+      'GET orders/buckets': (_, _) => [],
+      'GET orders': (_, _) => [],
+      ...extra,
+    };
+
+void main() {
+  testWidgets('checkout shows the quote totals verbatim and greys an unavailable payment method', (tester) async {
+    usePhone(tester);
+    Object? quoteBody;
+    Object? placeBody;
+    final api = FakeApi(routes: checkoutRoutes({
       'POST checkout/quote': (_, body) {
-        expect((body as Map)['address_id'], 1);
+        quoteBody = body;
         return fakeQuote();
       },
       'POST checkout/place': (_, body) {
-        expect((body as Map)['payment_method'], 'ipay88');
-        expect(body['address_id'], 1);
+        placeBody = body;
         return {'order_id': 9, 'order_no': 'HB-1001', 'payment_method': 'ipay88', 'total_sen': 12345, 'sub_orders': [], 'payment_url': 'https://pay.test/x', 'expires_at': null};
       },
       'GET orders/HB-1001/payment': (_, _) => {'order_no': 'HB-1001', 'method': 'ipay88', 'status': 'pending', 'paid': false, 'expires_at': null, 'retry_url': 'https://pay.test/x'},
-    });
+    }));
     final h = Harness(api: api, token: 'tok');
     await h.pump(tester, location: '/checkout');
+    expect((quoteBody as Map?)?['address_id'], 1);
 
     expect(find.text('RM 123.45'), findsNWidgets(2)); // totals block + sticky bar, never computed
     expect(find.text('RM 100.00'), findsNWidgets(2)); // line total + subtotal
@@ -88,8 +110,93 @@ void main() {
     await tester.tap(find.byKey(const Key('checkout-place')));
     await tester.pumpAndSettle();
     expect(api.calls, contains('POST checkout/place'));
+    expect((placeBody as Map?)?['payment_method'], 'ipay88');
+    expect((placeBody as Map?)?['address_id'], 1);
     expect(h.router.state.uri.path, '/checkout/pay/HB-1001');
     expect(find.byKey(const Key('pay-waiting')), findsOneWidget);
+  });
+
+  testWidgets('place that timed out with the selection consumed goes to orders, never a second place', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: checkoutRoutes({
+      'POST checkout/place': (_, _) => ApiException.timeout(),
+      'GET cart': (_, _) => cartAfter(selected: 0),
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/checkout');
+
+    await tester.tap(find.byKey(const Key('checkout-place')));
+    await tester.pumpAndSettle();
+    expect(api.calls.where((c) => c == 'POST checkout/place').length, 1);
+    expect(api.calls, contains('GET cart'));
+    expect(h.router.state.uri.path, '/orders');
+    expect(find.text('Your order was placed. Check your orders.'), findsOneWidget);
+  });
+
+  testWidgets('place that timed out with the selection intact re-enables Place', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: checkoutRoutes({
+      'POST checkout/place': (_, _) => ApiException.timeout(),
+      'GET cart': (_, _) => cartAfter(selected: 2),
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/checkout');
+
+    await tester.tap(find.byKey(const Key('checkout-place')));
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/checkout');
+    await tester.pump(const Duration(seconds: 5)); // let the error snack bar go
+    await tester.tap(find.byKey(const Key('checkout-place')));
+    await tester.pumpAndSettle();
+    expect(api.calls.where((c) => c == 'POST checkout/place').length, 2);
+  });
+
+  testWidgets('409 checkout_failed puts the per-variant message under its line', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: checkoutRoutes({
+      'POST checkout/place': (_, _) => ApiException('checkout_failed', 'Some items changed.', status: 409, fields: {
+            '10': ['Only 1 left in stock.'],
+          }),
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/checkout');
+
+    await tester.tap(find.byKey(const Key('checkout-place')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('checkout-line-error-10'))).data, 'Only 1 left in stock.');
+  });
+
+  testWidgets('a failed re-quote drops the stale totals and Place with them', (tester) async {
+    usePhone(tester);
+    var quotes = 0;
+    final api = FakeApi(routes: checkoutRoutes({
+      'POST checkout/quote': (_, _) => ++quotes == 1 ? fakeQuote() : ApiException.timeout(),
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/checkout');
+    expect(find.byKey(const Key('checkout-place')), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('checkout-platform-code')), 'RAYA10');
+    await tester.tap(find.byKey(const Key('checkout-platform-apply')));
+    await tester.pumpAndSettle();
+    expect(quotes, 2);
+    expect(find.byKey(const Key('checkout-place')), findsNothing);
+    expect(find.text('RM 123.45'), findsNothing);
+    expect(find.text('Retry'), findsOneWidget);
+  });
+
+  testWidgets('a placed order without a payment link goes to orders, not the done page', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: checkoutRoutes({
+      'POST checkout/place': (_, _) => {'order_id': 9, 'order_no': 'HB-1002', 'payment_method': 'ipay88', 'total_sen': 12345, 'sub_orders': [], 'payment_url': null, 'expires_at': null},
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/checkout');
+
+    await tester.tap(find.byKey(const Key('checkout-place')));
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/orders');
+    expect(find.byKey(const Key('checkout-done')), findsNothing);
   });
 
   testWidgets('pay screen polls GET orders/{no}/payment and lands on done when paid', (tester) async {
@@ -115,6 +222,37 @@ void main() {
     expect(polls, 2);
     expect(h.router.state.uri.path, '/checkout/done/HB-7');
     expect(find.byKey(const Key('checkout-done')), findsOneWidget);
+
+    await tester.pump(PayScreen.pollEvery * 2);
+    await tester.pumpAndSettle();
+    expect(polls, 2, reason: 'no polling after paid');
+  });
+
+  testWidgets('leaving the pay screen stops the poll', (tester) async {
+    usePhone(tester);
+    var polls = 0;
+    final api = FakeApi(routes: checkoutRoutes({
+      'GET orders/HB-9/payment': (_, _) {
+        polls++;
+        return {'order_no': 'HB-9', 'method': 'ipay88', 'status': 'pending', 'paid': false, 'expires_at': null, 'retry_url': 'https://pay.test/z'};
+      },
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/checkout/pay/HB-9');
+    expect(polls, 1);
+
+    h.router.go('/home');
+    await tester.pumpAndSettle();
+    await tester.pump(PayScreen.pollEvery * 2);
+    await tester.pumpAndSettle();
+    expect(polls, 1);
+  });
+
+  test('halalbizs://pay/{order_no} deep link lands on the pay screen, encoded', () {
+    final signedIn = SignedIn(Profile(fakeUser()));
+    expect(soukRedirect(signedIn, Uri.parse('halalbizs://pay/HB-1')), '/checkout/pay/HB-1');
+    expect(soukRedirect(signedIn, Uri.parse('halalbizs://pay/HB%201')), '/checkout/pay/HB%201');
+    expect(soukRedirect(signedIn, Uri.parse('halalbizs://pay/')), '/home');
   });
 
   testWidgets('pay screen shows the expired state when the window has passed and no retry url is left', (tester) async {

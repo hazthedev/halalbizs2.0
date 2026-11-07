@@ -43,7 +43,7 @@ class PushService {
     }
     if (token == null) return;
     try {
-      await _api.delete('devices/$token');
+      await _api.delete('devices/${Uri.encodeComponent(token)}');
     } finally {
       try {
         await _db.kvDelete(_kToken);

@@ -51,7 +51,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
-      if (e is! ApiException || !e.isValidation) showApiError(context, e);
+      if (!fieldsCovered(e, const ['password'])) showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/account/account_api.dart';
 import '../features/account/account_screen.dart';
 import '../features/auth/auth_screens.dart';
 import '../features/cart/cart_api.dart';
@@ -11,6 +12,8 @@ import '../features/catalog/product_screen.dart';
 import '../features/catalog/search_screen.dart';
 import '../features/catalog/store_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/messages/messages_api.dart';
+import '../features/orders/orders_api.dart';
 import '../features/orders/orders_screen.dart';
 import '../features/seller_dashboard/seller_dashboard_screen.dart';
 import '../features/seller_earnings/seller_earnings_screen.dart';
@@ -44,7 +47,7 @@ String? soukRedirect(SessionState session, Uri uri) {
   // `halalbizs://pay/{order_no}` (the web return page's deep link) → the pay screen.
   if (uri.scheme == 'halalbizs') {
     final orderNo = uri.host == 'pay' ? uri.pathSegments.firstOrNull : null;
-    return orderNo == null || orderNo.isEmpty ? '/home' : '/checkout/pay/$orderNo';
+    return orderNo == null || orderNo.isEmpty ? '/home' : '/checkout/pay/${Uri.encodeComponent(orderNo)}';
   }
   final path = uri.path;
   if (session is SessionLoading) return null;
@@ -70,7 +73,11 @@ String? soukRedirect(SessionState session, Uri uri) {
 /// `<feature>SubRoutes` getter — never this file.
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = ValueNotifier(0);
-  ref.listen(sessionProvider, (_, _) => notifier.value++);
+  ref.listen(sessionProvider, (prev, next) {
+    notifier.value++;
+    // A different account (or none) is signed in: drop every cached account-scoped read.
+    if (_userId(prev) != _userId(next)) _dropAccountData(ref);
+  });
   ref.onDispose(notifier.dispose);
 
   return GoRouter(
@@ -89,6 +96,20 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+int? _userId(SessionState? s) => s is SignedIn ? s.profile.id : null;
+
+/// Kept-alive providers that hold one user's data (the cart keys itself off
+/// the user id). Add every new account-scoped provider here.
+void _dropAccountData(Ref ref) {
+  ref.invalidate(addressesProvider);
+  ref.invalidate(wishlistProvider);
+  ref.invalidate(coinsProvider);
+  ref.invalidate(notificationsProvider);
+  ref.invalidate(orderBucketsProvider);
+  ref.invalidate(orderDetailProvider);
+  ref.invalidate(conversationsProvider);
+}
 
 /// Buyer shell: `StatefulShellRoute.indexedStack`, one branch per tab
 /// ([buyerTabs]). Pushed pages live under the tab that owns them so deep

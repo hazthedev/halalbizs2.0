@@ -74,6 +74,7 @@ void main() {
   testWidgets('order detail shows only the actions can{} allows, and cancel posts the reason', (tester) async {
     usePhone(tester);
     var detail = fakeSubOrder(detail: true);
+    Object? cancelBody;
     final api = FakeApi(routes: {
       'GET me': (_, _) => fakeUser(),
       'GET products': (_, _) => [],
@@ -81,7 +82,7 @@ void main() {
       'GET orders/buckets': (_, _) => [],
       'GET orders/5': (_, _) => detail,
       'POST orders/5/cancel': (_, body) {
-        expect((body as Map)['reason'], 'Changed my mind');
+        cancelBody = body;
         return detail = fakeSubOrder(status: 'cancelled', label: 'Cancelled', can: const {'cancel': false, 'confirm_received': false, 'return': false, 'review': false}, detail: true);
       },
     });
@@ -103,6 +104,7 @@ void main() {
     await tester.tap(find.byKey(const Key('souk-confirm-ok')));
     await tester.pumpAndSettle();
     expect(api.calls, contains('POST orders/5/cancel'));
+    expect((cancelBody as Map?)?['reason'], 'Changed my mind');
     expect(find.byKey(const Key('order-cancel')), findsNothing);
     expect(find.text('CANCELLED'), findsOneWidget);
   });

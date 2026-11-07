@@ -92,9 +92,10 @@ class CartController extends AsyncNotifier<Cart> {
 
   ApiClient get _api => ref.read(apiClientProvider);
 
-  Future<void> refresh() async {
+  /// Re-reads `GET cart`; the returned cart is the server's, never a stale snapshot.
+  Future<Cart> refresh() {
     ref.invalidateSelf();
-    await future;
+    return future;
   }
 
   /// `POST cart/items {variant_id, qty}`.

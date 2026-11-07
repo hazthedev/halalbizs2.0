@@ -130,21 +130,18 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
         if (_default) 'is_default': true,
       };
       final api = ref.read(accountApiProvider);
-      if (widget.id == null) {
-        await api.createAddress(body);
-      } else {
-        await api.updateAddress(widget.id!, body);
-      }
+      final saved = widget.id == null ? await api.createAddress(body) : await api.updateAddress(widget.id!, body);
       if (!mounted) return;
       ref.invalidate(addressesProvider);
       messenger
         ..clearSnackBars()
         ..showSnackBar(SnackBar(content: Text(l.accountAddressSaved)));
-      router.pop();
+      // Checkout opened this form to pick the new address.
+      router.pop(saved.id);
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
-      if (e is! ApiException || !e.isValidation) showApiError(context, e);
+      if (!fieldsCovered(e, [..._c.keys, 'state', 'is_default'])) showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
-import '../orders/orders_screen.dart' show formatPlacedAt;
 import 'messages_api.dart';
 import 'thread_screen.dart';
 
@@ -77,7 +76,7 @@ class ConversationsScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               if (c.lastAt != null)
-                                Text(formatPlacedAt(c.lastAt!), style: SoukText.meta.copyWith(fontSize: 11)),
+                                Text(soukDateTime(context, c.lastAt!), style: SoukText.meta.copyWith(fontSize: 11)),
                               if (c.unreadCount > 0) ...[
                                 const SizedBox(height: 2),
                                 SoukBadge('${c.unreadCount}', key: Key('conversation-unread-${c.id}'), status: 'sale'),

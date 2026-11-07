@@ -55,6 +55,7 @@ class _PayScreenState extends ConsumerState<PayScreen> with WidgetsBindingObserv
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      if (_state?.paid == true || (_state?.expired ?? false)) return;
       _poll();
       _startTimer();
     } else if (state == AppLifecycleState.paused) {

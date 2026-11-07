@@ -16,7 +16,7 @@ List<RouteBase> get cartSubRoutes => [
       GoRoute(path: '/checkout', builder: (_, _) => const CheckoutScreen(), routes: [
         GoRoute(
           path: 'pay/:orderNo',
-          builder: (_, s) => PayScreen(orderNo: s.pathParameters['orderNo']!, initialUrl: s.uri.queryParameters['url']),
+          builder: (_, s) => PayScreen(orderNo: s.pathParameters['orderNo']!, initialUrl: s.extra as String?),
         ),
         GoRoute(path: 'done/:orderNo', builder: (_, s) => DoneScreen(orderNo: s.pathParameters['orderNo']!)),
       ]),
@@ -34,8 +34,9 @@ class CartScreen extends ConsumerStatefulWidget {
 class _CartScreenState extends ConsumerState<CartScreen> {
   bool _busy = false;
 
+  /// Every control is disabled while a write is in flight (`canWrite`), so a
+  /// tap is never dropped silently here.
   Future<void> _write(Future<void> Function(CartController c) op) async {
-    if (_busy) return;
     setState(() => _busy = true);
     try {
       await op(ref.read(cartProvider.notifier));
@@ -220,11 +221,14 @@ class _LineRow extends StatelessWidget {
       key: Key('cart-line-${line.variantId}'),
       padding: const EdgeInsets.only(top: SoukSpace.s2),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Checkbox(
-          key: Key('cart-line-select-${line.variantId}'),
-          value: line.selected && line.available,
-          activeColor: SoukColors.emerald,
-          onChanged: canEdit ? (v) => onSelected(v ?? false) : null,
+        Semantics(
+          label: line.name,
+          child: Checkbox(
+            key: Key('cart-line-select-${line.variantId}'),
+            value: line.selected && line.available,
+            activeColor: SoukColors.emerald,
+            onChanged: canEdit ? (v) => onSelected(v ?? false) : null,
+          ),
         ),
         GestureDetector(
           onTap: onTap,
@@ -241,8 +245,8 @@ class _LineRow extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: 32,
-                height: 32,
+                width: SoukSpace.minTap,
+                height: SoukSpace.minTap,
                 child: IconButton(
                   key: Key('cart-line-remove-${line.variantId}'),
                   tooltip: l.cartRemove,

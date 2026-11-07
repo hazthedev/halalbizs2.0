@@ -44,6 +44,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   CheckoutQuote? _quote;
   Object? _error;
+
+  /// 409 `checkout_failed` from the last attempt: `fields` keyed by variant id.
+  ApiException? _placeError;
   bool _quoting = false;
   bool _placing = false;
   int _seq = 0;
@@ -106,22 +109,34 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         context.go('/verify-email');
         return;
       }
-      setState(() => _error = e);
+      _fail(e);
     } catch (e) {
       if (!mounted || seq != _seq) return;
-      setState(() => _error = e);
+      _fail(e);
     } finally {
       if (mounted && seq == _seq) setState(() => _quoting = false);
     }
   }
+
+  /// A failed re-quote drops the quote: the totals on screen would be stale,
+  /// so "Place order" goes with them until a quote succeeds.
+  void _fail(Object e) => setState(() {
+        _error = e;
+        _quote = null;
+      });
 
   Future<void> _place() async {
     final q = _quote;
     final addressId = _addressId;
     final method = _method;
     if (q == null || addressId == null || method == null) return;
-    setState(() => _placing = true);
+    setState(() {
+      _placing = true;
+      _placeError = null;
+    });
+    final l = context.l10n;
     final router = GoRouter.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     try {
       final placed = await ref.read(checkoutApiProvider).place(
             addressId: addressId,
@@ -133,11 +148,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           );
       if (!mounted) return;
       ref.invalidate(cartProvider);
-      final url = placed.paymentUrl;
-      if (placed.paymentMethod == 'ipay88' && url != null) {
-        router.go('/checkout/pay/${placed.orderNo}?url=${Uri.encodeComponent(url)}');
+      final orderNo = Uri.encodeComponent(placed.orderNo);
+      if (placed.paymentMethod != 'ipay88') {
+        router.go('/checkout/done/$orderNo');
+      } else if (placed.paymentUrl == null) {
+        // Placed but unpaid and no gateway link: the orders list, never the done page.
+        messenger
+          ..clearSnackBars()
+          ..showSnackBar(SnackBar(content: Text(l.checkoutPayLinkMissing)));
+        router.go('/orders');
       } else {
-        router.go('/checkout/done/${placed.orderNo}');
+        router.go('/checkout/pay/$orderNo', extra: placed.paymentUrl);
       }
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -145,14 +166,45 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         router.go('/verify-email');
         return;
       }
+      if (e.code == 'timeout' || e.isOffline) {
+        await _afterUncertainPlace(e);
+        return;
+      }
       showApiError(context, e);
+      if (e.code == 'checkout_failed') setState(() => _placeError = e);
       // Stock or price moved under us: refresh the quote so the totals are honest.
       if (e.code == 'checkout_failed' || e.isValidation) unawaited(_requote());
     } catch (e) {
       if (mounted) showApiError(context, e);
     } finally {
+      // Still mounted means we did not leave for the orders list: safe to allow another attempt.
       if (mounted) setState(() => _placing = false);
     }
+  }
+
+  /// The request died in flight (`timeout` / `offline`), so the server may
+  /// have placed the order. `place()` consumes the selected lines in the same
+  /// transaction, so a fresh `GET cart` is decisive: selection gone means the
+  /// order exists. Unknown (cart unreachable) also leaves for the orders list;
+  /// a second tap must never create a duplicate. Server-side
+  /// `Idempotency-Key` on `checkout/place` is the API follow-up.
+  Future<void> _afterUncertainPlace(ApiException e) async {
+    final l = context.l10n;
+    final router = GoRouter.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    Cart? cart;
+    try {
+      cart = await ref.read(cartProvider.notifier).refresh();
+    } catch (_) {}
+    if (!mounted) return;
+    if (cart != null && cart.selectedCount > 0) {
+      showApiError(context, e);
+      return;
+    }
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(cart == null ? l.checkoutMaybePlaced : l.checkoutPlacedCheckOrders)));
+    router.go('/orders');
   }
 
   Future<void> _pickAddress(List<Address> addresses) async {
@@ -185,12 +237,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
     if (!mounted || picked == null) return;
     if (picked == -1) {
-      await context.push('/account/addresses/new');
+      // The form pops with the created address id.
+      final created = await context.push<int>('/account/addresses/new');
       if (!mounted) return;
       ref.invalidate(addressesProvider);
-      final fresh = await ref.read(addressesProvider.future);
-      if (!mounted) return;
-      _addressId = (fresh.where((a) => a.isDefault).firstOrNull ?? fresh.lastOrNull)?.id;
+      if (created == null) return;
+      _addressId = created;
     } else {
       _addressId = picked;
     }
@@ -211,6 +263,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         q.paymentMethodAvailable &&
         q.blockReason == null &&
         q.purchasingEnabled &&
+        _error == null &&
         !_quoting;
 
     return SoukPage(
@@ -244,15 +297,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 onPressed: canPlace ? _place : null,
               ),
             ]),
-      body: _error != null && q == null
+      body: _error != null
           ? ErrorPane(error: _error!, onRetry: _requote, retryLabel: l.retry)
           : q == null
               ? const SoukSkeleton.list(rows: 5)
               : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  if (_error != null) ...[
-                    SoukAlert(apiMessage(context, _error!), status: 'danger'),
-                    const SizedBox(height: SoukSpace.s3),
-                  ],
                   if (q.blockReason != null) ...[
                     SoukAlert(q.blockReason!, key: const Key('checkout-block-reason'), status: 'danger'),
                     const SizedBox(height: SoukSpace.s3),
@@ -303,17 +352,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         for (final line in g.lines)
                           Padding(
                             padding: const EdgeInsets.only(bottom: SoukSpace.s2),
-                            child: Row(children: [
-                              Expanded(
-                                child: Text(
-                                  '${asStr(line['name']) ?? ''}${line['variant_label'] == null ? '' : ' · ${line['variant_label']}'}  × ${line['qty']}',
-                                  style: SoukText.small,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                              Row(children: [
+                                Expanded(
+                                  child: Text(
+                                    '${asStr(line['name']) ?? ''}${line['variant_label'] == null ? '' : ' · ${line['variant_label']}'}  × ${line['qty']}',
+                                    style: SoukText.small,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: SoukSpace.s2),
-                              PriceText(asInt(line['line_total_sen']) ?? 0),
+                                const SizedBox(width: SoukSpace.s2),
+                                PriceText(asInt(line['line_total_sen']) ?? 0),
+                              ]),
+                              if (fieldError(_placeError, '${line['variant_id']}') case final err?)
+                                Text(err, key: Key('checkout-line-error-${line['variant_id']}'), style: SoukText.error),
                             ]),
                           ),
                         _TotalRow(l.checkoutShipping, g.shippingFeeSen, muted: true, pending: g.shippingFeeSen == null ? l.checkoutShippingPending : null),
@@ -391,6 +444,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             keyboardType: TextInputType.number,
                             textInputAction: TextInputAction.done,
                             help: l.checkoutCoinsWorth(q.coinsRedeemed, formatSen(q.coinRedemptionSen)),
+                            // Typed but not submitted still counts when placing; submit re-quotes.
+                            onChanged: (v) => _coins = (int.tryParse(v) ?? 0).clamp(0, q.coinBalance),
                             onSubmitted: (v) {
                               final n = (int.tryParse(v) ?? 0).clamp(0, q.coinBalance);
                               setState(() {

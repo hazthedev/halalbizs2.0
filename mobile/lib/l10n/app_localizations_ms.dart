@@ -953,4 +953,66 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get messagesSend => 'Hantar';
+
+  @override
+  String get checkoutPlacedCheckOrders =>
+      'Pesanan anda telah dibuat. Semak pesanan anda.';
+
+  @override
+  String get checkoutMaybePlaced =>
+      'Kami tidak dapat mengesahkan sama ada pesanan itu berjaya. Semak pesanan anda sebelum mencuba lagi.';
+
+  @override
+  String get checkoutPayLinkMissing =>
+      'Pesanan dibuat tetapi tiada pautan pembayaran diterima. Bayar dari senarai pesanan anda.';
+
+  @override
+  String get accountWishlistStillSaved =>
+      'Masih dalam senarai hajat — cuba lagi.';
+
+  @override
+  String get accountUnread => 'Belum dibaca';
+
+  @override
+  String ordersReviewStars(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n bintang',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ordersPaymentStatusPending => 'Menunggu';
+
+  @override
+  String get ordersPaymentStatusPaid => 'Paid';
+
+  @override
+  String get ordersPaymentStatusFailed => 'Failed';
+
+  @override
+  String get ordersPaymentStatusExpired => 'Expired';
+
+  @override
+  String get ordersPaymentStatusRefunded => 'Refunded';
+
+  @override
+  String get ordersReturnStatusRequested => 'Requested';
+
+  @override
+  String get ordersReturnStatusAccepted => 'Accepted';
+
+  @override
+  String get ordersReturnStatusDisputed => 'Disputed';
+
+  @override
+  String get ordersReturnStatusEscalated => 'Escalated';
+
+  @override
+  String get ordersReturnStatusRefunded => 'Refunded';
+
+  @override
+  String get ordersReturnStatusRejected => 'Rejected';
 }

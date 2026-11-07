@@ -153,7 +153,8 @@ class CheckoutApi {
             sellerNotes: sellerNotes,
           ))));
 
-  Future<PaymentState> payment(String orderNo) async => PaymentState(asMap(await _api.get('orders/$orderNo/payment')));
+  Future<PaymentState> payment(String orderNo) async =>
+      PaymentState(asMap(await _api.get('orders/${Uri.encodeComponent(orderNo)}/payment')));
 }
 
 final checkoutApiProvider = Provider<CheckoutApi>((ref) => CheckoutApi(ref.watch(apiClientProvider)));

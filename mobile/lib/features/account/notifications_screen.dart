@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth/session.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
-import '../orders/orders_screen.dart' show formatPlacedAt;
 import 'account_api.dart';
 
 /// `/account/notifications` — newest first, unread dot; tap marks read and
@@ -102,13 +101,16 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             child: Center(
                               child: n.read
                                   ? const FaIcon(FontAwesomeIcons.bell, size: 14, color: SoukColors.inkFaint)
-                                  : Container(
-                                      key: Key('notification-unread-${n.id}'),
-                                      width: 10,
-                                      height: 10,
-                                      decoration: const BoxDecoration(
-                                        color: SoukColors.emerald,
-                                        shape: BoxShape.circle,
+                                  : Semantics(
+                                      label: l.accountUnread,
+                                      child: Container(
+                                        key: Key('notification-unread-${n.id}'),
+                                        width: 10,
+                                        height: 10,
+                                        decoration: const BoxDecoration(
+                                          color: SoukColors.emerald,
+                                          shape: BoxShape.circle,
+                                        ),
                                       ),
                                     ),
                             ),
@@ -118,7 +120,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             style: n.read ? SoukText.body : SoukText.body.copyWith(fontWeight: FontWeight.w600),
                           ),
                           subtitle: Text(
-                            [n.detail, if (n.createdAt != null) formatPlacedAt(n.createdAt!)].nonNulls.join('\n'),
+                            [n.detail, if (n.createdAt != null) soukDateTime(context, n.createdAt!)].nonNulls.join('\n'),
                             style: SoukText.meta,
                           ),
                           trailing: n.appUrl == null

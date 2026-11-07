@@ -24,23 +24,51 @@ class ThreadScreen extends ConsumerStatefulWidget {
   ConsumerState<ThreadScreen> createState() => _ThreadScreenState();
 }
 
-class _ThreadScreenState extends ConsumerState<ThreadScreen> {
+class _ThreadScreenState extends ConsumerState<ThreadScreen> with WidgetsBindingObserver {
   Thread? _thread;
   Object? _error;
   Timer? _timer;
   final _input = TextEditingController();
   final _scroll = ScrollController();
   bool _sending = false;
+  bool _visible = true;
+  bool _paused = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
     _timer = Timer.periodic(ThreadScreen.pollEvery, (_) => _load(silent: true));
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Offstage in a tab that is not showing: no point polling.
+    _visible = TickerMode.valuesOf(context).enabled;
+    _syncTimer();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _paused = state != AppLifecycleState.resumed;
+    _syncTimer();
+  }
+
+  void _syncTimer() {
+    if (!_visible || _paused) {
+      _timer?.cancel();
+      _timer = null;
+    } else if (_timer == null) {
+      _timer = Timer.periodic(ThreadScreen.pollEvery, (_) => _load(silent: true));
+      _load(silent: true);
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _input.dispose();
     _scroll.dispose();
@@ -56,9 +84,11 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
         _thread = t;
         _error = null;
       });
-      if (grew) _scrollToEnd();
-      // The list's unread counts changed when this thread was marked read.
-      ref.invalidate(conversationsProvider);
+      if (grew) {
+        _scrollToEnd();
+        // New messages (or the first load, which marks the thread read) change the list's unread counts.
+        ref.invalidate(conversationsProvider);
+      }
     } catch (e) {
       if (!mounted || silent) return;
       setState(() => _error = e);

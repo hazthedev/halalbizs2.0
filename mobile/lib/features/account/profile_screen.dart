@@ -21,6 +21,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late final TextEditingController _name;
   late final TextEditingController _phone;
+  late final TextEditingController _email;
   String? _locale;
   bool _saving = false;
   Object? _error;
@@ -37,6 +38,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final me = ref.read(profileProvider);
     _name = TextEditingController(text: me?.name ?? '');
     _phone = TextEditingController(text: me?.phone ?? '');
+    _email = TextEditingController(text: me?.email ?? '');
     _locale = me?.preferredLocale ?? ref.read(localeProvider).languageCode;
   }
 
@@ -44,6 +46,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void dispose() {
     _name.dispose();
     _phone.dispose();
+    _email.dispose();
     _current.dispose();
     _password.dispose();
     _confirm.dispose();
@@ -67,7 +70,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
-      if (e is! ApiException || !e.isValidation) showApiError(context, e);
+      if (!fieldsCovered(e, const ['name', 'phone', 'preferred_locale'])) showApiError(context, e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -95,7 +98,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _pwError = e);
-      if (e is! ApiException || !e.isValidation) showApiError(context, e);
+      if (!fieldsCovered(e, const ['current_password', 'password', 'password_confirmation'])) showApiError(context, e);
     } finally {
       if (mounted) setState(() => _changing = false);
     }
@@ -113,7 +116,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             SoukTextField(label: l.name, fieldKey: const Key('profile-name'), controller: _name, required: true, error: fieldError(_error, 'name'), autofillHints: const [AutofillHints.name]),
             const SizedBox(height: SoukSpace.s4),
-            SoukTextField(label: l.email, controller: TextEditingController(text: me?.email ?? ''), enabled: false, help: me?.emailVerified ?? true ? null : l.accountEmailUnverified),
+            SoukTextField(label: l.email, controller: _email, enabled: false, help: me?.emailVerified ?? true ? null : l.accountEmailUnverified),
             const SizedBox(height: SoukSpace.s4),
             SoukTextField(label: l.accountPhone, fieldKey: const Key('profile-phone'), controller: _phone, keyboardType: TextInputType.phone, error: fieldError(_error, 'phone'), autofillHints: const [AutofillHints.telephoneNumber]),
             const SizedBox(height: SoukSpace.s4),

@@ -9,7 +9,27 @@ import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../checkout/checkout_screen.dart' show paymentMethodLabel;
 import 'orders_api.dart';
-import 'orders_screen.dart' show formatPlacedAt;
+
+/// Translated label for a `payment.status` code (`PaymentStatus` enum).
+String paymentStatusLabel(AppLocalizations l, String status) => switch (status) {
+      'pending' => l.ordersPaymentStatusPending,
+      'paid' => l.ordersPaymentStatusPaid,
+      'failed' => l.ordersPaymentStatusFailed,
+      'expired' => l.ordersPaymentStatusExpired,
+      'refunded' => l.ordersPaymentStatusRefunded,
+      _ => status,
+    };
+
+/// Translated label for a `return_request.status` code (`ReturnStatus` enum).
+String returnStatusLabel(AppLocalizations l, String status) => switch (status) {
+      'requested' => l.ordersReturnStatusRequested,
+      'accepted' => l.ordersReturnStatusAccepted,
+      'disputed' => l.ordersReturnStatusDisputed,
+      'escalated' => l.ordersReturnStatusEscalated,
+      'refunded' => l.ordersReturnStatusRefunded,
+      'rejected' => l.ordersReturnStatusRejected,
+      _ => status,
+    };
 
 /// `/orders/:id` — status timeline, items, address, payment, tracking and
 /// the actions `can{}` allows (cancel, confirm received, return, review).
@@ -24,6 +44,15 @@ class OrderDetailScreen extends ConsumerStatefulWidget {
 
 class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   bool _busy = false;
+
+  /// Outlives the cancel dialog's exit animation; disposed with the screen.
+  final _cancelReason = TextEditingController();
+
+  @override
+  void dispose() {
+    _cancelReason.dispose();
+    super.dispose();
+  }
 
   Future<void> _refresh() async {
     ref.invalidate(orderDetailProvider(widget.id));
@@ -53,7 +82,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
 
   Future<void> _cancel() async {
     final l = context.l10n;
-    final reason = TextEditingController();
+    final reason = _cancelReason..clear();
     final ok = await showDialog<bool>(
       context: context,
       useRootNavigator: true,
@@ -71,8 +100,8 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
         ],
       ),
     );
-    if (ok != true || !mounted) return;
     final text = reason.text.trim();
+    if (ok != true || !mounted) return;
     await _run(() => ref.read(ordersApiProvider).cancel(widget.id, reason: text.isEmpty ? null : text), l.ordersCancelled);
   }
 
@@ -135,10 +164,10 @@ class _Detail extends StatelessWidget {
         Expanded(child: Text(o.orderNo, style: SoukText.mono)),
         SoukBadge(o.statusLabel, key: const Key('order-status'), status: o.status),
       ]),
-      if (o.placedAt != null) Text(l.ordersPlacedAt(formatPlacedAt(o.placedAt!)), style: SoukText.meta),
+      if (o.placedAt != null) Text(l.ordersPlacedAt(soukDateTime(context, o.placedAt!)), style: SoukText.meta),
       if (rr != null) ...[
         const SizedBox(height: SoukSpace.s3),
-        SoukAlert('${l.ordersReturnRequest}: ${asStr(rr['status']) ?? ''}${rr['reason'] == null ? '' : ' · ${rr['reason']}'}', status: 'warn'),
+        SoukAlert('${l.ordersReturnRequest}: ${returnStatusLabel(l, asStr(rr['status']) ?? '')}${rr['reason'] == null ? '' : ' · ${rr['reason']}'}', status: 'warn'),
       ],
       // Timeline
       if (o.history.isNotEmpty) ...[
@@ -206,7 +235,7 @@ class _Detail extends StatelessWidget {
           const SizedBox(height: SoukSpace.s1),
           Row(children: [
             Expanded(child: Text(paymentMethodLabel(l, o.paymentMethod), style: SoukText.body)),
-            SoukBadge(o.paymentStatus, status: o.paymentStatus),
+            SoukBadge(paymentStatusLabel(l, o.paymentStatus), status: o.paymentStatus),
           ]),
           if (t != null) ...[
             const SizedBox(height: SoukSpace.s3),
@@ -280,7 +309,7 @@ class _TimelineRow extends StatelessWidget {
             padding: EdgeInsets.only(bottom: last ? 0 : SoukSpace.s3),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(asStr(h['label']) ?? asStr(h['status']) ?? '', style: SoukText.label.copyWith(color: last ? c.fg : SoukColors.ink)),
-              if (at != null) Text(formatPlacedAt(at), style: SoukText.meta),
+              if (at != null) Text(soukDateTime(context, at), style: SoukText.meta),
               if (note != null) Text(note, style: SoukText.meta),
             ]),
           ),

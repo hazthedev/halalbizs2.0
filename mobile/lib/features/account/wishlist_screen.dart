@@ -28,8 +28,14 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   Future<void> _remove(int productId) async {
     setState(() => _removing.add(productId));
     try {
-      await ref.read(accountApiProvider).toggleWishlist(productId);
+      final wishlisted = await ref.read(accountApiProvider).toggleWishlist(productId);
       if (!mounted) return;
+      if (wishlisted) {
+        // The toggle landed the other way: say so instead of showing a list that did not change.
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(SnackBar(content: Text(context.l10n.accountWishlistStillSaved)));
+      }
       ref.invalidate(wishlistProvider);
     } catch (e) {
       if (mounted) showApiError(context, e);

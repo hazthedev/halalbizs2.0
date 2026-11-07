@@ -7,7 +7,6 @@ import '../../core/api/json.dart';
 import '../../core/auth/session.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
-import '../orders/orders_screen.dart' show formatPlacedAt;
 import 'account_api.dart';
 
 /// `/account/coins` — balance, streak, daily check-in, ledger. Coins are a
@@ -80,7 +79,7 @@ class _CoinsScreenState extends ConsumerState<CoinsScreen> {
               ]),
               const SizedBox(height: SoukSpace.s2),
               Text(l.accountCoinsLifetime(c.lifetimeEarned), style: SoukText.meta),
-              if (c.expiringAt != null) Text(l.accountCoinsExpiring(formatPlacedAt(c.expiringAt!)), style: SoukText.meta.copyWith(color: SoukColors.warn)),
+              if (c.expiringAt != null) Text(l.accountCoinsExpiring(soukDateTime(context, c.expiringAt!)), style: SoukText.meta.copyWith(color: SoukColors.warn)),
               const SizedBox(height: SoukSpace.s4),
               SoukButton(
                 key: const Key('coins-check-in'),
@@ -110,7 +109,7 @@ class _CoinsScreenState extends ConsumerState<CoinsScreen> {
                   SoukRow(
                     key: Key('coins-txn-${t['id']}'),
                     label: asStr(t['type_label']) ?? asStr(t['type']) ?? '',
-                    subtitle: [asStr(t['note']), if (asDate(t['created_at']) != null) formatPlacedAt(asDate(t['created_at'])!)].nonNulls.join(' · '),
+                    subtitle: [asStr(t['note']), if (asDate(t['created_at']) != null) soukDateTime(context, asDate(t['created_at'])!)].nonNulls.join(' · '),
                     trailing: Text(
                       '${(asInt(t['amount']) ?? 0) > 0 ? '+' : ''}${asInt(t['amount']) ?? 0}',
                       style: SoukText.price.copyWith(color: (asInt(t['amount']) ?? 0) >= 0 ? SoukColors.emerald : SoukColors.danger),

@@ -174,7 +174,7 @@ class StarRow extends StatelessWidget {
         for (var n = 1; n <= 5; n++)
           IconButton(
             key: Key('$keyPrefix-$n'),
-            tooltip: '$n',
+            tooltip: context.l10n.ordersReviewStars(n),
             onPressed: () => onChanged(n),
             style: IconButton.styleFrom(minimumSize: const Size(SoukSpace.minTap, SoukSpace.minTap)),
             icon: FaIcon(n <= value ? FontAwesomeIcons.solidStar : FontAwesomeIcons.star, size: 22, color: n <= value ? SoukColors.brass : SoukColors.lineStrong),

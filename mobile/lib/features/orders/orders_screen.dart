@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
@@ -16,9 +15,6 @@ List<RouteBase> get ordersSubRoutes => [
         GoRoute(path: 'review', builder: (_, s) => OrderReviewScreen(id: int.tryParse(s.pathParameters['id']!) ?? 0)),
       ]),
     ];
-
-/// "7 Nov 2026, 14:05" in the device's zone.
-String formatPlacedAt(DateTime t) => DateFormat('d MMM yyyy, HH:mm').format(t.toLocal());
 
 /// `/orders` — bucket chips from `GET orders/buckets`, one card per sub-order,
 /// pull-to-refresh, "Load more" pagination.
@@ -193,7 +189,7 @@ class OrderCard extends StatelessWidget {
         ]),
         const SizedBox(height: SoukSpace.s3),
         Row(children: [
-          Expanded(child: Text(o.placedAt == null ? o.subOrderNo : formatPlacedAt(o.placedAt!), style: SoukText.meta)),
+          Expanded(child: Text(o.placedAt == null ? o.subOrderNo : soukDateTime(context, o.placedAt!), style: SoukText.meta)),
           Text('${l.ordersTotal}: ', style: SoukText.small),
           PriceText(o.totalSen),
         ]),

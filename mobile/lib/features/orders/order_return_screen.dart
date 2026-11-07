@@ -84,7 +84,8 @@ class _OrderReturnScreenState extends ConsumerState<OrderReturnScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
-      if (e is! ApiException || !e.isValidation) showApiError(context, e);
+      // `photos.N` lands on the photo strip; anything else has no input to sit under.
+      if (!fieldsCovered(e, const ['reason_id', 'note', 'photos'])) showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -175,8 +176,8 @@ class _OrderReturnScreenState extends ConsumerState<OrderReturnScreen> {
             ),
         ]),
         const SizedBox(height: SoukSpace.s1),
-        Text(fieldError(_error, 'photos') ?? l.ordersPhotosHelp(OrderReturnScreen.maxPhotos),
-            style: fieldError(_error, 'photos') != null ? SoukText.error : SoukText.meta),
+        Text(fieldErrorAt(_error, 'photos') ?? l.ordersPhotosHelp(OrderReturnScreen.maxPhotos),
+            style: fieldErrorAt(_error, 'photos') != null ? SoukText.error : SoukText.meta),
       ]),
     );
   }

@@ -941,4 +941,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messagesSend => 'Send';
+
+  @override
+  String get checkoutPlacedCheckOrders =>
+      'Your order was placed. Check your orders.';
+
+  @override
+  String get checkoutMaybePlaced =>
+      'We could not confirm whether the order went through. Check your orders before trying again.';
+
+  @override
+  String get checkoutPayLinkMissing =>
+      'The order was placed but no payment link came back. Pay it from your orders.';
+
+  @override
+  String get accountWishlistStillSaved => 'Still in your wishlist — try again.';
+
+  @override
+  String get accountUnread => 'Unread';
+
+  @override
+  String ordersReviewStars(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n stars',
+      one: '1 star',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ordersPaymentStatusPending => 'Pending';
+
+  @override
+  String get ordersPaymentStatusPaid => 'Paid';
+
+  @override
+  String get ordersPaymentStatusFailed => 'Failed';
+
+  @override
+  String get ordersPaymentStatusExpired => 'Expired';
+
+  @override
+  String get ordersPaymentStatusRefunded => 'Refunded';
+
+  @override
+  String get ordersReturnStatusRequested => 'Requested';
+
+  @override
+  String get ordersReturnStatusAccepted => 'Accepted';
+
+  @override
+  String get ordersReturnStatusDisputed => 'Disputed';
+
+  @override
+  String get ordersReturnStatusEscalated => 'Escalated';
+
+  @override
+  String get ordersReturnStatusRefunded => 'Refunded';
+
+  @override
+  String get ordersReturnStatusRejected => 'Rejected';
 }
