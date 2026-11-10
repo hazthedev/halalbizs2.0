@@ -4,6 +4,8 @@ namespace App\Livewire\Seller\Reviews;
 
 use App\Livewire\Concerns\CurrentStore;
 use App\Models\Review;
+use App\Services\SellerReviewService;
+use InvalidArgumentException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -65,11 +67,14 @@ class Index extends Component
             'replyText.min' => __('Write at least 5 characters.'),
         ]);
 
-        $review->update([
-            'seller_reply' => trim($this->replyText),
-            // First reply starts the 24h edit window; edits never reset it.
-            'seller_replied_at' => $review->seller_replied_at ?? now(),
-        ]);
+        try {
+            app(SellerReviewService::class)->reply($review, $this->replyText);
+        } catch (InvalidArgumentException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+            $this->cancelReply();
+
+            return;
+        }
 
         $this->cancelReply();
         $this->dispatch('toast', message: __('Reply posted — buyers see it on the product page.'));

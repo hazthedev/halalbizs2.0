@@ -69,8 +69,10 @@ class ResetPassword extends Component
                 ])->save();
 
                 // A reset means the old password may be compromised — drop every
-                // trusted device so 2FA is required again everywhere.
+                // trusted device so 2FA is required again everywhere, and every
+                // mobile API token for the same reason.
                 app(DeviceTrust::class)->forgetAll($user);
+                $user->tokens()->delete();
 
                 event(new PasswordReset($user));
             }

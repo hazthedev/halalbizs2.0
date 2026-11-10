@@ -149,7 +149,7 @@
                                     @if ($line->variant->options_label)
                                         <p class="mt-0.5 truncate text-xs text-ink-soft">{{ $line->variant->options_label }}</p>
                                     @endif
-                                    <p class="mt-0.5 font-mono text-[length:var(--text-tiny)] text-ink-soft tnum">@price($line->variant->effectivePriceSen()) <span class="font-mono">× {{ $line->qty }}</span></p>
+                                    <p class="mt-0.5 font-mono text-[length:var(--text-tiny)] text-ink-soft tnum">@price($line->unitPriceSen) <span class="font-mono">× {{ $line->qty }}</span></p>
                                     {{-- The certificate is the reason to shop here; it was on the
                                          PDP and the basket and vanished at exactly the moment the
                                          decision is made. Same predicate as everywhere else. --}}
@@ -160,7 +160,7 @@
                                         </p>
                                     @endif
                                 </div>
-                                <span class="shrink-0 self-center font-mono text-[length:var(--text-price)] font-medium text-ink-head tnum">@price($line->variant->effectivePriceSen() * $line->qty)</span>
+                                <span class="shrink-0 self-center font-mono text-[length:var(--text-price)] font-medium text-ink-head tnum">@price($line->unitPriceSen * $line->qty)</span>
                             </li>
                         @endforeach
                     </ul>
