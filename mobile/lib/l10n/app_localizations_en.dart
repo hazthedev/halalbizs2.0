@@ -1044,4 +1044,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String ordersPaymentNo(String no) {
     return 'Payment $no';
   }
+
+  @override
+  String productSelect(String options) {
+    return 'Select: $options';
+  }
+
+  @override
+  String productChoose(String option) {
+    return 'Choose a $option';
+  }
+
+  @override
+  String productStock(int count) {
+    return 'Stock: $count';
+  }
+
+  @override
+  String get productViewImage => 'View image';
+
+  @override
+  String get close => 'Close';
 }

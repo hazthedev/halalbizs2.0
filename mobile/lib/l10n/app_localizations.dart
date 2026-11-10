@@ -1981,6 +1981,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payment {no}'**
   String ordersPaymentNo(String no);
+
+  /// No description provided for @productSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select: {options}'**
+  String productSelect(String options);
+
+  /// No description provided for @productChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a {option}'**
+  String productChoose(String option);
+
+  /// No description provided for @productStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock: {count}'**
+  String productStock(int count);
+
+  /// No description provided for @productViewImage.
+  ///
+  /// In en, this message translates to:
+  /// **'View image'**
+  String get productViewImage;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate

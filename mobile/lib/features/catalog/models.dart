@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:html/parser.dart' as html_parser;
 
 import '../../core/api/json.dart';
@@ -21,12 +22,56 @@ class Product {
   int get reviewCount => asInt(json['review_count'] ?? asMap(json['reviews'])['count']) ?? 0;
   String? get image => asStr(json['image']);
 
-  /// Gallery: `images[]` when the API sends it, else the single `image`.
-  List<String> get images {
-    final list = asList(json['images']).map((i) => i is Map ? asStr(i['url'] ?? i['card']) : asStr(i)).nonNulls.toList();
+  /// Gallery: `images[{large, card}]` (detail only) in the seller's order,
+  /// else the single `image`.
+  List<String> get images => _gallery('card');
+
+  /// Full-size gallery URLs for the zoom view (same order as [images]).
+  List<String> get largeImages => _gallery('large');
+
+  List<String> _gallery(String size) {
+    final list = asList(json['images']).map((i) => i is Map ? asStr(i[size] ?? i['card'] ?? i['url']) : asStr(i)).nonNulls.toList();
     if (list.isNotEmpty) return list;
     return image == null ? const [] : [image!];
   }
+
+  /// Picker rows (`options[{id, name, values[{id, value}]}]`, detail only).
+  /// Without option data but with several variants, one row of the
+  /// variants themselves (value id = variant id).
+  List<OptionGroup> get optionGroups {
+    final groups = asMapList(json['options']).map(OptionGroup.new).where((g) => g.values.isNotEmpty).toList();
+    if (groups.isNotEmpty || variants.length < 2) return groups;
+    return [
+      OptionGroup({
+        'id': 0,
+        'name': '',
+        'values': [for (final v in variants) {'id': v.id, 'value': v.label}],
+      }),
+    ];
+  }
+
+  /// The variant matching one pick per row ([optionGroups] id → value id),
+  /// or null while a row is unpicked. A single variant needs no pick.
+  Variant? variantFor(Map<int, int> picks) {
+    final groups = optionGroups;
+    if (variants.length == 1) return variants.first;
+    if (groups.isEmpty || picks.length < groups.length) return null;
+    return variants.firstWhereOrNull((v) => picks.values.every(_valueIds(v, groups).contains));
+  }
+
+  /// Web ProductDetail::availabilityMap: a value is pickable when some
+  /// in-stock variant carries it together with the other rows' picks.
+  bool isAvailable(Map<int, int> picks, int groupId, int valueId) {
+    final groups = optionGroups;
+    final wanted = {...picks, groupId: valueId}.values;
+    return variants.any((v) => v.inStock && wanted.every(_valueIds(v, groups).contains));
+  }
+
+  static List<int> _valueIds(Variant v, List<OptionGroup> groups) =>
+      groups.length == 1 && groups.first.id == 0 ? [v.id] : v.optionValueIds;
+
+  int get maxPriceSen => variants.isEmpty ? minPriceSen : variants.map((v) => v.priceSen).max;
+  int get lowestPriceSen => variants.isEmpty ? minPriceSen : variants.map((v) => v.priceSen).min;
 
   bool get codEnabled => asBool(json['cod_enabled']);
   String? get storeName => asStr(asMap(json['store'])['name']);
@@ -49,16 +94,29 @@ class Variant {
   String get label => asStr(json['options_label'] ?? json['name']) ?? 'Default';
   int get priceSen => asInt(json['sale_price_sen']) ?? asInt(json['price_sen']) ?? 0;
 
-  /// Original price when on sale, else null.
+  /// Original price when on sale (`regular_price_sen`, or `price_sen` beside
+  /// a `sale_price_sen`), else null.
   int? get regularPriceSen {
-    final sale = asInt(json['sale_price_sen']);
-    final regular = asInt(json['regular_price_sen']) ?? asInt(json['price_sen']);
-    if (sale != null && regular != null && sale < regular) return regular;
-    return null;
+    final regular = asInt(json['regular_price_sen']) ?? (json['sale_price_sen'] == null ? null : asInt(json['price_sen']));
+    return regular != null && regular > priceSen ? regular : null;
   }
+
+  List<int> get optionValueIds => asList(json['option_value_ids']).map(asInt).nonNulls.toList();
 
   int get stock => asInt(json['stock']) ?? 0;
   bool get inStock => stock > 0;
+}
+
+/// One picker row: `{id, name, values[{id, value}]}`.
+class OptionGroup {
+  OptionGroup(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  String get name => asStr(json['name']) ?? '';
+  List<({int id, String value})> get values =>
+      [for (final v in asMapList(json['values'])) (id: asInt(v['id']) ?? 0, value: asStr(v['value']) ?? '')];
 }
 
 /// `CategoryResource`: id, slug, name, parent_id.

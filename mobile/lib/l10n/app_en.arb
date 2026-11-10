@@ -524,5 +524,31 @@
         "type": "String"
       }
     }
-  }
+  },
+  "productSelect": "Select: {options}",
+  "@productSelect": {
+    "placeholders": {
+      "options": {
+        "type": "String"
+      }
+    }
+  },
+  "productChoose": "Choose a {option}",
+  "@productChoose": {
+    "placeholders": {
+      "option": {
+        "type": "String"
+      }
+    }
+  },
+  "productStock": "Stock: {count}",
+  "@productStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productViewImage": "View image",
+  "close": "Close"
 }

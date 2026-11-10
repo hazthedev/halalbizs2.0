@@ -1057,4 +1057,25 @@ class AppLocalizationsMs extends AppLocalizations {
   String ordersPaymentNo(String no) {
     return 'Bayaran $no';
   }
+
+  @override
+  String productSelect(String options) {
+    return 'Pilih: $options';
+  }
+
+  @override
+  String productChoose(String option) {
+    return 'Pilih $option';
+  }
+
+  @override
+  String productStock(int count) {
+    return 'Stok: $count';
+  }
+
+  @override
+  String get productViewImage => 'Lihat gambar';
+
+  @override
+  String get close => 'Tutup';
 }
