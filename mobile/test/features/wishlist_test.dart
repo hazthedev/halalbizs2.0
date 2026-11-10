@@ -82,4 +82,48 @@ void main() {
     expect(h.router.state.uri.queryParameters['from'], '/p/madu-tualang');
     expect(api.calls.where((c) => c.contains('wishlist')), isEmpty);
   });
+
+  testWidgets('guest heart → sign in → back on the product with a back arrow and the heart saved', (tester) async {
+    usePhone(tester);
+    final saved = <int>{};
+    final api = wishlistApi(saved);
+    api.routes['POST auth/login'] = (_, _) => {'token': 'tok', 'user': fakeUser()};
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/home');
+    h.router.push('/p/madu-tualang');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('product-wishlist')));
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/login');
+
+    await tester.enterText(find.byKey(const Key('login-email')), 'buyer@halalbizs.test');
+    await tester.enterText(find.byKey(const Key('login-password')), 'password');
+    await tester.tap(find.byKey(const Key('login-submit')));
+    await tester.pumpAndSettle();
+
+    expect(h.router.state.uri.path, '/p/madu-tualang');
+    expect(find.byKey(const Key('souk-back')), findsOneWidget);
+    expect(api.calls, contains('POST wishlist/1'));
+    expect(saved, {1});
+    expect(find.byTooltip('Remove from wishlist'), findsOneWidget);
+  });
+
+  testWidgets('guest heart on an already-saved product does not unsave it after sign in', (tester) async {
+    usePhone(tester);
+    final saved = <int>{1};
+    final api = wishlistApi(saved);
+    api.routes['POST auth/login'] = (_, _) => {'token': 'tok', 'user': fakeUser()};
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/home');
+    h.router.push('/p/madu-tualang');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('product-wishlist')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('login-email')), 'buyer@halalbizs.test');
+    await tester.enterText(find.byKey(const Key('login-password')), 'password');
+    await tester.tap(find.byKey(const Key('login-submit')));
+    await tester.pumpAndSettle();
+    expect(api.calls, isNot(contains('POST wishlist/1')));
+    expect(saved, {1});
+  });
 }

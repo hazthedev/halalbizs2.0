@@ -129,8 +129,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         else if (_items.isEmpty)
           SoukEmptyState(
             key: const Key('orders-empty'),
-            title: l.ordersEmptyTitle,
-            message: l.ordersEmptyBody,
+            title: _bucket == null ? l.ordersEmptyTitle : l.ordersEmptyBucketTitle,
+            message: _bucket == null ? l.ordersEmptyBody : l.ordersEmptyBucketBody,
             action: SoukButton(label: l.cartContinueShopping, variant: SoukButtonVariant.primary, onPressed: () => context.go('/home')),
           )
         else ...[

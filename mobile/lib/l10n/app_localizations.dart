@@ -1268,6 +1268,18 @@ abstract class AppLocalizations {
   /// **'Your orders appear here once you check out.'**
   String get ordersEmptyBody;
 
+  /// No description provided for @ordersEmptyBucketTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders in this status'**
+  String get ordersEmptyBucketTitle;
+
+  /// No description provided for @ordersEmptyBucketBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick another tab to see your other orders.'**
+  String get ordersEmptyBucketBody;
+
   /// No description provided for @ordersLoadMore.
   ///
   /// In en, this message translates to:

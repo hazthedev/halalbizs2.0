@@ -653,6 +653,13 @@ class AppLocalizationsMs extends AppLocalizations {
       'Pesanan anda akan dipaparkan di sini selepas daftar keluar.';
 
   @override
+  String get ordersEmptyBucketTitle => 'Tiada pesanan dalam status ini';
+
+  @override
+  String get ordersEmptyBucketBody =>
+      'Pilih tab lain untuk melihat pesanan anda yang lain.';
+
+  @override
   String get ordersLoadMore => 'Muat lagi';
 
   @override

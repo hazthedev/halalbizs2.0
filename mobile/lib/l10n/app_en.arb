@@ -320,6 +320,8 @@
   },
   "ordersEmptyTitle": "No orders yet",
   "ordersEmptyBody": "Your orders appear here once you check out.",
+  "ordersEmptyBucketTitle": "No orders in this status",
+  "ordersEmptyBucketBody": "Pick another tab to see your other orders.",
   "ordersLoadMore": "Load more",
   "ordersTracking": "Tracking",
   "ordersTrack": "Track",

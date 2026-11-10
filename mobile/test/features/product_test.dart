@@ -68,4 +68,39 @@ void main() {
     await tester.pumpAndSettle();
     expect(h.router.state.uri.path, '/cart');
   });
+
+  testWidgets('Added to cart bar sits above the bottom buttons, hides itself and never follows to Cart', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET products/madu-tualang': (_, _) => fakeProduct(),
+      'GET cart': (_, _) => {'groups': [], 'item_count': 0, 'selected_count': 0, 'selected_subtotal_sen': 0, 'purchasing_enabled': true},
+      'POST cart/items': (_, _) => {'groups': [], 'item_count': 1, 'selected_count': 1, 'selected_subtotal_sen': 1250, 'purchasing_enabled': true},
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/p/madu-tualang');
+    await tester.tap(find.byKey(const Key('product-add-to-cart')));
+    await tester.pumpAndSettle();
+    final bar = find.byType(SnackBar);
+    expect(bar, findsOneWidget);
+    expect(tester.getRect(bar).bottom, lessThanOrEqualTo(tester.getRect(find.byKey(const Key('qty-plus'))).top));
+    expect(tester.getRect(bar).bottom, lessThanOrEqualTo(tester.getRect(find.byKey(const Key('product-add-to-cart'))).top));
+
+    // Leaving the product page takes the bar with it.
+    h.router.go('/cart');
+    await tester.pumpAndSettle();
+    expect(find.text('Added to cart'), findsNothing);
+
+    // And on the product page it hides by itself.
+    h.router.go('/p/madu-tualang');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('product-add-to-cart')));
+    await tester.pumpAndSettle();
+    expect(find.text('Added to cart'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    expect(find.text('Added to cart'), findsNothing);
+  });
 }
