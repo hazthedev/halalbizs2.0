@@ -60,6 +60,9 @@ class SellerOrder {
   int get totalSen => asInt(json['total_sen']) ?? 0;
   String? get commissionRate => asStr(json['commission_rate']);
   int? get commissionSen => asInt(json['commission_sen']);
+
+  /// False while [commissionSen] is the API's preview (stamped at completion).
+  bool get commissionSettled => json['commission_settled'] != false;
   String? get paymentMethod => asStr(asMap(json['payment'])['method']);
   String? get paymentStatus => asStr(asMap(json['payment'])['status']);
   Map<String, dynamic> get tracking => asMap(json['tracking']);

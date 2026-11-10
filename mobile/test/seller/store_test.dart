@@ -27,11 +27,7 @@ void main() {
     expect(find.byKey(const Key('seller-review-11')), findsOneWidget);
     expect(find.byKey(const Key('seller-store-back-to-buying')), findsOneWidget);
 
-    await tester.ensureVisible(find.byKey(const Key('seller-store-save')));
-    await tester.pumpAndSettle();
-    await tester.drag(find.byKey(const Key('souk-page-scroll')), const Offset(0, -300)); // clear the pinned bar
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('seller-store-save')));
+    await tester.tap(find.byKey(const Key('seller-store-save'))); // pinned: no scrolling needed
     await tester.pumpAndSettle();
     var body = sent! as Map;
     expect(body.containsKey('bank'), isFalse);
@@ -39,9 +35,7 @@ void main() {
     expect(body['state'], 'Pahang');
 
     await tester.enterText(find.byKey(const Key('seller-store-account-number')), '123456789012');
-    await tester.ensureVisible(find.byKey(const Key('seller-store-save')));
-    await tester.pumpAndSettle();
-    await tester.drag(find.byKey(const Key('souk-page-scroll')), const Offset(0, -300)); // clear the pinned bar
+    await tester.pump(const Duration(seconds: 5)); // let the "Store saved" snackbar leave the pinned save
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('seller-store-save')));
     await tester.pumpAndSettle();

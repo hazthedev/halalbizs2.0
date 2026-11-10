@@ -99,7 +99,12 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
     final l = context.l10n;
     final local = <String, String>{};
     final body = <String, dynamic>{'holiday_mode': _holiday};
-    if (_description.text.trim().isNotEmpty) body['description'] = _description.text.trim();
+    // The API refuses an empty description; say so instead of dropping the edit.
+    if (_description.text.trim().isNotEmpty) {
+      body['description'] = _description.text.trim();
+    } else if ((_store?.description ?? '').isNotEmpty) {
+      local['description'] = l.fieldRequired;
+    }
     if (_state != null) body['state'] = _state;
 
     int? rm(TextEditingController c, String path, {bool required = false}) {
@@ -124,6 +129,10 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
       if (_bankName == null) local['bank.bank_name'] = l.fieldRequired;
       if (_accountName.text.trim().isEmpty) local['bank.account_name'] = l.fieldRequired;
       body['bank'] = {'bank_name': _bankName, 'account_name': _accountName.text.trim(), 'account_number': number};
+    } else if (_bankName != (kMalaysianBanks.contains(_store?.bankName) ? _store?.bankName : null) ||
+        _accountName.text.trim() != (_store?.bankAccountName ?? '')) {
+      // Bank details only save with the full number (the server holds it masked).
+      local['bank.account_number'] = l.sellerBankNeedsNumber;
     }
 
     setState(() {
@@ -183,12 +192,25 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
 
     return SoukPage(
       title: l.sellerTabStore,
-      leading: const SellerBackToBuying(),
+      actions: const [SellerBackToBuying()],
       showBack: false,
       scrollable: true,
       onRefresh: _load,
       fromCache: _fromCache,
       cachedAt: _fetchedAt,
+      // One save for the whole form (profile, holiday, shipping, bank),
+      // pinned so it is in view from every field it saves.
+      bottomBar: s == null
+          ? null
+          : SoukButton(
+              key: const Key('seller-store-save'),
+              label: l.sellerSaveStoreSettings,
+              variant: SoukButtonVariant.primary,
+              expand: true,
+              busy: _busy == 'save',
+              requiresOnline: true,
+              onPressed: _busy == null ? _save : null,
+            ),
       body: s == null
           ? (_loadError != null
               ? SellerErrorPane(error: _loadError!, onRetry: _load)
@@ -337,16 +359,6 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
                 keyboardType: TextInputType.number,
                 autocorrect: false,
                 error: _err('bank.account_number'),
-              ),
-              const SizedBox(height: SoukSpace.s5),
-              SoukButton(
-                key: const Key('seller-store-save'),
-                label: l.sellerSave,
-                variant: SoukButtonVariant.primary,
-                expand: true,
-                busy: _busy == 'save',
-                requiresOnline: true,
-                onPressed: _busy == null ? _save : null,
               ),
               const SizedBox(height: SoukSpace.s8),
               SoukSectionHeading(l.sellerReviews),

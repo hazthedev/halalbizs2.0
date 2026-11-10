@@ -528,6 +528,9 @@ class AppLocalizationsMs extends AppLocalizations {
   String get sellerBuyer => 'Pembeli';
 
   @override
+  String get sellerShipTo => 'Hantar kepada';
+
+  @override
   String get sellerItems => 'Item';
 
   @override
@@ -547,6 +550,9 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get sellerCommission => 'Komisen';
+
+  @override
+  String get sellerCommissionEstimated => 'Anggaran sehingga pesanan selesai.';
 
   @override
   String get sellerPayment => 'Pembayaran';
@@ -729,11 +735,25 @@ class AppLocalizationsMs extends AppLocalizations {
   String get sellerImages => 'Imej';
 
   @override
-  String get sellerImagesHelp => 'Sehingga 9 imej.';
+  String get sellerImagesHelp =>
+      'Sehingga 9 foto. Pilih beberapa sekali gus. Ia dipaparkan mengikut urutan anda menambahnya.';
 
   @override
   String get sellerImagesSaveFirst =>
       'Simpan produk dahulu untuk menambah imej.';
+
+  @override
+  String get sellerImagesFull =>
+      '9 foto ialah had. Buang satu untuk menambah yang lain.';
+
+  @override
+  String sellerImagesTooMany(int count) {
+    return 'Hanya $count lagi foto boleh ditambah. Satu produk maksimum 9.';
+  }
+
+  @override
+  String get sellerDescriptionHasFormatting =>
+      'Penerangan ini mempunyai format. Suntingnya di pusat penjual web.';
 
   @override
   String get sellerAddImage => 'Tambah imej';
@@ -899,6 +919,13 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get sellerStoreSaved => 'Kedai disimpan';
+
+  @override
+  String get sellerSaveStoreSettings => 'Simpan tetapan kedai';
+
+  @override
+  String get sellerBankNeedsNumber =>
+      'Masukkan semula nombor akaun penuh untuk menukar butiran bank.';
 
   @override
   String get sellerStatusPending => 'Menunggu';

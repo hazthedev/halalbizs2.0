@@ -76,7 +76,7 @@ class _SellerEarningsScreenState extends ConsumerState<SellerEarningsScreen> {
 
     return SoukPage(
       title: l.sellerTabEarnings,
-      leading: const SellerBackToBuying(),
+      actions: const [SellerBackToBuying()],
       showBack: false,
       scrollable: true,
       onRefresh: _refresh,

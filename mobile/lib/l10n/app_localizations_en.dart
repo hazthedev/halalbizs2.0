@@ -521,6 +521,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellerBuyer => 'Buyer';
 
   @override
+  String get sellerShipTo => 'Ship to';
+
+  @override
   String get sellerItems => 'Items';
 
   @override
@@ -540,6 +543,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sellerCommission => 'Commission';
+
+  @override
+  String get sellerCommissionEstimated =>
+      'Estimated until the order completes.';
 
   @override
   String get sellerPayment => 'Payment';
@@ -721,10 +728,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellerImages => 'Images';
 
   @override
-  String get sellerImagesHelp => 'Up to 9 images.';
+  String get sellerImagesHelp =>
+      'Up to 9 photos. Pick several at once. They show in the order you add them.';
 
   @override
   String get sellerImagesSaveFirst => 'Save the product first to add images.';
+
+  @override
+  String get sellerImagesFull =>
+      '9 photos is the limit. Remove one to add another.';
+
+  @override
+  String sellerImagesTooMany(int count) {
+    return 'Only $count more photos fit. A product has at most 9.';
+  }
+
+  @override
+  String get sellerDescriptionHasFormatting =>
+      'This description has formatting. Edit it on the web seller centre.';
 
   @override
   String get sellerAddImage => 'Add image';
@@ -889,6 +910,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sellerStoreSaved => 'Store saved';
+
+  @override
+  String get sellerSaveStoreSettings => 'Save store settings';
+
+  @override
+  String get sellerBankNeedsNumber =>
+      'Re-enter the full account number to change bank details.';
 
   @override
   String get sellerStatusPending => 'Pending';

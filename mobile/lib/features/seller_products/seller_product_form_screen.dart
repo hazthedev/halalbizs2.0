@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,11 +13,12 @@ import '../seller_shared/models.dart';
 import '../seller_shared/rm.dart';
 import '../seller_shared/seller_kit.dart';
 import '../seller_shared/seller_api.dart';
+import 'description_html.dart';
 
 /// `/seller/products/new` and `/seller/products/:id` — one form. Create
 /// posts the single default variant's price/stock/SKU; edit sends the same
 /// fields for a single-variant product or `variants[]` for a matrix.
-/// Images upload one at a time once the product exists.
+/// Images upload once the product exists, several per pick, in one request.
 class SellerProductFormScreen extends ConsumerStatefulWidget {
   const SellerProductFormScreen({super.key, this.id});
 
@@ -54,6 +56,11 @@ class _VariantEdit {
 class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScreen> {
   final _name = {'en': TextEditingController(), 'ms': TextEditingController(), 'vi': TextEditingController()};
   final _desc = {'en': TextEditingController(), 'ms': TextEditingController(), 'vi': TextEditingController()};
+
+  /// Stored HTML per locale. A plain-paragraph one is edited as text in
+  /// [_desc]; a formatted one is shown read-only and sent back untouched.
+  Map<String, String> _descStored = const {};
+  bool _descRich(String locale) => !isPlainParagraphHtml(_descStored[locale] ?? '');
   final _price = TextEditingController();
   final _sale = TextEditingController();
   final _stock = TextEditingController();
@@ -115,8 +122,10 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
     for (final e in _name.entries) {
       e.value.text = p.nameTranslations[e.key] ?? '';
     }
+    _descStored = {for (final k in _desc.keys) k: p.descriptionTranslations[k] ?? ''};
     for (final e in _desc.entries) {
-      e.value.text = p.descriptionTranslations[e.key] ?? '';
+      final stored = _descStored[e.key]!;
+      e.value.text = _descRich(e.key) ? '' : htmlToParagraphs(stored);
     }
     _cod = p.codEnabled;
     _categoryId = p.categoryId;
@@ -149,6 +158,16 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
 
   String? _orNull(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
 
+  /// Untouched (or formatted) → the stored HTML as is; edited → `<p>` per paragraph.
+  String? _descBody(String locale) {
+    final stored = _descStored[locale] ?? '';
+    if (_descRich(locale) || _desc[locale]!.text.trim() == htmlToParagraphs(stored)) {
+      return stored.trim().isEmpty ? null : stored;
+    }
+    final html = paragraphsToHtml(_desc[locale]!.text);
+    return html.isEmpty ? null : html;
+  }
+
   /// Local checks, then the request body — null when a field is wrong.
   Map<String, dynamic>? _validate() {
     final l = context.l10n;
@@ -157,7 +176,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
 
     if (_name['en']!.text.trim().isEmpty) local['name.en'] = l.fieldRequired;
     body['name'] = {for (final e in _name.entries) e.key: _orNull(e.value)};
-    body['description'] = {for (final e in _desc.entries) e.key: _orNull(e.value)};
+    body['description'] = {for (final e in _desc.entries) e.key: _descBody(e.key)};
     if (_categoryId != null) {
       body['category_id'] = _categoryId;
     } else if (_isNew) {
@@ -285,12 +304,14 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
     }
   }
 
+  static const _maxImages = 9; // ProductWriteService::MAX_IMAGES
+
   Future<void> _addImage() async {
-    final file = await pickSellerImage(context, maxKb: 4096);
-    if (file == null || !mounted) return;
+    final files = await pickSellerImages(context, maxKb: 4096, remaining: _maxImages - _product!.images.length);
+    if (files == null || !mounted) return;
     setState(() => _busy = 'image');
     try {
-      final p = await ref.read(sellerApiProvider).uploadImages(_product!.id, [file]);
+      final p = await ref.read(sellerApiProvider).uploadImages(_product!.id, files);
       if (mounted) setState(() => _populate(p));
     } catch (e) {
       if (mounted) _fail(e);
@@ -393,9 +414,9 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
                   _field('seller-product-name-en', l.sellerNameEn, _name['en']!, path: 'name.en', required: true),
                   _field('seller-product-name-ms', l.sellerNameMs, _name['ms']!, path: 'name.ms'),
                   _field('seller-product-name-vi', l.sellerNameVi, _name['vi']!, path: 'name.vi'),
-                  _field('seller-product-desc-en', l.sellerDescriptionEn, _desc['en']!, path: 'description.en', lines: 4),
-                  _field('seller-product-desc-ms', l.sellerDescriptionMs, _desc['ms']!, path: 'description.ms', lines: 4),
-                  _field('seller-product-desc-vi', l.sellerDescriptionVi, _desc['vi']!, path: 'description.vi', lines: 4),
+                  _description(l, 'en', l.sellerDescriptionEn),
+                  _description(l, 'ms', l.sellerDescriptionMs),
+                  _description(l, 'vi', l.sellerDescriptionVi),
                   SoukField(
                     label: l.sellerCategory,
                     required: true,
@@ -469,12 +490,52 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
                     onChanged: (v) => setState(() => _cod = v),
                   ),
                   const SizedBox(height: SoukSpace.s4),
-                  Text(l.sellerImages, style: SoukText.displayH3),
+                  Row(children: [
+                    Expanded(child: Text(l.sellerImages, style: SoukText.displayH3)),
+                    if (p != null)
+                      Text('${p.images.length} / $_maxImages', key: const Key('seller-product-images-count'), style: SoukText.monoLabel),
+                  ]),
                   const SizedBox(height: SoukSpace.s1),
-                  Text(p == null ? l.sellerImagesSaveFirst : l.sellerImagesHelp, style: SoukText.meta),
+                  Text(
+                    p == null
+                        ? l.sellerImagesSaveFirst
+                        : (p.images.length >= _maxImages ? l.sellerImagesFull : l.sellerImagesHelp),
+                    style: SoukText.meta,
+                  ),
                   const SizedBox(height: SoukSpace.s3),
                   if (p != null) _images(l, p),
                 ]),
+    );
+  }
+
+  /// Plain paragraphs → a text box; formatted HTML → rendered, read-only,
+  /// with a pointer to the web editor (converting it would lose formatting).
+  Widget _description(AppLocalizations l, String locale, String label) {
+    if (!_descRich(locale)) {
+      return _field('seller-product-desc-$locale', label, _desc[locale]!, path: 'description.$locale', lines: 4);
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: SoukSpace.s4),
+      child: SoukField(
+        key: Key('seller-product-desc-$locale-readonly'),
+        label: label,
+        error: _err('description.$locale'),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(SoukSpace.s3),
+          decoration: BoxDecoration(
+            color: SoukColors.cream,
+            borderRadius: BorderRadius.circular(SoukRadius.control),
+            border: Border.all(color: SoukColors.line),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Core package only: links render as text, never open.
+            HtmlWidget(_descStored[locale]!, textStyle: SoukText.bodySoft),
+            const SizedBox(height: SoukSpace.s2),
+            Text(l.sellerDescriptionHasFormatting, style: SoukText.meta),
+          ]),
+        ),
+      ),
     );
   }
 
@@ -536,7 +597,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
                 ),
               ]),
             ),
-          if (p.images.length < 9)
+          if (p.images.length < _maxImages)
             SizedBox(
               width: 96,
               height: 96,

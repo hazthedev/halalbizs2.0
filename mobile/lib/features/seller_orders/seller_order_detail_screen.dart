@@ -144,13 +144,27 @@ class _Body extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final a = o.address;
+    // "Ship to" is the address snapshot; "Buyer" is the account (as in the list).
     final addressLines = [
-      asStr(a['recipient_name']) ?? o.buyerName,
-      asStr(a['phone']) ?? o.buyerPhone,
+      asStr(a['recipient_name']),
+      asStr(a['phone']),
       asStr(a['line1']),
       asStr(a['line2']),
-      [asStr(a['postcode']), asStr(a['city']), asStr(a['state'])].nonNulls.join(' '),
+      [
+        [asStr(a['postcode']), asStr(a['city'])].nonNulls.where((s) => s.isNotEmpty).join(' '),
+        asStr(a['state']),
+      ].nonNulls.where((s) => s.isNotEmpty).join(', '),
     ].nonNulls.where((s) => s.isNotEmpty).toList();
+    final buyerLines = [o.buyerName, o.buyerPhone].nonNulls.where((s) => s.isNotEmpty).toList();
+    Widget box(String key, List<String> lines) => SizedBox(
+          width: double.infinity,
+          child: SoukCard(
+            key: Key(key),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              for (final line in lines) Text(line, style: SoukText.body),
+            ]),
+          ),
+        );
     final tracking = o.tracking;
     final trackingNo = asStr(tracking['no']);
     // Only an https link opens the browser; anything else stays text.
@@ -197,12 +211,13 @@ class _Body extends StatelessWidget {
       ],
       Text(l.sellerBuyer, style: SoukText.displayH3),
       const SizedBox(height: SoukSpace.s2),
-      SoukCard(
-        key: const Key('seller-order-buyer'),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          for (final line in addressLines) Text(line, style: SoukText.body),
-        ]),
-      ),
+      box('seller-order-buyer', buyerLines),
+      if (addressLines.isNotEmpty) ...[
+        const SizedBox(height: SoukSpace.s5),
+        Text(l.sellerShipTo, style: SoukText.displayH3),
+        const SizedBox(height: SoukSpace.s2),
+        box('seller-order-ship-to', addressLines),
+      ],
       const SizedBox(height: SoukSpace.s5),
       Text(l.sellerItems, style: SoukText.displayH3),
       const SizedBox(height: SoukSpace.s2),
@@ -242,6 +257,8 @@ class _Body extends StatelessWidget {
               '${l.sellerCommission}${o.commissionRate == null ? '' : ' (${o.commissionRate}%)'}',
               o.commissionSen == null ? const Text('—', style: SoukText.mono) : PriceText(-o.commissionSen!),
             ),
+          if (o.commissionSen != null && !o.commissionSettled)
+            Align(alignment: Alignment.centerRight, child: Text(l.sellerCommissionEstimated, style: SoukText.meta)),
           SellerLine(
             l.sellerPayment,
             Row(mainAxisSize: MainAxisSize.min, children: [

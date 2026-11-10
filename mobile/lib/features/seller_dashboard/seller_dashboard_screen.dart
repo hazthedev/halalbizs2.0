@@ -32,7 +32,7 @@ class SellerDashboardScreen extends ConsumerWidget {
 
     return SoukPage(
       title: storeName ?? l.sellerTabDashboard,
-      leading: const SellerBackToBuying(),
+      actions: const [SellerBackToBuying()],
       showBack: false,
       scrollable: true,
       onRefresh: () => _refresh(ref),
