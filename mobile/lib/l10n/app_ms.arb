@@ -176,7 +176,7 @@
   "newAddress": "Alamat baharu",
   "address": "Alamat",
   "conversation": "Perbualan",
-  "checkout": "Daftar keluar",
+  "checkout": "Bayar",
   "payment": "Pembayaran",
   "orderPlaced": "Pesanan dibuat",
   "orderDetails": "Butiran pesanan",
@@ -400,7 +400,7 @@
       }
     }
   },
-  "cartCheckout": "Daftar keluar",
+  "cartCheckout": "Bayar",
   "cartContinueShopping": "Teruskan membeli-belah",
   "cartEmptyTitle": "Troli anda kosong",
   "cartEmptyBody": "Cari sesuatu yang halal dan baik — ia akan menunggu anda di sini.",
@@ -412,10 +412,10 @@
       }
     }
   },
-  "cartPurchasingPaused": "Pembelian dijeda — anda boleh melayari, tetapi tidak boleh daftar keluar buat masa ini.",
+  "cartPurchasingPaused": "Pembelian dijeda — anda boleh melayari, tetapi tidak boleh membayar buat masa ini.",
   "cartRemove": "Buang",
   "cartSelectAll": "Pilih semua",
-  "cartSelectToCheckout": "Pilih sekurang-kurangnya satu item untuk daftar keluar.",
+  "cartSelectToCheckout": "Pilih sekurang-kurangnya satu item untuk dibayar.",
   "cartSelectedSubtotal": "Subjumlah · {count} dipilih",
   "@cartSelectedSubtotal": {
     "placeholders": {
@@ -426,7 +426,7 @@
   },
   "cartUnavailable": "Tidak tersedia",
   "cartViewCart": "Lihat troli",
-  "checkoutTitle": "Daftar keluar",
+  "checkoutTitle": "Bayar",
   "checkoutDeliverTo": "Hantar ke",
   "checkoutChange": "Tukar",
   "checkoutNoAddress": "Anda belum mempunyai alamat penghantaran — tambah alamat untuk membuat pesanan.",
@@ -537,7 +537,7 @@
     }
   },
   "ordersEmptyTitle": "Belum ada pesanan",
-  "ordersEmptyBody": "Pesanan anda akan dipaparkan di sini selepas daftar keluar.",
+  "ordersEmptyBody": "Pesanan anda akan dipaparkan di sini selepas anda membayar.",
   "ordersEmptyBucketTitle": "Tiada pesanan dalam status ini",
   "ordersEmptyBucketBody": "Pilih tab lain untuk melihat pesanan anda yang lain.",
   "ordersLoadMore": "Muat lagi",
@@ -596,7 +596,7 @@
   "accountAddAddress": "Tambah alamat",
   "accountEditAddress": "Sunting alamat",
   "accountNoAddresses": "Belum ada alamat",
-  "accountNoAddressesBody": "Tambah alamat penghantaran untuk daftar keluar lebih pantas.",
+  "accountNoAddressesBody": "Tambah alamat penghantaran untuk pembayaran lebih pantas.",
   "accountAddressLabel": "Label",
   "accountAddressLabelHint": "Rumah, Pejabat…",
   "accountRecipientName": "Nama penerima",

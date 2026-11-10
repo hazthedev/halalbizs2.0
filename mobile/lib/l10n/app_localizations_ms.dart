@@ -420,7 +420,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get conversation => 'Perbualan';
 
   @override
-  String get checkout => 'Daftar keluar';
+  String get checkout => 'Bayar';
 
   @override
   String get payment => 'Pembayaran';
@@ -965,7 +965,7 @@ class AppLocalizationsMs extends AppLocalizations {
   }
 
   @override
-  String get cartCheckout => 'Daftar keluar';
+  String get cartCheckout => 'Bayar';
 
   @override
   String get cartContinueShopping => 'Teruskan membeli-belah';
@@ -984,7 +984,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get cartPurchasingPaused =>
-      'Pembelian dijeda — anda boleh melayari, tetapi tidak boleh daftar keluar buat masa ini.';
+      'Pembelian dijeda — anda boleh melayari, tetapi tidak boleh membayar buat masa ini.';
 
   @override
   String get cartRemove => 'Buang';
@@ -994,7 +994,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get cartSelectToCheckout =>
-      'Pilih sekurang-kurangnya satu item untuk daftar keluar.';
+      'Pilih sekurang-kurangnya satu item untuk dibayar.';
 
   @override
   String cartSelectedSubtotal(int count) {
@@ -1008,7 +1008,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get cartViewCart => 'Lihat troli';
 
   @override
-  String get checkoutTitle => 'Daftar keluar';
+  String get checkoutTitle => 'Bayar';
 
   @override
   String get checkoutDeliverTo => 'Hantar ke';
@@ -1177,7 +1177,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ordersEmptyBody =>
-      'Pesanan anda akan dipaparkan di sini selepas daftar keluar.';
+      'Pesanan anda akan dipaparkan di sini selepas anda membayar.';
 
   @override
   String get ordersEmptyBucketTitle => 'Tiada pesanan dalam status ini';
@@ -1338,7 +1338,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get accountNoAddressesBody =>
-      'Tambah alamat penghantaran untuk daftar keluar lebih pantas.';
+      'Tambah alamat penghantaran untuk pembayaran lebih pantas.';
 
   @override
   String get accountAddressLabel => 'Label';
