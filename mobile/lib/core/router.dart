@@ -74,10 +74,11 @@ String? soukRedirect(SessionState session, Uri uri) {
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = ValueNotifier(0);
   ref.listen(sessionProvider, (prev, next) {
-    // A sign-in from an auth screen is left alone: the screen navigates
-    // itself (pops back when it was pushed), so a redirect here would wipe
-    // the stack under it and the back arrow with it.
-    final signedInFromAuth = next is SignedIn && (prev is SignedOut || prev is TwoFactorPending);
+    // A sign-in step from an auth screen (password → 2FA challenge → signed
+    // in) is left alone: the screen navigates itself (pops back when it was
+    // pushed), so a redirect here would wipe the stack and the back arrow.
+    final signedInFromAuth = (next is SignedIn && (prev is SignedOut || prev is TwoFactorPending)) ||
+        (next is TwoFactorPending && prev is SignedOut);
     if (!signedInFromAuth) notifier.value++;
     // A different account (or none) is signed in: drop every cached account-scoped read.
     if (_userId(prev) != _userId(next)) _dropAccountData(ref);

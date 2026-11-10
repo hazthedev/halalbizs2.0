@@ -106,7 +106,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!mounted) return;
       final s = ref.read(sessionProvider);
       if (s is TwoFactorPending) {
-        router.go('/two-factor${from == null ? '' : '?from=${Uri.encodeComponent(from)}'}');
+        final tf = '/two-factor${from == null ? '' : '?from=${Uri.encodeComponent(from)}'}';
+        if (!router.canPop()) return router.go(tf);
+        // Pushed over a page: the code screen stacks on this one; a verified
+        // code pops back here and this screen pops back to that page, which
+        // completes the action that started the sign-in.
+        if (await router.push<bool>(tf) == true && mounted) router.pop(true);
       } else if (s is SignedIn) {
         // Pushed over a page (heart, Add to cart): back to it, stack intact.
         router.canPop() ? router.pop(true) : router.go(safeFrom(from));
@@ -371,7 +376,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     try {
       await ref.read(sessionProvider.notifier).verifyTwoFactor(_code.text.trim());
       if (!mounted) return;
-      router.go(safeFrom(widget.from));
+      router.canPop() ? router.pop(true) : router.go(safeFrom(widget.from));
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
