@@ -1,0 +1,181 @@
+import 'package:collection/collection.dart';
+import 'package:html/parser.dart' as html_parser;
+
+import '../../core/api/json.dart';
+
+/// `ProductResource` (app/Http/Resources/ProductResource.php): id, slug,
+/// name, description, min_price_sen, sold_count, rating_avg, image,
+/// store{name,slug}, variants[]. Slice 2 adds `images[]`, `cod_enabled` and
+/// a reviews summary; they are read here when present.
+class Product {
+  Product(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  String get slug => asStr(json['slug']) ?? '';
+  String get name => asStr(json['name']) ?? '';
+  String get description => asStr(json['description']) ?? '';
+  int get minPriceSen => asInt(json['min_price_sen']) ?? 0;
+  int get soldCount => asInt(json['sold_count']) ?? 0;
+  double get ratingAvg => asDouble(json['rating_avg']) ?? 0;
+  int get reviewCount => asInt(json['review_count'] ?? asMap(json['reviews'])['count']) ?? 0;
+  String? get image => asStr(json['image']);
+
+  /// Gallery: `images[{large, card}]` (detail only) in the seller's order,
+  /// else the single `image`.
+  List<String> get images => _gallery('card');
+
+  /// Full-size gallery URLs for the zoom view (same order as [images]).
+  List<String> get largeImages => _gallery('large');
+
+  List<String> _gallery(String size) {
+    final list = asList(json['images']).map((i) => i is Map ? asStr(i[size] ?? i['card'] ?? i['url']) : asStr(i)).nonNulls.toList();
+    if (list.isNotEmpty) return list;
+    return image == null ? const [] : [image!];
+  }
+
+  /// Picker rows (`options[{id, name, values[{id, value}]}]`, detail only).
+  /// Without option data but with several variants, one row of the
+  /// variants themselves (value id = variant id).
+  List<OptionGroup> get optionGroups {
+    final groups = asMapList(json['options']).map(OptionGroup.new).where((g) => g.values.isNotEmpty).toList();
+    if (groups.isNotEmpty || variants.length < 2) return groups;
+    return [
+      OptionGroup({
+        'id': 0,
+        'name': '',
+        'values': [for (final v in variants) {'id': v.id, 'value': v.label}],
+      }),
+    ];
+  }
+
+  /// The variant matching one pick per row ([optionGroups] id → value id),
+  /// or null while a row is unpicked. A single variant needs no pick.
+  Variant? variantFor(Map<int, int> picks) {
+    final groups = optionGroups;
+    if (variants.length == 1) return variants.first;
+    if (groups.isEmpty || picks.length < groups.length) return null;
+    return variants.firstWhereOrNull((v) => picks.values.every(_valueIds(v, groups).contains));
+  }
+
+  /// Web ProductDetail::availabilityMap: a value is pickable when some
+  /// in-stock variant carries it together with the other rows' picks.
+  bool isAvailable(Map<int, int> picks, int groupId, int valueId) {
+    final groups = optionGroups;
+    final wanted = {...picks, groupId: valueId}.values;
+    return variants.any((v) => v.inStock && wanted.every(_valueIds(v, groups).contains));
+  }
+
+  static List<int> _valueIds(Variant v, List<OptionGroup> groups) =>
+      groups.length == 1 && groups.first.id == 0 ? [v.id] : v.optionValueIds;
+
+  int get maxPriceSen => variants.isEmpty ? minPriceSen : variants.map((v) => v.priceSen).max;
+  int get lowestPriceSen => variants.isEmpty ? minPriceSen : variants.map((v) => v.priceSen).min;
+
+  bool get codEnabled => asBool(json['cod_enabled']);
+  String? get storeName => asStr(asMap(json['store'])['name']);
+  String? get storeSlug => asStr(asMap(json['store'])['slug']);
+  List<Variant> get variants => asMapList(json['variants']).map(Variant.new).toList();
+  bool get inStock => variants.isEmpty ? true : variants.any((v) => v.stock > 0);
+}
+
+/// `variants[{id, sku, options_label, price_sen, stock}]`; `price_sen` is the
+/// EFFECTIVE price (sale applied server-side). When the API also sends the
+/// original `price_sen` as `regular_price_sen` / a lower `sale_price_sen`,
+/// the strike-through shows.
+class Variant {
+  Variant(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  String get sku => asStr(json['sku']) ?? '';
+  String get label => asStr(json['options_label'] ?? json['name']) ?? 'Default';
+  int get priceSen => asInt(json['sale_price_sen']) ?? asInt(json['price_sen']) ?? 0;
+
+  /// Original price when on sale (`regular_price_sen`, or `price_sen` beside
+  /// a `sale_price_sen`), else null.
+  int? get regularPriceSen {
+    final regular = asInt(json['regular_price_sen']) ?? (json['sale_price_sen'] == null ? null : asInt(json['price_sen']));
+    return regular != null && regular > priceSen ? regular : null;
+  }
+
+  List<int> get optionValueIds => asList(json['option_value_ids']).map(asInt).nonNulls.toList();
+
+  int get stock => asInt(json['stock']) ?? 0;
+  bool get inStock => stock > 0;
+}
+
+/// One picker row: `{id, name, values[{id, value}]}`.
+class OptionGroup {
+  OptionGroup(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  String get name => asStr(json['name']) ?? '';
+  List<({int id, String value})> get values =>
+      [for (final v in asMapList(json['values'])) (id: asInt(v['id']) ?? 0, value: asStr(v['value']) ?? '')];
+}
+
+/// `CategoryResource`: id, slug, name, parent_id.
+class Category {
+  Category(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  String get slug => asStr(json['slug']) ?? '';
+  String get name => asStr(json['name']) ?? '';
+  int? get parentId => asInt(json['parent_id']);
+}
+
+/// `GET stores/{slug}` (slice 2): name, slug, description, logo, banner,
+/// product_count, rating_avg. Built from a product's `store{name,slug}` when
+/// the endpoint is not there yet.
+class Store {
+  Store(this.json);
+
+  final Map<String, dynamic> json;
+
+  int? get id => asInt(json['id']);
+  String get slug => asStr(json['slug']) ?? '';
+  String get name => asStr(json['name']) ?? slug;
+
+  /// Seller rich-text HTML; render with HtmlWidget, or use [descriptionPlain].
+  String? get description => asStr(json['description']);
+
+  /// [description] as one line of plain text for clamped blurbs.
+  String? get descriptionPlain {
+    final d = description;
+    return d == null ? null : htmlToPlain(d);
+  }
+
+  String? get logo => asStr(json['logo']);
+  String? get banner => asStr(json['banner']);
+  int? get productCount => asInt(json['product_count']);
+  double? get ratingAvg => asDouble(json['rating_avg']);
+}
+
+/// Pagination from the envelope `meta` (`page` from ApiResponse, or the
+/// legacy paginator's `current_page`).
+class PageMeta {
+  PageMeta(Map<String, dynamic>? m)
+      : page = asInt(m?['current_page'] ?? m?['page']) ?? 1,
+        lastPage = asInt(m?['last_page']) ?? 1,
+        total = asInt(m?['total']) ?? 0;
+
+  final int page;
+  final int lastPage;
+  final int total;
+  bool get hasMore => page < lastPage;
+}
+
+/// Tags stripped, entities decoded, whitespace collapsed. Block ends and
+/// `<br>` become spaces so "<p>a</p><p>b</p>" reads "a b", not "ab".
+String htmlToPlain(String html) => html_parser
+    .parseFragment(html.replaceAll(RegExp(r'<br\s*/?>|</(p|div|li|h[1-6])>', caseSensitive: false), ' '))
+    .text!
+    .replaceAll(RegExp(r'\s+'), ' ')
+    .trim();
