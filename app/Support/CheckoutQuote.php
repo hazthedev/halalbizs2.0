@@ -104,6 +104,10 @@ final class CheckoutQuote
                     'line_total_sen' => $line->unitPriceSen * $line->qty,
                     'tax_sen' => $line->taxSen,
                     'cod_enabled' => (bool) $line->variant->product->cod_enabled,
+                    // The web checkout line badge: the number, only when verified.
+                    'halal_cert_number' => $line->variant->product->halalVerdict() === 'verified'
+                        ? $line->variant->product->halalCertificate->number
+                        : null,
                 ])->values()->all(),
             ])->values()->all(),
             'subtotal_sen' => $this->subtotalSen,
