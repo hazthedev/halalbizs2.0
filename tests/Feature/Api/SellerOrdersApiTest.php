@@ -268,3 +268,22 @@ test('return dispute needs a reason, escalates the request and leaves the sub-or
         ->and($request->escalated_at)->not->toBeNull()
         ->and($request->seller_response)->toContain('used and damaged');
 });
+
+test('an unsettled sub-order sends the commission the completion ledger will book, flagged as not settled', function () {
+    $seller = sellerApiUser();
+    $open = sellerApiSubOrder($seller->store); // 10000 subtotal at 5.00%, commission_sen not stamped yet
+
+    expect($open->commission_sen)->toBeNull();
+
+    sellerApiAs($seller)->getJson("/api/v1/seller/orders/{$open->id}")
+        ->assertOk()
+        ->assertJsonPath('data.commission_sen', 500)
+        ->assertJsonPath('data.commission_settled', false);
+
+    $open->forceFill(['commission_sen' => 321])->saveQuietly();
+
+    sellerApiAs($seller)->getJson("/api/v1/seller/orders/{$open->id}")
+        ->assertOk()
+        ->assertJsonPath('data.commission_sen', 321)
+        ->assertJsonPath('data.commission_settled', true);
+});

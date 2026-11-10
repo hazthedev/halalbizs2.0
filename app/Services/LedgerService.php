@@ -50,11 +50,7 @@ class LedgerService
             $saleSen = $subOrder->items_subtotal_sen + $subOrder->shipping_fee_sen - $subOrder->shop_discount_sen + $subOrder->tax_sen;
 
             $basis = $this->commissionSettings->basis();
-            $baseSen = $this->commissionBaseSen($subOrder, $basis);
-
-            // round(base × rate%) with integer math: rate is decimal(5,2).
-            $rateBasisPoints = (int) round((float) $subOrder->commission_rate * 100); // e.g. 5.25% → 525
-            $commissionSen = intdiv($baseSen * $rateBasisPoints + 5000, 10000);
+            $commissionSen = $this->commissionSen($subOrder, $basis);
 
             // Snapshot the basis alongside the rate — hard rule #5. The setting
             // is flippable, so without this a historical commission cannot be
@@ -94,6 +90,21 @@ class LedgerService
                 $item->product?->increment('sold_count', $item->qty);
             }
         });
+    }
+
+    /**
+     * The commission completion books for this sub-order under [basis]
+     * (default: the current setting). Before completion it is a preview: the
+     * basis can still change, so the seller API flags it as not settled.
+     */
+    public function commissionSen(SubOrder $subOrder, ?CommissionBasis $basis = null): int
+    {
+        $baseSen = $this->commissionBaseSen($subOrder, $basis ?? $this->commissionSettings->basis());
+
+        // round(base × rate%) with integer math: rate is decimal(5,2).
+        $rateBasisPoints = (int) round((float) $subOrder->commission_rate * 100); // e.g. 5.25% → 525
+
+        return intdiv($baseSen * $rateBasisPoints + 5000, 10000);
     }
 
     private function isUniqueViolation(QueryException $e): bool

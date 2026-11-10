@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\OrderItem;
 use App\Models\OrderStatusHistory;
 use App\Models\SubOrder;
+use App\Services\LedgerService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -56,7 +57,11 @@ class SellerOrderResource extends JsonResource
             'tax_sen' => $this->tax_sen,
             'total_sen' => $this->total_sen,
             'commission_rate' => (string) $this->commission_rate,
-            'commission_sen' => $this->commission_sen,
+            // Stamped at completion. Before that, the same formula the ledger
+            // will book (LedgerService::commissionSen), flagged not settled.
+            'commission_sen' => $this->commission_sen
+                ?? ($this->relationLoaded('items') ? app(LedgerService::class)->commissionSen($this->resource) : null),
+            'commission_settled' => $this->commission_sen !== null,
             'payment' => [
                 'method' => $order?->payment_method?->value,
                 'status' => $order?->payment_status?->value,
