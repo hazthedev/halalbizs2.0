@@ -100,6 +100,11 @@ class PaymentState {
 
   /// Fresh hand-off URL while the order can still be paid, else null.
   String? get retryUrl => asStr(json['retry_url']);
+
+  int get totalSen => asInt(json['total_sen']) ?? 0;
+
+  /// One row per shop order: `{id, sub_order_no, store{id,name}, status}`.
+  List<Map<String, dynamic>> get subOrders => asMapList(json['sub_orders']);
   bool get expired => retryUrl == null && !paid && (expiresAt == null || !DateTime.now().isBefore(expiresAt!));
 }
 
@@ -170,3 +175,7 @@ String newIdempotencyKey() {
 }
 
 final checkoutApiProvider = Provider<CheckoutApi>((ref) => CheckoutApi(ref.watch(apiClientProvider)));
+
+/// The done page's read of `GET orders/{orderNo}/payment`.
+final paymentStateProvider =
+    FutureProvider.autoDispose.family<PaymentState, String>((ref, orderNo) => ref.watch(checkoutApiProvider).payment(orderNo));

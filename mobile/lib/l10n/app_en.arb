@@ -531,6 +531,8 @@
   },
   "ordersEmptyTitle": "No orders yet",
   "ordersEmptyBody": "Your orders appear here once you check out.",
+  "ordersEmptyBucketTitle": "No orders in this status",
+  "ordersEmptyBucketBody": "Pick another tab to see your other orders.",
   "ordersLoadMore": "Load more",
   "ordersTracking": "Tracking",
   "ordersTrack": "Track",
@@ -687,5 +689,77 @@
   "ordersReturnStatusDisputed": "Disputed",
   "ordersReturnStatusEscalated": "Escalated",
   "ordersReturnStatusRefunded": "Refunded",
-  "ordersReturnStatusRejected": "Rejected"
+  "ordersReturnStatusRejected": "Rejected",
+  "checkoutDonePaid": "Paid {amount} (payment {orderNo}).",
+  "@checkoutDonePaid": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutDoneCod": "Total {amount}, paid on delivery (payment {orderNo}).",
+  "@checkoutDoneCod": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutDoneSplit": "{count, plural, =1{It ships as one shipment.} other{Your order is split into {count} shipments, one per shop.}}",
+  "@checkoutDoneSplit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersOrderNo": "Order {no}",
+  "@ordersOrderNo": {
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersPaymentNo": "Payment {no}",
+  "@ordersPaymentNo": {
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "productSelect": "Select: {options}",
+  "@productSelect": {
+    "placeholders": {
+      "options": {
+        "type": "String"
+      }
+    }
+  },
+  "productChoose": "Choose a {option}",
+  "@productChoose": {
+    "placeholders": {
+      "option": {
+        "type": "String"
+      }
+    }
+  },
+  "productStock": "Stock: {count}",
+  "@productStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productViewImage": "View image",
+  "close": "Close"
 }

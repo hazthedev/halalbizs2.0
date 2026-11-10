@@ -1153,6 +1153,13 @@ class AppLocalizationsMs extends AppLocalizations {
       'Pesanan anda akan dipaparkan di sini selepas daftar keluar.';
 
   @override
+  String get ordersEmptyBucketTitle => 'Tiada pesanan dalam status ini';
+
+  @override
+  String get ordersEmptyBucketBody =>
+      'Pilih tab lain untuk melihat pesanan anda yang lain.';
+
+  @override
   String get ordersLoadMore => 'Muat lagi';
 
   @override
@@ -1518,4 +1525,57 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ordersReturnStatusRejected => 'Rejected';
+
+  @override
+  String checkoutDonePaid(String amount, String orderNo) {
+    return 'Dibayar $amount (bayaran $orderNo).';
+  }
+
+  @override
+  String checkoutDoneCod(String amount, String orderNo) {
+    return 'Jumlah $amount, dibayar semasa penghantaran (bayaran $orderNo).';
+  }
+
+  @override
+  String checkoutDoneSplit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Pesanan anda dibahagikan kepada $count penghantaran, satu bagi setiap kedai.',
+      one: 'Ia dihantar sebagai satu penghantaran.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String ordersOrderNo(String no) {
+    return 'Pesanan $no';
+  }
+
+  @override
+  String ordersPaymentNo(String no) {
+    return 'Bayaran $no';
+  }
+
+  @override
+  String productSelect(String options) {
+    return 'Pilih: $options';
+  }
+
+  @override
+  String productChoose(String option) {
+    return 'Pilih $option';
+  }
+
+  @override
+  String productStock(int count) {
+    return 'Stok: $count';
+  }
+
+  @override
+  String get productViewImage => 'Lihat gambar';
+
+  @override
+  String get close => 'Tutup';
 }

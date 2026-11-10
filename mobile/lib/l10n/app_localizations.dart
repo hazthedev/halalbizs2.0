@@ -2198,6 +2198,18 @@ abstract class AppLocalizations {
   /// **'Your orders appear here once you check out.'**
   String get ordersEmptyBody;
 
+  /// No description provided for @ordersEmptyBucketTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders in this status'**
+  String get ordersEmptyBucketTitle;
+
+  /// No description provided for @ordersEmptyBucketBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick another tab to see your other orders.'**
+  String get ordersEmptyBucketBody;
+
   /// No description provided for @ordersLoadMore.
   ///
   /// In en, this message translates to:
@@ -2869,6 +2881,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rejected'**
   String get ordersReturnStatusRejected;
+
+  /// No description provided for @checkoutDonePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid {amount} (payment {orderNo}).'**
+  String checkoutDonePaid(String amount, String orderNo);
+
+  /// No description provided for @checkoutDoneCod.
+  ///
+  /// In en, this message translates to:
+  /// **'Total {amount}, paid on delivery (payment {orderNo}).'**
+  String checkoutDoneCod(String amount, String orderNo);
+
+  /// No description provided for @checkoutDoneSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{It ships as one shipment.} other{Your order is split into {count} shipments, one per shop.}}'**
+  String checkoutDoneSplit(int count);
+
+  /// No description provided for @ordersOrderNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Order {no}'**
+  String ordersOrderNo(String no);
+
+  /// No description provided for @ordersPaymentNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment {no}'**
+  String ordersPaymentNo(String no);
+
+  /// No description provided for @productSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select: {options}'**
+  String productSelect(String options);
+
+  /// No description provided for @productChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a {option}'**
+  String productChoose(String option);
+
+  /// No description provided for @productStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock: {count}'**
+  String productStock(int count);
+
+  /// No description provided for @productViewImage.
+  ///
+  /// In en, this message translates to:
+  /// **'View image'**
+  String get productViewImage;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate

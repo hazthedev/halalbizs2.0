@@ -47,7 +47,7 @@ class HomeScreen extends ConsumerWidget {
             data: (c) => _CategoryStrip(c.data),
           ),
           const SizedBox(height: SoukSpace.s5),
-          SoukSectionHeading(l.featured, linkLabel: l.viewAll, onLink: () => context.go('/search')),
+          SoukSectionHeading(l.featured, linkLabel: l.viewAll, onLink: () => context.push('/featured')),
           const SizedBox(height: SoukSpace.s3),
           products.when(
             skipLoadingOnRefresh: true,
@@ -90,6 +90,78 @@ class _CategoryStrip extends StatelessWidget {
           selected: false,
           onTap: () => context.push('/c/${Uri.encodeComponent(categories[i].slug)}'),
         ),
+      ),
+    );
+  }
+}
+
+/// `/featured` — Home's "View all": the same `GET products?sort=top` list as
+/// the Featured grid (page 1 shared with Home), plus "Load more" pages.
+class FeaturedScreen extends ConsumerStatefulWidget {
+  const FeaturedScreen({super.key});
+
+  @override
+  ConsumerState<FeaturedScreen> createState() => _FeaturedScreenState();
+}
+
+class _FeaturedScreenState extends ConsumerState<FeaturedScreen> {
+  final _more = <ProductPage>[];
+  bool _loading = false;
+
+  Future<void> _refresh() async {
+    setState(_more.clear);
+    ref.invalidate(featuredProductsProvider);
+    try {
+      await ref.read(featuredProductsProvider.future);
+    } catch (_) {
+      // surfaced by the ErrorPane
+    }
+  }
+
+  Future<void> _loadMore(int page) async {
+    setState(() => _loading = true);
+    try {
+      final next = await ref.read(catalogApiProvider).products(sort: 'top', page: page);
+      if (mounted) setState(() => _more.add(next));
+    } catch (e) {
+      if (mounted) showApiError(context, e);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final async = ref.watch(featuredProductsProvider);
+    return SoukPage(
+      title: l.featured,
+      scrollable: true,
+      onRefresh: _refresh,
+      fromCache: async.value?.fromCache ?? false,
+      cachedAt: async.value?.fetchedAt,
+      body: async.when(
+        skipLoadingOnRefresh: true,
+        loading: () => const SoukSkeleton.cards(rows: 4),
+        error: (e, _) => ErrorPane(error: e, onRetry: _refresh, retryLabel: l.retry),
+        data: (first) {
+          final last = _more.lastOrNull ?? first;
+          final items = [first, ..._more].expand((p) => p.items).toList();
+          if (items.isEmpty) return SoukEmptyState(title: l.noProductsYet, message: l.noProductsBody);
+          return Column(children: [
+            ProductGrid(items, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
+            if (last.meta.hasMore) ...[
+              const SizedBox(height: SoukSpace.s4),
+              SoukButton(
+                key: const Key('featured-load-more'),
+                label: l.ordersLoadMore,
+                busy: _loading,
+                requiresOnline: true,
+                onPressed: () => _loadMore(last.meta.page + 1),
+              ),
+            ],
+          ]);
+        },
       ),
     );
   }

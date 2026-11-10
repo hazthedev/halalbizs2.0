@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,8 +13,10 @@ import '../cart/cart_api.dart';
 import '../messages/messages_api.dart';
 import 'catalog_api.dart';
 import 'models.dart';
+import 'variant_sheet.dart';
 
-/// `/p/:slug` — gallery, name, price (sale strike-through), variant chips,
+/// `/p/:slug` — gallery, name, price (range until a variant is picked, sale
+/// strike-through), "Select: Colour, Size" row opening the variant sheet,
 /// stock, store row, description, sold / rating, pinned "Add to cart".
 class ProductScreen extends ConsumerStatefulWidget {
   const ProductScreen({super.key, required this.slug});
@@ -25,17 +28,31 @@ class ProductScreen extends ConsumerStatefulWidget {
 }
 
 class _ProductScreenState extends ConsumerState<ProductScreen> {
-  int? _variantId;
+  /// Picker row id → value id (see [Product.optionGroups]).
+  Map<int, int> _picks = {};
   int _qty = 1;
   int _image = 0;
   bool _adding = false;
   bool _chatting = false;
 
-  Variant? _selected(Product p) {
-    final vs = p.variants;
-    if (vs.isEmpty) return null;
-    return vs.firstWhere((v) => v.id == _variantId, orElse: () => vs.firstWhere((v) => v.inStock, orElse: () => vs.first));
-  }
+  /// The page's own messenger: the "Added to cart" bar floats above this
+  /// page's bottom bar (the shell's messenger would lay it over Add to cart)
+  /// and leaves with the page instead of covering Cart's Checkout.
+  final _messenger = GlobalKey<ScaffoldMessengerState>();
+
+  Variant? _selected(Product p) => p.variantFor(_picks);
+
+  /// The variant sheet; true when the shopper confirmed a full pick.
+  Future<bool> _openSheet(Product p) => showVariantSheet(
+        context,
+        product: p,
+        picks: _picks,
+        qty: _qty,
+        onChanged: (picks, qty) => setState(() {
+          _picks = picks;
+          _qty = qty;
+        }),
+      );
 
   Future<void> _refresh() async {
     ref.invalidate(productProvider(widget.slug));
@@ -47,6 +64,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   }
 
   Future<void> _addToCart(Product p) async {
+    // An incomplete pick opens the sheet instead of failing.
+    if (_selected(p) == null) {
+      if (p.variants.isEmpty || !await _openSheet(p) || !mounted) return;
+    }
     final v = _selected(p);
     if (v == null) return;
     if (ref.read(sessionProvider) is! SignedIn) {
@@ -55,15 +76,17 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     }
     setState(() => _adding = true);
     final l = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
     try {
       await ref.read(cartProvider.notifier).add(variantId: v.id, qty: _qty);
       if (!mounted) return;
-      messenger
-        ..clearSnackBars()
+      _messenger.currentState
+        ?..clearSnackBars()
         ..showSnackBar(SnackBar(
           content: Text(l.addedToCart),
+          // An action makes a SnackBar persist by default; this one must go.
+          persist: false,
+          duration: const Duration(seconds: 4),
           action: SnackBarAction(key: const Key('product-view-cart'), label: l.cartViewCart, textColor: SoukColors.onDark, onPressed: () => router.go('/cart')),
         ));
     } catch (e) {
@@ -104,8 +127,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     final product = async.value?.data;
     final variant = product == null ? null : _selected(product);
     final canBuy = product != null && (variant?.inStock ?? product.inStock);
+    final picker = product != null && product.variants.length > 1;
 
-    return SoukPage(
+    return ScaffoldMessenger(key: _messenger, child: SoukPage(
       title: product?.name ?? l.product,
       scrollable: true,
       onRefresh: _refresh,
@@ -125,8 +149,11 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       bottomBar: product == null
           ? null
           : Row(children: [
-              QtyStepper(value: _qty, max: variant?.stock, enabled: canBuy, onChanged: (v) => setState(() => _qty = v)),
-              const SizedBox(width: SoukSpace.s3),
+              // Several variants: quantity lives in the variant sheet.
+              if (!picker) ...[
+                QtyStepper(value: _qty, max: variant?.stock, enabled: canBuy, onChanged: (v) => setState(() => _qty = v)),
+                const SizedBox(width: SoukSpace.s3),
+              ],
               Expanded(
                 child: SoukButton(
                   key: const Key('product-add-to-cart'),
@@ -156,13 +183,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
           variant: variant,
           image: _image,
           onImage: (i) => setState(() => _image = i),
-          onVariant: (v) => setState(() {
-            _variantId = v.id;
-            if (v.stock > 0 && _qty > v.stock) _qty = v.stock;
-          }),
+          onSelect: () => _openSheet(r.data),
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -172,22 +196,25 @@ class _ProductBody extends StatelessWidget {
     required this.variant,
     required this.image,
     required this.onImage,
-    required this.onVariant,
+    required this.onSelect,
   });
 
   final Product product;
   final Variant? variant;
   final int image;
   final ValueChanged<int> onImage;
-  final ValueChanged<Variant> onVariant;
+  final VoidCallback onSelect;
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
     final p = product;
     final images = p.images;
-    final price = variant?.priceSen ?? p.minPriceSen;
+    // Web PDP: the picked variant's price, else min – max (cards show min).
+    final price = variant?.priceSen ?? p.lowestPriceSen;
+    final maxPrice = variant == null ? p.maxPriceSen : price;
     final regular = variant?.regularPriceSen;
+    final groups = p.variants.length > 1 ? p.optionGroups : const <OptionGroup>[];
     final stock = variant?.stock;
 
     return Column(
@@ -202,7 +229,11 @@ class _ProductBody extends StatelessWidget {
                   key: const Key('product-gallery'),
                   itemCount: images.length,
                   onPageChanged: onImage,
-                  itemBuilder: (_, i) => ProductImage(images[i], radius: 0),
+                  itemBuilder: (_, i) => GestureDetector(
+                    key: Key('product-gallery-$i'),
+                    onTap: () => showImageViewer(context, p.largeImages.elementAtOrNull(i) ?? images[i]),
+                    child: ProductImage(images[i], radius: 0),
+                  ),
                 ),
         ),
         if (images.length > 1)
@@ -211,6 +242,7 @@ class _ProductBody extends StatelessWidget {
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               for (var i = 0; i < images.length; i++)
                 Container(
+                  key: Key('product-gallery-dot-$i${i == image ? '-on' : ''}'),
                   width: i == image ? 18 : 6,
                   height: 6,
                   margin: const EdgeInsets.symmetric(horizontal: 3),
@@ -228,8 +260,13 @@ class _ProductBody extends StatelessWidget {
             children: [
               Text(p.name, key: const Key('product-name'), style: SoukText.displayH2),
               const SizedBox(height: SoukSpace.s3),
-              Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              // Wrap: a min – max range is two large prices and may not fit one line.
+              Wrap(crossAxisAlignment: WrapCrossAlignment.end, children: [
                 PriceText(price, key: const Key('product-price'), large: true),
+                if (maxPrice > price) ...[
+                  const Padding(padding: EdgeInsets.symmetric(horizontal: SoukSpace.s2), child: Text('–', style: SoukText.priceLarge)),
+                  PriceText(maxPrice, key: const Key('product-price-max'), large: true),
+                ],
                 if (regular != null) ...[
                   const SizedBox(width: SoukSpace.s2),
                   Padding(
@@ -249,23 +286,23 @@ class _ProductBody extends StatelessWidget {
                 ],
                 Text('${p.soldCount} ${l.sold}', style: SoukText.mono),
               ]),
-              if (p.variants.length > 1) ...[
+              if (groups.isNotEmpty) ...[
                 const SizedBox(height: SoukSpace.s5),
-                Text(l.variant.toUpperCase(), style: SoukText.eyebrow),
-                const SizedBox(height: SoukSpace.s2),
-                Wrap(
-                  spacing: SoukSpace.s2,
-                  runSpacing: SoukSpace.s2,
-                  children: [
-                    for (final v in p.variants)
-                      SoukChip(
-                        key: Key('product-variant-${v.id}'),
-                        label: v.label,
-                        selected: v.id == variant?.id,
-                        enabled: v.inStock,
-                        onTap: () => onVariant(v),
+                SoukCard(
+                  key: const Key('product-select'),
+                  padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s4, vertical: SoukSpace.s3),
+                  onTap: onSelect,
+                  child: Row(children: [
+                    Expanded(
+                      child: Text(
+                        variant != null ? variant!.label : l.productSelect(groups.map((g) => g.name.isEmpty ? l.variant : g.name).join(', ')),
+                        style: SoukText.body,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                  ],
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: SoukColors.inkFaint),
+                  ]),
                 ),
               ],
               const SizedBox(height: SoukSpace.s3),
@@ -308,7 +345,8 @@ class _ProductBody extends StatelessWidget {
                 const SizedBox(height: SoukSpace.s6),
                 Text(l.description, style: SoukText.displayH3),
                 const SizedBox(height: SoukSpace.s2),
-                Text(p.description, style: SoukText.bodySoft),
+                // Seller rich text. Core package only: links render as text, never open.
+                HtmlWidget(p.description, textStyle: SoukText.bodySoft),
               ],
             ],
           ),

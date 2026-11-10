@@ -47,7 +47,7 @@ String? soukRedirect(SessionState session, Uri uri) {
   // `halalbizs://pay/{order_no}` (the web return page's deep link) → the pay screen.
   if (uri.scheme == 'halalbizs') {
     final orderNo = uri.host == 'pay' ? uri.pathSegments.firstOrNull : null;
-    return orderNo == null || orderNo.isEmpty ? '/home' : '/checkout/pay/${Uri.encodeComponent(orderNo)}';
+    return orderNo == null || orderNo.isEmpty ? '/home' : '/checkout/pay/${Uri.encodeComponent(orderNo)}?returned=1';
   }
   final path = uri.path;
   if (session is SessionLoading) return null;
@@ -74,7 +74,12 @@ String? soukRedirect(SessionState session, Uri uri) {
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = ValueNotifier(0);
   ref.listen(sessionProvider, (prev, next) {
-    notifier.value++;
+    // A sign-in step from an auth screen (password → 2FA challenge → signed
+    // in) is left alone: the screen navigates itself (pops back when it was
+    // pushed), so a redirect here would wipe the stack and the back arrow.
+    final signedInFromAuth = (next is SignedIn && (prev is SignedOut || prev is TwoFactorPending)) ||
+        (next is TwoFactorPending && prev is SignedOut);
+    if (!signedInFromAuth) notifier.value++;
     // A different account (or none) is signed in: drop every cached account-scoped read.
     if (_userId(prev) != _userId(next)) _dropAccountData(ref);
   });
@@ -126,6 +131,7 @@ RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
       branches: [
         StatefulShellBranch(routes: [
           GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
+          GoRoute(path: '/featured', builder: (_, _) => const FeaturedScreen()),
           GoRoute(path: '/p/:slug', builder: (_, s) => ProductScreen(slug: s.pathParameters['slug']!)),
           GoRoute(path: '/s/:slug', builder: (_, s) => StoreScreen(slug: s.pathParameters['slug']!)),
           GoRoute(path: '/c/:slug', builder: (_, s) => CategoryScreen(slug: s.pathParameters['slug']!)),

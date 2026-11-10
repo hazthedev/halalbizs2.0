@@ -115,6 +115,31 @@ void main() {
     expect((placeBody as Map?)?['address_id'], 1);
     expect(h.router.state.uri.path, '/checkout/pay/HB-1001');
     expect(find.byKey(const Key('pay-waiting')), findsOneWidget);
+    expect(h.browser.opened, ['https://pay.test/x'], reason: 'payment opens in the in-app browser sheet, not Chrome');
+  });
+
+  testWidgets('the return deep link closes the in-app browser sheet and checks the payment at once', (tester) async {
+    usePhone(tester);
+    var polls = 0;
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET orders/HB-7/payment': (_, _) {
+        polls++;
+        return {'order_no': 'HB-7', 'method': 'ipay88', 'status': polls >= 2 ? 'paid' : 'pending', 'paid': polls >= 2, 'expires_at': null, 'retry_url': polls >= 2 ? null : 'https://pay.test/y'};
+      },
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/checkout/pay/HB-7');
+    expect(polls, 1);
+    expect(h.browser.closes, 0);
+
+    h.router.go(soukRedirect(SignedIn(Profile(fakeUser())), Uri.parse('halalbizs://pay/HB-7'))!);
+    await tester.pumpAndSettle();
+    expect(h.browser.closes, 1);
+    expect(polls, 3, reason: 'checked on return, not on the next timer tick (2); the done page reads it once (3)');
+    expect(h.router.state.uri.path, '/checkout/done/HB-7');
   });
 
   testWidgets('place that timed out with the selection consumed goes to orders, never a second place', (tester) async {
@@ -224,13 +249,13 @@ void main() {
 
     await tester.pump(PayScreen.pollEvery);
     await tester.pumpAndSettle();
-    expect(polls, 2);
+    expect(polls, 3, reason: 'two pay polls + the done page read');
     expect(h.router.state.uri.path, '/checkout/done/HB-7');
     expect(find.byKey(const Key('checkout-done')), findsOneWidget);
 
     await tester.pump(PayScreen.pollEvery * 2);
     await tester.pumpAndSettle();
-    expect(polls, 2, reason: 'no polling after paid');
+    expect(polls, 3, reason: 'no polling after paid');
   });
 
   testWidgets('leaving the pay screen stops the poll', (tester) async {
@@ -255,8 +280,8 @@ void main() {
 
   test('halalbizs://pay/{order_no} deep link lands on the pay screen, encoded', () {
     final signedIn = SignedIn(Profile(fakeUser()));
-    expect(soukRedirect(signedIn, Uri.parse('halalbizs://pay/HB-1')), '/checkout/pay/HB-1');
-    expect(soukRedirect(signedIn, Uri.parse('halalbizs://pay/HB%201')), '/checkout/pay/HB%201');
+    expect(soukRedirect(signedIn, Uri.parse('halalbizs://pay/HB-1')), '/checkout/pay/HB-1?returned=1');
+    expect(soukRedirect(signedIn, Uri.parse('halalbizs://pay/HB%201')), '/checkout/pay/HB%201?returned=1');
     expect(soukRedirect(signedIn, Uri.parse('halalbizs://pay/')), '/home');
   });
 
@@ -287,5 +312,36 @@ void main() {
     final h = Harness(api: api, token: 'tok');
     await h.pump(tester, location: '/checkout');
     expect(h.router.state.uri.path, '/verify-email');
+  });
+
+  testWidgets('the done page explains the split: amount paid, payment number and one line per shop order', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET cart': (_, _) => {'groups': [], 'item_count': 0, 'selected_count': 0, 'selected_subtotal_sen': 0, 'purchasing_enabled': true},
+      'GET orders/MP2611VR4WJ6/payment': (_, _) => {
+            'order_no': 'MP2611VR4WJ6', 'method': 'ipay88', 'status': 'paid', 'paid': true, 'expires_at': null, 'retry_url': null,
+            'total_sen': 78102,
+            'sub_orders': [
+              {'id': 31, 'sub_order_no': 'SO2611JELOZH', 'store': {'id': 3, 'name': 'Goodwin Ltd'}, 'status': 'confirmed'},
+              {'id': 32, 'sub_order_no': 'SO2611KQ7TXA', 'store': {'id': 4, 'name': 'Parker Ltd'}, 'status': 'confirmed'},
+            ],
+          },
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/checkout/done/MP2611VR4WJ6');
+
+    expect(find.text('Paid RM 781.02 (payment MP2611VR4WJ6). Your order is split into 2 shipments, one per shop.'), findsOneWidget);
+    expect(find.byKey(const Key('done-sub-order-31')), findsOneWidget);
+    expect(find.text('SO2611JELOZH'), findsOneWidget);
+    expect(find.text('Goodwin Ltd'), findsOneWidget);
+    expect(find.text('SO2611KQ7TXA'), findsOneWidget);
+    expect(find.text('Parker Ltd'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('done-sub-order-32')));
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/orders/32');
   });
 }

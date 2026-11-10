@@ -42,4 +42,29 @@ void main() {
     expect(find.byKey(const Key('home-empty')), findsOneWidget);
     expect(find.text('No products yet'), findsOneWidget);
   });
+
+  testWidgets('Featured "View all" opens the featured list and loads its next page', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET products': (q, _) => (q?['page'] ?? 1) == 1
+          ? [fakeProduct(id: 1, slug: 'madu-tualang', name: 'Madu Tualang Asli')]
+          : [fakeProduct(id: 2, slug: 'kurma-ajwa', name: 'Kurma Ajwa Premium')],
+      'GET categories': (_, _) => [],
+    }, meta: {'current_page': 1, 'last_page': 2, 'total': 2});
+    final h = Harness(api: api);
+    await h.pump(tester);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('souk-section-link')));
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/featured');
+    expect(find.text('Featured'), findsWidgets);
+    expect(find.byKey(const Key('souk-back')), findsOneWidget);
+    expect(find.byKey(const Key('product-card-madu-tualang')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('featured-load-more')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('GET products?page=2&sort=top'));
+    expect(find.byKey(const Key('product-card-kurma-ajwa')), findsOneWidget);
+  });
 }

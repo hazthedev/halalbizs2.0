@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/locale.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import 'order_detail_screen.dart';
@@ -87,6 +88,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final buckets = ref.watch(orderBucketsProvider);
+    // Status labels are server text in the request's language.
+    ref.listen(localeProvider, (_, _) => _load(reset: true));
 
     return SoukPage(
       title: l.tabOrders,
@@ -129,8 +132,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         else if (_items.isEmpty)
           SoukEmptyState(
             key: const Key('orders-empty'),
-            title: l.ordersEmptyTitle,
-            message: l.ordersEmptyBody,
+            title: _bucket == null ? l.ordersEmptyTitle : l.ordersEmptyBucketTitle,
+            message: _bucket == null ? l.ordersEmptyBody : l.ordersEmptyBucketBody,
             action: SoukButton(label: l.cartContinueShopping, variant: SoukButtonVariant.primary, onPressed: () => context.go('/home')),
           )
         else ...[
@@ -189,7 +192,12 @@ class OrderCard extends StatelessWidget {
         ]),
         const SizedBox(height: SoukSpace.s3),
         Row(children: [
-          Expanded(child: Text(o.placedAt == null ? o.subOrderNo : soukDateTime(context, o.placedAt!), style: SoukText.meta)),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(o.subOrderNo, style: SoukText.monoLabel),
+              if (o.placedAt != null) Text(soukDateTime(context, o.placedAt!), style: SoukText.meta),
+            ]),
+          ),
           Text('${l.ordersTotal}: ', style: SoukText.small),
           PriceText(o.totalSen),
         ]),

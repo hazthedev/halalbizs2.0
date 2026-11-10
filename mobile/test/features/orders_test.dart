@@ -131,4 +131,60 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('This order can no longer be changed that way.'), findsOneWidget);
   });
+
+  testWidgets('a shop order is named by its SO number and shop on the card, and by Order SO / Payment MP on the detail', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET orders/buckets': (_, _) => [],
+      'GET orders': (_, _) => [fakeSubOrder(id: 5)],
+      'GET orders/5': (_, _) => fakeSubOrder(id: 5, detail: true),
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/orders');
+
+    final card = find.byKey(const Key('order-card-5'));
+    expect(find.descendant(of: card, matching: find.text('Kedai Madu')), findsOneWidget);
+    expect(find.descendant(of: card, matching: find.text('HB-1001-5')), findsOneWidget);
+
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+    expect(find.text('Order HB-1001-5'), findsOneWidget);
+    expect(find.text('Payment HB-1001'), findsOneWidget);
+  });
+
+  testWidgets('an empty filter tab says "No orders in this status", not "No orders yet"', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET orders/buckets': (_, _) => [
+            {'key': 'to-pay', 'label': 'To Pay', 'count': 0},
+          ],
+      'GET orders': (q, _) => q?['bucket'] == null ? [fakeSubOrder(id: 5)] : [],
+    }, meta: {'page': 1, 'per_page': 10, 'total': 1, 'last_page': 1});
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/orders');
+    await tester.tap(find.byKey(const Key('orders-bucket-to-pay')));
+    await tester.pumpAndSettle();
+    expect(find.text('No orders in this status'), findsOneWidget);
+    expect(find.text('No orders yet'), findsNothing);
+  });
+
+  testWidgets('no orders at all still says "No orders yet"', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET orders/buckets': (_, _) => [],
+      'GET orders': (_, _) => [],
+    }, meta: {'page': 1, 'per_page': 10, 'total': 0, 'last_page': 1});
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/orders');
+    expect(find.text('No orders yet'), findsOneWidget);
+  });
 }

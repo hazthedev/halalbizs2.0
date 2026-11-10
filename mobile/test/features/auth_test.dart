@@ -119,4 +119,43 @@ void main() {
     expect(find.text('These credentials do not match our records.'), findsOneWidget);
     expect(h.container.read(sessionProvider), isA<SignedOut>());
   });
+
+  testWidgets('empty sign-in submit shows readable "required" messages, not only red boxes', (tester) async {
+    usePhone(tester);
+    final h = Harness();
+    await h.pump(tester, location: '/login');
+    await tester.tap(find.byKey(const Key('login-submit')));
+    await tester.pumpAndSettle();
+    final msgs = find.text('This field is required.');
+    expect(msgs, findsNWidgets(2));
+    for (final e in msgs.evaluate()) {
+      expect(tester.getSize(find.byWidget(e.widget)).height, greaterThan(8));
+    }
+  });
+
+  testWidgets('wrong password shows its error in a form alert and leaves Email unmarked', (tester) async {
+    usePhone(tester);
+    const msg = "These details don't match our records.";
+    final api = FakeApi(routes: {
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'POST auth/login': (_, _) => ApiException('validation_failed', 'The given data was invalid.', status: 422, fields: {
+            'email': [msg],
+          }),
+    });
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/login');
+    await tester.enterText(find.byKey(const Key('login-email')), 'buyer@halalbizs.test');
+    await tester.enterText(find.byKey(const Key('login-password')), 'wrong-password');
+    await tester.tap(find.byKey(const Key('login-submit')));
+    await tester.pumpAndSettle();
+
+    expect(find.descendant(of: find.byKey(const Key('login-error')), matching: find.text(msg)), findsOneWidget);
+    expect(find.text(msg), findsOneWidget);
+    final email = tester.widget<TextField>(find.descendant(of: find.byKey(const Key('login-email')), matching: find.byType(TextField)));
+    expect(email.decoration?.errorText, isNull);
+    // The alert sits above the fields, not under Email.
+    expect(tester.getRect(find.byKey(const Key('login-error'))).bottom,
+        lessThanOrEqualTo(tester.getRect(find.byKey(const Key('login-email'))).top));
+  });
 }

@@ -154,4 +154,28 @@ void main() {
     expect(api.calls, contains('POST coins/check-in'));
     expect(find.text('You have already checked in today.'), findsOneWidget);
   });
+
+  testWidgets('Become a seller opens the one-time signed-in web link in the in-app browser', (tester) async {
+    usePhone(tester);
+    Object? linkBody;
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET conversations': (_, _) => [],
+      'POST me/web-sign-in-link': (_, body) {
+        linkBody = body;
+        return {'url': 'https://web.test/app/sign-in?nonce=n&signature=s', 'expires_at': '2026-11-10T12:05:00Z'};
+      },
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/account');
+
+    await tester.ensureVisible(find.byKey(const Key('account-become-seller')));
+    await tester.tap(find.byKey(const Key('account-become-seller')));
+    await tester.pumpAndSettle();
+
+    expect((linkBody as Map?)?['to'], 'seller-apply');
+    expect(h.browser.opened, ['https://web.test/app/sign-in?nonce=n&signature=s']);
+  });
 }

@@ -29,12 +29,15 @@ class _WishlistHeartState extends ConsumerState<WishlistHeart> {
 
   Future<void> _toggle() async {
     final p = widget.product;
-    if (ref.read(sessionProvider) is! SignedIn) {
-      context.push('/login?from=${Uri.encodeComponent('/p/${p.slug}')}');
-      return;
+    final guest = ref.read(sessionProvider) is! SignedIn;
+    if (guest) {
+      await context.push('/login?from=${Uri.encodeComponent('/p/${p.slug}')}');
+      if (!mounted || ref.read(sessionProvider) is! SignedIn) return;
     }
     setState(() => _busy = true);
     try {
+      // The guest tapped "save": finish that, never unsave an already-saved one.
+      if (guest && (await ref.read(wishlistProvider.future)).any((w) => w.id == p.id)) return;
       await ref.read(accountApiProvider).toggleWishlist(p.id);
       // The list is the truth for every heart and the wishlist screen.
       ref.invalidate(wishlistProvider);

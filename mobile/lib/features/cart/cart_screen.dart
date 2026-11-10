@@ -16,7 +16,10 @@ List<RouteBase> get cartSubRoutes => [
       GoRoute(path: '/checkout', builder: (_, _) => const CheckoutScreen(), routes: [
         GoRoute(
           path: 'pay/:orderNo',
-          builder: (_, s) => PayScreen(orderNo: s.pathParameters['orderNo']!, initialUrl: s.extra as String?),
+          builder: (_, s) => PayScreen(
+              orderNo: s.pathParameters['orderNo']!,
+              initialUrl: s.extra as String?,
+              returned: s.uri.queryParameters['returned'] == '1'),
         ),
         GoRoute(path: 'done/:orderNo', builder: (_, s) => DoneScreen(orderNo: s.pathParameters['orderNo']!)),
       ]),

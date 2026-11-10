@@ -120,8 +120,9 @@ class SoukTextField extends StatelessWidget {
                     child: Center(widthFactor: 1, heightFactor: 1, child: FaIcon(prefixIcon, size: 14, color: SoukColors.inkFaint)),
                   ),
             suffixIcon: suffix,
-            // Error text is rendered by SoukField; keep the border red only.
-            errorStyle: const TextStyle(height: 0, fontSize: 0),
+            // A passed [error] is rendered by SoukField (border red only);
+            // a validator message has no other place, so it shows here.
+            errorStyle: error != null && error!.isNotEmpty ? const TextStyle(height: 0, fontSize: 0) : SoukText.error,
             errorText: error != null && error!.isNotEmpty ? '' : null,
           ),
         ),
