@@ -9,6 +9,7 @@ import '../features/cart/cart_api.dart';
 import '../features/cart/cart_screen.dart';
 import '../features/catalog/category_screen.dart';
 import '../features/catalog/product_screen.dart';
+import '../features/catalog/reviews.dart';
 import '../features/catalog/search_screen.dart';
 import '../features/catalog/store_screen.dart';
 import '../features/home/home_screen.dart';
@@ -133,6 +134,7 @@ RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
           GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
           GoRoute(path: '/featured', builder: (_, _) => const FeaturedScreen()),
           GoRoute(path: '/p/:slug', builder: (_, s) => ProductScreen(slug: s.pathParameters['slug']!)),
+          GoRoute(path: '/p/:slug/reviews', builder: (_, s) => ReviewsScreen(slug: s.pathParameters['slug']!)),
           GoRoute(path: '/s/:slug', builder: (_, s) => StoreScreen(slug: s.pathParameters['slug']!)),
           GoRoute(path: '/c/:slug', builder: (_, s) => CategoryScreen(slug: s.pathParameters['slug']!)),
         ]),

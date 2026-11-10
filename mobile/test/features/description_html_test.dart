@@ -38,7 +38,7 @@ void main() {
     });
     await Harness(api: api).pump(tester, location: '/s/kedai-madu');
 
-    expect(find.text('Honey & dates Since 1990'), findsOneWidget);
+    expect(find.textContaining('Honey & dates Since 1990', findRichText: true), findsOneWidget);
     expect(_anyTextHas(tester, '<p>'), isFalse);
     expect(_anyTextHas(tester, '&amp;'), isFalse);
   });

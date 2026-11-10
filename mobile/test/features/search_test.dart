@@ -73,9 +73,10 @@ void main() {
       ('Popular', 'top'),
       ('Newest', 'latest'),
     ]) {
-      await tester.tap(find.byKey(const Key('search-sort')));
+      await tester.tap(find.byKey(const Key('product-filter')));
       await tester.pumpAndSettle();
       await tester.tap(find.text(label).last);
+      await tester.tap(find.byKey(const Key('filter-apply')));
       await tester.pumpAndSettle();
       expect(lastSearch(), allOf(contains('sort=$key'), contains('category=rice-grains')));
     }

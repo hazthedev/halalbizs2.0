@@ -186,6 +186,28 @@ class AppLocalizationsMs extends AppLocalizations {
   String get sortPriceDesc => 'Harga: tinggi ke rendah';
 
   @override
+  String get filterSort => 'Susun & tapis';
+
+  @override
+  String get filterPrice => 'Harga (RM)';
+
+  @override
+  String get filterMin => 'Min';
+
+  @override
+  String get filterMax => 'Maks';
+
+  @override
+  String get filterReset => 'Set semula';
+
+  @override
+  String get filterApply => 'Guna';
+
+  @override
+  String get filterPriceInvalid =>
+      'Masukkan harga seperti 12.50, dengan Min tidak melebihi Maks.';
+
+  @override
   String get allCategories => 'Semua';
 
   @override
@@ -354,6 +376,17 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get products => 'Produk';
+
+  @override
+  String get reviews => 'Ulasan';
+
+  @override
+  String get storeAbout => 'Tentang';
+
+  @override
+  String storeJoined(String date) {
+    return 'Sertai $date';
+  }
 
   @override
   String get category => 'Kategori';

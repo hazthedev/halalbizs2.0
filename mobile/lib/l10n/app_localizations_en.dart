@@ -184,6 +184,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortPriceDesc => 'Price: high to low';
 
   @override
+  String get filterSort => 'Sort & filter';
+
+  @override
+  String get filterPrice => 'Price (RM)';
+
+  @override
+  String get filterMin => 'Min';
+
+  @override
+  String get filterMax => 'Max';
+
+  @override
+  String get filterReset => 'Reset';
+
+  @override
+  String get filterApply => 'Apply';
+
+  @override
+  String get filterPriceInvalid =>
+      'Enter a price like 12.50, with Min no higher than Max.';
+
+  @override
   String get allCategories => 'All';
 
   @override
@@ -349,6 +371,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get products => 'Products';
+
+  @override
+  String get reviews => 'Reviews';
+
+  @override
+  String get storeAbout => 'About';
+
+  @override
+  String storeJoined(String date) {
+    return 'Joined $date';
+  }
 
   @override
   String get category => 'Category';

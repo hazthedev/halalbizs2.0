@@ -140,17 +140,52 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('search-certifier-JAKIM')));
-    await tester.pumpAndSettle();
+    // The facets live in the sort/filter sheet (one sheet for search, category and shop).
+    Future<void> pick(String key) async {
+      await tester.tap(find.byKey(const Key('product-filter')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(Key(key)));
+      await tester.tap(find.byKey(Key(key)));
+      await tester.tap(find.byKey(const Key('filter-apply')));
+      await tester.pumpAndSettle();
+    }
+
+    await pick('filter-certifier-JAKIM');
     expect(api.calls.last, 'GET search?certifier%5B%5D=%5BJAKIM%5D&q=madu');
 
-    await tester.ensureVisible(find.byKey(const Key('search-assure-dedicated')));
-    await tester.tap(find.byKey(const Key('search-assure-dedicated')));
-    await tester.pumpAndSettle();
+    await pick('filter-assure-dedicated');
     expect(api.calls.last, 'GET search?assure%5B%5D=%5Bdedicated%5D&certifier%5B%5D=%5BJAKIM%5D&q=madu');
 
-    await tester.tap(find.byKey(const Key('search-certifier-JAKIM')));
-    await tester.pumpAndSettle();
+    await pick('filter-certifier-JAKIM');
     expect(api.calls.last, 'GET search?assure%5B%5D=%5Bdedicated%5D&q=madu');
+  });
+
+  testWidgets('category and shop lists take the same halal facets', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET products': (_, _) => [fakeProduct()],
+      'GET categories': (_, _) => [],
+      'GET stores/kedai-madu': (_, _) => {'id': 3, 'name': 'Kedai Madu', 'slug': 'kedai-madu'},
+      'GET stores/kedai-madu/products': (_, _) => [fakeProduct()],
+    });
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/c/honey');
+    Future<void> pick(String key) async {
+      await tester.tap(find.byKey(const Key('product-filter')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(Key(key)));
+      await tester.tap(find.byKey(Key(key)));
+      await tester.tap(find.byKey(const Key('filter-apply')));
+      await tester.pumpAndSettle();
+    }
+
+    await pick('filter-certifier-MUIS');
+    expect(api.calls.last, 'GET products?category=honey&certifier%5B%5D=%5BMUIS%5D');
+
+    h.router.go('/s/kedai-madu');
+    await tester.pumpAndSettle();
+    await pick('filter-assure-export');
+    // stores/{slug}/products takes sort only, so a facet goes through products?store=.
+    expect(api.calls.last, 'GET products?assure%5B%5D=%5Bexport%5D&store=kedai-madu');
   });
 }

@@ -4,6 +4,7 @@ import '../../core/api/api_client.dart';
 import '../../core/api/json.dart';
 import '../../core/offline/offline.dart';
 import 'models.dart';
+import 'paged.dart';
 
 /// A page of products plus where it came from.
 class ProductPage {
@@ -20,6 +21,8 @@ class ProductPage {
         fromCache: r.fromCache,
         fetchedAt: r.fetchedAt,
       );
+
+  PageOf<Product> get paged => (items: items, meta: meta, fromCache: fromCache, fetchedAt: fetchedAt);
 }
 
 /// Public catalogue reads (`/api/v1`, no auth). Every read goes through
@@ -32,8 +35,10 @@ class CatalogApi {
   final OfflineRepo _repo;
   final ApiClient _api;
 
-  Future<ProductPage> products({String? sort, String? category, String? store, int page = 1}) async {
+  Future<ProductPage> products(
+      {String? sort, String? category, String? store, ProductFilter filter = const ProductFilter(), int page = 1}) async {
     final r = await _repo.getJson('products', query: {
+      ...filter.query,
       'sort': ?sort,
       'category': ?category,
       'store': ?store,
@@ -53,19 +58,22 @@ class CatalogApi {
   }
 
   /// Search is online-only (no snapshot): results change with every keystroke.
-  /// [certifiers] / [assurances]: the web Listing's halal facets
-  /// (`certifier[]`, `assure[]`).
-  Future<ProductPage> search(String q,
-      {String? category, String? sort, List<String> certifiers = const [], List<String> assurances = const []}) async {
+  /// The API answers every hit at once today (no paging meta), so "more" never shows.
+  Future<ProductPage> search(String q, {String? category, ProductFilter filter = const ProductFilter(), int page = 1}) async {
     Map<String, dynamic>? meta;
     final data = await _api.get('search', query: {
       'q': q,
       'category': ?category,
-      'sort': ?sort,
-      if (certifiers.isNotEmpty) 'certifier[]': certifiers,
-      if (assurances.isNotEmpty) 'assure[]': assurances,
+      ...filter.query,
+      if (page > 1) 'page': page,
     }, meta: (m) => meta = m);
     return ProductPage(asMapList(data).map(Product.new).toList(), meta: PageMeta(meta));
+  }
+
+  /// `GET products/{slug}/reviews`: visible reviews, newest first, 10 a page.
+  Future<PageOf<Review>> reviews(String slug, {int page = 1}) async {
+    final r = await _repo.getJson('products/${Uri.encodeComponent(slug)}/reviews', query: {if (page > 1) 'page': page});
+    return (items: asMapList(r.data).map(Review.new).toList(), meta: PageMeta(r.meta), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
   }
 
   /// `GET stores/{slug}` (slice 2). Until it exists the header is built from
@@ -80,15 +88,18 @@ class CatalogApi {
     }
   }
 
-  /// `GET stores/{slug}/products` (slice 2), falling back to
-  /// `GET products?store={slug}` while the route is missing.
-  Future<ProductPage> storeProducts(String slug, {int page = 1}) async {
+  /// `GET stores/{slug}/products` (sort + page only). A price range or halal
+  /// facet goes through `GET products?store=` instead, which takes every
+  /// filter; a missing store route falls back the same way.
+  Future<ProductPage> storeProducts(String slug, {ProductFilter filter = const ProductFilter(), int page = 1}) async {
+    if (filter.narrows) return products(store: slug, filter: filter, page: page);
     try {
-      final r = await _repo.getJson('stores/${Uri.encodeComponent(slug)}/products', query: {if (page > 1) 'page': page});
+      final r = await _repo.getJson('stores/${Uri.encodeComponent(slug)}/products',
+          query: {'sort': ?filter.sort, if (page > 1) 'page': page});
       return ProductPage.from(r);
     } on ApiException catch (e) {
       if (!e.isNotFound) rethrow;
-      return products(store: slug, page: page);
+      return products(store: slug, filter: filter, page: page);
     }
   }
 }
@@ -107,11 +118,8 @@ final categoriesProvider =
 final productProvider = FutureProvider.family<CachedResult<Product>, String>(
     (ref, slug) => ref.watch(catalogApiProvider).product(slug));
 
-final categoryProductsProvider = FutureProvider.family<ProductPage, String>(
-    (ref, slug) => ref.watch(catalogApiProvider).products(category: slug));
-
 final storeProvider =
     FutureProvider.family<CachedResult<Store>, String>((ref, slug) => ref.watch(catalogApiProvider).store(slug));
 
-final storeProductsProvider =
-    FutureProvider.family<ProductPage, String>((ref, slug) => ref.watch(catalogApiProvider).storeProducts(slug));
+final productReviewsProvider = FutureProvider.family<PageOf<Review>, String>(
+    (ref, slug) => ref.watch(catalogApiProvider).reviews(slug));

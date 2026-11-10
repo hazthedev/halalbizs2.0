@@ -14,6 +14,7 @@ import '../messages/messages_api.dart';
 import 'catalog_api.dart';
 import 'halal.dart';
 import 'models.dart';
+import 'reviews.dart';
 import 'variant_sheet.dart';
 
 /// `/p/:slug` — gallery, name, price (range until a variant is picked, sale
@@ -57,6 +58,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
 
   Future<void> _refresh() async {
     ref.invalidate(productProvider(widget.slug));
+    ref.invalidate(productReviewsProvider(widget.slug));
     try {
       await ref.read(productProvider(widget.slug).future);
     } catch (_) {
@@ -355,6 +357,7 @@ class _ProductBody extends StatelessWidget {
                 // Seller rich text. Core package only: links render as text, never open.
                 HtmlWidget(p.description, textStyle: SoukText.bodySoft),
               ],
+              ProductReviews(slug: p.slug),
             ],
           ),
         ),

@@ -30,6 +30,7 @@ class SoukPage extends StatelessWidget {
     this.fromCache = false,
     this.padding,
     this.titleWidget,
+    this.onScrollEnd,
   });
 
   final String title;
@@ -59,6 +60,10 @@ class SoukPage extends StatelessWidget {
   /// Replaces the title text (e.g. the search field).
   final Widget? titleWidget;
 
+  /// Called while the scrollable body is near its end (infinite lists). Called
+  /// often: the receiver ignores calls while a page is loading.
+  final VoidCallback? onScrollEnd;
+
   @override
   Widget build(BuildContext context) {
     final router = GoRouter.maybeOf(context);
@@ -73,6 +78,16 @@ class SoukPage extends StatelessWidget {
             children: [body],
           )
         : Padding(padding: pad, child: body);
+    if (scrollable && onScrollEnd != null) {
+      content = NotificationListener<ScrollUpdateNotification>(
+        // depth 0: the page's own list, not a horizontal chip row inside it.
+        onNotification: (n) {
+          if (n.depth == 0 && n.metrics.extentAfter < 600) onScrollEnd!();
+          return false;
+        },
+        child: content,
+      );
+    }
     if (scrollable && onRefresh != null) {
       content = RefreshIndicator(onRefresh: onRefresh!, color: SoukColors.emerald, child: content);
     }

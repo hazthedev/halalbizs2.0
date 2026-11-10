@@ -428,6 +428,48 @@ abstract class AppLocalizations {
   /// **'Price: high to low'**
   String get sortPriceDesc;
 
+  /// No description provided for @filterSort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort & filter'**
+  String get filterSort;
+
+  /// No description provided for @filterPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (RM)'**
+  String get filterPrice;
+
+  /// No description provided for @filterMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Min'**
+  String get filterMin;
+
+  /// No description provided for @filterMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get filterMax;
+
+  /// No description provided for @filterReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get filterReset;
+
+  /// No description provided for @filterApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get filterApply;
+
+  /// No description provided for @filterPriceInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a price like 12.50, with Min no higher than Max.'**
+  String get filterPriceInvalid;
+
   /// No description provided for @allCategories.
   ///
   /// In en, this message translates to:
@@ -745,6 +787,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Products'**
   String get products;
+
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviews;
+
+  /// No description provided for @storeAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get storeAbout;
+
+  /// No description provided for @storeJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined {date}'**
+  String storeJoined(String date);
 
   /// No description provided for @category.
   ///

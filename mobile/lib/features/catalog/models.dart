@@ -202,6 +202,24 @@ class Store {
   String? get banner => asStr(json['banner']);
   int? get productCount => asInt(json['product_count']);
   double? get ratingAvg => asDouble(json['rating_avg']);
+
+  /// Approval date (else created), as the web store page's "Joined".
+  DateTime? get joinedAt => asDate(json['joined_at']);
+}
+
+/// `ReviewResource`: id, rating, body, buyer_name (already masked server-side,
+/// "Aisyah R."), photos[] (thumb URLs), created_at.
+class Review {
+  Review(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  int get rating => (asInt(json['rating']) ?? 0).clamp(0, 5);
+  String get body => asStr(json['body']) ?? '';
+  String get buyerName => asStr(json['buyer_name']) ?? '';
+  List<String> get photos => asList(json['photos']).map(asStr).nonNulls.toList();
+  DateTime? get createdAt => asDate(json['created_at']);
 }
 
 /// Pagination from the envelope `meta` (`page` from ApiResponse, or the
