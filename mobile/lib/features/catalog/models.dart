@@ -179,3 +179,35 @@ String htmlToPlain(String html) => html_parser
     .text!
     .replaceAll(RegExp(r'\s+'), ' ')
     .trim();
+
+/// `GET home` → `banners[]` (HomeController): artwork with the copy baked
+/// in, so [title] is the screen-reader label. [appUrl] is the go_router
+/// route (`AppLinks`), null when the target has no app screen.
+class HomeBanner {
+  HomeBanner(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  String get title => asStr(json['title']) ?? '';
+  String? get image => asStr(json['image']);
+  String? get appUrl => asStr(json['app_url']);
+}
+
+/// `GET home` → `flash_sale.products[]`: a product plus its `flash` block.
+/// [originalSen] is the flash variant's own price (what the web strikes).
+class FlashItem {
+  FlashItem(Map<String, dynamic> json)
+      : product = Product(json),
+        _flash = asMap(json['flash']);
+
+  final Product product;
+  final Map<String, dynamic> _flash;
+
+  int get priceSen => asInt(_flash['price_sen']) ?? 0;
+  int? get originalSen {
+    final v = product.variants.firstWhereOrNull((v) => v.id == asInt(_flash['variant_id']));
+    final sen = v == null ? null : v.regularPriceSen ?? v.priceSen;
+    return sen != null && sen > priceSen ? sen : null;
+  }
+}

@@ -146,6 +146,15 @@ class AppLocalizationsMs extends AppLocalizations {
   String get viewAll => 'Lihat semua';
 
   @override
+  String get homePromotions => 'Promosi';
+
+  @override
+  String get flashSale => 'Jualan Kilat';
+
+  @override
+  String get flashEndsIn => 'Berakhir dalam';
+
+  @override
   String get searchHint => 'Cari produk';
 
   @override

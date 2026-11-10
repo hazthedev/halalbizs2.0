@@ -20,6 +20,7 @@ final class AppLinks
         '#^/cart$#' => '/cart',
         '#^/p/([^/]+)$#' => '/p/$1',
         '#^/s/([^/]+)$#' => '/s/$1',
+        '#^/c/([^/]+)$#' => '/c/$1',
     ];
 
     public static function fromWebUrl(?string $url): ?string

@@ -356,6 +356,24 @@ abstract class AppLocalizations {
   /// **'View all'**
   String get viewAll;
 
+  /// No description provided for @homePromotions.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotions'**
+  String get homePromotions;
+
+  /// No description provided for @flashSale.
+  ///
+  /// In en, this message translates to:
+  /// **'Flash Sale'**
+  String get flashSale;
+
+  /// No description provided for @flashEndsIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends in'**
+  String get flashEndsIn;
+
   /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:

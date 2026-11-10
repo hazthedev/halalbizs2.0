@@ -22,6 +22,26 @@ class ProductPage {
       );
 }
 
+/// `GET home`: the home tab in one read (HomeController).
+class HomeFeed {
+  HomeFeed(Map<String, dynamic> json, {this.fromCache = false, this.fetchedAt})
+      : featured = asMapList(json['featured']).map(Product.new).toList(),
+        categories = asMapList(json['categories']).map(Category.new).toList(),
+        banners = asMapList(json['banners']).map(HomeBanner.new).where((b) => b.image != null).toList(),
+        flashEndsAt = asDate(asMap(json['flash_sale'])['ends_at']),
+        flashItems = asMapList(asMap(json['flash_sale'])['products']).map(FlashItem.new).toList();
+
+  final List<Product> featured;
+  final List<Category> categories;
+  final List<HomeBanner> banners;
+
+  /// Null when no sale is live (`flash_sale: null`).
+  final DateTime? flashEndsAt;
+  final List<FlashItem> flashItems;
+  final bool fromCache;
+  final DateTime? fetchedAt;
+}
+
 /// Public catalogue reads (`/api/v1`, no auth). Every read goes through
 /// [OfflineRepo] so the last response renders offline. Filters follow the
 /// mobile plan §4 (`category`, `sort`, `min_sen`, `max_sen`, `store`); the
@@ -40,6 +60,11 @@ class CatalogApi {
       if (page > 1) 'page': page,
     });
     return ProductPage.from(r);
+  }
+
+  Future<HomeFeed> home() async {
+    final r = await _repo.getJson('home');
+    return HomeFeed(asMap(r.data), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
   }
 
   Future<CachedResult<Product>> product(String slug) async {
@@ -91,8 +116,11 @@ class CatalogApi {
 final catalogApiProvider =
     Provider<CatalogApi>((ref) => CatalogApi(ref.watch(offlineRepoProvider), ref.watch(apiClientProvider)));
 
-/// Home: featured products (`sort=top`; the API accepts `latest|top|price_asc|price_desc`)
-/// — `GET home` replaces this in slice 2.
+/// Home tab: banners, flash sale, categories and featured from `GET home`.
+final homeProvider = FutureProvider<HomeFeed>((ref) => ref.watch(catalogApiProvider).home());
+
+/// `/featured` ("View all"): the paged `sort=top` list (`GET home` sends one
+/// page only; the API accepts `latest|top|price_asc|price_desc`).
 final featuredProductsProvider =
     FutureProvider<ProductPage>((ref) => ref.watch(catalogApiProvider).products(sort: 'top'));
 
