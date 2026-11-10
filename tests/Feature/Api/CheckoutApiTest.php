@@ -345,3 +345,32 @@ test('a malformed Idempotency-Key is a 422', function () {
         ->assertStatus(422)
         ->assertJsonStructure(['error' => ['fields' => ['idempotency_key']]]);
 });
+
+test('a two-shop checkout names each shop order on place and on the payment status', function () {
+    [$user, $address, $http] = apiCheckoutBuyer();
+    apiCheckoutCart($user);
+    apiCheckoutCart($user);
+
+    $placed = $http->postJson('/api/v1/checkout/place', ['address_id' => $address->id, 'payment_method' => 'cod'])->assertCreated()->json('data');
+    $order = Order::where('order_no', $placed['order_no'])->with('subOrders.store')->firstOrFail();
+    $expected = $order->subOrders->map(fn ($s) => ['sub_order_no' => $s->sub_order_no, 'store' => $s->store->name])->all();
+
+    expect($order->subOrders)->toHaveCount(2)
+        ->and(collect($placed['sub_orders'])->map(fn ($s) => ['sub_order_no' => $s['sub_order_no'], 'store' => $s['store']['name']])->all())->toBe($expected);
+
+    $status = $http->getJson("/api/v1/orders/{$order->order_no}/payment")->assertOk()->json('data');
+    expect($status['total_sen'])->toBe($order->grand_total_sen)
+        ->and(collect($status['sub_orders'])->map(fn ($s) => ['sub_order_no' => $s['sub_order_no'], 'store' => $s['store']['name']])->all())->toBe($expected)
+        ->and($status['sub_orders'][0])->toHaveKey('id');
+});
+
+test('the app return page hands back to the app by itself so the in-app browser sheet closes', function () {
+    [$user, $address, $http] = apiCheckoutBuyer();
+    apiCheckoutCart($user);
+    $order = Order::where('order_no', $http->postJson('/api/v1/checkout/place', ['address_id' => $address->id, 'payment_method' => 'cod'])->json('data.order_no'))->firstOrFail();
+
+    $this->get(URL::temporarySignedRoute('app.pay.return', now()->addDay(), ['order' => $order->order_no]))
+        ->assertOk()
+        ->assertSee('location.replace("halalbizs:\/\/pay\/'.$order->order_no.'")', false)
+        ->assertSee('href="halalbizs://pay/'.$order->order_no.'"', false);
+});

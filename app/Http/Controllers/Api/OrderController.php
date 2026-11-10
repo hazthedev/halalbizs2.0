@@ -189,6 +189,8 @@ class OrderController extends Controller
             'paid' => $order->payment_status === PaymentStatus::Paid,
             'expires_at' => $order->expires_at?->toIso8601String(),
             'retry_url' => CheckoutController::paymentUrl($order),
+            'total_sen' => $order->grand_total_sen,
+            'sub_orders' => CheckoutController::subOrders($order),
         ]);
     }
 

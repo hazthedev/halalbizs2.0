@@ -3,6 +3,7 @@
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\AffiliateReferralController;
 use App\Http\Controllers\AfterShipWebhookController;
+use App\Http\Controllers\AppWebSignInController;
 use App\Http\Controllers\EasyParcelWebhookController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\InvoiceController;
@@ -120,6 +121,10 @@ Route::middleware('signed')->prefix('app/pay')->group(function () {
         ->name('app.pay.mock');
     Route::match(['get', 'post'], '/{order:order_no}/return', [Ipay88Controller::class, 'appReturn'])->name('app.pay.return');
 });
+
+// One-time web sign-in from the app (AppWebSignInController): the signature
+// plus a single-use nonce bound to the user is the auth.
+Route::get('/app/sign-in', AppWebSignInController::class)->middleware('signed')->name('app.web-sign-in');
 
 // Gateway callbacks — CSRF-exempt (bootstrap/app.php), signature-gated instead.
 Route::post('/payments/ipay88/response', [Ipay88Controller::class, 'response'])->name('payments.ipay88.response');

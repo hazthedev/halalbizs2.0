@@ -20,5 +20,8 @@
             {{ __('Return to the HalalBizs app') }}
         </a>
     </div>
+    {{-- Hand straight back to the app: the deep link brings the app forward and
+         closes the in-app browser sheet; the button stays for a blocked redirect. --}}
+    <script>window.location.replace(@json('halalbizs://pay/'.$order->order_no));</script>
 </body>
 </html>

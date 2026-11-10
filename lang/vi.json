@@ -880,6 +880,7 @@
     "Paste the provider API key": "Paste the provider API key",
     "Paste the secret key": "Paste the secret key",
     "Payment attempts appear here the moment a buyer reaches the gateway.": "Payment attempts appear here the moment a buyer reaches the gateway.",
+    "Payment expired": "Hết hạn thanh toán",
     "Payment simulator": "Payment simulator",
     "Payment was not completed. Please try again.": "Payment was not completed. Please try again.",
     "Payments": "Payments",
