@@ -78,12 +78,17 @@ class CatalogApi {
   }
 
   /// Search is online-only (no snapshot): results change with every keystroke.
-  Future<ProductPage> search(String q, {String? category, String? sort}) async {
+  /// [certifiers] / [assurances]: the web Listing's halal facets
+  /// (`certifier[]`, `assure[]`).
+  Future<ProductPage> search(String q,
+      {String? category, String? sort, List<String> certifiers = const [], List<String> assurances = const []}) async {
     Map<String, dynamic>? meta;
     final data = await _api.get('search', query: {
       'q': q,
       'category': ?category,
       'sort': ?sort,
+      if (certifiers.isNotEmpty) 'certifier[]': certifiers,
+      if (assurances.isNotEmpty) 'assure[]': assurances,
     }, meta: (m) => meta = m);
     return ProductPage(asMapList(data).map(Product.new).toList(), meta: PageMeta(meta));
   }

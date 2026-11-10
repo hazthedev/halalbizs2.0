@@ -3001,6 +3001,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @halalCertified.
+  ///
+  /// In en, this message translates to:
+  /// **'Halal certified'**
+  String get halalCertified;
+
+  /// No description provided for @halalCertVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Halal certificate verified'**
+  String get halalCertVerified;
+
+  /// No description provided for @halalCertLapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate lapsed'**
+  String get halalCertLapsed;
+
+  /// No description provided for @halalCertNotInForce.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate not yet in force'**
+  String get halalCertNotInForce;
+
+  /// No description provided for @halalExpiredOn.
+  ///
+  /// In en, this message translates to:
+  /// **'expired {date}'**
+  String halalExpiredOn(String date);
+
+  /// No description provided for @halalValidFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'valid from {date}'**
+  String halalValidFrom(String date);
+
+  /// No description provided for @halalValidTo.
+  ///
+  /// In en, this message translates to:
+  /// **'valid to {date}'**
+  String halalValidTo(String date);
+
+  /// No description provided for @halalReadRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the record'**
+  String get halalReadRecord;
+
+  /// No description provided for @halalScopeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients & scope'**
+  String get halalScopeTitle;
+
+  /// No description provided for @halalScopeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Certified scope: {scope}. The certificate names this SKU in its annex, so the badge is bound to the item you are buying, not to the shop that sells it.'**
+  String halalScopeBody(String scope);
+
+  /// No description provided for @halalTraceability.
+  ///
+  /// In en, this message translates to:
+  /// **'Traceability'**
+  String get halalTraceability;
+
+  /// No description provided for @halalFacility.
+  ///
+  /// In en, this message translates to:
+  /// **'Facility'**
+  String get halalFacility;
+
+  /// No description provided for @halalBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch'**
+  String get halalBatch;
+
+  /// No description provided for @halalPackedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'packed {date}'**
+  String halalPackedOn(String date);
+
+  /// No description provided for @halalCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate'**
+  String get halalCertificate;
+
+  /// No description provided for @halalExpiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiry'**
+  String get halalExpiry;
+
+  /// No description provided for @halalLapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'lapsed'**
+  String get halalLapsed;
+
+  /// No description provided for @halalNotInForceUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'not in force until {date}'**
+  String halalNotInForceUntil(String date);
+
+  /// No description provided for @halalDaysRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day remaining} other{{count} days remaining}}'**
+  String halalDaysRemaining(int count);
+
+  /// No description provided for @halalCertifyingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Certifying body'**
+  String get halalCertifyingBody;
+
+  /// No description provided for @halalAssurance.
+  ///
+  /// In en, this message translates to:
+  /// **'Assurance'**
+  String get halalAssurance;
+
+  /// No description provided for @halalAssureValid12.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate valid 12 months+'**
+  String get halalAssureValid12;
+
+  /// No description provided for @halalAssureDedicated.
+  ///
+  /// In en, this message translates to:
+  /// **'Dedicated halal facility'**
+  String get halalAssureDedicated;
+
+  /// No description provided for @halalAssureExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export paperwork included'**
+  String get halalAssureExport;
 }
 
 class _AppLocalizationsDelegate

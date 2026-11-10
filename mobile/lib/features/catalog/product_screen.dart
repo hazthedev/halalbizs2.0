@@ -12,6 +12,7 @@ import '../account/wishlist_heart.dart';
 import '../cart/cart_api.dart';
 import '../messages/messages_api.dart';
 import 'catalog_api.dart';
+import 'halal.dart';
 import 'models.dart';
 import 'variant_sheet.dart';
 
@@ -259,6 +260,11 @@ class _ProductBody extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(p.name, key: const Key('product-name'), style: SoukText.displayH2),
+              // Web: the certificate sits above the price — it outranks it here.
+              if (p.halal case final cert?) ...[
+                const SizedBox(height: SoukSpace.s3),
+                HalalPanel(cert),
+              ],
               const SizedBox(height: SoukSpace.s3),
               // Wrap: a min – max range is two large prices and may not fit one line.
               Wrap(crossAxisAlignment: WrapCrossAlignment.end, children: [
@@ -341,6 +347,7 @@ class _ProductBody extends StatelessWidget {
                   ]),
                 ),
               ],
+              HalalDetails(p),
               if (p.description.isNotEmpty) ...[
                 const SizedBox(height: SoukSpace.s6),
                 Text(l.description, style: SoukText.displayH3),

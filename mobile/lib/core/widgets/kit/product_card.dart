@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../features/account/wishlist_heart.dart';
+import '../../../features/catalog/halal.dart';
 import '../../../features/catalog/models.dart';
+import '../../../l10n/l10n.dart';
 import '../../theme/souk_theme.dart';
 import 'empty_state.dart';
 import 'price_text.dart';
@@ -73,6 +75,27 @@ class ProductCard extends StatelessWidget {
                   ),
                   child: Stack(fit: StackFit.expand, children: [
                     ProductImage(p.image),
+                    // Web card's "Halal certified" line; on the packshot here so
+                    // the fixed-ratio grid tile does not grow a row.
+                    if (p.halal?.verified ?? false)
+                      Positioned(
+                        left: 6,
+                        bottom: 6,
+                        right: 6,
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Container(
+                            key: Key('product-halal-${p.slug}'),
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: SoukColors.surface.withValues(alpha: .92),
+                              borderRadius: BorderRadius.circular(SoukRadius.pill),
+                              border: Border.all(color: SoukColors.emeraldTintEdge),
+                            ),
+                            child: HalalTick(context.l10n.halalCertified, caps: true),
+                          ),
+                        ),
+                      ),
                     if (wishlist)
                       Positioned(
                         top: 6,

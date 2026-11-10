@@ -14,6 +14,10 @@ import 'catalog_api.dart';
 /// Debounce between the last keystroke and the request.
 const kSearchDebounce = Duration(milliseconds: 300);
 
+/// Web Listing::certifierCodes() (HalalCertificate::BODIES keys).
+// ponytail: hardcoded; serve from GET config if a body is ever added.
+const kCertifyingBodies = ['JAKIM', 'MUIS', 'BPJPH', 'ESMA'];
+
 /// Search tab: query (min 2 chars, 300 ms debounce) + category chips + sort.
 /// Online-only; offline shows "Search needs a connection".
 class SearchScreen extends ConsumerStatefulWidget {
@@ -28,6 +32,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Timer? _debounce;
   String? _category;
   String _sort = 'relevance';
+  final _certifiers = <String>[];
+  final _assurances = <String>[];
   AsyncValue<ProductPage>? _results;
   int _request = 0;
 
@@ -58,7 +64,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     setState(() => _results = const AsyncValue.loading());
     try {
       final page = await ref.read(catalogApiProvider).search(q,
-          category: _category, sort: _sort == 'relevance' ? null : _sort);
+          category: _category,
+          sort: _sort == 'relevance' ? null : _sort,
+          certifiers: [..._certifiers],
+          assurances: [..._assurances]);
       if (!mounted || id != _request) return;
       setState(() => _results = AsyncValue.data(page));
     } catch (e, s) {
@@ -66,6 +75,26 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       setState(() => _results = AsyncValue.error(e, s));
     }
   }
+
+  /// Toggle [code] in [list] and search again.
+  void _toggle(List<String> list, String code) {
+    setState(() => list.contains(code) ? list.remove(code) : list.add(code));
+    _run();
+  }
+
+  /// One titled group of toggle chips, wrapped so every option stays in view.
+  Widget _chips(String title, List<(String, String, String)> chips, List<String> on) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: SoukSpace.s3),
+          Text(title, style: SoukText.label),
+          const SizedBox(height: SoukSpace.s1),
+          Wrap(spacing: SoukSpace.s2, runSpacing: SoukSpace.s2, children: [
+            for (final (key, code, label) in chips)
+              SoukChip(key: Key(key), label: label, selected: on.contains(code), onTap: () => _toggle(on, code)),
+          ]),
+        ],
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +179,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ],
               ),
             ),
+          // Web Listing's halal facets: certifying body (any of) + assurance (all of).
+          _chips(l.halalCertifyingBody, [for (final b in kCertifyingBodies) ('search-certifier-$b', b, b)], _certifiers),
+          _chips(l.halalAssurance, [
+            ('search-assure-valid12', 'valid12', l.halalAssureValid12),
+            ('search-assure-dedicated', 'dedicated', l.halalAssureDedicated),
+            ('search-assure-export', 'export', l.halalAssureExport),
+          ], _assurances),
           const SizedBox(height: SoukSpace.s3),
           Row(children: [
             Text(l.sort, style: SoukText.label),

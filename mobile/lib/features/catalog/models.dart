@@ -78,6 +78,52 @@ class Product {
   String? get storeSlug => asStr(asMap(json['store'])['slug']);
   List<Variant> get variants => asMapList(json['variants']).map(Variant.new).toList();
   bool get inStock => variants.isEmpty ? true : variants.any((v) => v.stock > 0);
+
+  /// The certificate block (null = no certificate record, show nothing).
+  HalalCert? get halal => json['halal'] is Map ? HalalCert(asMap(json['halal'])) : null;
+
+  /// Traceability (detail only): batch, packing date, the printed number.
+  String? get halalBatchCode => asStr(json['halal_batch_code']);
+  DateTime? get halalPackedOn => asDate(json['halal_packed_on']);
+  String? get halalCertNumber => asStr(json['halal_cert_number']);
+
+  /// `metafields[{key, label, rows[{label, value}]}]` (detail only), labels
+  /// already translated server-side; the `halal` group is the web's
+  /// "Halal certification" box.
+  List<MetafieldGroup> get metafields => asMapList(json['metafields']).map(MetafieldGroup.new).toList();
+}
+
+/// `ProductResource.halal`. [verdict] is the server's Product::halalVerdict()
+/// (`verified|lapsed|pending`) — rendered, never re-derived here.
+class HalalCert {
+  HalalCert(this.json);
+
+  final Map<String, dynamic> json;
+
+  String get verdict => asStr(json['verdict']) ?? 'unverified';
+  bool get verified => verdict == 'verified';
+  String get number => asStr(json['number']) ?? '';
+  String? get issuingBody => asStr(json['issuing_body']);
+  DateTime? get validFrom => asDate(json['valid_from']);
+  DateTime? get validTo => asDate(json['valid_to']);
+
+  /// Malaysia-day count from the server; negative once lapsed.
+  int get daysRemaining => asInt(json['days_remaining']) ?? 0;
+  String? get scopeNote => asStr(json['scope_note']);
+  String? get facility => asStr(json['facility']);
+  String? get registerUrl => asStr(json['register_url']);
+}
+
+/// One metafield group: `{key, label, rows[{label, value}]}`.
+class MetafieldGroup {
+  MetafieldGroup(this.json);
+
+  final Map<String, dynamic> json;
+
+  String get key => asStr(json['key']) ?? '';
+  String get label => asStr(json['label']) ?? '';
+  List<({String label, String value})> get rows =>
+      [for (final r in asMapList(json['rows'])) (label: asStr(r['label']) ?? '', value: asStr(r['value']) ?? '')];
 }
 
 /// `variants[{id, sku, options_label, price_sen, stock}]`; `price_sen` is the

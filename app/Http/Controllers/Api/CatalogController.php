@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ReviewResource;
+use App\Livewire\Storefront\Listing;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -24,13 +25,14 @@ class CatalogController extends Controller
 {
     /**
      * Filters mirror the web Listing: category (slug, with descendants), sort
-     * (Listing::SORTS minus relevance), min_sen/max_sen on variant price, store (slug).
+     * (Listing::SORTS minus relevance), min_sen/max_sen on variant price, store (slug),
+     * certifier[] (JAKIM/MUIS/BPJPH/ESMA) and assure[] (valid12/dedicated/export).
      */
     public function products(Request $request)
     {
         $filters = $this->filters($request, ['latest', 'top', 'price_asc', 'price_desc']);
 
-        $products = $this->filtered(Product::query()->live()->with(['variants', 'store', 'media']), $filters);
+        $products = $this->filtered(Product::query()->live()->with(['variants', 'store', 'media', 'halalCertificate']), $filters);
         $this->sort($products, $filters['sort'] ?? 'latest');
 
         return ProductResource::collection($products->paginate(24));
@@ -45,12 +47,18 @@ class CatalogController extends Controller
             'sort' => ['nullable', Rule::in($sorts)],
             'min_sen' => ['nullable', 'integer', 'min:0'],
             'max_sen' => ['nullable', 'integer', 'min:0'],
+            // The web Listing's halal facets: certifying body + assurance.
+            'certifier' => ['nullable', 'array'],
+            'certifier.*' => ['string', Rule::in(Listing::certifierCodes())],
+            'assure' => ['nullable', 'array'],
+            'assure.*' => ['string', Rule::in(Listing::ASSURANCES)],
         ]);
     }
 
     private function filtered(Builder $products, array $filters): Builder
     {
         return $products
+            ->halalFacets($filters['certifier'] ?? [], $filters['assure'] ?? [])
             ->when($filters['category'] ?? null, function ($query, string $slug) {
                 $category = Category::query()->where('slug', $slug)->firstOrFail();
 
@@ -109,7 +117,7 @@ class CatalogController extends Controller
     {
         abort_unless($product->isLive(), 404);
 
-        return new ProductResource($product->load(['variants', 'store', 'media', 'options.values']), detail: true);
+        return new ProductResource($product->load(['variants', 'store', 'media', 'options.values', 'halalCertificate', 'metafields']), detail: true);
     }
 
     public function categories()
@@ -127,7 +135,7 @@ class CatalogController extends Controller
         $ids = Product::searchKeywordIds($term);
 
         $products = $this->filtered(
-            Product::query()->live()->whereIn('products.id', $ids ?: [0])->with(['variants', 'store', 'media']),
+            Product::query()->live()->whereIn('products.id', $ids ?: [0])->with(['variants', 'store', 'media', 'halalCertificate']),
             $filters,
         );
         $this->sort($products, $filters['sort'] ?? 'relevance', $ids);

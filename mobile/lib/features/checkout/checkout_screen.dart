@@ -11,6 +11,7 @@ import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_api.dart';
 import '../cart/cart_api.dart';
+import '../catalog/halal.dart';
 import 'checkout_api.dart';
 
 /// Translated label for a `payment_method` code.
@@ -369,6 +370,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 const SizedBox(width: SoukSpace.s2),
                                 PriceText(asInt(line['line_total_sen']) ?? 0),
                               ]),
+                              if (asStr(line['halal_cert_number']) case final no?)
+                                HalalTick(no, key: Key('checkout-halal-${line['variant_id']}')),
                               if (fieldError(_placeError, '${line['variant_id']}') case final err?)
                                 Text(err, key: Key('checkout-line-error-${line['variant_id']}'), style: SoukText.error),
                             ]),
