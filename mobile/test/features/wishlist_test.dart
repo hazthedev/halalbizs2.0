@@ -9,6 +9,7 @@ FakeApi wishlistApi(Set<int> saved) {
   final products = {1: fakeProduct(), 2: fakeProduct(id: 2, slug: 'kurma-ajwa', name: 'Kurma Ajwa Premium')};
   return FakeApi(routes: {
     'GET me': (_, _) => fakeUser(),
+    'GET home': (_, _) => {'featured': products.values.toList(), 'categories': [], 'flash_sale': null, 'banners': []},
     'GET products': (_, _) => products.values.toList(),
     'GET categories': (_, _) => [],
     'GET products/madu-tualang': (_, _) => products[1],

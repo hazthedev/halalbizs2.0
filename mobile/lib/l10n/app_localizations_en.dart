@@ -144,6 +144,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewAll => 'View all';
 
   @override
+  String get homePromotions => 'Promotions';
+
+  @override
+  String get flashSale => 'Flash Sale';
+
+  @override
+  String get flashEndsIn => 'Ends in';
+
+  @override
   String get searchHint => 'Search products';
 
   @override

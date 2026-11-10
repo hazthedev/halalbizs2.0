@@ -114,6 +114,7 @@ test('AppLinks maps the notification web URLs to app routes', function (?string 
     ['http://halalbizs2.0.test/account/notifications', '/account/notifications'],
     ['http://halalbizs2.0.test/account/coins', '/account/coins'],
     ['http://halalbizs2.0.test/p/kurma-ajwa', '/p/kurma-ajwa'],
+    ['/c/groceries-pantry', '/c/groceries-pantry'],
     ['http://halalbizs2.0.test/seller/questions', null],
     ['http://halalbizs2.0.test/account#security', null],
     [null, null],
