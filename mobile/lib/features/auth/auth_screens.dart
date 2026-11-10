@@ -106,9 +106,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!mounted) return;
       final s = ref.read(sessionProvider);
       if (s is TwoFactorPending) {
-        router.go('/two-factor${from == null ? '' : '?from=${Uri.encodeComponent(from)}'}');
+        final tf = '/two-factor${from == null ? '' : '?from=${Uri.encodeComponent(from)}'}';
+        if (!router.canPop()) return router.go(tf);
+        // Pushed over a page: the code screen stacks on this one; a verified
+        // code pops back here and this screen pops back to that page, which
+        // completes the action that started the sign-in.
+        if (await router.push<bool>(tf) == true && mounted) router.pop(true);
       } else if (s is SignedIn) {
-        router.go(safeFrom(from));
+        // Pushed over a page (heart, Add to cart): back to it, stack intact.
+        router.canPop() ? router.pop(true) : router.go(safeFrom(from));
       }
     } catch (e) {
       if (!mounted) return;
@@ -137,6 +143,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               SoukAlert(sessionMsg, status: 'warn'),
               const SizedBox(height: SoukSpace.s4),
             ],
+            // A 422 here is "wrong email or password": one form-level alert,
+            // never pinned under one field.
+            if (_error case ApiException(isValidation: true, :final fields, :final message)) ...[
+              SoukAlert(fields.values.expand((m) => m).firstOrNull ?? message, key: const Key('login-error'), status: 'danger'),
+              const SizedBox(height: SoukSpace.s4),
+            ],
             SoukTextField(
               label: l.email,
               fieldKey: const Key('login-email'),
@@ -146,7 +158,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               prefixIcon: FontAwesomeIcons.envelope,
               enabled: !_busy,
               autocorrect: false,
-              error: fieldError(_error, 'email'),
               validator: (v) => v == null || v.trim().isEmpty
                   ? l.fieldRequired
                   : (_emailRe.hasMatch(v.trim()) ? null : l.emailInvalid),
@@ -159,7 +170,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               enabled: !_busy,
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _busy ? null : _submit(),
-              error: fieldError(_error, 'password'),
               validator: (v) => v == null || v.isEmpty ? l.fieldRequired : null,
             ),
             Align(
@@ -366,7 +376,7 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     try {
       await ref.read(sessionProvider.notifier).verifyTwoFactor(_code.text.trim());
       if (!mounted) return;
-      router.go(safeFrom(widget.from));
+      router.canPop() ? router.pop(true) : router.go(safeFrom(widget.from));
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);

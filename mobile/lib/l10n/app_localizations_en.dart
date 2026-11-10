@@ -643,6 +643,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersEmptyBody => 'Your orders appear here once you check out.';
 
   @override
+  String get ordersEmptyBucketTitle => 'No orders in this status';
+
+  @override
+  String get ordersEmptyBucketBody =>
+      'Pick another tab to see your other orders.';
+
+  @override
   String get ordersLoadMore => 'Load more';
 
   @override

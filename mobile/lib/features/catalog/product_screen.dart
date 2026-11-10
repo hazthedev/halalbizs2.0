@@ -32,6 +32,11 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   bool _adding = false;
   bool _chatting = false;
 
+  /// The page's own messenger: the "Added to cart" bar floats above this
+  /// page's bottom bar (the shell's messenger would lay it over Add to cart)
+  /// and leaves with the page instead of covering Cart's Checkout.
+  final _messenger = GlobalKey<ScaffoldMessengerState>();
+
   Variant? _selected(Product p) {
     final vs = p.variants;
     if (vs.isEmpty) return null;
@@ -56,15 +61,17 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     }
     setState(() => _adding = true);
     final l = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
     try {
       await ref.read(cartProvider.notifier).add(variantId: v.id, qty: _qty);
       if (!mounted) return;
-      messenger
-        ..clearSnackBars()
+      _messenger.currentState
+        ?..clearSnackBars()
         ..showSnackBar(SnackBar(
           content: Text(l.addedToCart),
+          // An action makes a SnackBar persist by default; this one must go.
+          persist: false,
+          duration: const Duration(seconds: 4),
           action: SnackBarAction(key: const Key('product-view-cart'), label: l.cartViewCart, textColor: SoukColors.onDark, onPressed: () => router.go('/cart')),
         ));
     } catch (e) {
@@ -106,7 +113,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     final variant = product == null ? null : _selected(product);
     final canBuy = product != null && (variant?.inStock ?? product.inStock);
 
-    return SoukPage(
+    return ScaffoldMessenger(key: _messenger, child: SoukPage(
       title: product?.name ?? l.product,
       scrollable: true,
       onRefresh: _refresh,
@@ -163,7 +170,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
           }),
         ),
       ),
-    );
+    ));
   }
 }
 

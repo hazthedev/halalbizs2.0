@@ -320,6 +320,8 @@
   },
   "ordersEmptyTitle": "Belum ada pesanan",
   "ordersEmptyBody": "Pesanan anda akan dipaparkan di sini selepas daftar keluar.",
+  "ordersEmptyBucketTitle": "Tiada pesanan dalam status ini",
+  "ordersEmptyBucketBody": "Pilih tab lain untuk melihat pesanan anda yang lain.",
   "ordersLoadMore": "Muat lagi",
   "ordersTracking": "Penjejakan",
   "ordersTrack": "Jejak",
