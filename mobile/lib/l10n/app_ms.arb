@@ -476,5 +476,10 @@
   "ordersReturnStatusDisputed": "Disputed",
   "ordersReturnStatusEscalated": "Escalated",
   "ordersReturnStatusRefunded": "Refunded",
-  "ordersReturnStatusRejected": "Rejected"
+  "ordersReturnStatusRejected": "Rejected",
+  "checkoutDonePaid": "Dibayar {amount} (bayaran {orderNo}).",
+  "checkoutDoneCod": "Jumlah {amount}, dibayar semasa penghantaran (bayaran {orderNo}).",
+  "checkoutDoneSplit": "{count, plural, =1{Ia dihantar sebagai satu penghantaran.} other{Pesanan anda dibahagikan kepada {count} penghantaran, satu bagi setiap kedai.}}",
+  "ordersOrderNo": "Pesanan {no}",
+  "ordersPaymentNo": "Bayaran {no}"
 }

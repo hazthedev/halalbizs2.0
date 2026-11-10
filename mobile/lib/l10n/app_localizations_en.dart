@@ -1006,4 +1006,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ordersReturnStatusRejected => 'Rejected';
+
+  @override
+  String checkoutDonePaid(String amount, String orderNo) {
+    return 'Paid $amount (payment $orderNo).';
+  }
+
+  @override
+  String checkoutDoneCod(String amount, String orderNo) {
+    return 'Total $amount, paid on delivery (payment $orderNo).';
+  }
+
+  @override
+  String checkoutDoneSplit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Your order is split into $count shipments, one per shop.',
+      one: 'It ships as one shipment.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String ordersOrderNo(String no) {
+    return 'Order $no';
+  }
+
+  @override
+  String ordersPaymentNo(String no) {
+    return 'Payment $no';
+  }
 }

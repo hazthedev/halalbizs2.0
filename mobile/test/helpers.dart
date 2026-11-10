@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:halalbizs/core/api/api_client.dart';
 import 'package:halalbizs/core/auth/token_store.dart';
 import 'package:halalbizs/core/db/app_db.dart';
+import 'package:halalbizs/core/in_app_browser.dart';
 import 'package:halalbizs/core/offline/offline.dart';
 import 'package:halalbizs/core/router.dart';
 import 'package:halalbizs/features/cart/cart_api.dart';
@@ -110,14 +111,28 @@ Map<String, dynamic> fakeUser({bool verified = true, String? storeStatus}) => {
       'store': ?(storeStatus == null ? null : {'id': 3, 'slug': 'kedai-madu', 'status': storeStatus}),
     };
 
+/// Records what the app opened in the in-app browser sheet, and closes.
+class FakeBrowser extends InAppBrowser {
+  final opened = <String>[];
+  int closes = 0;
+
+  @override
+  Future<void> open(String url) async => opened.add(url);
+
+  @override
+  Future<void> close() async => closes++;
+}
+
 /// Pumps the whole app with fakes. Returns the container so tests can read
 /// providers and drive the router: `h.router.go('/cart')`.
 class Harness {
-  Harness({FakeApi? api, this.token, this.offline = false, AppDb? db})
+  Harness({FakeApi? api, this.token, this.offline = false, AppDb? db, FakeBrowser? browser})
       : api = api ?? FakeApi(),
+        browser = browser ?? FakeBrowser(),
         db = db ?? AppDb.test(NativeDatabase.memory());
 
   final FakeApi api;
+  final FakeBrowser browser;
   final String? token;
   final bool offline;
   final AppDb db;
@@ -131,6 +146,7 @@ class Harness {
       apiClientProvider.overrideWith((ref) => api),
       appDbProvider.overrideWith((ref) => db),
       isOfflineProvider.overrideWith((ref) => Stream.value(offline)),
+      inAppBrowserProvider.overrideWith((ref) => browser),
     ]);
     addTearDown(container.dispose);
     addTearDown(db.close);

@@ -45,4 +45,39 @@ void main() {
     expect(find.text('Search needs a connection'), findsOneWidget);
     expect(api.calls.where((c) => c.startsWith('GET search')), isEmpty);
   });
+
+  testWidgets('category chip and sort send the API keys the server accepts', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [
+            {'id': 1, 'slug': 'rice-grains', 'name': 'Rice & Grains', 'parent_id': null},
+          ],
+      'GET search': (q, _) => [fakeProduct()],
+    });
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/search');
+    String lastSearch() => api.calls.lastWhere((c) => c.startsWith('GET search'));
+
+    await tester.enterText(find.byKey(const Key('search-input')), 'aut');
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+    expect(lastSearch(), 'GET search?q=aut');
+
+    await tester.tap(find.byKey(const Key('search-category-rice-grains')));
+    await tester.pumpAndSettle();
+    expect(lastSearch(), contains('category=rice-grains'));
+
+    for (final (label, key) in [
+      ('Price: low to high', 'price_asc'),
+      ('Popular', 'top'),
+      ('Newest', 'latest'),
+    ]) {
+      await tester.tap(find.byKey(const Key('search-sort')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+      expect(lastSearch(), allOf(contains('sort=$key'), contains('category=rice-grains')));
+    }
+  });
 }

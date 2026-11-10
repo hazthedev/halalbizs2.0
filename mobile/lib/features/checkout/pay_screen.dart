@@ -4,22 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/in_app_browser.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import 'checkout_api.dart';
 
 /// `/checkout/pay/:orderNo` — the iPay88 hand-off. Opens the signed web
-/// `payment_url` in the system browser, then trusts only
+/// `payment_url` in the in-app browser sheet, then trusts only
 /// `GET orders/{orderNo}/payment` (hard rule 4): polled every [pollEvery]
 /// while visible and on every app resume; `paid` → `/checkout/done`.
 /// Also the target of the `halalbizs://pay/{order_no}` deep link, in which
 /// case the fresh `retry_url` from the status call is the one to open.
+/// The deep link arrives as `?returned=1`: close the sheet and check at once.
 class PayScreen extends ConsumerStatefulWidget {
-  const PayScreen({super.key, required this.orderNo, this.initialUrl});
+  const PayScreen({super.key, required this.orderNo, this.initialUrl, this.returned = false});
 
   final String orderNo;
+
+  /// Back from the web return page (`halalbizs://pay/{no}`).
+  final bool returned;
 
   /// `payment_url` from `POST checkout/place`; launched once on open.
   final String? initialUrl;
@@ -41,8 +45,18 @@ class _PayScreenState extends ConsumerState<PayScreen> with WidgetsBindingObserv
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     if (widget.initialUrl != null) _open(widget.initialUrl!);
+    if (widget.returned) ref.read(inAppBrowserProvider).close();
     _poll();
     _startTimer();
+  }
+
+  @override
+  void didUpdateWidget(PayScreen old) {
+    super.didUpdateWidget(old);
+    if (widget.returned && !old.returned) {
+      ref.read(inAppBrowserProvider).close();
+      _poll();
+    }
   }
 
   @override
@@ -68,13 +82,7 @@ class _PayScreenState extends ConsumerState<PayScreen> with WidgetsBindingObserv
     _timer = Timer.periodic(PayScreen.pollEvery, (_) => _poll());
   }
 
-  Future<void> _open(String url) async {
-    try {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-    } catch (_) {
-      // No browser (tests, odd devices): the Retry button stays available.
-    }
-  }
+  Future<void> _open(String url) => ref.read(inAppBrowserProvider).open(url);
 
   Future<void> _poll() async {
     if (_checking) return;

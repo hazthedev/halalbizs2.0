@@ -73,8 +73,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final categories = ref.watch(categoriesProvider).value?.data ?? const [];
     final sorts = {
       'relevance': l.sortRelevance,
-      'popular': l.sortPopular,
-      'newest': l.sortNewest,
+      'top': l.sortPopular,
+      'latest': l.sortNewest,
       'price_asc': l.sortPriceAsc,
       'price_desc': l.sortPriceDesc,
     };

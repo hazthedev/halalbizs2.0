@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/api/api_client.dart';
 import '../../core/auth/session.dart';
+import '../../core/in_app_browser.dart';
 import '../../core/locale.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../messages/conversations_screen.dart';
 import '../messages/messages_api.dart';
+import 'account_api.dart';
 import 'addresses_screen.dart';
 import 'coins_screen.dart';
 import 'delete_account_screen.dart';
@@ -125,7 +125,7 @@ class AccountScreen extends ConsumerWidget {
                   key: const Key('account-become-seller'),
                   icon: FontAwesomeIcons.store,
                   label: l.becomeSeller,
-                  onTap: () => launchUrl(Uri.parse('${_webBase()}/seller/apply'), mode: LaunchMode.externalApplication),
+                  onTap: () => _becomeSeller(context, ref),
                 ),
               SoukRow(key: const Key('account-delete'), icon: FontAwesomeIcons.userXmark, label: l.deleteAccount, onTap: () => context.push('/account/delete')),
               SoukRow(key: const Key('account-sign-out'), icon: FontAwesomeIcons.rightFromBracket, label: l.signOut, danger: true, onTap: () => _signOut(context, ref)),
@@ -136,13 +136,32 @@ class AccountScreen extends ConsumerWidget {
     );
   }
 
-  /// Web origin derived from the API base (`…/api/v1` → `…`).
-  static String _webBase() => kApiBaseUrl.replaceFirst(RegExp(r'/api/v1/?$'), '');
+  /// Web seller sign-up, already signed in: a one-time link from the API,
+  /// opened in the in-app browser sheet.
+  static Future<void> _becomeSeller(BuildContext context, WidgetRef ref) async {
+    try {
+      final url = await ref.read(accountApiProvider).webSignInLink('seller-apply');
+      await ref.read(inAppBrowserProvider).open(url);
+    } catch (e) {
+      if (context.mounted) showApiError(context, e);
+    }
+  }
 }
 
-/// `/account/language` — en / ms, persisted in drift kv.
+/// `/account/language` — en / ms, persisted in drift kv and, when signed in,
+/// saved as the account's `preferred_locale` so Profile and the server agree.
 class LanguageScreen extends ConsumerWidget {
   const LanguageScreen({super.key});
+
+  static Future<void> _pick(WidgetRef ref, String code) async {
+    await ref.read(localeProvider.notifier).set(Locale(code));
+    if (ref.read(sessionProvider) is! SignedIn) return;
+    try {
+      await ref.read(accountApiProvider).updateMe(preferredLocale: code);
+    } catch (_) {
+      // The app language already changed; Profile can retry the save.
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -161,7 +180,7 @@ class LanguageScreen extends ConsumerWidget {
               trailing: current.languageCode == e.key
                   ? const Icon(Icons.check_rounded, color: SoukColors.emerald)
                   : const SizedBox.shrink(),
-              onTap: () => ref.read(localeProvider.notifier).set(Locale(e.key)),
+              onTap: () => _pick(ref, e.key),
             ),
         ]),
       ),

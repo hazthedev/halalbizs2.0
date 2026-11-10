@@ -120,7 +120,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     final o = async.value?.data;
 
     return SoukPage(
-      title: o?.subOrderNo ?? l.ordersOrder,
+      title: o == null ? l.ordersOrder : l.ordersOrderNo(o.subOrderNo),
       scrollable: true,
       onRefresh: _refresh,
       fromCache: async.value?.fromCache ?? false,
@@ -161,7 +161,8 @@ class _Detail extends StatelessWidget {
     final trackingUrl = asStr(t?['url']);
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Row(children: [
-        Expanded(child: Text(o.orderNo, style: SoukText.mono)),
+        // The checkout's payment number: one payment can cover several shop orders.
+        Expanded(child: Text(l.ordersPaymentNo(o.orderNo), style: SoukText.mono)),
         SoukBadge(o.statusLabel, key: const Key('order-status'), status: o.status),
       ]),
       if (o.placedAt != null) Text(l.ordersPlacedAt(soukDateTime(context, o.placedAt!)), style: SoukText.meta),

@@ -39,7 +39,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _name = TextEditingController(text: me?.name ?? '');
     _phone = TextEditingController(text: me?.phone ?? '');
     _email = TextEditingController(text: me?.email ?? '');
-    _locale = me?.preferredLocale ?? ref.read(localeProvider).languageCode;
+    // The language the app is in IS the preference (Language page saves both).
+    _locale = ref.read(localeProvider).languageCode;
   }
 
   @override

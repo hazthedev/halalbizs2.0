@@ -476,5 +476,51 @@
   "ordersReturnStatusDisputed": "Disputed",
   "ordersReturnStatusEscalated": "Escalated",
   "ordersReturnStatusRefunded": "Refunded",
-  "ordersReturnStatusRejected": "Rejected"
+  "ordersReturnStatusRejected": "Rejected",
+  "checkoutDonePaid": "Paid {amount} (payment {orderNo}).",
+  "@checkoutDonePaid": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutDoneCod": "Total {amount}, paid on delivery (payment {orderNo}).",
+  "@checkoutDoneCod": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutDoneSplit": "{count, plural, =1{It ships as one shipment.} other{Your order is split into {count} shipments, one per shop.}}",
+  "@checkoutDoneSplit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersOrderNo": "Order {no}",
+  "@ordersOrderNo": {
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersPaymentNo": "Payment {no}",
+  "@ordersPaymentNo": {
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  }
 }

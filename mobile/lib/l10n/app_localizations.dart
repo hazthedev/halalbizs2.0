@@ -1939,6 +1939,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rejected'**
   String get ordersReturnStatusRejected;
+
+  /// No description provided for @checkoutDonePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid {amount} (payment {orderNo}).'**
+  String checkoutDonePaid(String amount, String orderNo);
+
+  /// No description provided for @checkoutDoneCod.
+  ///
+  /// In en, this message translates to:
+  /// **'Total {amount}, paid on delivery (payment {orderNo}).'**
+  String checkoutDoneCod(String amount, String orderNo);
+
+  /// No description provided for @checkoutDoneSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{It ships as one shipment.} other{Your order is split into {count} shipments, one per shop.}}'**
+  String checkoutDoneSplit(int count);
+
+  /// No description provided for @ordersOrderNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Order {no}'**
+  String ordersOrderNo(String no);
+
+  /// No description provided for @ordersPaymentNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment {no}'**
+  String ordersPaymentNo(String no);
 }
 
 class _AppLocalizationsDelegate

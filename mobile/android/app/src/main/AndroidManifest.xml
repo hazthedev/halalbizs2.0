@@ -4,10 +4,13 @@
         android:label="HalalBizs"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- singleTask: the halalbizs:// deep link from the payment or seller
+             page clears the in-app browser (Custom Tab) above this activity,
+             which is how that sheet closes on Android. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:taskAffinity=""
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

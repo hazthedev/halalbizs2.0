@@ -47,7 +47,7 @@ String? soukRedirect(SessionState session, Uri uri) {
   // `halalbizs://pay/{order_no}` (the web return page's deep link) → the pay screen.
   if (uri.scheme == 'halalbizs') {
     final orderNo = uri.host == 'pay' ? uri.pathSegments.firstOrNull : null;
-    return orderNo == null || orderNo.isEmpty ? '/home' : '/checkout/pay/${Uri.encodeComponent(orderNo)}';
+    return orderNo == null || orderNo.isEmpty ? '/home' : '/checkout/pay/${Uri.encodeComponent(orderNo)}?returned=1';
   }
   final path = uri.path;
   if (session is SessionLoading) return null;

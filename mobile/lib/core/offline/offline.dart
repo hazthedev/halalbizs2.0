@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api/api_client.dart';
 import '../db/app_db.dart';
+import '../locale.dart';
 
 /// True while the device reports no network route at all. The real source of
 /// truth remains each request (a request can still fail on a "connected"
@@ -85,5 +86,9 @@ class OfflineRepo {
   }
 }
 
-final offlineRepoProvider =
-    Provider<OfflineRepo>((ref) => OfflineRepo(ref.watch(apiClientProvider), ref.watch(appDbProvider)));
+/// Watches the UI locale so a language switch rebuilds every API wrapper and
+/// screen provider on top of it: names come back in the new Accept-Language.
+final offlineRepoProvider = Provider<OfflineRepo>((ref) {
+  ref.watch(localeProvider);
+  return OfflineRepo(ref.watch(apiClientProvider), ref.watch(appDbProvider));
+});
