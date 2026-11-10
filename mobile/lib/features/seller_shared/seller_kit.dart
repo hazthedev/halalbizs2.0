@@ -9,15 +9,20 @@ import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import 'models.dart';
 
-/// App-bar leading on every seller tab root: back to the buyer shell.
+/// App-bar action on every seller tab root: back to the buyer shell, with
+/// its words (a bare bag icon read as a logo on a real phone).
 class SellerBackToBuying extends StatelessWidget {
   const SellerBackToBuying({super.key});
 
   @override
-  Widget build(BuildContext context) => SoukIconButton(
+  Widget build(BuildContext context) => TextButton.icon(
         key: const Key('seller-back-to-buying'),
-        icon: FontAwesomeIcons.bagShopping,
-        label: context.l10n.sellerBackToBuying,
+        style: TextButton.styleFrom(
+          foregroundColor: SoukColors.inkHead,
+          minimumSize: const Size(SoukSpace.minTap, SoukSpace.minTap),
+        ),
+        icon: const FaIcon(FontAwesomeIcons.bagShopping, size: 16),
+        label: Text(context.l10n.sellerBackToBuying, style: SoukText.label),
         onPressed: () => context.go('/home'),
       );
 }
@@ -164,11 +169,30 @@ class SellerOrderRow extends StatelessWidget {
   }
 }
 
-/// Gallery-or-camera picker. Null when the user cancels, the platform has
-/// no picker (web camera, tests), or the file is over [maxKb] (the server's
-/// `image|max:` rule — refused here with a snackbar instead of a 422).
-Future<XFile?> pickSellerImage(BuildContext context, {required int maxKb}) async {
+/// Swapped in widget tests; the platform picker otherwise.
+@visibleForTesting
+ImagePicker sellerImagePicker = ImagePicker();
+
+/// Gallery-or-camera picker for one image (store logo / banner). Null when
+/// the user cancels, the platform has no picker (web camera, tests), or the
+/// file is over [maxKb] (the server's `image|max:` rule — refused here with
+/// a snackbar instead of a 422).
+Future<XFile?> pickSellerImage(BuildContext context, {required int maxKb}) async =>
+    (await pickSellerImages(context, maxKb: maxKb, remaining: 1))?.firstOrNull;
+
+/// Gallery (several at once, up to [remaining]) or camera (one shot).
+/// Null on cancel, or when more than [remaining] come back (some platforms
+/// ignore the limit): refused with a message rather than cut silently.
+/// Files over [maxKb] are dropped with a snackbar; the rest are returned.
+Future<List<XFile>?> pickSellerImages(BuildContext context, {required int maxKb, required int remaining}) async {
   final l = context.l10n;
+  void snack(String message) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(message), backgroundColor: SoukColors.danger));
+  }
+
   final source = await showModalBottomSheet<ImageSource>(
     context: context,
     useRootNavigator: true,
@@ -190,22 +214,28 @@ Future<XFile?> pickSellerImage(BuildContext context, {required int maxKb}) async
     ),
   );
   if (source == null) return null;
-  final XFile? file;
+  final List<XFile> files;
   try {
-    file = await ImagePicker().pickImage(source: source, maxWidth: 1600, imageQuality: 85);
+    if (source == ImageSource.gallery && remaining > 1) {
+      files = await sellerImagePicker.pickMultiImage(maxWidth: 1600, imageQuality: 85, limit: remaining);
+    } else {
+      final one = await sellerImagePicker.pickImage(source: source, maxWidth: 1600, imageQuality: 85);
+      files = [?one];
+    }
   } catch (_) {
     return null;
   }
-  if (file == null) return null;
-  if (await file.length() > maxKb * 1024) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context)
-        ..clearSnackBars()
-        ..showSnackBar(SnackBar(content: Text(l.sellerImageTooLarge(maxKb)), backgroundColor: SoukColors.danger));
-    }
+  if (files.isEmpty) return null;
+  if (files.length > remaining) {
+    snack(l.sellerImagesTooMany(remaining));
     return null;
   }
-  return file;
+  final ok = <XFile>[];
+  for (final f in files) {
+    if (await f.length() <= maxKb * 1024) ok.add(f);
+  }
+  if (ok.length < files.length) snack(l.sellerImageTooLarge(maxKb));
+  return ok.isEmpty ? null : ok;
 }
 
 /// Bottom sheet with a serif title, keyboard inset and the kit padding.

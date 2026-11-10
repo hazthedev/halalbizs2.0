@@ -216,6 +216,7 @@
   },
   "sellerOrder": "Order",
   "sellerBuyer": "Buyer",
+  "sellerShipTo": "Ship to",
   "sellerItems": "Items",
   "sellerSubtotal": "Subtotal",
   "sellerShippingFee": "Shipping",
@@ -223,6 +224,7 @@
   "sellerTax": "Tax",
   "sellerTotal": "Total",
   "sellerCommission": "Commission",
+  "sellerCommissionEstimated": "Estimated until the order completes.",
   "sellerPayment": "Payment",
   "sellerPaymentCod": "Cash on delivery",
   "sellerPaymentOnline": "Online payment",
@@ -295,8 +297,16 @@
   "sellerCodEnabledHelp": "Let buyers pay on delivery for this product.",
   "sellerVariants": "Variants",
   "sellerImages": "Images",
-  "sellerImagesHelp": "Up to 9 images.",
+  "sellerImagesHelp": "Up to 9 photos. Pick several at once. They show in the order you add them.",
   "sellerImagesSaveFirst": "Save the product first to add images.",
+  "sellerImagesFull": "9 photos is the limit. Remove one to add another.",
+  "sellerImagesTooMany": "Only {count} more photos fit. A product has at most 9.",
+  "@sellerImagesTooMany": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerDescriptionHasFormatting": "This description has formatting. Edit it on the web seller centre.",
   "sellerAddImage": "Add image",
   "sellerRemoveImage": "Remove image",
   "sellerRemoveImageBody": "This image will be removed from the listing.",
@@ -369,6 +379,8 @@
   "sellerYourReply": "Your reply",
   "sellerReplyMin": "Write at least 5 characters.",
   "sellerStoreSaved": "Store saved",
+  "sellerSaveStoreSettings": "Save store settings",
+  "sellerBankNeedsNumber": "Re-enter the full account number to change bank details.",
   "sellerStatusPending": "Pending",
   "sellerStatusPaid": "Paid",
   "sellerStatusFailed": "Failed",

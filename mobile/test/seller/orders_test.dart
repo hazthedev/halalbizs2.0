@@ -22,7 +22,7 @@ void main() {
     expect(find.byKey(const Key('seller-order-ship')), findsNothing);
     expect(find.byKey(const Key('seller-order-delivered')), findsNothing);
     expect(find.text('RM 30.00'), findsOneWidget); // total
-    expect(find.text('Lim Mei Ling'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('seller-order-buyer')), matching: find.text('Lim Mei Ling')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('seller-order-pack')));
     await tester.pumpAndSettle();

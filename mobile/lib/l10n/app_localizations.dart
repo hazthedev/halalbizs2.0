@@ -1058,6 +1058,12 @@ abstract class AppLocalizations {
   /// **'Buyer'**
   String get sellerBuyer;
 
+  /// No description provided for @sellerShipTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Ship to'**
+  String get sellerShipTo;
+
   /// No description provided for @sellerItems.
   ///
   /// In en, this message translates to:
@@ -1099,6 +1105,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Commission'**
   String get sellerCommission;
+
+  /// No description provided for @sellerCommissionEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated until the order completes.'**
+  String get sellerCommissionEstimated;
 
   /// No description provided for @sellerPayment.
   ///
@@ -1451,7 +1463,7 @@ abstract class AppLocalizations {
   /// No description provided for @sellerImagesHelp.
   ///
   /// In en, this message translates to:
-  /// **'Up to 9 images.'**
+  /// **'Up to 9 photos. Pick several at once. They show in the order you add them.'**
   String get sellerImagesHelp;
 
   /// No description provided for @sellerImagesSaveFirst.
@@ -1459,6 +1471,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save the product first to add images.'**
   String get sellerImagesSaveFirst;
+
+  /// No description provided for @sellerImagesFull.
+  ///
+  /// In en, this message translates to:
+  /// **'9 photos is the limit. Remove one to add another.'**
+  String get sellerImagesFull;
+
+  /// No description provided for @sellerImagesTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {count} more photos fit. A product has at most 9.'**
+  String sellerImagesTooMany(int count);
+
+  /// No description provided for @sellerDescriptionHasFormatting.
+  ///
+  /// In en, this message translates to:
+  /// **'This description has formatting. Edit it on the web seller centre.'**
+  String get sellerDescriptionHasFormatting;
 
   /// No description provided for @sellerAddImage.
   ///
@@ -1765,6 +1795,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Store saved'**
   String get sellerStoreSaved;
+
+  /// No description provided for @sellerSaveStoreSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Save store settings'**
+  String get sellerSaveStoreSettings;
+
+  /// No description provided for @sellerBankNeedsNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter the full account number to change bank details.'**
+  String get sellerBankNeedsNumber;
 
   /// No description provided for @sellerStatusPending.
   ///

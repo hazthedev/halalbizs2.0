@@ -44,7 +44,7 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen> {
     final bumped = ref.watch(sellerRefreshProvider);
     return SoukPage(
       title: l.sellerTabOrders,
-      leading: const SellerBackToBuying(),
+      actions: const [SellerBackToBuying()],
       showBack: false,
       scrollable: true,
       onRefresh: () async => setState(() => _refresh++),
