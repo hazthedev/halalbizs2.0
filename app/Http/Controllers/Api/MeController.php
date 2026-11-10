@@ -96,6 +96,10 @@ class MeController extends Controller
     {
         $to = $request->validate(['to' => ['required', Rule::in(array_keys(AppWebSignInController::DESTINATIONS))]])['to'];
 
+        if (! AppWebSignInController::allowed($request->user())) {
+            return ApiResponse::error('forbidden', __('Admin accounts sign in on the website.'), 403);
+        }
+
         return ApiResponse::ok(AppWebSignInController::issue($request->user(), $to));
     }
 }

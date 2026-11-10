@@ -71,3 +71,26 @@ test('the link needs a signed-in app user and a known destination', function () 
         ->postJson('/api/v1/me/web-sign-in-link', ['to' => 'admin'])
         ->assertUnprocessable();
 });
+
+test('admin accounts never get a web sign-in link, nor can one issued earlier be used', function () {
+    $admin = webLinkBuyer();
+    $admin->assignRole('admin');
+    $superadmin = webLinkBuyer();
+    $superadmin->forceFill(['is_superadmin' => true])->save();
+
+    foreach ([$admin, $superadmin] as $user) {
+        $this->withToken($user->createToken('pest-phone')->plainTextToken)
+            ->postJson('/api/v1/me/web-sign-in-link', ['to' => 'seller-apply'])
+            ->assertForbidden();
+        app('auth')->forgetGuards();
+    }
+    $this->withoutToken();
+
+    // A link issued while the user was a buyer stops working once they are an admin.
+    $promoted = webLinkBuyer();
+    $url = webLinkFor($promoted);
+    $promoted->assignRole('admin');
+
+    $this->get($url)->assertForbidden();
+    $this->assertGuest('web');
+});

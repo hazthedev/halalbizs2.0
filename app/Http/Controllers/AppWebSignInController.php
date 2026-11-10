@@ -23,6 +23,15 @@ class AppWebSignInController extends Controller
 
     private const TTL_MINUTES = 5;
 
+    /**
+     * Admin accounts never sign into the web through the app (Haze
+     * 2026-11-10): an admin web session must come through the web login.
+     */
+    public static function allowed(User $user): bool
+    {
+        return ! $user->is_superadmin && ! $user->hasRole('admin');
+    }
+
     public static function issue(User $user, string $to): array
     {
         $nonce = Str::random(40);
@@ -45,7 +54,7 @@ class AppWebSignInController extends Controller
         abort_if($to === null || $userId === null || (int) $userId !== (int) $request->query('user'), 403);
 
         $user = User::query()->findOrFail($userId);
-        abort_if($user->isSuspended(), 403);
+        abort_if($user->isSuspended() || ! self::allowed($user), 403);
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
