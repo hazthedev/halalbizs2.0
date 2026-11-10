@@ -11,7 +11,7 @@ Map<String, dynamic> fakeCart({bool selected = true, bool purchasing = true}) =>
           'lines': [
             {
               'variant_id': 10,
-              'product': {'id': 1, 'slug': 'madu-tualang', 'name': 'Madu Tualang Asli', 'thumb': null},
+              'product': {'id': 1, 'slug': 'madu-tualang', 'name': 'Madu Tualang Asli', 'thumb': null, 'halal_cert_number': 'MY-JKM-2140-118'},
               'variant_label': '500g',
               'qty': 2,
               'unit_price_sen': 1250,
@@ -69,6 +69,10 @@ void main() {
     expect(find.byKey(const Key('cart-store-4')), findsOneWidget);
     expect(find.text('Kedai Madu'), findsOneWidget);
     expect(find.text('Madu Tualang Asli'), findsOneWidget);
+    // The web basket's halal line: the number, verified lines only.
+    expect(find.byKey(const Key('cart-halal-10')), findsOneWidget);
+    expect(find.text('MY-JKM-2140-118'), findsOneWidget);
+    expect(find.byKey(const Key('cart-halal-20')), findsNothing);
     expect(find.text('RM 12.50'), findsOneWidget);
     expect(find.text('RM 15.00'), findsOneWidget); // list price struck through
     expect(find.text('RM 25.00'), findsOneWidget); // selected subtotal, verbatim from the payload

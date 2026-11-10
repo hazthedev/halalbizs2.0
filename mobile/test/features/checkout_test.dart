@@ -32,7 +32,7 @@ Map<String, dynamic> fakeQuote() => {
           'shipping_subsidy_sen': 0,
           'tax_sen': 0,
           'lines': [
-            {'variant_id': 10, 'product_id': 1, 'name': 'Madu Tualang Asli', 'variant_label': '500g', 'qty': 2, 'unit_price_sen': 5000, 'list_price_sen': 5000, 'line_total_sen': 10000, 'tax_sen': 0, 'cod_enabled': true},
+            {'variant_id': 10, 'product_id': 1, 'name': 'Madu Tualang Asli', 'variant_label': '500g', 'qty': 2, 'unit_price_sen': 5000, 'list_price_sen': 5000, 'line_total_sen': 10000, 'tax_sen': 0, 'cod_enabled': true, 'halal_cert_number': 'MY-JKM-2140-118'},
           ],
         },
       ],
@@ -102,6 +102,8 @@ void main() {
     expect(find.text('RM 100.00'), findsNWidgets(2)); // line total + subtotal
     expect(find.text('RM 23.45'), findsWidgets); // shipping (store row + totals)
     expect(find.text('Buyer One · 0123456789'), findsOneWidget);
+    expect(find.byKey(const Key('checkout-halal-10')), findsOneWidget);
+    expect(find.text('MY-JKM-2140-118'), findsOneWidget);
     expect(find.byKey(const Key('checkout-method-cod')), findsOneWidget);
     expect(find.byKey(const Key('checkout-method-reason-cod')), findsOneWidget);
     expect(find.text('Cash on delivery is capped at RM 100.00 per order.'), findsOneWidget);
