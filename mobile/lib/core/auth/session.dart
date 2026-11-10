@@ -133,11 +133,15 @@ class SessionController extends Notifier<SessionState> {
     await _signIn(data);
   }
 
-  /// `POST auth/two-factor {challenge, code}` → token + user.
+  /// `POST auth/two-factor {challenge, code, device_name}` → token + user.
   Future<void> verifyTwoFactor(String code) async {
     final s = state;
     if (s is! TwoFactorPending) throw ApiException('no_challenge', 'Sign in again to get a new code.');
-    final data = asMap(await _api.post('auth/two-factor', body: {'challenge': s.challenge, 'code': code}));
+    final data = asMap(await _api.post('auth/two-factor', body: {
+      'challenge': s.challenge,
+      'code': code,
+      'device_name': await _tokens.deviceName(),
+    }));
     await _signIn(data);
   }
 

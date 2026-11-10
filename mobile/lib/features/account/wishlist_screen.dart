@@ -72,7 +72,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                 itemBuilder: (_, i) {
                   final p = items[i];
                   return Stack(children: [
-                    ProductCard(p, soldLabel: l.sold, onTap: () => context.push('/p/${p.slug}')),
+                    ProductCard(p, soldLabel: l.sold, wishlist: false, onTap: () => context.push('/p/${p.slug}')),
                     Positioned(
                       top: 6,
                       right: 6,

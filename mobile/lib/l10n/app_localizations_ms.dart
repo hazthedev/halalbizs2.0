@@ -1357,6 +1357,9 @@ class AppLocalizationsMs extends AppLocalizations {
   String get accountRemoveFromWishlist => 'Buang daripada senarai hajat';
 
   @override
+  String get productAddToWishlist => 'Tambah ke senarai hajat';
+
+  @override
   String get accountCoinsBalance => 'Baki';
 
   @override

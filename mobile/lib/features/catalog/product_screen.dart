@@ -7,6 +7,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/session.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
+import '../account/wishlist_heart.dart';
 import '../cart/cart_api.dart';
 import '../messages/messages_api.dart';
 import 'catalog_api.dart';
@@ -112,6 +113,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       cachedAt: async.value?.fetchedAt,
       padding: EdgeInsets.zero,
       actions: [
+        if (product != null) WishlistHeart(product),
         if (product?.storeSlug != null)
           SoukIconButton(
             key: const Key('product-chat'),
