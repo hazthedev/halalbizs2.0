@@ -2,24 +2,21 @@
 
 namespace App\Livewire\Seller\Orders\Concerns;
 
-use App\Enums\ActorType;
-use App\Enums\SubOrderStatus;
-use App\Jobs\RegisterAfterShipTracking;
 use App\Models\SubOrder;
-use App\Services\EasyParcelService;
-use App\Services\SubOrderStatusService;
+use App\Services\ShipmentService;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 
 /**
  * Shared "Arrange shipment" modal (docs/07 §B) — used by both the order
- * queue quick action and the detail page. Tracking fields are plain
- * columns (forceFill is fine); the status change itself goes ONLY
- * through SubOrderStatusService (CLAUDE.md hard rule 2).
+ * queue quick action and the detail page. The write itself (tracking
+ * columns, then the status change through SubOrderStatusService only —
+ * CLAUDE.md hard rule 2) lives in ShipmentService, shared with the API.
  */
 trait ManagesShipment
 {
     /** Hardcoded v1 courier list — moves to shop settings in M6. */
-    public const COURIERS = ['J&T Express', 'Pos Laju', 'DHL eCommerce', 'Ninja Van', 'City-Link', 'GDEX'];
+    public const COURIERS = ShipmentService::COURIERS;
 
     public ?int $shippingSubOrderId = null;
 
@@ -67,31 +64,17 @@ trait ManagesShipment
             ->where('store_id', $this->currentStore()->id)
             ->findOrFail((int) $this->shippingSubOrderId);
 
-        if ($subOrder->status !== SubOrderStatus::Processing) {
+        try {
+            $shipped = app(ShipmentService::class)->ship($subOrder, $this->courier, $this->courierOther, $this->trackingNo, auth()->id());
+        } catch (InvalidArgumentException $e) {
             $this->closeShipModal();
-            $this->dispatch('toast', message: __('This order can no longer be shipped from its current status.'), type: 'error');
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
 
             return;
         }
 
-        // Tracking fields only — never the status.
-        $subOrder->forceFill([
-            'tracking_courier' => $this->courier === 'other' ? trim($this->courierOther) : $this->courier,
-            'tracking_no' => trim($this->trackingNo),
-        ])->save();
-
-        app(SubOrderStatusService::class)->transition($subOrder, SubOrderStatus::Shipped, ActorType::Seller, auth()->id());
-
-        // Book a real courier shipment when the store uses EasyParcel (no-op
-        // otherwise) — augments the manual tracking with an AWB + label.
-        app(EasyParcelService::class)->bookIfEnabled($subOrder);
-
-        // Disabled/unkeyed by default. Once AfterShip credentials are added,
-        // registration happens off-request and works for any courier/country.
-        RegisterAfterShipTracking::dispatch($subOrder->id)->afterCommit();
-
         $this->closeShipModal();
-        $this->afterShipped($subOrder->fresh());
+        $this->afterShipped($shipped);
 
         $this->dispatch('toast', message: __(':no marked as shipped.', ['no' => $subOrder->sub_order_no]));
     }

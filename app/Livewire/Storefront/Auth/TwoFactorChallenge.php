@@ -9,11 +9,10 @@ use App\Services\CartService;
 use App\Services\DeviceGuard;
 use App\Services\DeviceTrust;
 use App\Services\OtpService;
+use App\Services\TwoFactorVerifier;
 use App\Support\ClientIp;
 use App\Support\PostLoginRedirect;
-use App\Support\Totp;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -59,8 +58,8 @@ class TwoFactorChallenge extends Component
         // counted failures against the account itself. TOTP has no other
         // ceiling either: the email branch self-destructs its code after 5
         // misses (OtpService), but Totp::verify accepts any guess forever and
-        // rememberTotpCodeUnused only records a code once it has ALREADY
-        // verified. 20/hour matches the broad buckets in Login::login().
+        // TwoFactorVerifier's replay memo only records a code once it has
+        // ALREADY verified. 20/hour matches the broad buckets in Login::login().
         $userKey = 'two-factor-user:'.$user->id;
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
@@ -131,34 +130,10 @@ class TwoFactorChallenge extends Component
 
         $this->validate(['code' => ['required', 'string']]);
 
-        if ($user->two_factor_method === TwoFactorMethod::Totp) {
-            if (! app(Totp::class)->verify((string) $user->two_factor_secret, $this->code)) {
-                $this->addError('code', __('That code isn\'t right — open your authenticator app and enter the current code.'));
+        $error = app(TwoFactorVerifier::class)->check($user, $this->code);
 
-                return false;
-            }
-
-            // Totp::verify() checks a ±1 period window but has no memory of
-            // its own — the same 6-digit code would otherwise work again for
-            // as long as it stays inside that window (replay). There is no
-            // 2FA DB column for this (outside this fix's surface), so the
-            // memo lives in cache keyed by user + code, TTL'd comfortably
-            // past the verification window.
-            if (! $this->rememberTotpCodeUnused($user->id, $this->code)) {
-                $this->addError('code', __('That code has already been used — wait for your authenticator app to show a new one.'));
-
-                return false;
-            }
-
-            return true;
-        }
-
-        $otp = app(OtpService::class);
-
-        if (! $otp->verify($user, OtpService::PURPOSE_2FA_EMAIL, trim($this->code))) {
-            $this->addError('code', $otp->hasActiveCode($user, OtpService::PURPOSE_2FA_EMAIL)
-                ? __('That code isn\'t right — check the latest email and try again.')
-                : __('That code no longer works — request a new code and enter it within 10 minutes.'));
+        if ($error !== null) {
+            $this->addError('code', $error);
 
             return false;
         }
@@ -212,24 +187,6 @@ class TwoFactorChallenge extends Component
         $this->useRecoveryCode = ! $this->useRecoveryCode;
         $this->reset('code', 'recovery_code');
         $this->resetErrorBag();
-    }
-
-    /**
-     * True the first time this exact code is seen for this user; false (and
-     * memoized either way is a no-op) on replay. TTL of 120s comfortably
-     * covers Totp::verify()'s ±1 period (30s) window plus clock drift.
-     */
-    private function rememberTotpCodeUnused(int $userId, string $code): bool
-    {
-        $key = 'totp-used:'.$userId.':'.preg_replace('/\s+/', '', $code);
-
-        if (Cache::has($key)) {
-            return false;
-        }
-
-        Cache::put($key, true, 120);
-
-        return true;
     }
 
     private function pendingUser(): ?User
