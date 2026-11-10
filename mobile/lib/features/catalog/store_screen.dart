@@ -62,10 +62,10 @@ class StoreScreen extends ConsumerWidget {
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(name, style: SoukText.displayH3, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  if (s?.description != null)
+                  if (s?.descriptionPlain?.isNotEmpty ?? false)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
-                      child: Text(s!.description!, style: SoukText.meta, maxLines: 2, overflow: TextOverflow.ellipsis),
+                      child: Text(s!.descriptionPlain!, style: SoukText.meta, maxLines: 2, overflow: TextOverflow.ellipsis),
                     ),
                   Padding(
                     padding: const EdgeInsets.only(top: SoukSpace.s1),

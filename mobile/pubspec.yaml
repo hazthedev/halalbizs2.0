@@ -30,6 +30,8 @@ dependencies:
   collection: ^1.19.1
   image_picker: ^1.2.4
   cached_network_image: ^4.0.6
+  flutter_widget_from_html_core: ^0.17.4
+  html: ^0.15.7
 
 dev_dependencies:
   flutter_test:

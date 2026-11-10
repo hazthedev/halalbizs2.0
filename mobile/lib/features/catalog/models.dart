@@ -1,3 +1,5 @@
+import 'package:html/parser.dart' as html_parser;
+
 import '../../core/api/json.dart';
 
 /// `ProductResource` (app/Http/Resources/ProductResource.php): id, slug,
@@ -82,7 +84,16 @@ class Store {
   int? get id => asInt(json['id']);
   String get slug => asStr(json['slug']) ?? '';
   String get name => asStr(json['name']) ?? slug;
+
+  /// Seller rich-text HTML; render with HtmlWidget, or use [descriptionPlain].
   String? get description => asStr(json['description']);
+
+  /// [description] as one line of plain text for clamped blurbs.
+  String? get descriptionPlain {
+    final d = description;
+    return d == null ? null : htmlToPlain(d);
+  }
+
   String? get logo => asStr(json['logo']);
   String? get banner => asStr(json['banner']);
   int? get productCount => asInt(json['product_count']);
@@ -102,3 +113,11 @@ class PageMeta {
   final int total;
   bool get hasMore => page < lastPage;
 }
+
+/// Tags stripped, entities decoded, whitespace collapsed. Block ends and
+/// `<br>` become spaces so "<p>a</p><p>b</p>" reads "a b", not "ab".
+String htmlToPlain(String html) => html_parser
+    .parseFragment(html.replaceAll(RegExp(r'<br\s*/?>|</(p|div|li|h[1-6])>', caseSensitive: false), ' '))
+    .text!
+    .replaceAll(RegExp(r'\s+'), ' ')
+    .trim();

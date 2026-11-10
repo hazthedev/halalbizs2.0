@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
@@ -308,7 +309,8 @@ class _ProductBody extends StatelessWidget {
                 const SizedBox(height: SoukSpace.s6),
                 Text(l.description, style: SoukText.displayH3),
                 const SizedBox(height: SoukSpace.s2),
-                Text(p.description, style: SoukText.bodySoft),
+                // Seller rich text. Core package only: links render as text, never open.
+                HtmlWidget(p.description, textStyle: SoukText.bodySoft),
               ],
             ],
           ),
