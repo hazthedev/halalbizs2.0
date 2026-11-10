@@ -81,14 +81,26 @@ class CheckoutController extends Controller
             'order_no' => $order->order_no,
             'payment_method' => $order->payment_method->value,
             'total_sen' => $order->grand_total_sen,
-            'sub_orders' => $order->subOrders->map(fn (SubOrder $subOrder) => [
-                'id' => $subOrder->id,
-                'store' => ['id' => $subOrder->store->id, 'name' => $subOrder->store->name],
-                'status' => $subOrder->status->value,
-            ])->values()->all(),
+            'sub_orders' => self::subOrders($order),
             'payment_url' => self::paymentUrl($order),
             'expires_at' => $order->expires_at?->toIso8601String(),
         ], null, 201);
+    }
+
+    /**
+     * One row per shop order: checkout splits by shop, and the app's success
+     * page names each SO number with its shop.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function subOrders(Order $order): array
+    {
+        return $order->loadMissing('subOrders.store')->subOrders->map(fn (SubOrder $subOrder) => [
+            'id' => $subOrder->id,
+            'sub_order_no' => $subOrder->sub_order_no,
+            'store' => ['id' => $subOrder->store->id, 'name' => $subOrder->store->name],
+            'status' => $subOrder->status->value,
+        ])->values()->all();
     }
 
     /** A fresh 15-minute signed hand-off URL while the order can still be paid online. */

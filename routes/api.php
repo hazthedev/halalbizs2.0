@@ -66,6 +66,7 @@ Route::prefix('v1')->name('api.')->group(function () {
         // Both take the current password: five guesses a minute per user (throttle keys on the user id).
         Route::put('/me/password', [MeController::class, 'password'])->middleware('throttle:5,1,sensitive')->name('me.password');
         Route::delete('/me', [MeController::class, 'destroy'])->middleware('throttle:5,1,sensitive')->name('me.destroy');
+        Route::post('/me/web-sign-in-link', [MeController::class, 'webSignInLink'])->middleware('throttle:5,1,sensitive')->name('me.web-sign-in-link');
 
         Route::apiResource('addresses', AddressController::class)->except('show');
 

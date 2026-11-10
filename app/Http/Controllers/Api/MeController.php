@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Api\ApiResponse;
+use App\Http\Controllers\AppWebSignInController;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Services\AccountDeletionService;
@@ -88,5 +89,13 @@ class MeController extends Controller
         $deletion->delete($user);
 
         return ApiResponse::ok(null);
+    }
+
+    /** A 5-minute, single-use URL that signs this user into the web and opens `to` (AppWebSignInController). */
+    public function webSignInLink(Request $request): JsonResponse
+    {
+        $to = $request->validate(['to' => ['required', Rule::in(array_keys(AppWebSignInController::DESTINATIONS))]])['to'];
+
+        return ApiResponse::ok(AppWebSignInController::issue($request->user(), $to));
     }
 }

@@ -266,3 +266,29 @@ test('a review on a sub-order that is not completed is refused with the service 
 
     expect(Review::count())->toBe(0);
 });
+
+test('an unpaid order past its payment window reads Payment expired, not Pending payment', function () {
+    [$user, $http] = apiOrdersUser();
+    $lapsed = apiOrdersSubOrder($user, SubOrderStatus::PendingPayment, [
+        'payment_method' => PaymentMethod::Ipay88, 'payment_status' => PaymentStatus::Pending, 'expires_at' => now()->subMinute(),
+    ]);
+
+    $http->getJson('/api/v1/orders')->assertOk()
+        ->assertJsonPath('data.0.id', $lapsed->id)
+        ->assertJsonPath('data.0.status_label', 'Payment expired')
+        ->assertJsonPath('data.0.can.cancel', false);
+    $http->getJson('/api/v1/orders?bucket=to-pay')->assertOk()->assertJsonPath('meta.total', 0);
+    $http->withHeader('Accept-Language', 'ms')->getJson('/api/v1/orders')->assertJsonPath('data.0.status_label', 'Tempoh bayaran tamat');
+});
+
+test('order status labels and bucket labels come back in Bahasa Melayu for Accept-Language ms', function () {
+    [$user, $http] = apiOrdersUser();
+    apiOrdersSubOrder($user, SubOrderStatus::Confirmed);
+    apiOrdersSubOrder($user, SubOrderStatus::PendingPayment, [
+        'payment_method' => PaymentMethod::Ipay88, 'payment_status' => PaymentStatus::Pending, 'expires_at' => now()->addHour(),
+    ]);
+    $http->withHeader('Accept-Language', 'ms');
+
+    $http->getJson('/api/v1/orders/buckets')->assertJsonPath('data.0.label', 'Untuk Dibayar');
+    expect($http->getJson('/api/v1/orders')->json('data.*.status_label'))->toBe(['Menunggu bayaran', 'Disahkan']);
+});

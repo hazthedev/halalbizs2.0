@@ -11,6 +11,9 @@ use App\Models\Store;
 use App\Models\SubOrder;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
 
@@ -119,4 +122,57 @@ test('products filters: category with descendants, store, price band and sort', 
     expect($this->getJson('/api/v1/products?min_sen=1000&max_sen=10000')->json('data.*.id'))->toBe([$inParent->id]);
     expect($this->getJson('/api/v1/products?sort=price_desc')->json('data.0.id'))->toBe($elsewhere->id);
     $this->getJson('/api/v1/products?category=no-such-category')->assertNotFound();
+});
+
+test('search applies the category and sort filters like products does', function () {
+    $rice = Category::factory()->create(['is_active' => true]);
+    $other = Category::factory()->create(['is_active' => true]);
+    $mid = Product::factory()->create(['name' => ['en' => 'Aut rice mid'], 'category_id' => $rice->id, 'sold_count' => 5]);
+    $cheap = Product::factory()->create(['name' => ['en' => 'Aut rice cheap'], 'category_id' => $rice->id, 'sold_count' => 1]);
+    $dear = Product::factory()->create(['name' => ['en' => 'Aut oil dear'], 'category_id' => $other->id, 'sold_count' => 9]);
+    $mid->variants->first()->update(['price_sen' => 15061]);
+    $cheap->variants->first()->update(['price_sen' => 3124]);
+    $dear->variants->first()->update(['price_sen' => 35442]);
+
+    expect($this->getJson('/api/v1/search?q=aut&sort=price_asc')->assertOk()->json('data.*.id'))->toBe([$cheap->id, $mid->id, $dear->id]);
+    expect($this->getJson('/api/v1/search?q=aut&sort=price_desc')->json('data.*.id'))->toBe([$dear->id, $mid->id, $cheap->id]);
+    expect($this->getJson('/api/v1/search?q=aut&sort=top')->json('data.*.id'))->toBe([$dear->id, $mid->id, $cheap->id]);
+    expect($this->getJson("/api/v1/search?q=aut&category={$rice->slug}&sort=price_asc")->json('data.*.id'))->toBe([$cheap->id, $mid->id]);
+    $this->getJson('/api/v1/search?q=aut&sort=popular')->assertUnprocessable();
+});
+
+test('product detail lists every image in the seller order with large and card urls', function () {
+    Storage::fake('public');
+    $product = Product::factory()->create();
+    foreach (['one', 'two', 'three'] as $name) {
+        $product->addMedia(UploadedFile::fake()->image("{$name}.jpg", 50, 50))->toMediaCollection('images');
+    }
+    $media = $product->getMedia('images');
+    Media::setNewOrder([$media[2]->id, $media[0]->id, $media[1]->id]);
+
+    $images = $this->getJson("/api/v1/products/{$product->slug}")->assertOk()->json('data.images');
+
+    expect($images)->toHaveCount(3)
+        ->and(collect($images)->pluck('large')->map(fn ($u) => basename($u))->all())->toBe(['three.jpg', 'one.jpg', 'two.jpg'])
+        ->and($images[0])->toHaveKeys(['large', 'card']);
+    expect($this->getJson('/api/v1/products')->json('data.0'))->toHaveKey('image')->not->toHaveKey('images');
+});
+
+test('product detail exposes option groups, values and each variant option_value_ids', function () {
+    $product = Product::factory()->withVariants(colour: 2, size: 2)->create();
+    $product->load('options.values', 'variants');
+    $blueM = $product->variants->firstWhere('options_label', 'Blue / M');
+    $blueM->update(['price_sen' => 7740, 'sale_price_sen' => 7000, 'sale_starts_at' => now()->subDay(), 'sale_ends_at' => now()->addDay()]);
+
+    $data = $this->getJson("/api/v1/products/{$product->slug}")->assertOk()->json('data');
+
+    expect(collect($data['options'])->pluck('name')->all())->toBe(['Colour', 'Size'])
+        ->and(collect($data['options'][0]['values'])->pluck('value')->all())->toBe(['Red', 'Blue'])
+        ->and(collect($data['options'][1]['values'])->pluck('value')->all())->toBe(['S', 'M']);
+    $variant = collect($data['variants'])->firstWhere('id', $blueM->id);
+    $blue = $data['options'][0]['values'][1]['id'];
+    $m = $data['options'][1]['values'][1]['id'];
+    expect($variant['option_value_ids'])->toBe([$blue, $m])
+        ->and($variant['price_sen'])->toBe(7000)
+        ->and($variant['regular_price_sen'])->toBe(7740);
 });

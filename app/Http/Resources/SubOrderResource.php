@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Enums\SubOrderStatus;
 use App\Models\OrderItem;
 use App\Models\SubOrder;
@@ -35,7 +37,12 @@ class SubOrderResource extends JsonResource
             'sub_order_no' => $this->sub_order_no,
             'order_no' => $order->order_no,
             'status' => $this->status->value,
-            'status_label' => $this->status->label(),
+            // Lapsed but not yet swept by orders:expire-unpaid (every minute):
+            // it can no longer be paid, so it must not read "Pending payment".
+            'status_label' => $this->status === SubOrderStatus::PendingPayment && ! $order->isAwaitingPayment()
+                && $order->payment_method === PaymentMethod::Ipay88 && $order->payment_status === PaymentStatus::Pending
+                ? __('Payment expired')
+                : $this->status->label(),
             'store' => [
                 'id' => $this->store->id,
                 'slug' => $this->store->slug,
