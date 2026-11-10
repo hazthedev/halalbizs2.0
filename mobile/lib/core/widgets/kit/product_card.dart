@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../features/account/wishlist_heart.dart';
 import '../../../features/catalog/models.dart';
 import '../../theme/souk_theme.dart';
 import 'empty_state.dart';
@@ -38,13 +39,15 @@ class ProductImage extends StatelessWidget {
 }
 
 /// Grid tile: image, name (serif, 2 lines), mono price, sold count, rating.
-/// Key `product-card-<slug>`.
+/// Key `product-card-<slug>`. The corner heart (Key `product-wishlist`) is off
+/// where the page draws its own (the wishlist grid).
 class ProductCard extends StatelessWidget {
-  const ProductCard(this.product, {super.key, required this.onTap, this.soldLabel = 'sold'});
+  const ProductCard(this.product, {super.key, required this.onTap, this.soldLabel = 'sold', this.wishlist = true});
 
   final Product product;
   final VoidCallback onTap;
   final String soldLabel;
+  final bool wishlist;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +71,19 @@ class ProductCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(SoukRadius.card),
                     border: Border.all(color: SoukColors.line),
                   ),
-                  child: ProductImage(p.image),
+                  child: Stack(fit: StackFit.expand, children: [
+                    ProductImage(p.image),
+                    if (wishlist)
+                      Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Material(
+                          color: SoukColors.surface.withValues(alpha: .92),
+                          shape: const CircleBorder(side: BorderSide(color: SoukColors.line)),
+                          child: WishlistHeart(p),
+                        ),
+                      ),
+                  ]),
                 ),
               ),
               const SizedBox(height: SoukSpace.s2),

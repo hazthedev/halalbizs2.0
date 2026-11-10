@@ -1664,6 +1664,12 @@ abstract class AppLocalizations {
   /// **'Remove from wishlist'**
   String get accountRemoveFromWishlist;
 
+  /// No description provided for @productAddToWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to wishlist'**
+  String get productAddToWishlist;
+
   /// No description provided for @accountCoinsBalance.
   ///
   /// In en, this message translates to:

@@ -846,6 +846,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountRemoveFromWishlist => 'Remove from wishlist';
 
   @override
+  String get productAddToWishlist => 'Add to wishlist';
+
+  @override
   String get accountCoinsBalance => 'Balance';
 
   @override

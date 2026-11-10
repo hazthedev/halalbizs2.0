@@ -393,6 +393,7 @@
   "accountWishlistEmpty": "Nothing saved yet",
   "accountWishlistEmptyBody": "Tap the heart on a product to keep it here.",
   "accountRemoveFromWishlist": "Remove from wishlist",
+  "productAddToWishlist": "Add to wishlist",
   "accountCoinsBalance": "Balance",
   "accountCoinsStreak": "Streak",
   "accountCoinsDays": "{days} days",

@@ -370,7 +370,9 @@ class _TwoFactorScreenState extends ConsumerState<TwoFactorScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
-      if (e is! ApiException || !e.isValidation) showApiError(context, e);
+      // Only a `code` error has a field to sit under; anything else (expired
+      // challenge, missing field) goes to the snackbar so it is never silent.
+      if (fieldError(e, 'code') == null) showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

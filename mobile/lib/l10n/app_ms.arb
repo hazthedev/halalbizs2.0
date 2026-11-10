@@ -393,6 +393,7 @@
   "accountWishlistEmpty": "Belum ada apa-apa disimpan",
   "accountWishlistEmptyBody": "Ketik hati pada produk untuk menyimpannya di sini.",
   "accountRemoveFromWishlist": "Buang daripada senarai hajat",
+  "productAddToWishlist": "Tambah ke senarai hajat",
   "accountCoinsBalance": "Baki",
   "accountCoinsStreak": "Rentetan",
   "accountCoinsDays": "{days} hari",
