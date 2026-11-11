@@ -7,6 +7,7 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Models\HalalCertificate;
 use App\Models\HalalCertificateEvent;
 use App\Models\Product;
+use App\Services\Whip\WhipDirectory;
 use App\Support\DisplayTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -65,6 +66,9 @@ class Certificates extends Component
 
     public bool $exportPaperwork = false;
 
+    /** Company registration (SSM) number: how WHIP ties a certificate to this seller. */
+    public string $registrationNo = '';
+
     public ?TemporaryUploadedFile $document = null;
 
     /** SKU binding: product ids covered by the certificate open in $editing. */
@@ -74,6 +78,7 @@ class Certificates extends Component
     {
         $this->resetForm();
         $this->creating = true;
+        $this->registrationNo = (string) $this->currentStore()->registration_no;
     }
 
     /** Renew or correct an existing certificate — same row, back through review. */
@@ -83,6 +88,7 @@ class Certificates extends Component
 
         $this->resetForm();
         $this->editing = $id;
+        $this->registrationNo = (string) $this->currentStore()->registration_no;
         $this->number = $certificate->number;
         $this->issuingBody = $certificate->issuing_body;
         $this->holderName = $certificate->holder_name;
@@ -112,6 +118,7 @@ class Certificates extends Component
             'number' => ['required', 'string', 'max:60', Rule::unique('halal_certificates', 'number')->ignore($certificate?->id)],
             'issuingBody' => ['required', Rule::in(array_keys(HalalCertificate::BODIES))],
             'holderName' => ['required', 'string', 'max:150'],
+            'registrationNo' => ['nullable', 'string', 'max:40'],
             'scheme' => ['nullable', 'string', 'max:60'],
             'scopeNote' => ['nullable', 'string', 'max:255'],
             'validFrom' => ['required', 'date'],
@@ -137,8 +144,24 @@ class Certificates extends Component
             return;
         }
 
-        DB::transaction(function () use ($certificate, $data) {
+        $verified = false;
+
+        DB::transaction(function () use ($certificate, $data, &$verified) {
             $store = $this->currentStore();
+
+            // The registration number is self-declared the first time and then
+            // locked to the store. It is still only a claim until an admin
+            // confirms it against the SSM document (registration_verified_at):
+            // otherwise a seller could type another company's number and its
+            // WHIP certificate number and be approved at once.
+            if (blank($store->registration_no) && filled($data['registrationNo'])) {
+                $store->forceFill(['registration_no' => trim($data['registrationNo'])])->save();
+            }
+
+            // WHIP is asked once, here. Verified = certified, in date, and the
+            // same company registration number; anything else is manual review.
+            [$answer, $whip] = app(WhipDirectory::class)->check($data['number'], $store->registration_no);
+            $verified = $answer === 'verified' && $store->registration_verified_at !== null;
 
             $certificate ??= new HalalCertificate;
             $certificate->fill([
@@ -169,7 +192,20 @@ class Certificates extends Component
                 // spent. Clearing it here means the seller is warned again
                 // against the NEW date rather than being silently skipped.
                 'renewal_notified_at' => null,
-            ])->save();
+                'source' => 'manual',
+                'whip_application_id' => null,
+                'whip_synced_at' => null,
+                'whip_answer' => $answer,
+            ]);
+
+            if ($verified) {
+                $certificate->takeFromWhip($whip, $answer)->forceFill([
+                    'status' => CertificateStatus::Approved,
+                    'reviewed_at' => now(),
+                ]);
+            }
+
+            $certificate->save();
 
             if ($this->document !== null) {
                 $certificate->addMedia($this->document->getRealPath())
@@ -182,14 +218,18 @@ class Certificates extends Component
             HalalCertificateEvent::create([
                 'halal_certificate_id' => $certificate->id,
                 'occurred_on' => DisplayTime::today()->toDateString(),
-                'summary' => $certificate->wasRecentlyCreated
-                    ? __('Submitted for review')
-                    : __('Renewal submitted for review'),
+                'summary' => $verified
+                    ? __('Verified with WHIP')
+                    : ($certificate->wasRecentlyCreated
+                        ? __('Submitted for review')
+                        : __('Renewal submitted for review')),
             ]);
         });
 
         $this->resetForm();
-        $this->dispatch('toast', message: __('Sent for review. Your products stay on sale while we check it.'));
+        $this->dispatch('toast', message: $verified
+            ? __('Verified with WHIP. Your halal badge is live.')
+            : __('Sent for review. Your products stay on sale while we check it.'));
     }
 
     /**
@@ -218,7 +258,7 @@ class Certificates extends Component
     private function resetForm(): void
     {
         $this->reset(['editing', 'creating', 'number', 'issuingBody', 'holderName', 'scheme',
-            'scopeNote', 'validFrom', 'validTo', 'facility', 'dedicatedFacility',
+            'scopeNote', 'registrationNo', 'validFrom', 'validTo', 'facility', 'dedicatedFacility',
             'exportPaperwork', 'document', 'covered']);
         $this->resetErrorBag();
     }

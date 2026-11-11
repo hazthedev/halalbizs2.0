@@ -6,6 +6,7 @@ use App\Enums\CertificateStatus;
 use App\Models\HalalCertificate;
 use App\Models\HalalCertificateEvent;
 use App\Notifications\HalalCertificateDecision;
+use App\Services\Whip\WhipDirectory;
 use App\Support\DisplayTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +57,18 @@ class Certificates extends Component
         $certificate = $this->certificates()->with('store.user')->findOrFail($id);
 
         DB::transaction(function () use ($certificate) {
+            // WHIP matched at submit: re-ask now. Still a match = the admin has
+            // just confirmed the store's SSM number, so the row becomes
+            // WHIP-sourced (kept in step by certificates:sync-whip) and the
+            // store's later WHIP certificates are verified without a review.
+            if ($certificate->whip_answer === 'verified' && $certificate->store) {
+                [$answer, $whip] = app(WhipDirectory::class)->check($certificate->number, $certificate->store->registration_no);
+                if ($answer === 'verified') {
+                    $certificate->takeFromWhip($whip, $answer);
+                    $certificate->store->forceFill(['registration_verified_at' => now()])->save();
+                }
+            }
+
             $certificate->forceFill([
                 'status' => CertificateStatus::Approved,
                 'reviewed_at' => now(),

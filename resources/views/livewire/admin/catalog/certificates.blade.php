@@ -65,6 +65,9 @@
                     {{-- ── Review panel ──────────────────────────────────── --}}
                     @if ($reviewing === $certificate->id)
                         <div class="mt-4 border-t border-line pt-4">
+                            @if ($certificate->whipNote())
+                                <p class="mb-3 text-[13px] font-medium text-ink">{{ $certificate->whipNote() }}</p>
+                            @endif
                             <dl class="grid gap-3 text-[13px] sm:grid-cols-2">
                                 <div>
                                     <dt class="text-ink-soft">{{ __('Holder') }}</dt>
