@@ -36,6 +36,10 @@ set -e
 cd "$(dirname "$0")"
 
 export PATH="/usr/local/bin:/opt/cpanel/composer/bin:/usr/local/sbin:/usr/bin:/bin:$HOME/bin:$PATH"
+# The webhook runs with no HOME; composer refuses to start without HOME or
+# COMPOSER_HOME. Keep its home + cache under storage/ (not web-served).
+export COMPOSER_HOME="${COMPOSER_HOME:-$(pwd)/storage/app/composer-home}"
+mkdir -p "$COMPOSER_HOME"
 
 PHP_BIN="$(command -v php || command -v ea-php84 || command -v ea-php83 || echo /usr/local/bin/php)"
 echo "→ php: $PHP_BIN"
