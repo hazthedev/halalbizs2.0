@@ -4,6 +4,20 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers.dart';
 
 void main() {
+  testWidgets('an empty search box lists popular products, never a blank screen', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET products': (_, _) => [fakeProduct(name: 'Madu Tualang Asli')],
+      'GET categories': (_, _) => [],
+    });
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/search');
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('GET products?sort=top'));
+    expect(find.byKey(const Key('product-card-madu-tualang')), findsOneWidget);
+    expect(find.textContaining('at least 2'), findsNothing);
+  });
+
   testWidgets('search waits 300 ms after the last keystroke and needs 2 characters', (tester) async {
     usePhone(tester);
     final api = FakeApi(routes: {
