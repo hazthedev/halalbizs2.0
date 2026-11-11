@@ -43,6 +43,9 @@ class SubOrder {
   bool get canPayNow => status == 'pending_payment' && paymentMethod != 'cod' && paymentStatus == 'pending';
   bool get canBuyAgain => status == 'completed';
 
+  /// Web order page: an invoice exists from confirmed onwards, never for unpaid or cancelled.
+  bool get canInvoice => status != 'pending_payment' && status != 'cancelled';
+
   /// `{id, status, reason, created_at}` or null.
   Map<String, dynamic>? get returnRequest => json['return_request'] is Map ? asMap(json['return_request']) : null;
 

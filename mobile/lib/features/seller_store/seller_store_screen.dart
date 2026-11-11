@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
+import '../account/web_link.dart';
 import '../seller_shared/models.dart';
 import '../seller_shared/rm.dart';
 import '../seller_shared/seller_api.dart';
@@ -375,6 +376,14 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
                 ),
               ),
               const SizedBox(height: SoukSpace.s8),
+              SoukCard(
+                padding: EdgeInsets.zero,
+                child: Column(children: [
+                  SoukRow(key: const Key('seller-store-certificates'), icon: FontAwesomeIcons.certificate, label: l.sellerHalalCertificates, onTap: () => openWebPage(context, ref, 'seller-certificates')),
+                  SoukRow(key: const Key('seller-store-vouchers'), icon: FontAwesomeIcons.ticket, label: l.sellerVouchers, onTap: () => openWebPage(context, ref, 'seller-vouchers')),
+                ]),
+              ),
+              const SizedBox(height: SoukSpace.s3),
               SoukCard(
                 key: const Key('seller-store-back-to-buying'),
                 onTap: () => context.go('/home'),

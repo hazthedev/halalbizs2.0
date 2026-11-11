@@ -3535,6 +3535,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy policy'**
   String get legalPrivacy;
+
+  /// No description provided for @helpAndSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & support'**
+  String get helpAndSupport;
+
+  /// No description provided for @ordersDownloadInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Download invoice'**
+  String get ordersDownloadInvoice;
+
+  /// No description provided for @sellerHalalCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Halal certificates'**
+  String get sellerHalalCertificates;
+
+  /// No description provided for @sellerVouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'Vouchers'**
+  String get sellerVouchers;
 }
 
 class _AppLocalizationsDelegate

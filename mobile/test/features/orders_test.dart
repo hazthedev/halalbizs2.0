@@ -358,6 +358,34 @@ void main() {
     expect(sent!.files.map((f) => f.key).toList(), List.filled(4, 'items[0][photos][]'));
     expect(sent!.fields.map((f) => '${f.key}=${f.value}'), containsAll(['items[0][order_item_id]=51', 'items[0][rating]=4', 'items[1][rating]=5']));
   });
+
+  testWidgets('Invoice: shown from confirmed on, asks the API for an invoice link with the sub-order id; hidden when cancelled', (tester) async {
+    usePhone(tester);
+    var status = 'confirmed';
+    Object? linkBody;
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET orders/buckets': (_, _) => [],
+      'GET orders/7': (_, _) => fakeSubOrder(id: 7, status: status, detail: true),
+      'POST me/web-sign-in-link': (_, body) {
+        linkBody = body;
+        return {'url': 'https://web.test/app/sign-in?x=1', 'expires_at': '2026-11-10T12:05:00Z'};
+      },
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/orders/7');
+    await tester.tap(find.byKey(const Key('order-invoice')));
+    await tester.pumpAndSettle();
+    expect(linkBody, {'to': 'invoice', 'id': 7});
+    expect(h.browser.opened, ['https://web.test/app/sign-in?x=1']);
+
+    status = 'cancelled';
+    final h2 = Harness(api: api, token: 'tok');
+    await h2.pump(tester, location: '/orders/7');
+    expect(find.byKey(const Key('order-invoice')), findsNothing);
+  });
 }
 
 final Uint8List _png = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');

@@ -803,5 +803,9 @@
   "legalFaq": "Soalan lazim",
   "legalRefundPolicy": "Dasar bayaran balik",
   "legalTerms": "Terma dan syarat",
-  "legalPrivacy": "Dasar privasi"
+  "legalPrivacy": "Dasar privasi",
+  "helpAndSupport": "Bantuan & sokongan",
+  "ordersDownloadInvoice": "Muat turun invois",
+  "sellerHalalCertificates": "Sijil halal",
+  "sellerVouchers": "Baucar"
 }

@@ -198,4 +198,26 @@ void main() {
     expect(h.browser.opened.single, endsWith('/page/privacy'));
     expect(find.text('Privacy policy'), findsOneWidget);
   });
+
+  testWidgets('Help & support opens the one-time support-tickets link', (tester) async {
+    usePhone(tester);
+    Object? linkBody;
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET conversations': (_, _) => [],
+      'POST me/web-sign-in-link': (_, body) {
+        linkBody = body;
+        return {'url': 'https://web.test/app/sign-in?s=1', 'expires_at': '2026-11-10T12:05:00Z'};
+      },
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/account');
+    await tester.ensureVisible(find.byKey(const Key('account-support')));
+    await tester.tap(find.byKey(const Key('account-support')));
+    await tester.pumpAndSettle();
+    expect(linkBody, {'to': 'support'});
+    expect(h.browser.opened, ['https://web.test/app/sign-in?s=1']);
+  });
 }

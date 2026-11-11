@@ -880,5 +880,9 @@
   "legalFaq": "FAQ",
   "legalRefundPolicy": "Refund policy",
   "legalTerms": "Terms & conditions",
-  "legalPrivacy": "Privacy policy"
+  "legalPrivacy": "Privacy policy",
+  "helpAndSupport": "Help & support",
+  "ordersDownloadInvoice": "Download invoice",
+  "sellerHalalCertificates": "Halal certificates",
+  "sellerVouchers": "Vouchers"
 }

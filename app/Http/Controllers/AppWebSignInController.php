@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SubOrder;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,8 +19,17 @@ use Illuminate\Support\Str;
  */
 class AppWebSignInController extends Controller
 {
-    /** Destinations the app may ask for. */
-    public const DESTINATIONS = ['seller-apply' => 'seller.apply'];
+    /** Destinations the app may ask for: fixed named routes, never a URL. */
+    public const DESTINATIONS = [
+        'seller-apply' => 'seller.apply',
+        'seller-certificates' => 'seller.certificates',
+        'seller-vouchers' => 'seller.vouchers.index',
+        'support' => 'help.tickets',
+        'invoice' => 'account.orders.invoice',
+    ];
+
+    /** Destinations whose route takes a sub-order id: the buyer must own it (as InvoiceController::buyer). */
+    public const SUB_ORDER_DESTINATIONS = ['invoice'];
 
     private const TTL_MINUTES = 5;
 
@@ -32,14 +42,19 @@ class AppWebSignInController extends Controller
         return ! $user->is_superadmin && ! $user->hasRole('admin');
     }
 
-    public static function issue(User $user, string $to): array
+    public static function ownsSubOrder(User $user, int $subOrderId): bool
+    {
+        return SubOrder::query()->whereKey($subOrderId)->whereHas('order', fn ($q) => $q->where('user_id', $user->id))->exists();
+    }
+
+    public static function issue(User $user, string $to, ?int $id = null): array
     {
         $nonce = Str::random(40);
         $expiresAt = now()->addMinutes(self::TTL_MINUTES);
         Cache::put(self::key($nonce), $user->id, $expiresAt);
 
         return [
-            'url' => URL::temporarySignedRoute('app.web-sign-in', $expiresAt, ['user' => $user->id, 'nonce' => $nonce, 'to' => $to]),
+            'url' => URL::temporarySignedRoute('app.web-sign-in', $expiresAt, ['user' => $user->id, 'nonce' => $nonce, 'to' => $to, 'id' => $id]),
             'expires_at' => $expiresAt->toIso8601String(),
         ];
     }
@@ -56,10 +71,13 @@ class AppWebSignInController extends Controller
         $user = User::query()->findOrFail($userId);
         abort_if($user->isSuspended() || ! self::allowed($user), 403);
 
+        $id = in_array($request->query('to'), self::SUB_ORDER_DESTINATIONS, true) ? (int) $request->query('id') : null;
+        abort_if($id !== null && ! self::ownsSubOrder($user, $id), 403);
+
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
 
-        return redirect()->route($to);
+        return redirect()->route($to, $id === null ? [] : [$id]);
     }
 
     private static function key(string $nonce): string

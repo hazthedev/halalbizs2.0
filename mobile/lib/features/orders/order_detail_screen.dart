@@ -11,6 +11,7 @@ import '../../core/api/api_client.dart';
 import '../cart/cart_api.dart';
 import '../checkout/checkout_api.dart';
 import '../checkout/checkout_screen.dart' show paymentMethodLabel;
+import '../account/web_link.dart';
 import 'orders_api.dart';
 
 /// Translated label for a `payment.status` code (`PaymentStatus` enum).
@@ -192,9 +193,11 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
       onRefresh: _refresh,
       fromCache: async.value?.fromCache ?? false,
       cachedAt: async.value?.fetchedAt,
-      bottomBar: o == null || !(o.canCancel || o.canConfirmReceived || o.canReturn || o.canReview || o.canPayNow || o.canBuyAgain)
+      bottomBar: o == null || !(o.canCancel || o.canConfirmReceived || o.canReturn || o.canReview || o.canPayNow || o.canBuyAgain || o.canInvoice)
           ? null
           : Wrap(spacing: SoukSpace.s2, runSpacing: SoukSpace.s2, alignment: WrapAlignment.end, children: [
+              if (o.canInvoice)
+                SoukButton(key: const Key('order-invoice'), label: l.ordersDownloadInvoice, icon: FontAwesomeIcons.fileInvoice, variant: SoukButtonVariant.secondary, requiresOnline: true, onPressed: () => openWebPage(context, ref, 'invoice', id: o.id)),
               if (o.canBuyAgain)
                 SoukButton(key: const Key('order-buy-again'), label: l.ordersBuyAgain, icon: FontAwesomeIcons.rotateRight, variant: SoukButtonVariant.primary, requiresOnline: true, busy: _busy, onPressed: () => _buyAgain(o)),
               if (o.canPayNow)

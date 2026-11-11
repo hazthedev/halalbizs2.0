@@ -94,12 +94,20 @@ class MeController extends Controller
     /** A 5-minute, single-use URL that signs this user into the web and opens `to` (AppWebSignInController). */
     public function webSignInLink(Request $request): JsonResponse
     {
-        $to = $request->validate(['to' => ['required', Rule::in(array_keys(AppWebSignInController::DESTINATIONS))]])['to'];
+        $data = $request->validate([
+            'to' => ['required', Rule::in(array_keys(AppWebSignInController::DESTINATIONS))],
+            'id' => ['required_if:to,'.implode(',', AppWebSignInController::SUB_ORDER_DESTINATIONS), 'nullable', 'integer'],
+        ]);
+        $to = $data['to'];
+        $id = in_array($to, AppWebSignInController::SUB_ORDER_DESTINATIONS, true) ? (int) $data['id'] : null;
 
         if (! AppWebSignInController::allowed($request->user())) {
             return ApiResponse::error('forbidden', __('Admin accounts sign in on the website.'), 403);
         }
 
-        return ApiResponse::ok(AppWebSignInController::issue($request->user(), $to));
+        // Another buyer's order is "not found", as everywhere else in the API.
+        abort_if($id !== null && ! AppWebSignInController::ownsSubOrder($request->user(), $id), 404);
+
+        return ApiResponse::ok(AppWebSignInController::issue($request->user(), $to, $id));
     }
 }

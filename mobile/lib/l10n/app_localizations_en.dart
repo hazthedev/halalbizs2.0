@@ -1923,4 +1923,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get legalPrivacy => 'Privacy policy';
+
+  @override
+  String get helpAndSupport => 'Help & support';
+
+  @override
+  String get ordersDownloadInvoice => 'Download invoice';
+
+  @override
+  String get sellerHalalCertificates => 'Halal certificates';
+
+  @override
+  String get sellerVouchers => 'Vouchers';
 }

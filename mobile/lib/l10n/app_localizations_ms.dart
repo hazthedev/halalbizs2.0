@@ -1923,4 +1923,16 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get legalPrivacy => 'Dasar privasi';
+
+  @override
+  String get helpAndSupport => 'Bantuan & sokongan';
+
+  @override
+  String get ordersDownloadInvoice => 'Muat turun invois';
+
+  @override
+  String get sellerHalalCertificates => 'Sijil halal';
+
+  @override
+  String get sellerVouchers => 'Baucar';
 }
