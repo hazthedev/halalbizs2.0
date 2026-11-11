@@ -14,6 +14,7 @@
     // rendering a hardcoded badge would claim a check the app cannot perform.
     // Reads the attribute if it exists, shows nothing otherwise.
     $certifier = $product->certifier ?? null;
+    $liveSlug = app(\App\Services\LiveSessionService::class)->liveStoreIds()[$product->store_id] ?? null;
 @endphp
 
 {{-- Revamp card (2026-07-30): ported from the measured reference. Depth is a
@@ -36,6 +37,10 @@
             <span class="absolute left-2 top-2 z-20 inline-flex items-center rounded-[var(--radius-pill)] border border-line bg-surface/90 px-2 py-0.5 text-[length:var(--text-tiny)] font-medium uppercase tracking-[var(--tracking-brand)] text-ink-faint">
                 {{ __('Sponsored') }}
             </span>
+        @endif
+
+        @if ($liveSlug)
+            <x-live-badge :slug="$liveSlug" class="absolute bottom-2 left-2 z-20" />
         @endif
 
         @auth

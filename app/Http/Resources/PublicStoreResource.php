@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Store;
+use App\Services\LiveSessionService;
 use App\Services\StoreFollowService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,7 +19,11 @@ class PublicStoreResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
+        $liveSlug = app(LiveSessionService::class)->liveStoreIds()[$this->id] ?? null;
+
         return [
+            'store_live' => $liveSlug !== null,
+            'live_slug' => $liveSlug,
             'id' => $this->id,
             'slug' => $this->slug,
             'name' => $this->name,
