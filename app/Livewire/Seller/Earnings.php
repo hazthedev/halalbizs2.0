@@ -83,6 +83,7 @@ class Earnings extends Component
 
         return view('livewire.seller.earnings', [
             'availableSen' => $ledger->availableBalanceSen($store),
+            'onHoldSen' => $ledger->pendingBalanceSen($store), // completed, inside the return window
             'heldSen' => $store->heldBalanceSen(), // escrow — released on order completion (M1.4)
             'pendingPayout' => $store->payouts()
                 ->whereIn('status', [PayoutStatus::Requested, PayoutStatus::Approved])

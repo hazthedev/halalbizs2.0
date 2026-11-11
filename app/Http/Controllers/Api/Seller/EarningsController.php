@@ -35,6 +35,7 @@ class EarningsController extends SellerController
         return ApiResponse::ok([
             'available_sen' => $ledger->availableBalanceSen($store),
             'held_sen' => $store->heldBalanceSen(),
+            'pending_sen' => $ledger->pendingBalanceSen($store),
             'paid_out_sen' => (int) $store->payouts()->where('status', PayoutStatus::Paid)->sum('amount_sen'),
             'payout_min_sen' => $settings->payout_min_sen,
             'open_payout' => $open === null ? null : $this->payout($open),
@@ -45,6 +46,8 @@ class EarningsController extends SellerController
                 'amount_sen' => $entry->amount_sen,
                 'reference' => $entry->description,
                 'sub_order_id' => $entry->sub_order_id,
+                'status' => $entry->status->value,
+                'available_at' => $entry->available_at?->toIso8601String(),
                 'created_at' => $entry->created_at?->toIso8601String(),
             ])->values(),
             'payouts' => $store->payouts()->latest('requested_at')->latest('id')->take(20)->get()

@@ -126,6 +126,34 @@
         </x-ui.card>
     </div>
 
+    {{-- COD commission settlement --}}
+    <x-ui.card class="p-4">
+        <h2 class="text-sm font-medium">{{ __('Record settlement') }}</h2>
+        <p class="mt-1 text-[13px] text-ink-soft">{{ __('Seller paid us') }} · {{ __('Amount owed: :amount', ['amount' => \App\Support\Money::format($owedSen)]) }}</p>
+        <form wire:submit="recordSettlement" class="mt-3 flex flex-wrap items-start gap-2">
+            <div class="w-36">
+                <label for="settle-amount" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Amount (RM)') }}</label>
+                <input id="settle-amount" type="text" inputmode="decimal" wire:model="settleAmount"
+                       class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('settleAmount') ? 'border-danger' : 'border-line-strong' }}">
+                @error('settleAmount') <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p> @enderror
+            </div>
+            <div class="w-48">
+                <label for="settle-ref" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Bank reference') }}</label>
+                <input id="settle-ref" type="text" wire:model="settleReference"
+                       class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('settleReference') ? 'border-danger' : 'border-line-strong' }}">
+                @error('settleReference') <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p> @enderror
+            </div>
+            <div class="min-w-48 flex-1">
+                <label for="settle-note" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Note (optional)') }}</label>
+                <input id="settle-note" type="text" wire:model="settleNote"
+                       class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+            </div>
+            <div class="pt-7">
+                <x-ui.button type="submit" variant="secondary" wire:loading.attr="disabled" wire:target="recordSettlement">{{ __('Record settlement') }}</x-ui.button>
+            </div>
+        </form>
+    </x-ui.card>
+
     {{-- Documents re-verification --}}
     <x-ui.card class="p-4">
         <h2 class="text-sm font-medium">{{ __('Documents') }}</h2>

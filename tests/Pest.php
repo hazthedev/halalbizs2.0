@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\LedgerEntryStatus;
+use App\Models\StoreLedgerEntry;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,4 +28,15 @@ function makeAdmin(User $user): User
     $user->syncPermissions(RoleSeeder::ADMIN_PERMISSIONS);
 
     return $user->fresh();
+}
+
+/**
+ * Completion books seller money as `pending` until the return window closes.
+ * Tests that exercise post-hold accounting call this to skip the wait.
+ */
+function releaseLedgerHolds(): void
+{
+    StoreLedgerEntry::query()
+        ->where('status', LedgerEntryStatus::Pending)
+        ->update(['status' => LedgerEntryStatus::Available]);
 }

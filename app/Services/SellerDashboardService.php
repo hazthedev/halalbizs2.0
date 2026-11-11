@@ -41,6 +41,7 @@ class SellerDashboardService
      *     low_stock: int,
      *     available_sen: int,
      *     held_sen: int,
+     *     pending_sen: int,
      *     recent_orders: Collection<int, SubOrder>
      * }
      */
@@ -49,6 +50,7 @@ class SellerDashboardService
         return $this->counts($store) + [
             'available_sen' => $this->ledger->availableBalanceSen($store),
             'held_sen' => $store->heldBalanceSen(),
+            'pending_sen' => $this->ledger->pendingBalanceSen($store),
             'recent_orders' => $this->recentOrders($store),
         ];
     }

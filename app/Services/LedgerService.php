@@ -7,6 +7,7 @@ use App\Enums\LedgerEntryStatus;
 use App\Enums\LedgerEntryType;
 use App\Enums\PaymentMethod;
 use App\Enums\PayoutStatus;
+use App\Enums\ReturnStatus;
 use App\Exceptions\CheckoutException;
 use App\Models\Payout;
 use App\Models\Product;
@@ -16,6 +17,7 @@ use App\Models\SubOrder;
 use App\Settings\CommissionSettings;
 use App\Settings\OrderSettings;
 use App\Support\Money;
+use Carbon\CarbonInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -31,6 +33,16 @@ class LedgerService
         private OrderSettings $orderSettings,
         private CommissionSettings $commissionSettings,
     ) {}
+
+    /**
+     * When completion money comes off hold: the same instant ReturnService
+     * closes the return window (delivered_at + return_window_days). A
+     * sub-order with no delivered_at (defensive) holds from now.
+     */
+    public function releaseAt(SubOrder $subOrder): CarbonInterface
+    {
+        return ($subOrder->delivered_at ?? now())->copy()->addDays($this->orderSettings->return_window_days);
+    }
 
     /**
      * Completion hook: +sale, −commission, and for COD −cod_offset (the
@@ -67,12 +79,14 @@ class LedgerService
             // above is not itself race-proof (two concurrent completions can both
             // pass it before either writes), so a lost race here surfaces as a
             // unique-constraint violation, which must be a clean no-op, not a 500.
+            $holdUntil = $this->releaseAt($subOrder);
+
             try {
                 $this->write($subOrder->store_id, LedgerEntryType::Sale, $saleSen, $subOrder->id,
-                    __('Sale :no', ['no' => $subOrder->sub_order_no]), "sale:{$subOrder->id}");
+                    __('Sale :no', ['no' => $subOrder->sub_order_no]), "sale:{$subOrder->id}", $holdUntil);
 
                 $this->write($subOrder->store_id, LedgerEntryType::Commission, -$commissionSen, $subOrder->id,
-                    __('Commission :rate% on :no', ['rate' => $subOrder->commission_rate, 'no' => $subOrder->sub_order_no]), "commission:{$subOrder->id}");
+                    __('Commission :rate% on :no', ['rate' => $subOrder->commission_rate, 'no' => $subOrder->sub_order_no]), "commission:{$subOrder->id}", $holdUntil);
             } catch (QueryException $e) {
                 if ($this->isUniqueViolation($e)) {
                     return; // another completion already booked this sub-order — no-op
@@ -83,7 +97,7 @@ class LedgerService
 
             if ($subOrder->order->payment_method === PaymentMethod::Cod) {
                 $this->write($subOrder->store_id, LedgerEntryType::CodOffset, -$saleSen, $subOrder->id,
-                    __('COD cash collected for :no', ['no' => $subOrder->sub_order_no]));
+                    __('COD cash collected for :no', ['no' => $subOrder->sub_order_no]), null, $holdUntil);
             }
 
             foreach ($subOrder->items as $item) {
@@ -185,11 +199,70 @@ class LedgerService
         });
     }
 
+    /** Spendable / withdrawable money. Pending (on hold) rows never count. */
     public function availableBalanceSen(Store $store): int
     {
         return (int) $store->ledgerEntries()
             ->where('status', LedgerEntryStatus::Available)
             ->sum('amount_sen');
+    }
+
+    /** Completion money still inside the return window. */
+    public function pendingBalanceSen(Store $store): int
+    {
+        return $store->pendingBalanceSen();
+    }
+
+    /**
+     * Cron: move pending rows whose hold has lapsed to available, unless the
+     * sub-order has an open return (the money stays held until it resolves).
+     * Idempotent — only touches rows still `pending`. Returns rows released.
+     */
+    public function releaseDue(): int
+    {
+        $open = [ReturnStatus::Requested, ReturnStatus::Accepted, ReturnStatus::Disputed, ReturnStatus::Escalated];
+
+        return StoreLedgerEntry::query()
+            ->where('status', LedgerEntryStatus::Pending)
+            ->where('available_at', '<=', now())
+            ->whereDoesntHave('subOrder.returnRequest', fn ($q) => $q->whereIn('status', $open))
+            ->update(['status' => LedgerEntryStatus::Available]);
+    }
+
+    /**
+     * Admin records a bank transfer from a seller who owes commission (COD).
+     * Capped at what is owed: the available balance is negative by exactly
+     * that amount.
+     *
+     * @throws CheckoutException when the amount is not positive or exceeds the debt
+     */
+    public function recordSettlement(Store $store, int $amountSen, string $reference, ?string $note = null): void
+    {
+        DB::transaction(function () use ($store, $amountSen, $reference, $note) {
+            Store::whereKey($store->id)->lockForUpdate()->first();
+
+            $owed = $this->owedSen($store);
+
+            if ($amountSen <= 0) {
+                throw new CheckoutException(__('Enter an amount above zero.'));
+            }
+
+            if ($amountSen > $owed) {
+                throw new CheckoutException(__('This store only owes :amount.', ['amount' => Money::format($owed)]));
+            }
+
+            $this->write($store->id, LedgerEntryType::Settlement, $amountSen, null,
+                trim(__('Settlement received, ref :ref', ['ref' => $reference]).($note ? " — {$note}" : '')));
+        });
+    }
+
+    /**
+     * Sen the store owes the platform for COD purposes: available + pending,
+     * negated, floored at zero. Positive = debt.
+     */
+    public function owedSen(Store $store): int
+    {
+        return max(0, -($this->availableBalanceSen($store) + $this->pendingBalanceSen($store)));
     }
 
     /**
@@ -273,8 +346,14 @@ class LedgerService
         });
     }
 
-    private function write(int $storeId, LedgerEntryType $type, int $amountSen, ?int $subOrderId, string $description, ?string $settlementKey = null): void
+    private function write(int $storeId, LedgerEntryType $type, int $amountSen, ?int $subOrderId, string $description, ?string $settlementKey = null, ?CarbonInterface $holdUntil = null): void
     {
+        // A hold that has already lapsed (auto-complete fires exactly at the end
+        // of the window) books straight to available — no hourly lag.
+        if ($holdUntil !== null && ! $holdUntil->isFuture()) {
+            $holdUntil = null;
+        }
+
         // forceFill: `settlement_key` is a new column (H2 backstop) not yet in
         // StoreLedgerEntry::$fillable — out of this fix's declared file surface,
         // so bypass mass-assignment here rather than edit the model.
@@ -283,7 +362,8 @@ class LedgerService
             'sub_order_id' => $subOrderId,
             'type' => $type,
             'amount_sen' => $amountSen,
-            'status' => LedgerEntryStatus::Available,
+            'status' => $holdUntil === null ? LedgerEntryStatus::Available : LedgerEntryStatus::Pending,
+            'available_at' => $holdUntil,
             'description' => $description,
             'settlement_key' => $settlementKey,
             'created_at' => now(),

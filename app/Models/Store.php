@@ -196,6 +196,14 @@ class Store extends Model implements HasMedia
             ->sum('amount_sen');
     }
 
+    /** Booked at completion but still inside the return window (`pending`). */
+    public function pendingBalanceSen(): int
+    {
+        return (int) $this->ledgerEntries()
+            ->where('status', LedgerEntryStatus::Pending)
+            ->sum('amount_sen');
+    }
+
     /**
      * Held in escrow (M1.4): expected net for paid orders still in flight
      * (confirmed → delivered, not yet completed). Released to the available

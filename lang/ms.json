@@ -2643,5 +2643,22 @@
     "Following :shop": "Mengikuti :shop",
     "{1}:count follower|[0,*]:count followers": "{1}:count pengikut|[0,*]:count pengikut",
     "No followed shops yet": "Belum ada kedai diikuti",
-    "Follow a shop to see it here.": "Ikuti kedai untuk melihatnya di sini."
+    "Follow a shop to see it here.": "Ikuti kedai untuk melihatnya di sini.",
+    "On hold": "Ditahan",
+    "On hold until :date": "Ditahan sehingga :date",
+    "Completed orders released to Available when their return window closes.": "Pesanan selesai dilepaskan ke Baki Tersedia apabila tempoh pemulangan tamat.",
+    "Settlement": "Penyelesaian",
+    "Enter an amount above zero.": "Masukkan jumlah melebihi sifar.",
+    "This store only owes :amount.": "Kedai ini hanya berhutang :amount.",
+    "Settlement received, ref :ref": "Penyelesaian diterima, rujukan :ref",
+    "Record settlement": "Rekod penyelesaian",
+    "Seller paid us": "Penjual telah membayar kami",
+    "Amount owed: :amount": "Jumlah terhutang: :amount",
+    "Note (optional)": "Nota (pilihan)",
+    "Settlement recorded.": "Penyelesaian direkodkan.",
+    "Commission statement :month — :store": "Penyata komisen :month — :store",
+    "Commission on your cash-on-delivery orders in :month: :amount.": "Komisen pesanan bayar-semasa-terima anda pada :month: :amount.",
+    "Total you owe :app: :amount.": "Jumlah yang anda hutang kepada :app: :amount.",
+    "Please bank-transfer it and reply with your reference. Stores owing more than the COD limit cannot take cash on delivery until settled.": "Sila buat pemindahan bank dan balas dengan rujukan anda. Kedai yang berhutang melebihi had COD tidak boleh menerima bayar-semasa-terima sehingga diselesaikan.",
+    "COD unavailable: :store cannot take cash on delivery right now.": "COD tidak tersedia: :store tidak boleh menerima bayar-semasa-terima buat masa ini."
 }

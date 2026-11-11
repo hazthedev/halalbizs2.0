@@ -225,6 +225,10 @@ class CheckoutService
                         throw new CheckoutException(__('Some items do not support cash on delivery.'));
                     }
                 }
+
+                if (($debtReason = $this->codDebtReason($lines)) !== null) {
+                    throw new CheckoutException($debtReason);
+                }
             }
 
             // 2. Totals per store, in sen. Tax (worldwide, jurisdiction-aware)
@@ -920,7 +924,25 @@ class CheckoutService
             return __('You have open cash-on-delivery orders; receive them before placing another.');
         }
 
-        return null;
+        return $this->codDebtReason($lines);
+    }
+
+    /**
+     * The one COD debt rule (web, API and place() all route here): a store
+     * owing MORE than the limit (available + pending balance below -limit)
+     * cannot take cash on delivery until it settles.
+     *
+     * @param  Collection<int, object>  $lines
+     */
+    private function codDebtReason(Collection $lines): ?string
+    {
+        $limit = $this->codSettings->debt_limit_sen;
+
+        $store = $lines->map(fn ($line) => $line->variant->product->store)->unique('id')
+            ->first(fn ($store) => app(LedgerService::class)->owedSen($store) > $limit);
+
+        return $store === null ? null
+            : __('COD unavailable: :store cannot take cash on delivery right now.', ['store' => $store->name]);
     }
 
     /**
