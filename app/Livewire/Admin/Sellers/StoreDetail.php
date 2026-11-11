@@ -5,13 +5,13 @@ namespace App\Livewire\Admin\Sellers;
 use App\Enums\ProductStatus;
 use App\Enums\StoreStatus;
 use App\Enums\SubOrderStatus;
-use App\Livewire\Admin\Sellers\Concerns\ReviewsDocuments;
 use App\Exceptions\CheckoutException;
+use App\Livewire\Admin\Sellers\Concerns\ReviewsDocuments;
 use App\Models\Store;
 use App\Notifications\StoreSuspended;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Services\LedgerService;
 use App\Support\RinggitInput;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -137,7 +137,7 @@ class StoreDetail extends Component
         return view('livewire.admin.sellers.store-detail', [
             'liveProductsCount' => $this->store->products()->where('status', ProductStatus::Live)->count(),
             'subOrdersCount' => $this->store->subOrders()->count(),
-            'owedSen' => max(0, -app(LedgerService::class)->availableBalanceSen($this->store)),
+            'owedSen' => app(LedgerService::class)->owedSen($this->store),
             'gmvSen' => (int) $this->store->subOrders()->where('status', SubOrderStatus::Completed)->sum('total_sen'),
         ])->title($this->store->name);
     }

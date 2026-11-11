@@ -16,8 +16,8 @@ use App\Models\StoreLedgerEntry;
 use App\Models\SubOrder;
 use App\Settings\CommissionSettings;
 use App\Settings\OrderSettings;
-use Carbon\CarbonInterface;
 use App\Support\Money;
+use Carbon\CarbonInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -241,7 +241,7 @@ class LedgerService
         DB::transaction(function () use ($store, $amountSen, $reference, $note) {
             Store::whereKey($store->id)->lockForUpdate()->first();
 
-            $owed = max(0, -$this->availableBalanceSen($store));
+            $owed = $this->owedSen($store);
 
             if ($amountSen <= 0) {
                 throw new CheckoutException(__('Enter an amount above zero.'));

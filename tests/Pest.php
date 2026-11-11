@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\LedgerEntryStatus;
+use App\Models\StoreLedgerEntry;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,7 +36,7 @@ function makeAdmin(User $user): User
  */
 function releaseLedgerHolds(): void
 {
-    \App\Models\StoreLedgerEntry::query()
-        ->where('status', \App\Enums\LedgerEntryStatus::Pending)
-        ->update(['status' => \App\Enums\LedgerEntryStatus::Available]);
+    StoreLedgerEntry::query()
+        ->where('status', LedgerEntryStatus::Pending)
+        ->update(['status' => LedgerEntryStatus::Available]);
 }

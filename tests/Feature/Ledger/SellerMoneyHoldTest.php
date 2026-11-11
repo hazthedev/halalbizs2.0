@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ActorType;
+use App\Enums\GatewayPaymentStatus;
 use App\Enums\LedgerEntryStatus;
 use App\Enums\LedgerEntryType;
 use App\Enums\PaymentMethod;
@@ -11,11 +12,11 @@ use App\Livewire\Admin\Sellers\StoreDetail;
 use App\Livewire\Seller\Earnings;
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ReturnReason;
 use App\Models\ReturnRequest;
 use App\Models\Store;
-use App\Models\StoreLedgerEntry;
 use App\Models\SubOrder;
 use App\Models\User;
 use App\Notifications\CommissionStatementNotification;
@@ -25,6 +26,7 @@ use App\Services\LedgerService;
 use App\Services\RefundService;
 use App\Settings\OrderSettings;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
@@ -143,9 +145,9 @@ test('refund during the hold hits available at once; available + pending stays c
     $subOrder = holdBooked();
     $store = $subOrder->store;
     $order = $subOrder->order;
-    \App\Models\Payment::create([
+    Payment::create([
         'order_id' => $order->id, 'gateway' => PaymentMethod::Ipay88, 'ref_no' => 'REFHOLD1', 'amount_sen' => 20000,
-        'currency' => 'MYR', 'status' => \App\Enums\GatewayPaymentStatus::Success, 'refunded_sen' => 0,
+        'currency' => 'MYR', 'status' => GatewayPaymentStatus::Success, 'refunded_sen' => 0,
     ]);
 
     app(RefundService::class)->refund($subOrder->fresh(), 20000, ActorType::Admin, 1);
@@ -265,7 +267,7 @@ test('monthly statement notifies only stores with a negative available balance',
 });
 
 test('statements are scheduled monthly and holds hourly', function () {
-    $events = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())->map->command->implode("\n");
+    $events = collect(app(Schedule::class)->events())->map->command->implode("\n");
 
     expect($events)->toContain('ledger:release-holds')->toContain('ledger:send-statements');
 });
@@ -324,4 +326,18 @@ test('an online order is never blocked by seller debt', function () {
     expect($quote->codUnavailableReason)->not->toBeNull(); // COD hidden...
     // ...but nothing in the debt rule touches non-COD placement (place() only checks on Cod).
     expect(fn () => app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod))->toThrow(CheckoutException::class);
+});
+
+test('a refund during the hold is not a debt: no statement, nothing to settle', function () {
+    Notification::fake();
+    $store = Store::factory()->approved()->create();
+    // Held sale RM10, refund already debited from Available: nets to zero.
+    $store->ledgerEntries()->create(['type' => LedgerEntryType::Sale, 'amount_sen' => 1000, 'status' => LedgerEntryStatus::Pending, 'available_at' => now()->addDays(5), 'description' => 's']);
+    $store->ledgerEntries()->create(['type' => LedgerEntryType::Adjustment, 'amount_sen' => -1000, 'status' => LedgerEntryStatus::Available, 'description' => 'refund']);
+
+    $this->artisan('ledger:send-statements')->assertSuccessful();
+
+    Notification::assertNotSentTo($store->user, CommissionStatementNotification::class);
+    expect(app(LedgerService::class)->owedSen($store))->toBe(0)
+        ->and(fn () => app(LedgerService::class)->recordSettlement($store, 100, 'REF1'))->toThrow(CheckoutException::class);
 });
