@@ -15,6 +15,7 @@ import '../orders/orders_api.dart';
 import 'addresses_screen.dart';
 import 'coins_screen.dart';
 import 'delete_account_screen.dart';
+import 'followed_shops_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'wishlist_screen.dart';
@@ -99,6 +100,7 @@ class AccountScreen extends ConsumerWidget {
               SoukRow(key: const Key('account-profile'), icon: FontAwesomeIcons.user, label: l.profile, onTap: () => context.push('/account/profile')),
               SoukRow(key: const Key('account-addresses'), icon: FontAwesomeIcons.locationDot, label: l.addresses, onTap: () => context.push('/account/addresses')),
               SoukRow(key: const Key('account-wishlist'), icon: FontAwesomeIcons.heart, label: l.wishlist, onTap: () => context.push('/account/wishlist')),
+              SoukRow(key: const Key('account-following'), icon: FontAwesomeIcons.store, label: l.followedShops, onTap: () => context.push('/account/following')),
               SoukRow(key: const Key('account-coins'), icon: FontAwesomeIcons.coins, label: l.coins, onTap: () => context.push('/account/coins')),
               SoukRow(
                 key: const Key('account-notifications'),
@@ -256,6 +258,7 @@ List<RouteBase> get accountSubRoutes => [
         GoRoute(path: ':id', builder: (_, s) => AddressFormScreen(id: int.tryParse(s.pathParameters['id']!))),
       ]),
       GoRoute(path: 'wishlist', builder: (_, _) => const WishlistScreen()),
+      GoRoute(path: 'following', builder: (_, _) => const FollowedShopsScreen()),
       GoRoute(path: 'coins', builder: (_, _) => const CoinsScreen()),
       GoRoute(path: 'notifications', builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: 'messages', builder: (_, _) => const ConversationsScreen(), routes: messagesSubRoutes),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,8 @@ import 'package:intl/intl.dart';
 
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
+import 'catalog_api.dart';
+import 'follow_button.dart';
 import 'models.dart';
 import 'questions.dart';
 import 'reviews.dart';
@@ -92,7 +95,7 @@ class SellerCard extends StatelessWidget {
       if (joined != null)
         _fact(l.storeJoined(joined), key: const Key('product-store-joined')),
     ];
-    return SoukCard(
+    final card = SoukCard(
       key: const Key('product-store'),
       padding: const EdgeInsets.symmetric(
         horizontal: SoukSpace.s4,
@@ -154,6 +157,18 @@ class SellerCard extends StatelessWidget {
         ],
       ),
     );
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      card,
+      // Follow state comes with the store payload (the Chat button loads it too).
+      Consumer(builder: (_, ref, _) {
+        final store = ref.watch(storeProvider(p.storeSlug!)).value?.data;
+        if (store == null || store.id == null) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: SoukSpace.s2),
+          child: FollowButton(slug: p.storeSlug!, store: store, returnTo: '/p/${p.slug}'),
+        );
+      }),
+    ]);
   }
 
   Widget _fact(String text, {bool star = false, Key? key}) => Row(

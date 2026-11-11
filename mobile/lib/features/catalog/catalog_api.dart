@@ -133,6 +133,23 @@ class CatalogApi {
     }
   }
 
+  /// `POST|DELETE stores/{slug}/follow` (signed in): the server's state, idempotent.
+  Future<({bool following, int count})> followStore(String slug) async => _followState(await _api.post('stores/${Uri.encodeComponent(slug)}/follow'));
+
+  Future<({bool following, int count})> unfollowStore(String slug) async => _followState(await _api.delete('stores/${Uri.encodeComponent(slug)}/follow'));
+
+  ({bool following, int count}) _followState(dynamic data) {
+    final m = asMap(data);
+    return (following: asBool(m['is_following']), count: asInt(m['followers_count']) ?? 0);
+  }
+
+  /// `GET me/followed-stores` (signed in), newest follow first, 20 a page.
+  Future<PageOf<Store>> followedStores({int page = 1}) async {
+    Map<String, dynamic>? meta;
+    final data = await _api.get('me/followed-stores', query: {if (page > 1) 'page': page}, meta: (m) => meta = m);
+    return (items: asMapList(data).map(Store.new).toList(), meta: PageMeta(meta), fromCache: false, fetchedAt: null);
+  }
+
   /// `GET stores/{slug}/products` (sort + page only). A price range or halal
   /// facet goes through `GET products?store=` instead, which takes every
   /// filter; a missing store route falls back the same way.
@@ -179,4 +196,10 @@ final relatedProvider =
 final recommendedProvider = FutureProvider<List<Product>>((ref) {
   ref.watch(profileProvider.select((p) => p?.id));
   return ref.watch(catalogApiProvider).recommended();
+});
+
+/// Page 1 of the followed shops (the Account list pages on from there).
+final followedStoresProvider = FutureProvider<PageOf<Store>>((ref) {
+  ref.watch(profileProvider.select((p) => p?.id));
+  return ref.watch(catalogApiProvider).followedStores();
 });

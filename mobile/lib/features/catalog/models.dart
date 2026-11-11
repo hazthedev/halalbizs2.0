@@ -227,6 +227,10 @@ class Store {
   String? get banner => asStr(json['banner']);
   int? get productCount => asInt(json['product_count']);
   double? get ratingAvg => asDouble(json['rating_avg']);
+  int get followersCount => asInt(json['followers_count']) ?? 0;
+
+  /// Per caller (bearer token); false for guests.
+  bool get isFollowing => asBool(json['is_following']);
 
   /// Approval date (else created), as the web store page's "Joined".
   DateTime? get joinedAt => asDate(json['joined_at']);
