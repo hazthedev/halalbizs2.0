@@ -2,6 +2,7 @@
 
 use App\Enums\CertificateStatus;
 use App\Enums\ProductStatus;
+use App\Livewire\Admin\Catalog\Certificates as AdminCertificates;
 use App\Livewire\Seller\Certificates;
 use App\Models\HalalCertificate;
 use App\Models\Product;
@@ -68,12 +69,15 @@ function whipCert(array $o = []): int
     return $app;
 }
 
-function whipSeller(?string $reg = '202001000123'): User
+function whipSeller(?string $reg = '202001000123', bool $confirmed = true): User
 {
     Role::firstOrCreate(['name' => 'seller', 'guard_name' => 'web']);
     $user = User::factory()->create();
     $user->assignRole('seller');
-    Store::factory()->approved()->create(['user_id' => $user->id, 'registration_no' => $reg]);
+    Store::factory()->approved()->create([
+        'user_id' => $user->id, 'registration_no' => $reg,
+        'registration_verified_at' => $confirmed && $reg ? now() : null,
+    ]);
 
     return $user->fresh();
 }
@@ -208,4 +212,24 @@ test('a WHIP certificate not synced for over 24 hours stops counting as verified
 
     expect($product->fresh()->halalVerdict())->toBe('pending')
         ->and($product->fresh()->status)->toBe(ProductStatus::Live);
+});
+
+test('a registration number the seller typed is not trusted: WHIP match goes to review, admin approval confirms it, the next one is instant', function () {
+    whipCert();
+    whipCert(['no' => 'WH-200']);
+    $seller = whipSeller(confirmed: false);
+
+    whipSubmit($seller);
+    expect(whipRow())->status->toBe(CertificateStatus::Pending)->source->toBe('manual')->whip_answer->toBe('verified');
+
+    $this->seed(\Database\Seeders\RoleSeeder::class);
+    $admin = User::factory()->create(['two_factor_method' => 'email']);
+    $admin->assignRole('admin');
+    $admin->syncPermissions(['certificates.manage']);
+    Livewire::actingAs($admin->fresh())->test(AdminCertificates::class)->call('approve', whipRow()->id);
+    expect(whipRow())->status->toBe(CertificateStatus::Approved)->source->toBe('whip')
+        ->and($seller->store->fresh()->registration_verified_at)->not->toBeNull();
+
+    whipSubmit($seller->fresh(), 'WH-200');
+    expect(whipRow('WH-200'))->status->toBe(CertificateStatus::Approved)->source->toBe('whip');
 });

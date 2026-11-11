@@ -115,7 +115,7 @@
                 <x-ui.input :label="__('Company registration number')" name="registrationNo" wire:model="registrationNo"
                             :error="$errors->first('registrationNo')"
                             :disabled="filled(auth()->user()->store?->registration_no)"
-                            :hint="__('As on your SSM. If WHIP holds this certificate under the same number, it is verified at once; locked once saved.')" />
+                            :hint="__('As on your SSM; locked once saved. After we confirm it once, certificates WHIP holds under this number are verified at once.')" />
 
                 <x-ui.input :label="__('Issued on')" name="validFrom" type="date" wire:model="validFrom"
                             :error="$errors->first('validFrom')" />

@@ -150,8 +150,10 @@ class Certificates extends Component
             $store = $this->currentStore();
 
             // The registration number is self-declared the first time and then
-            // locked to the store, so it cannot be retyped to match someone
-            // else's WHIP certificate.
+            // locked to the store. It is still only a claim until an admin
+            // confirms it against the SSM document (registration_verified_at):
+            // otherwise a seller could type another company's number and its
+            // WHIP certificate number and be approved at once.
             if (blank($store->registration_no) && filled($data['registrationNo'])) {
                 $store->forceFill(['registration_no' => trim($data['registrationNo'])])->save();
             }
@@ -159,7 +161,7 @@ class Certificates extends Component
             // WHIP is asked once, here. Verified = certified, in date, and the
             // same company registration number; anything else is manual review.
             [$answer, $whip] = app(WhipDirectory::class)->check($data['number'], $store->registration_no);
-            $verified = $answer === 'verified';
+            $verified = $answer === 'verified' && $store->registration_verified_at !== null;
 
             $certificate ??= new HalalCertificate;
             $certificate->fill([

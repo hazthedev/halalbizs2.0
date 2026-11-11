@@ -193,7 +193,7 @@ class HalalCertificate extends Model implements HasMedia
     public function whipNote(): ?string
     {
         return match ($this->whip_answer) {
-            'verified' => __('WHIP: certified and in date, same company registration number.'),
+            'verified' => __('WHIP: certified and in date for registration number :reg. Check it against the store\'s SSM document before approving.', ['reg' => $this->store?->registration_no]),
             'expired' => __('WHIP: found, but the certificate has expired.'),
             'not_certified' => __('WHIP: found, but not certified (or not yet in force).'),
             'mismatch' => __('WHIP: found, but its company registration number differs from this store\'s.'),
