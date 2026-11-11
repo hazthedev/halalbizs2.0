@@ -5,15 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Api\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CategoryResource;
+use App\Http\Resources\ProductQuestionResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ReviewResource;
 use App\Livewire\Storefront\Listing;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Notifications\ProductQuestionAsked;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 
 /**
@@ -113,11 +116,50 @@ class CatalogController extends Controller
         return ApiResponse::ok(ReviewResource::collection($reviews));
     }
 
+    /** Visible questions, newest first — the PDP Q&A tab (ProductQuestions::render). */
+    public function questions(Product $product): JsonResponse
+    {
+        abort_unless($product->isLive(), 404);
+
+        return ApiResponse::ok(ProductQuestionResource::collection(
+            $product->questions()->visible()->with('user')->latest('id')->paginate(10),
+        ));
+    }
+
+    /** Ask the seller: same rules as ProductQuestions::ask (3 per minute, 10-500 chars). */
+    public function ask(Request $request, Product $product): JsonResponse
+    {
+        abort_unless($product->isLive(), 404);
+
+        $key = 'ask-question:'.$request->user()->id;
+
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            return ApiResponse::error('too_many_attempts', __('Slow down — you can ask again in :s seconds.', ['s' => RateLimiter::availableIn($key)]), 429);
+        }
+
+        $data = $request->validate(['question' => ['required', 'string', 'min:10', 'max:500']], [
+            'question.required' => __('Type your question first.'),
+            'question.min' => __('Add a little more detail (at least 10 characters).'),
+        ]);
+
+        RateLimiter::hit($key, 60);
+
+        $question = $product->questions()->create([
+            'store_id' => $product->store_id,
+            'user_id' => $request->user()->id,
+            'question' => trim($data['question']),
+        ]);
+
+        $product->store?->user?->notify(new ProductQuestionAsked($product));
+
+        return ApiResponse::ok(new ProductQuestionResource($question->load('user')), status: 201);
+    }
+
     public function product(Product $product)
     {
         abort_unless($product->isLive(), 404);
 
-        return new ProductResource($product->load(['variants', 'store', 'media', 'options.values', 'halalCertificate', 'metafields']), detail: true);
+        return new ProductResource($product->load(['variants', 'store', 'media', 'options.values', 'halalCertificate', 'metafields', 'brand', 'category']), detail: true);
     }
 
     public function categories()

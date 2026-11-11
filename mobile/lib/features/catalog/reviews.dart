@@ -22,13 +22,13 @@ class ProductReviews extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final page = ref.watch(productReviewsProvider(slug)).value;
-    if (page == null || page.items.isEmpty) return const SizedBox.shrink();
+    if (page == null) return const SizedBox.shrink();
+    if (page.items.isEmpty) return Text(l.productNoReviews, key: const Key('product-reviews-empty'), style: SoukText.small);
     final total = page.meta.total > 0 ? page.meta.total : page.items.length;
     return Column(
       key: const Key('product-reviews'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: SoukSpace.s6),
         SoukSectionHeading(
           l.reviewsCount(total),
           linkLabel: total > 3 ? l.viewAll : null,

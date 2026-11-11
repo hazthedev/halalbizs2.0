@@ -74,6 +74,31 @@ class Product {
   int get lowestPriceSen => variants.isEmpty ? minPriceSen : variants.map((v) => v.priceSen).min;
 
   bool get codEnabled => asBool(json['cod_enabled']);
+
+  /// Detail only: the web's COD badge rule (purchasing on, product flag, platform switch).
+  bool get codAvailable => asBool(json['cod_available']);
+
+  /// Detail only: the shipping row's "Ships from :state".
+  String? get shipsFrom => asStr(json['ships_from']);
+
+  /// Specifications tab rows (detail only): brand, condition, weight, category.
+  String? get specBrand => asStr(asMap(json['specs'])['brand']);
+  String? get specCondition => asStr(asMap(json['specs'])['condition']);
+  int? get specWeightGrams => asInt(asMap(json['specs'])['weight_grams']);
+  String? get specCategory => asStr(asMap(json['specs'])['category']);
+
+  /// Seller card (detail only; list rows carry name + slug only).
+  Map<String, dynamic> get _store => asMap(json['store']);
+  bool get storeVerified => asBool(_store['verified']);
+  String? get storeLogo => asStr(_store['logo']);
+  double get storeRatingAvg => asDouble(_store['rating_avg']) ?? 0;
+  int get storeRatingCount => asInt(_store['rating_count']) ?? 0;
+  double get storeServiceAvg => asDouble(_store['service_rating_avg']) ?? 0;
+  int get storeServiceCount => asInt(_store['service_rating_count']) ?? 0;
+  int? get storeProductCount => asInt(_store['product_count']);
+  String? get storeState => asStr(_store['state']);
+  DateTime? get storeJoinedAt => asDate(_store['joined_at']);
+
   String? get storeName => asStr(asMap(json['store'])['name']);
   String? get storeSlug => asStr(asMap(json['store'])['slug']);
   List<Variant> get variants => asMapList(json['variants']).map(Variant.new).toList();
@@ -220,6 +245,21 @@ class Review {
   String get buyerName => asStr(json['buyer_name']) ?? '';
   List<String> get photos => asList(json['photos']).map(asStr).nonNulls.toList();
   DateTime? get createdAt => asDate(json['created_at']);
+}
+
+/// `ProductQuestionResource`: question, asker_name (masked), answer (null =
+/// awaiting the seller), created_at, answered_at.
+class Question {
+  Question(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  String get question => asStr(json['question']) ?? '';
+  String get askerName => asStr(json['asker_name']) ?? '';
+  String? get answer => asStr(json['answer']);
+  DateTime? get createdAt => asDate(json['created_at']);
+  DateTime? get answeredAt => asDate(json['answered_at']);
 }
 
 /// Pagination from the envelope `meta` (`page` from ApiResponse, or the

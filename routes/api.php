@@ -33,6 +33,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/categories', [CatalogController::class, 'categories'])->name('api.categories');
     Route::get('/search', [CatalogController::class, 'search'])->name('api.search');
     Route::get('/products/{product:slug}/reviews', [CatalogController::class, 'reviews'])->name('api.product.reviews');
+    Route::get('/products/{product:slug}/questions', [CatalogController::class, 'questions'])->name('api.product.questions');
     Route::get('/home', HomeController::class)->name('api.home');
     Route::get('/stores/{store:slug}', [StoreController::class, 'show'])->name('api.stores.show');
     Route::get('/stores/{store:slug}/products', [StoreController::class, 'products'])->name('api.stores.products');
@@ -61,6 +62,7 @@ Route::prefix('v1')->name('api.')->group(function () {
     });
 
     Route::middleware(['auth:sanctum', 'suspended.api', 'throttle:api'])->group(function () {
+        Route::post('/products/{product:slug}/questions', [CatalogController::class, 'ask'])->name('product.questions.ask');
         Route::get('/me', [MeController::class, 'show'])->name('me.show');
         Route::patch('/me', [MeController::class, 'update'])->name('me.update');
         // Both take the current password: five guesses a minute per user (throttle keys on the user id).

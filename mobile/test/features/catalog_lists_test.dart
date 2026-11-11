@@ -36,6 +36,11 @@ void main() {
             ],
       }, meta: {'page': 1, 'per_page': 10, 'total': 12, 'last_page': 2});
       await Harness(api: api).pump(tester, location: '/p/madu-tualang');
+      await tester.scrollUntilVisible(find.byKey(const Key('product-tab-reviews')), 300, scrollable: find.byType(Scrollable).first);
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, -150)); // clear of the sticky buy bar
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('product-tab-reviews')));
+      await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(find.byKey(const Key('review-1')), 300, scrollable: find.byType(Scrollable).first);
       expect(find.text('12 reviews'), findsWidgets);
@@ -60,6 +65,11 @@ void main() {
       }, metaFor: (path, q) => {'page': int.parse('${q?['page'] ?? 1}'), 'per_page': 10, 'total': 12, 'last_page': 2});
       final h = Harness(api: api);
       await h.pump(tester, location: '/p/madu-tualang');
+      await tester.scrollUntilVisible(find.byKey(const Key('product-tab-reviews')), 300, scrollable: find.byType(Scrollable).first);
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, -150)); // clear of the sticky buy bar
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('product-tab-reviews')));
+      await tester.pumpAndSettle();
 
       final viewAll = find.descendant(of: find.byKey(const Key('product-reviews')), matching: find.text('View all'));
       await tester.scrollUntilVisible(viewAll, 300, scrollable: find.byType(Scrollable).first);

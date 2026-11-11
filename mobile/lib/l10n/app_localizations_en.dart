@@ -1780,4 +1780,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get halalAssureExport => 'Export paperwork included';
+
+  @override
+  String get productBuyNow => 'Buy now';
+
+  @override
+  String get productCod => 'Cash on delivery';
+
+  @override
+  String productShipsFrom(String state) {
+    return 'Ships from $state';
+  }
+
+  @override
+  String get productShippingAtCheckout => 'Shipping calculated at checkout';
+
+  @override
+  String get productTabSpecs => 'Specifications';
+
+  @override
+  String get productTabQa => 'Q&A';
+
+  @override
+  String get productSpecBrand => 'Brand';
+
+  @override
+  String get productSpecCondition => 'Condition';
+
+  @override
+  String get productSpecWeight => 'Weight';
+
+  @override
+  String get productSpecCategory => 'Category';
+
+  @override
+  String get productNoBrand => 'No brand';
+
+  @override
+  String get productNoReviews => 'No reviews yet.';
+
+  @override
+  String get productVerified => 'Verified';
+
+  @override
+  String get productSellerService => 'Seller service';
+
+  @override
+  String qaTitle(int count) {
+    return 'Questions & Answers ($count)';
+  }
+
+  @override
+  String get qaAskLabel => 'Ask the seller a question';
+
+  @override
+  String get qaAskHint =>
+      'e.g. Is this halal-certified? Does it ship to East Malaysia?';
+
+  @override
+  String get qaPost => 'Post question';
+
+  @override
+  String get qaLogin => 'Log in';
+
+  @override
+  String get qaLoginToAsk => 'to ask the seller a question.';
+
+  @override
+  String get qaEmpty => 'No questions yet — be the first to ask.';
+
+  @override
+  String get qaAwaiting => 'Awaiting seller response';
+
+  @override
+  String get qaSeller => 'Seller';
+
+  @override
+  String get qaTypeFirst => 'Type your question first.';
+
+  @override
+  String get qaTooShort => 'Add a little more detail (at least 10 characters).';
+
+  @override
+  String get qaSent =>
+      'Question sent — we\'ll notify you when the seller answers.';
 }

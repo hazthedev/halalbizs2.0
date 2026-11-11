@@ -1776,4 +1776,91 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get halalAssureExport => 'Dokumen eksport disertakan';
+
+  @override
+  String get productBuyNow => 'Beli sekarang';
+
+  @override
+  String get productCod => 'Bayaran tunai semasa penghantaran';
+
+  @override
+  String productShipsFrom(String state) {
+    return 'Dihantar dari $state';
+  }
+
+  @override
+  String get productShippingAtCheckout =>
+      'Kos penghantaran dikira semasa bayar';
+
+  @override
+  String get productTabSpecs => 'Spesifikasi';
+
+  @override
+  String get productTabQa => 'Soal jawab';
+
+  @override
+  String get productSpecBrand => 'Jenama';
+
+  @override
+  String get productSpecCondition => 'Keadaan';
+
+  @override
+  String get productSpecWeight => 'Berat';
+
+  @override
+  String get productSpecCategory => 'Kategori';
+
+  @override
+  String get productNoBrand => 'Tiada jenama';
+
+  @override
+  String get productNoReviews => 'Belum ada ulasan.';
+
+  @override
+  String get productVerified => 'Disahkan';
+
+  @override
+  String get productSellerService => 'Perkhidmatan penjual';
+
+  @override
+  String qaTitle(int count) {
+    return 'Soalan dan Jawapan ($count)';
+  }
+
+  @override
+  String get qaAskLabel => 'Tanya penjual';
+
+  @override
+  String get qaAskHint =>
+      'cth. Adakah ini diperakui halal? Adakah dihantar ke Malaysia Timur?';
+
+  @override
+  String get qaPost => 'Hantar soalan';
+
+  @override
+  String get qaLogin => 'Log masuk';
+
+  @override
+  String get qaLoginToAsk => 'untuk bertanya kepada penjual.';
+
+  @override
+  String get qaEmpty =>
+      'Belum ada soalan — jadilah orang pertama yang bertanya.';
+
+  @override
+  String get qaAwaiting => 'Menunggu respons penjual';
+
+  @override
+  String get qaSeller => 'Penjual';
+
+  @override
+  String get qaTypeFirst => 'Taip soalan anda dahulu.';
+
+  @override
+  String get qaTooShort =>
+      'Tambah sedikit lagi butiran (sekurang-kurangnya 10 aksara).';
+
+  @override
+  String get qaSent =>
+      'Soalan dihantar — kami akan maklumkan apabila penjual menjawab.';
 }

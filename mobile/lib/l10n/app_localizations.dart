@@ -3265,6 +3265,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Export paperwork included'**
   String get halalAssureExport;
+
+  /// No description provided for @productBuyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy now'**
+  String get productBuyNow;
+
+  /// No description provided for @productCod.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash on delivery'**
+  String get productCod;
+
+  /// No description provided for @productShipsFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Ships from {state}'**
+  String productShipsFrom(String state);
+
+  /// No description provided for @productShippingAtCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping calculated at checkout'**
+  String get productShippingAtCheckout;
+
+  /// No description provided for @productTabSpecs.
+  ///
+  /// In en, this message translates to:
+  /// **'Specifications'**
+  String get productTabSpecs;
+
+  /// No description provided for @productTabQa.
+  ///
+  /// In en, this message translates to:
+  /// **'Q&A'**
+  String get productTabQa;
+
+  /// No description provided for @productSpecBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get productSpecBrand;
+
+  /// No description provided for @productSpecCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Condition'**
+  String get productSpecCondition;
+
+  /// No description provided for @productSpecWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get productSpecWeight;
+
+  /// No description provided for @productSpecCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get productSpecCategory;
+
+  /// No description provided for @productNoBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'No brand'**
+  String get productNoBrand;
+
+  /// No description provided for @productNoReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet.'**
+  String get productNoReviews;
+
+  /// No description provided for @productVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get productVerified;
+
+  /// No description provided for @productSellerService.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller service'**
+  String get productSellerService;
+
+  /// No description provided for @qaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions & Answers ({count})'**
+  String qaTitle(int count);
+
+  /// No description provided for @qaAskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the seller a question'**
+  String get qaAskLabel;
+
+  /// No description provided for @qaAskHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Is this halal-certified? Does it ship to East Malaysia?'**
+  String get qaAskHint;
+
+  /// No description provided for @qaPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Post question'**
+  String get qaPost;
+
+  /// No description provided for @qaLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in'**
+  String get qaLogin;
+
+  /// No description provided for @qaLoginToAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'to ask the seller a question.'**
+  String get qaLoginToAsk;
+
+  /// No description provided for @qaEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions yet — be the first to ask.'**
+  String get qaEmpty;
+
+  /// No description provided for @qaAwaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting seller response'**
+  String get qaAwaiting;
+
+  /// No description provided for @qaSeller.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller'**
+  String get qaSeller;
+
+  /// No description provided for @qaTypeFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your question first.'**
+  String get qaTypeFirst;
+
+  /// No description provided for @qaTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a little more detail (at least 10 characters).'**
+  String get qaTooShort;
+
+  /// No description provided for @qaSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Question sent — we\'ll notify you when the seller answers.'**
+  String get qaSent;
 }
 
 class _AppLocalizationsDelegate

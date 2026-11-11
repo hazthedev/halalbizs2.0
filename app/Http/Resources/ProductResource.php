@@ -3,6 +3,8 @@
 namespace App\Http\Resources;
 
 use App\Models\Product;
+use App\Settings\CodSettings;
+use App\Settings\GeneralSettings;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,7 +32,7 @@ class ProductResource extends JsonResource
             'store' => $this->whenLoaded('store', fn () => [
                 'name' => $this->store?->name,
                 'slug' => $this->store?->slug,
-            ]),
+            ] + ($this->detail ? $this->sellerCard() : [])),
             'variants' => $this->whenLoaded('variants', fn () => $this->variants->map(fn ($variant) => [
                 'id' => $variant->id,
                 'sku' => $variant->sku,
@@ -56,6 +58,19 @@ class ProductResource extends JsonResource
             'halal_cert_number' => $this->halal_cert_number,
             'halal_packed_on' => $this->halal_packed_on?->toDateString(),
             'metafields' => $this->metafieldGroups(),
+            // Web codAvailable: purchasing on + the product's flag + the platform's COD switch.
+            'cod_available' => app(GeneralSettings::class)->purchasing_enabled
+                && $this->cod_enabled
+                && app(CodSettings::class)->enabled,
+            // Web shipping row: "Ships from :state" (Malaysia when the store has none).
+            'ships_from' => $this->store?->state ?: 'Malaysia',
+            // Web Specifications tab rows: brand, condition, weight, category.
+            'specs' => [
+                'brand' => $this->brand?->name,
+                'condition' => $this->condition->label(),
+                'weight_grams' => (int) $this->weight_grams,
+                'category' => $this->category?->getTranslation('name', app()->getLocale()),
+            ],
             'images' => $this->getMedia('images')->map(fn ($media) => [
                 'large' => $media->getUrl(),
                 'card' => $media->getUrl('card'),
@@ -65,6 +80,29 @@ class ProductResource extends JsonResource
                 'name' => $option->name,
                 'values' => $option->values->map(fn ($value) => ['id' => $value->id, 'value' => $value->value])->values()->all(),
             ])->values()->all(),
+        ];
+    }
+
+    /**
+     * The web seller card: verified badge, product and service ratings,
+     * product count, state, and the approval date as "joined".
+     *
+     * @return array<string, mixed>
+     */
+    private function sellerCard(): array
+    {
+        $store = $this->store;
+
+        return [
+            'logo' => $store->getFirstMediaUrl('logo', 'thumb') ?: null,
+            'verified' => $store->isApproved(),
+            'rating_avg' => (float) $store->rating_avg,
+            'rating_count' => (int) $store->rating_count,
+            'service_rating_avg' => (float) $store->service_rating_avg,
+            'service_rating_count' => (int) $store->service_rating_count,
+            'product_count' => $store->products()->live()->count(),
+            'state' => $store->state,
+            'joined_at' => ($store->approved_at ?? $store->created_at)?->toIso8601String(),
         ];
     }
 

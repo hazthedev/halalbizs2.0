@@ -101,6 +101,16 @@ class CatalogApi {
     return (items: asMapList(r.data).map(Review.new).toList(), meta: PageMeta(r.meta), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
   }
 
+  /// `GET products/{slug}/questions`: visible questions, newest first, 10 a page.
+  Future<PageOf<Question>> questions(String slug, {int page = 1}) async {
+    final r = await _repo.getJson('products/${Uri.encodeComponent(slug)}/questions', query: {if (page > 1) 'page': page});
+    return (items: asMapList(r.data).map(Question.new).toList(), meta: PageMeta(r.meta), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
+  }
+
+  /// `POST products/{slug}/questions` (signed in): 10-500 chars, 3 a minute.
+  Future<Question> ask(String slug, String question) async =>
+      Question(asMap(await _api.post('products/${Uri.encodeComponent(slug)}/questions', body: {'question': question})));
+
   /// `GET stores/{slug}` (slice 2). Until it exists the header is built from
   /// the slug alone (name filled from the first product's `store`).
   Future<CachedResult<Store>> store(String slug) async {

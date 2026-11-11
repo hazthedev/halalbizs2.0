@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,7 +13,7 @@ import '../messages/messages_api.dart';
 import 'catalog_api.dart';
 import 'halal.dart';
 import 'models.dart';
-import 'reviews.dart';
+import 'product_extras.dart';
 import 'variant_sheet.dart';
 
 /// `/p/:slug` — gallery, name, price (range until a variant is picked, sale
@@ -66,7 +65,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     }
   }
 
-  Future<void> _addToCart(Product p) async {
+  Future<void> _addToCart(Product p, {bool buyNow = false}) async {
     // An incomplete pick opens the sheet instead of failing.
     if (_selected(p) == null) {
       if (p.variants.isEmpty || !await _openSheet(p) || !mounted) return;
@@ -83,6 +82,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     try {
       await ref.read(cartProvider.notifier).add(variantId: v.id, qty: _qty);
       if (!mounted) return;
+      // Web buyNow: add, then straight to the cart (its Checkout button pays).
+      if (buyNow) return router.go('/cart');
       _messenger.currentState
         ?..clearSnackBars()
         ..showSnackBar(SnackBar(
@@ -161,12 +162,25 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                 child: SoukButton(
                   key: const Key('product-add-to-cart'),
                   label: canBuy ? l.addToCart : l.outOfStock,
-                  icon: FontAwesomeIcons.cartPlus,
-                  variant: SoukButtonVariant.primary,
+                  variant: SoukButtonVariant.secondary,
+                  compact: true,
                   expand: true,
                   busy: _adding,
                   requiresOnline: true,
                   onPressed: canBuy ? () => _addToCart(product) : null,
+                ),
+              ),
+              const SizedBox(width: SoukSpace.s2),
+              Expanded(
+                child: SoukButton(
+                  key: const Key('product-buy-now'),
+                  label: l.productBuyNow,
+                  variant: SoukButtonVariant.primary,
+                  compact: true,
+                  expand: true,
+                  busy: _adding,
+                  requiresOnline: true,
+                  onPressed: canBuy ? () => _addToCart(product, buyNow: true) : null,
                 ),
               ),
             ]),
@@ -329,35 +343,17 @@ class _ProductBody extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 2),
                   child: Text('SKU ${variant!.sku}', style: SoukText.monoLabel),
                 ),
+              if (p.shipsFrom != null) ...[
+                const SizedBox(height: SoukSpace.s4),
+                ShippingRow(p),
+              ],
               if (p.storeSlug != null) ...[
-                const SizedBox(height: SoukSpace.s5),
-                SoukCard(
-                  key: const Key('product-store'),
-                  padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s4, vertical: SoukSpace.s3),
-                  onTap: () => context.push('/s/${Uri.encodeComponent(p.storeSlug!)}'),
-                  child: Row(children: [
-                    const FaIcon(FontAwesomeIcons.store, size: 16, color: SoukColors.inkFaint),
-                    const SizedBox(width: SoukSpace.s3),
-                    Expanded(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(l.soldBy.toUpperCase(), style: SoukText.eyebrow),
-                        Text(p.storeName ?? p.storeSlug!, style: SoukText.displayName, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      ]),
-                    ),
-                    Text(l.visitStore, style: SoukText.small.copyWith(color: SoukColors.emerald, fontWeight: FontWeight.w600)),
-                    const Icon(Icons.chevron_right_rounded, color: SoukColors.emerald),
-                  ]),
-                ),
+                const SizedBox(height: SoukSpace.s4),
+                SellerCard(p),
               ],
               HalalDetails(p),
-              if (p.description.isNotEmpty) ...[
-                const SizedBox(height: SoukSpace.s6),
-                Text(l.description, style: SoukText.displayH3),
-                const SizedBox(height: SoukSpace.s2),
-                // Seller rich text. Core package only: links render as text, never open.
-                HtmlWidget(p.description, textStyle: SoukText.bodySoft),
-              ],
-              ProductReviews(slug: p.slug),
+              const SizedBox(height: SoukSpace.s6),
+              ProductTabs(p),
             ],
           ),
         ),
