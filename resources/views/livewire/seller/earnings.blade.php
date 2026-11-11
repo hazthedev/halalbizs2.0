@@ -15,7 +15,7 @@
             @if ($availableSen < 0)
                 {{-- Not only COD: a refund on an order you were already paid for
                      lands here too, so the copy names both causes. --}}
-                <p class="mt-1 text-[12px] text-danger">{{ __('Amount owed — from COD commission or a refund on a paid-out order. Future sales recover it; payouts resume once your balance is positive.') }}</p>
+                <p class="mt-1 text-[12px] text-danger">{{ __('Amount owed — from COD commission or a refund on a paid-out order. Future sales recover it once their hold ends, or you can settle it by bank transfer (see your monthly statement); payouts resume once your balance is positive.') }}</p>
             @endif
         </x-ui.card>
 
