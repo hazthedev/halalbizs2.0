@@ -3685,6 +3685,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{store}'**
   String liveByStore(String store);
+
+  /// No description provided for @liveShopTheStream.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop the stream'**
+  String get liveShopTheStream;
+
+  /// No description provided for @liveEndedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This live has ended'**
+  String get liveEndedTitle;
+
+  /// No description provided for @liveEndedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is streaming here right now. Check back later or browse the shop.'**
+  String get liveEndedBody;
+
+  /// No description provided for @liveOnPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'This live is on {platform}'**
+  String liveOnPlatform(String platform);
+
+  /// No description provided for @liveWatchOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch on {platform}'**
+  String liveWatchOn(String platform);
 }
 
 class _AppLocalizationsDelegate

@@ -33,6 +33,7 @@ dependencies:
   flutter_widget_from_html_core: ^0.17.4
   html: ^0.15.7
   flutter_native_splash: ^2.4.8
+  webview_flutter: ^4.14.1
 
 dev_dependencies:
   flutter_test:

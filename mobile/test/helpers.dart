@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:halalbizs/core/api/api_client.dart';
@@ -130,7 +131,7 @@ class FakeBrowser extends InAppBrowser {
 /// Pumps the whole app with fakes. Returns the container so tests can read
 /// providers and drive the router: `h.router.go('/cart')`.
 class Harness {
-  Harness({FakeApi? api, this.token, this.offline = false, AppDb? db, FakeBrowser? browser})
+  Harness({FakeApi? api, this.token, this.offline = false, AppDb? db, FakeBrowser? browser, this.overrides = const []})
       : api = api ?? FakeApi(),
         browser = browser ?? FakeBrowser(),
         db = db ?? AppDb.test(NativeDatabase.memory());
@@ -140,6 +141,7 @@ class Harness {
   final String? token;
   final bool offline;
   final AppDb db;
+  final List<Override> overrides;
   late final ProviderContainer container;
 
   GoRouter get router => container.read(routerProvider);
@@ -151,6 +153,7 @@ class Harness {
       appDbProvider.overrideWith((ref) => db),
       isOfflineProvider.overrideWith((ref) => Stream.value(offline)),
       inAppBrowserProvider.overrideWith((ref) => browser),
+      ...overrides,
     ]);
     addTearDown(container.dispose);
     addTearDown(db.close);

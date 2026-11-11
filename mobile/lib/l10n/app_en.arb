@@ -908,5 +908,12 @@
   "liveBadge": "Live",
   "liveNowTitle": "Live now",
   "liveByStore": "{store}",
-  "@liveByStore": {"placeholders": {"store": {"type": "String"}}}
+  "@liveByStore": {"placeholders": {"store": {"type": "String"}}},
+  "liveShopTheStream": "Shop the stream",
+  "liveEndedTitle": "This live has ended",
+  "liveEndedBody": "Nothing is streaming here right now. Check back later or browse the shop.",
+  "liveOnPlatform": "This live is on {platform}",
+  "@liveOnPlatform": {"placeholders": {"platform": {"type": "String"}}},
+  "liveWatchOn": "Watch on {platform}",
+  "@liveWatchOn": {"placeholders": {"platform": {"type": "String"}}}
 }

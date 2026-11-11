@@ -89,6 +89,11 @@ class CatalogApi {
     return asMapList(r.data).map(LiveSession.new).where((s) => s.slug.isNotEmpty).toList();
   }
 
+  Future<LiveRoom> liveRoom(String slug) async {
+    final r = await _repo.getJson('live/${Uri.encodeComponent(slug)}');
+    return LiveRoom(asMap(r.data));
+  }
+
   /// Search is online-only (no snapshot): results change with every keystroke.
   /// The API answers every hit at once today (no paging meta), so "more" never shows.
   Future<ProductPage> search(String q, {String? category, ProductFilter filter = const ProductFilter(), int page = 1}) async {
@@ -186,6 +191,9 @@ final featuredProductsProvider =
 
 /// Autodisposed: the pill re-asks each time the search tab is opened.
 final liveSessionsProvider = FutureProvider.autoDispose<List<LiveSession>>((ref) => ref.watch(catalogApiProvider).live());
+
+final liveRoomProvider = FutureProvider.autoDispose.family<LiveRoom, String>(
+    (ref, slug) => ref.watch(catalogApiProvider).liveRoom(slug));
 
 final categoriesProvider =
     FutureProvider<CachedResult<List<Category>>>((ref) => ref.watch(catalogApiProvider).categories());

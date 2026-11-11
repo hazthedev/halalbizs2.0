@@ -329,7 +329,25 @@ class FlashItem {
   }
 }
 
-/// One row of `GET live`: a session streaming now. Watched in the web room.
+/// `GET live/{slug}`: one room. [embedUrl] plays in-app; external platforms
+/// (Shopee/TikTok/Lazada) have only [externalUrl].
+class LiveRoom {
+  LiveRoom(this.json);
+
+  final Map<String, dynamic> json;
+
+  String get slug => asStr(json['slug']) ?? '';
+  String get title => asStr(json['title']) ?? '';
+  String get storeName => asStr(asMap(json['store'])['name']) ?? '';
+  String? get storeSlug => asStr(asMap(json['store'])['slug']);
+  String? get platform => asStr(json['platform']);
+  String? get embedUrl => asStr(json['embed_url']);
+  String? get externalUrl => asStr(json['external_url']);
+  bool get isLive => asBool(json['is_live']);
+  List<Product> get products => asMapList(json['products']).map(Product.new).toList();
+}
+
+/// One row of `GET live`: a session streaming now. Opens the in-app room.
 class LiveSession {
   LiveSession(this.json);
 
