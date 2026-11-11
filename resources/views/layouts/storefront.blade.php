@@ -225,38 +225,6 @@
         </div>
     </header>
 
-    {{-- Row 3 — departments. The campaign slot on the right only renders when a
-         real announcement is configured; the reference's "RAMADAN SOURCING OPEN"
-         is its own placeholder copy, not ours to invent. --}}
-    @unless ($bareChrome)
-        <nav class="border-b border-line bg-paper" aria-label="{{ __('Categories') }}">
-            <div class="mx-auto flex max-w-[1400px] items-center gap-1 overflow-x-auto px-4 py-2.5 lg:px-12">
-                <a href="{{ route('landing') }}" wire:navigate
-                   class="flex shrink-0 items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-1.5 text-[length:var(--text-base)] text-emerald transition-colors duration-(--dur-micro) hover:bg-emerald-tint">
-                    <x-ui.star-mark :size="14" />{{ __('Discover') }}
-                </a>
-                @if (config('live.enabled', true))
-                    <a href="{{ route('live.index') }}" wire:navigate
-                       class="flex shrink-0 items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-1.5 text-[length:var(--text-base)] text-danger transition-colors duration-(--dur-micro) hover:bg-danger/5">
-                        <span class="size-1.5 animate-pulse rounded-full bg-danger"></span>{{ __('Live') }}
-                    </a>
-                @endif
-                @foreach (\App\Models\Category::active()->whereNull('parent_id')->orderBy('position')->get() as $topCategory)
-                    <a href="{{ route('category.show', $topCategory->slug) }}" wire:navigate
-                       class="shrink-0 rounded-[var(--radius-pill)] px-3 py-1.5 text-[length:var(--text-base)] text-ink-soft transition-colors duration-(--dur-micro) hover:text-ink-head">
-                        {{ $topCategory->getTranslation('name', app()->getLocale()) }}
-                    </a>
-                @endforeach
-
-                @if ($themeSettings->announcementActive())
-                    <span class="ml-auto hidden shrink-0 pl-6 font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label)] text-brass-deep lg:block">
-                        {{ $themeSettings->announcementText(app()->getLocale()) }}
-                    </span>
-                @endif
-            </div>
-        </nav>
-    @endunless
-
     {{-- ===== Main ===== --}}
     <main class="flex-1">
         {{ $slot }}
