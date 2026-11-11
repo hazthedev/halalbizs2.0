@@ -65,3 +65,15 @@ test('the affiliate redirect rejects a protocol-relative offsite target', functi
 
     $this->get('/r/'.$affiliate->code.'?to=//evil.com')->assertRedirect(route('home'));
 });
+
+test('the CSP lets live rooms embed YouTube and Facebook players, nothing wider', function () {
+    $csp = $this->get('/')->headers->get('Content-Security-Policy');
+
+    preg_match('/frame-src ([^;]+);/', $csp, $m);
+    expect(explode(' ', $m[1]))->toEqualCanonicalizing([
+        'https://challenges.cloudflare.com',
+        'https://www.youtube.com',
+        'https://www.youtube-nocookie.com',
+        'https://www.facebook.com',
+    ]);
+});

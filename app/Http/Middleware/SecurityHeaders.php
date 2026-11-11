@@ -20,7 +20,15 @@ class SecurityHeaders
 
         if (! $response->headers->has('Content-Security-Policy')) {
             $scriptHosts = ['https://challenges.cloudflare.com'];
-            $frameHosts = ['https://challenges.cloudflare.com'];
+            // Live rooms embed the seller's stream: LiveVideoUrl only ever builds
+            // www.youtube.com/embed/… or www.facebook.com/plugins/video.php, and its
+            // pass-through accepts embed URLs on these same hosts.
+            $frameHosts = [
+                'https://challenges.cloudflare.com',
+                'https://www.youtube.com',
+                'https://www.youtube-nocookie.com',
+                'https://www.facebook.com',
+            ];
 
             $tracking = app(TrackingSettings::class);
 
