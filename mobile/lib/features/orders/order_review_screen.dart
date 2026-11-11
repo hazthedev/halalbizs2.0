@@ -1,12 +1,22 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import 'orders_api.dart';
+
+/// Swapped by tests.
+ImagePicker orderReviewPicker = ImagePicker();
+
+/// Web ReviewOrder limit: up to 5 photos per review (each image, max 4 MB:
+/// the API says so back in `items.N.photos` when one is too big).
+const reviewMaxPhotos = 5;
 
 /// `/orders/:id/review` — 1–5 stars + optional body per unreviewed item,
 /// optional seller rating + comment; `POST orders/{id}/review`.
@@ -22,6 +32,7 @@ class OrderReviewScreen extends ConsumerStatefulWidget {
 class _OrderReviewScreenState extends ConsumerState<OrderReviewScreen> {
   final _ratings = <int, int>{};
   final _bodies = <int, TextEditingController>{};
+  final _photos = <int, List<(XFile, Uint8List)>>{};
   int? _sellerRating;
   final _sellerComment = TextEditingController();
   bool _busy = false;
@@ -37,6 +48,19 @@ class _OrderReviewScreenState extends ConsumerState<OrderReviewScreen> {
   }
 
   TextEditingController _body(int itemId) => _bodies.putIfAbsent(itemId, TextEditingController.new);
+
+  Future<void> _pick(int itemId) async {
+    final have = _photos[itemId] ?? [];
+    final remaining = reviewMaxPhotos - have.length;
+    if (remaining <= 0) return;
+    try {
+      final files = (await orderReviewPicker.pickMultiImage(imageQuality: 80, limit: remaining)).take(remaining);
+      final added = [for (final f in files) (f, await f.readAsBytes())];
+      if (mounted) setState(() => _photos[itemId] = [...have, ...added]);
+    } catch (e) {
+      if (mounted) showApiError(context, e);
+    }
+  }
 
   Future<void> _submit(List<OrderItem> items) async {
     final l = context.l10n;
@@ -61,6 +85,7 @@ class _OrderReviewScreenState extends ConsumerState<OrderReviewScreen> {
                   'order_item_id': it.id,
                   'rating': _ratings[it.id],
                   if (_body(it.id).text.trim().isNotEmpty) 'body': _body(it.id).text.trim(),
+                  if ((_photos[it.id] ?? []).isNotEmpty) 'photos': [for (final p in _photos[it.id]!) p.$1],
                 },
             ],
             sellerRating: _sellerRating,
@@ -135,6 +160,50 @@ class _OrderReviewScreenState extends ConsumerState<OrderReviewScreen> {
                         hint: l.ordersReviewBodyHint,
                         error: fieldError(_error, 'items.$i.body'),
                       ),
+                      const SizedBox(height: SoukSpace.s3),
+                      Text(l.ordersPhotos, style: SoukText.label),
+                      const SizedBox(height: 6),
+                      Wrap(spacing: SoukSpace.s2, runSpacing: SoukSpace.s2, children: [
+                        for (var n = 0; n < (_photos[items[i].id] ?? []).length; n++)
+                          Stack(children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(SoukRadius.control),
+                              child: Image.memory(_photos[items[i].id]![n].$2, width: 72, height: 72, fit: BoxFit.cover),
+                            ),
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: InkWell(
+                                key: Key('review-photo-remove-${items[i].id}-$n'),
+                                onTap: () => setState(() => _photos[items[i].id]!.removeAt(n)),
+                                child: Container(
+                                  decoration: const BoxDecoration(color: SoukColors.overlay, shape: BoxShape.circle),
+                                  padding: const EdgeInsets.all(4),
+                                  child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ]),
+                        if ((_photos[items[i].id] ?? []).length < reviewMaxPhotos)
+                          InkWell(
+                            key: Key('review-photo-add-${items[i].id}'),
+                            onTap: () => _pick(items[i].id),
+                            borderRadius: BorderRadius.circular(SoukRadius.control),
+                            child: Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                color: SoukColors.cream,
+                                borderRadius: BorderRadius.circular(SoukRadius.control),
+                                border: Border.all(color: SoukColors.lineStrong),
+                              ),
+                              child: const Icon(Icons.add_a_photo_outlined, color: SoukColors.inkFaint),
+                            ),
+                          ),
+                      ]),
+                      const SizedBox(height: SoukSpace.s1),
+                      Text(fieldErrorAt(_error, 'items.$i.photos') ?? l.ordersPhotosHelp(reviewMaxPhotos),
+                          style: fieldErrorAt(_error, 'items.$i.photos') != null ? SoukText.error : SoukText.meta),
                     ]),
                   ),
                   const SizedBox(height: SoukSpace.s3),

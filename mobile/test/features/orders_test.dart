@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:halalbizs/core/api/api_client.dart';
 import 'package:halalbizs/features/checkout/pay_screen.dart';
+import 'package:halalbizs/features/orders/order_review_screen.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../helpers.dart';
 
@@ -318,4 +324,53 @@ void main() {
     expect(h.router.state.uri.toString(), '/orders?bucket=to-receive');
     expect(bucket, 'to-receive');
   });
+
+  testWidgets('review: photos are picked (max 5) and go up as items[i][photos][] in the multipart submit', (tester) async {
+    usePhone(tester);
+    final picker = _FakePicker([for (var i = 0; i < 6; i++) XFile.fromData(_png, name: 'p$i.png', mimeType: 'image/png')]);
+    orderReviewPicker = picker;
+    addTearDown(() => orderReviewPicker = ImagePicker());
+    FormData? sent;
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET orders/buckets': (_, _) => [],
+      'GET orders/7': (_, _) => fakeSubOrder(id: 7, status: 'completed', label: 'Completed', detail: true),
+      'POST orders/7/review': (_, body) {
+        sent = body! as FormData;
+        return fakeSubOrder(id: 7, detail: true);
+      },
+    });
+    await Harness(api: api, token: 'tok').pump(tester, location: '/orders/7/review');
+    await tester.tap(find.byKey(const Key('review-star-51-4')));
+    await tester.tap(find.byKey(const Key('review-star-52-5')));
+    await tester.tap(find.byKey(const Key('review-photo-add-51')));
+    await tester.pumpAndSettle();
+    expect(picker.limit, 5);
+    expect(find.byKey(const Key('review-photo-add-51')), findsNothing); // 5 of 5 = full
+    await tester.tap(find.byKey(const Key('review-photo-remove-51-0')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('review-photo-add-51')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('review-submit')));
+    await tester.pumpAndSettle();
+    expect(sent!.files.map((f) => f.key).toList(), List.filled(4, 'items[0][photos][]'));
+    expect(sent!.fields.map((f) => '${f.key}=${f.value}'), containsAll(['items[0][order_item_id]=51', 'items[0][rating]=4', 'items[1][rating]=5']));
+  });
+}
+
+final Uint8List _png = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
+
+class _FakePicker extends ImagePicker {
+  _FakePicker(this.files);
+
+  final List<XFile> files;
+  int? limit;
+
+  @override
+  Future<List<XFile>> pickMultiImage({double? maxWidth, double? maxHeight, int? imageQuality, int? limit, bool requestFullMetadata = true}) async {
+    this.limit = limit;
+    return files;
+  }
 }
