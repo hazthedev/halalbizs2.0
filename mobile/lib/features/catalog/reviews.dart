@@ -51,7 +51,8 @@ class ReviewsScreen extends ConsumerStatefulWidget {
 }
 
 class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
-  late final _list = PagedList<Review>((page) => ref.read(catalogApiProvider).reviews(widget.slug, page: page))..reload();
+  String? _filter; // web tab: all | photos | 5..1
+  late final _list = PagedList<Review>((page) => ref.read(catalogApiProvider).reviews(widget.slug, page: page, filter: _filter))..reload();
 
   @override
   void dispose() {
@@ -62,6 +63,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final filters = <String?, String>{null: l.reviewsFilterAll, 'photos': l.reviewsFilterPhotos, for (var n = 5; n >= 1; n--) '$n': '$n ★'};
     return ListenableBuilder(
       listenable: _list,
       builder: (context, _) => SoukPage(
@@ -76,6 +78,23 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
             : _list.last == null
                 ? const SoukSkeleton.list(rows: 4)
                 : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    Wrap(spacing: SoukSpace.s2, runSpacing: SoukSpace.s2, children: [
+                      for (final e in filters.entries)
+                        SoukChip(
+                          key: Key('reviews-filter-${e.key ?? 'all'}'),
+                          label: e.value,
+                          selected: _filter == e.key,
+                          onTap: () {
+                            _filter = e.key;
+                            _list.reload();
+                          },
+                        ),
+                    ]),
+                    if (_list.items.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: SoukSpace.s6),
+                        child: Text(l.reviewsFilterEmpty, key: const Key('reviews-filter-empty'), style: SoukText.small, textAlign: TextAlign.center),
+                      ),
                     for (final r in _list.items) ReviewTile(r),
                     LoadMoreButton(_list, key: const Key('reviews-load-more')),
                   ]),
@@ -129,6 +148,24 @@ class ReviewTile extends StatelessWidget {
                 ),
               ),
           ]),
+        ],
+        if (r.sellerReply != null) ...[
+          const SizedBox(height: SoukSpace.s3),
+          Container(
+            key: Key('review-${r.id}-reply'),
+            margin: const EdgeInsets.only(left: SoukSpace.s4),
+            padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s3, vertical: SoukSpace.s2),
+            decoration: const BoxDecoration(
+              color: SoukColors.paper,
+              borderRadius: BorderRadius.all(Radius.circular(SoukRadius.control)),
+              border: Border(left: BorderSide(color: SoukColors.lineStrong, width: 2)),
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(context.l10n.reviewsSellerResponse, style: SoukText.label),
+              const SizedBox(height: 2),
+              Text(r.sellerReply!, style: SoukText.small),
+            ]),
+          ),
         ],
       ]),
     );

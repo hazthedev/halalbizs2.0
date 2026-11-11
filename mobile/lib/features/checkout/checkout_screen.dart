@@ -36,10 +36,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String? _method;
   String? _platformCode;
   String? _shopCode;
+  String? _shippingCode; // web: a free-shipping voucher has its own slot
   bool _useCoins = false;
   int _coins = 0;
   final _platformCtl = TextEditingController();
   final _shopCtl = TextEditingController();
+  final _shippingCtl = TextEditingController();
   final _coinsCtl = TextEditingController();
   final _notes = <int, TextEditingController>{};
 
@@ -66,6 +68,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void dispose() {
     _platformCtl.dispose();
     _shopCtl.dispose();
+    _shippingCtl.dispose();
     _coinsCtl.dispose();
     for (final c in _notes.values) {
       c.dispose();
@@ -84,6 +87,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     await _requote();
   }
 
+  /// A picked option goes to the slot the web gives it: free shipping has its own.
+  void _pick(String slot, VoucherOption o, bool applied) {
+    final code = applied ? null : o.code;
+    if (o.freeShipping) {
+      _shippingCode = code;
+    } else if (slot == 'platform') {
+      _platformCode = code;
+    } else {
+      _shopCode = code;
+    }
+    _requote();
+  }
+
   Future<void> _requote() async {
     final seq = ++_seq;
     setState(() {
@@ -96,6 +112,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             paymentMethod: _method,
             platformCode: _platformCode,
             shopCode: _shopCode,
+            shippingCode: _shippingCode,
             coins: _useCoins ? _coins : 0,
           );
       if (!mounted || seq != _seq) return;
@@ -157,6 +174,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             idempotencyKey: _idempotencyKey,
             platformCode: _platformCode,
             shopCode: _shopCode,
+            shippingCode: _shippingCode,
             coins: _useCoins ? _coins : 0,
             sellerNotes: {for (final e in _notes.entries) if (e.value.text.trim().isNotEmpty) e.key: e.value.text.trim()},
           );
@@ -408,10 +426,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         slot: 'platform',
                         quote: q,
                         busy: _quoting,
-                        onPick: (code) {
-                          _platformCode = code;
-                          _requote();
-                        },
+                        onPick: (o, applied) => _pick('platform', o, applied),
                       ),
                       _VoucherField(
                         slot: 'platform',
@@ -430,10 +445,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         slot: 'shop',
                         quote: q,
                         busy: _quoting,
-                        onPick: (code) {
-                          _shopCode = code;
-                          _requote();
-                        },
+                        onPick: (o, applied) => _pick('shop', o, applied),
                       ),
                       _VoucherField(
                         slot: 'shop',
@@ -444,6 +456,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         busy: _quoting,
                         onApply: (code) {
                           _shopCode = code;
+                          _requote();
+                        },
+                      ),
+                      const SizedBox(height: SoukSpace.s3),
+                      _VoucherField(
+                        slot: 'shipping',
+                        label: l.checkoutVoucherFreeShipping,
+                        controller: _shippingCtl,
+                        quote: q,
+                        applied: _shippingCode,
+                        busy: _quoting,
+                        onApply: (code) {
+                          _shippingCode = code;
                           _requote();
                         },
                       ),
@@ -601,7 +626,7 @@ class _VoucherOptions extends StatelessWidget {
   final String slot;
   final CheckoutQuote quote;
   final bool busy;
-  final ValueChanged<String?> onPick;
+  final void Function(VoucherOption option, bool applied) onPick;
 
   @override
   Widget build(BuildContext context) {
@@ -609,12 +634,13 @@ class _VoucherOptions extends StatelessWidget {
     final options = quote.voucherOptions(slot);
     if (options.isEmpty) return const SizedBox.shrink();
     final appliedCode = asStr(quote.voucher(slot)?['code'])?.toUpperCase();
+    final shippingCode = asStr(quote.voucher('shipping')?['code'])?.toUpperCase();
     return Padding(
       padding: const EdgeInsets.only(bottom: SoukSpace.s3),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         for (final o in options)
           Builder(builder: (_) {
-            final applied = appliedCode != null && appliedCode == o.code.toUpperCase();
+            final applied = (o.freeShipping ? shippingCode : appliedCode) == o.code.toUpperCase();
             final best = slot == 'platform' && o.id == quote.bestPlatformVoucherId;
             final enabled = !busy && (applied || o.minSpendMet);
             return Padding(
@@ -622,7 +648,7 @@ class _VoucherOptions extends StatelessWidget {
               child: InkWell(
                 key: Key('checkout-voucher-option-${o.id}'),
                 borderRadius: BorderRadius.circular(SoukRadius.control),
-                onTap: enabled ? () => onPick(applied ? null : o.code) : null,
+                onTap: enabled ? () => onPick(o, applied) : null,
                 child: Opacity(
                   opacity: o.minSpendMet || applied ? 1 : 0.55,
                   child: Container(

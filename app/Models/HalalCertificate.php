@@ -117,6 +117,23 @@ class HalalCertificate extends Model implements HasMedia
         $query->where('status', CertificateStatus::Pending);
     }
 
+    /**
+     * The public register lookup, one owner for the web page and the API: the
+     * number as printed (spaces and case ignored), approved certificates only
+     * (a merely submitted one is a claim, not a record), with what the register shows.
+     */
+    public static function forRegister(string $number): ?self
+    {
+        $query = strtoupper(preg_replace('/\s+/', '', $number));
+
+        return $query === '' ? null : static::query()
+            ->approved()
+            ->with(['events', 'store'])
+            ->withCount('products')
+            ->where('number', $query)
+            ->first();
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

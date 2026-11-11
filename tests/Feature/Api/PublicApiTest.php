@@ -103,6 +103,11 @@ test('product reviews list the visible ones with the masked buyer name and selle
         ->assertJsonPath('data.1.seller_reply.body', 'Thank you!')
         ->assertJsonPath('data.1.photos', [])
         ->assertJsonStructure(['data' => [['id', 'rating', 'body', 'buyer_name', 'photos', 'created_at', 'seller_reply']]]);
+
+    // Same filter keys as the web reviews tab.
+    $this->getJson("/api/v1/products/{$product->slug}/reviews?filter=5")->assertOk()->assertJsonPath('meta.total', 1)->assertJsonPath('data.0.rating', 5);
+    $this->getJson("/api/v1/products/{$product->slug}/reviews?filter=photos")->assertOk()->assertJsonPath('meta.total', 0);
+    $this->getJson("/api/v1/products/{$product->slug}/reviews?filter=bogus")->assertOk()->assertJsonPath('meta.total', 2);
 });
 
 test('products filters: category with descendants, store, price band and sort', function () {

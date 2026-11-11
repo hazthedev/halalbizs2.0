@@ -70,8 +70,8 @@ class AccountApi {
 
   /// `POST me/web-sign-in-link {to}` → a 5-minute, single-use URL that opens
   /// the web page already signed in as this user.
-  Future<String> webSignInLink(String to) async =>
-      asStr(asMap(await _api.post('me/web-sign-in-link', body: {'to': to}))['url']) ?? '';
+  Future<String> webSignInLink(String to, {int? id}) async =>
+      asStr(asMap(await _api.post('me/web-sign-in-link', body: {'to': to, 'id': ?id}))['url']) ?? '';
 
   /// `PUT me/password {current_password, password, password_confirmation}`.
   /// Every token is revoked server-side; the answer carries this device's fresh one.

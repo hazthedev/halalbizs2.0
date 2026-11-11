@@ -103,12 +103,12 @@ class CatalogController extends Controller
         };
     }
 
-    /** Visible reviews, newest first — the PDP reviews tab without its filters. */
-    public function reviews(Product $product): JsonResponse
+    /** Visible reviews, newest first; `?filter=photos|1..5` as the PDP reviews tab. */
+    public function reviews(Request $request, Product $product): JsonResponse
     {
         abort_unless($product->isLive(), 404);
 
-        $reviews = $product->reviews()->visible()
+        $reviews = $product->reviews()->visible()->filtered($request->query('filter'))
             ->with(['user', 'media'])
             ->latest()
             ->latest('id')

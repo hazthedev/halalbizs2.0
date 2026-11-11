@@ -43,4 +43,29 @@ void main() {
     expect(body['bank'], {'bank_name': 'Bank Islam', 'account_name': 'Goodwin Ltd', 'account_number': '123456789012'});
     expect(find.text('Store saved'), findsOneWidget);
   });
+
+  testWidgets('Halal certificates and Vouchers open the one-time seller web links', (tester) async {
+    usePhone(tester);
+    final tos = <Object?>[];
+    final api = FakeApi(routes: {
+      ...sellerBaseRoutes(),
+      'GET seller/store': (_, _) => fakeStore(),
+      'GET seller/reviews': (_, _) => [],
+      'POST me/web-sign-in-link': (_, body) {
+        tos.add((body as Map)['to']);
+        return {'url': 'https://web.test/app/sign-in?to=${body['to']}', 'expires_at': '2026-11-10T12:05:00Z'};
+      },
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller/store');
+
+    for (final key in ['seller-store-certificates', 'seller-store-vouchers']) {
+      await tester.scrollUntilVisible(find.byKey(Key(key)), 300, scrollable: find.descendant(of: find.byKey(const Key('souk-page-scroll')), matching: find.byType(Scrollable)).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(Key(key)));
+      await tester.pumpAndSettle();
+    }
+    expect(tos, ['seller-certificates', 'seller-vouchers']);
+    expect(h.browser.opened.length, 2);
+  });
 }

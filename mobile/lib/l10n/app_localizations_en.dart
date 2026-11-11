@@ -1890,4 +1890,121 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get followedShopsEmptyBody => 'Follow a shop to see it here.';
+
+  @override
+  String get reviewsFilterAll => 'All';
+
+  @override
+  String get reviewsFilterPhotos => 'With photos';
+
+  @override
+  String get reviewsFilterEmpty => 'No reviews match this filter yet.';
+
+  @override
+  String get reviewsSellerResponse => 'Seller response';
+
+  @override
+  String get legalAndAbout => 'Legal & about';
+
+  @override
+  String get legalAboutUs => 'About us';
+
+  @override
+  String get legalTrustSafety => 'Trust & safety';
+
+  @override
+  String get legalFaq => 'FAQ';
+
+  @override
+  String get legalRefundPolicy => 'Refund policy';
+
+  @override
+  String get legalTerms => 'Terms & conditions';
+
+  @override
+  String get legalPrivacy => 'Privacy policy';
+
+  @override
+  String get helpAndSupport => 'Help & support';
+
+  @override
+  String get ordersDownloadInvoice => 'Download invoice';
+
+  @override
+  String get sellerHalalCertificates => 'Halal certificates';
+
+  @override
+  String get sellerVouchers => 'Vouchers';
+
+  @override
+  String get certRegister => 'Certificate register';
+
+  @override
+  String get certValid => 'Valid certificate';
+
+  @override
+  String get certNotValid => 'Certificate not valid';
+
+  @override
+  String get certIssuingBody => 'Issuing body';
+
+  @override
+  String get certHolder => 'Certificate holder';
+
+  @override
+  String get certSchemeScope => 'Scheme & scope';
+
+  @override
+  String get certValidity => 'Validity';
+
+  @override
+  String get certFacility => 'Facility';
+
+  @override
+  String get certCoveredSkus => 'Covered SKUs';
+
+  @override
+  String get certDedicated => 'Dedicated halal facility';
+
+  @override
+  String get certExport => 'Export paperwork included';
+
+  @override
+  String get certAuditTrail => 'Audit trail';
+
+  @override
+  String get certBound =>
+      'This certificate is bound to the SKUs its scope names, not to the whole shop.';
+
+  @override
+  String get certNoRecord => 'No record';
+
+  @override
+  String get certNoRecordBody =>
+      'No certificate on this marketplace carries that number. Check the digits, or report the listing that showed it.';
+
+  @override
+  String certDaysRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days remaining',
+      one: '$count day remaining',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String certSeeSkus(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'See the $count covered SKUs',
+      one: 'See the covered SKU',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ordersReviewedTag => 'Reviewed ✓';
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/in_app_browser.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import 'models.dart';
@@ -102,7 +102,7 @@ class HalalPanel extends ConsumerWidget {
               compact: true,
               requiresOnline: true,
               icon: FontAwesomeIcons.arrowUpRightFromSquare,
-              onPressed: () => ref.read(inAppBrowserProvider).open(url),
+              onPressed: () => context.push('/certificate/${Uri.encodeComponent(cert.number)}'),
             ),
           ],
         ],

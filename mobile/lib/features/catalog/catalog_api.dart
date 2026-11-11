@@ -105,9 +105,10 @@ class CatalogApi {
   /// the buyer's own signals; never snapshotted, so a cached feed cannot cross accounts.
   Future<List<Product>> recommended() async => asMapList(await _api.get('recommended')).map(Product.new).toList();
 
-  /// `GET products/{slug}/reviews`: visible reviews, newest first, 10 a page.
-  Future<PageOf<Review>> reviews(String slug, {int page = 1}) async {
-    final r = await _repo.getJson('products/${Uri.encodeComponent(slug)}/reviews', query: {if (page > 1) 'page': page});
+  /// `GET products/{slug}/reviews`: visible reviews, newest first, 10 a page;
+  /// `filter` = the web tab's `photos` | `1`..`5` (null = all).
+  Future<PageOf<Review>> reviews(String slug, {int page = 1, String? filter}) async {
+    final r = await _repo.getJson('products/${Uri.encodeComponent(slug)}/reviews', query: {if (page > 1) 'page': page, 'filter': ?filter});
     return (items: asMapList(r.data).map(Review.new).toList(), meta: PageMeta(r.meta), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
   }
 

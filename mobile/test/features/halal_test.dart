@@ -70,6 +70,13 @@ void main() {
       'GET products': (_, _) => [],
       'GET categories': (_, _) => [],
       'GET products/madu-tualang': (_, _) => halalProduct(halal: fakeHalal()),
+      'GET certificates/MY-JKM-2140-118': (_, _) => {
+            'number': 'MY-JKM-2140-118', 'valid': true, 'days_remaining': 365, 'issuing_body': 'JAKIM',
+            'issuing_body_name': 'Department of Islamic Development Malaysia', 'holder_name': 'Kedai Madu Sdn Bhd', 'holder_state': 'Pahang',
+            'scheme': 'MS 1500:2019', 'scope_note': 'raw honey', 'valid_from': '2026-01-07', 'valid_to': '2029-01-07',
+            'facility': 'Kuala Terengganu plant', 'products_count': 3, 'dedicated_facility': true, 'export_paperwork': false,
+            'store_slug': 'kedai-madu', 'events': [{'occurred_on': '2026-01-05', 'summary': 'Surveillance audit passed'}],
+          },
     });
     final h = Harness(api: api);
     await h.pump(tester, location: '/p/madu-tualang');
@@ -93,8 +100,15 @@ void main() {
 
     await tester.scrollUntilVisible(find.byKey(const Key('halal-read-record')), -200);
     await tester.tap(find.byKey(const Key('halal-read-record')));
-    await tester.pump();
-    expect(h.browser.opened, ['https://halalbizs2.0.test/certificate-register?no=MY-JKM-2140-118']);
+    await tester.pumpAndSettle();
+    expect(h.browser.opened, isEmpty, reason: 'native screen, not the browser');
+    expect(find.byKey(const Key('cert-verdict-valid')), findsOneWidget);
+    expect(find.text('JAKIM — Department of Islamic Development Malaysia'), findsOneWidget);
+    expect(find.text('Kedai Madu Sdn Bhd · Pahang'), findsOneWidget);
+    expect(find.text('MS 1500:2019 — raw honey'), findsOneWidget);
+    expect(find.text('7 Jan 2026 → 7 Jan 2029 · 365 days remaining'), findsOneWidget);
+    expect(find.text('Surveillance audit passed'), findsOneWidget);
+    expect(find.text('See the 3 covered SKUs'), findsOneWidget);
   });
 
   testWidgets('a lapsed certificate reads lapsed in the panel and the expiry row', (tester) async {

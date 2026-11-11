@@ -3469,6 +3469,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Follow a shop to see it here.'**
   String get followedShopsEmptyBody;
+
+  /// No description provided for @reviewsFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get reviewsFilterAll;
+
+  /// No description provided for @reviewsFilterPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'With photos'**
+  String get reviewsFilterPhotos;
+
+  /// No description provided for @reviewsFilterEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews match this filter yet.'**
+  String get reviewsFilterEmpty;
+
+  /// No description provided for @reviewsSellerResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller response'**
+  String get reviewsSellerResponse;
+
+  /// No description provided for @legalAndAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal & about'**
+  String get legalAndAbout;
+
+  /// No description provided for @legalAboutUs.
+  ///
+  /// In en, this message translates to:
+  /// **'About us'**
+  String get legalAboutUs;
+
+  /// No description provided for @legalTrustSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust & safety'**
+  String get legalTrustSafety;
+
+  /// No description provided for @legalFaq.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ'**
+  String get legalFaq;
+
+  /// No description provided for @legalRefundPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund policy'**
+  String get legalRefundPolicy;
+
+  /// No description provided for @legalTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & conditions'**
+  String get legalTerms;
+
+  /// No description provided for @legalPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get legalPrivacy;
+
+  /// No description provided for @helpAndSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & support'**
+  String get helpAndSupport;
+
+  /// No description provided for @ordersDownloadInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Download invoice'**
+  String get ordersDownloadInvoice;
+
+  /// No description provided for @sellerHalalCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Halal certificates'**
+  String get sellerHalalCertificates;
+
+  /// No description provided for @sellerVouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'Vouchers'**
+  String get sellerVouchers;
+
+  /// No description provided for @certRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate register'**
+  String get certRegister;
+
+  /// No description provided for @certValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid certificate'**
+  String get certValid;
+
+  /// No description provided for @certNotValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate not valid'**
+  String get certNotValid;
+
+  /// No description provided for @certIssuingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Issuing body'**
+  String get certIssuingBody;
+
+  /// No description provided for @certHolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate holder'**
+  String get certHolder;
+
+  /// No description provided for @certSchemeScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheme & scope'**
+  String get certSchemeScope;
+
+  /// No description provided for @certValidity.
+  ///
+  /// In en, this message translates to:
+  /// **'Validity'**
+  String get certValidity;
+
+  /// No description provided for @certFacility.
+  ///
+  /// In en, this message translates to:
+  /// **'Facility'**
+  String get certFacility;
+
+  /// No description provided for @certCoveredSkus.
+  ///
+  /// In en, this message translates to:
+  /// **'Covered SKUs'**
+  String get certCoveredSkus;
+
+  /// No description provided for @certDedicated.
+  ///
+  /// In en, this message translates to:
+  /// **'Dedicated halal facility'**
+  String get certDedicated;
+
+  /// No description provided for @certExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export paperwork included'**
+  String get certExport;
+
+  /// No description provided for @certAuditTrail.
+  ///
+  /// In en, this message translates to:
+  /// **'Audit trail'**
+  String get certAuditTrail;
+
+  /// No description provided for @certBound.
+  ///
+  /// In en, this message translates to:
+  /// **'This certificate is bound to the SKUs its scope names, not to the whole shop.'**
+  String get certBound;
+
+  /// No description provided for @certNoRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'No record'**
+  String get certNoRecord;
+
+  /// No description provided for @certNoRecordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No certificate on this marketplace carries that number. Check the digits, or report the listing that showed it.'**
+  String get certNoRecordBody;
+
+  /// No description provided for @certDaysRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} day remaining} other{{count} days remaining}}'**
+  String certDaysRemaining(int count);
+
+  /// No description provided for @certSeeSkus.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{See the covered SKU} other{See the {count} covered SKUs}}'**
+  String certSeeSkus(int count);
+
+  /// No description provided for @ordersReviewedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed ✓'**
+  String get ordersReviewedTag;
 }
 
 class _AppLocalizationsDelegate

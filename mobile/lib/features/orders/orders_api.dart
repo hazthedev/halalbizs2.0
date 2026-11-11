@@ -43,6 +43,9 @@ class SubOrder {
   bool get canPayNow => status == 'pending_payment' && paymentMethod != 'cod' && paymentStatus == 'pending';
   bool get canBuyAgain => status == 'completed';
 
+  /// Web order page: an invoice exists from confirmed onwards, never for unpaid or cancelled.
+  bool get canInvoice => status != 'pending_payment' && status != 'cancelled';
+
   /// `{id, status, reason, created_at}` or null.
   Map<String, dynamic>? get returnRequest => json['return_request'] is Map ? asMap(json['return_request']) : null;
 
@@ -137,18 +140,30 @@ class OrdersApi {
     await _api.post('orders/$id/return', body: form);
   }
 
-  /// `POST orders/{id}/review {items[{order_item_id, rating, body?}], seller_rating?, seller_comment?}`.
+  /// Multipart `POST orders/{id}/review`: `items[i][order_item_id|rating|body|photos[]]`
+  /// (item map key `photos` = `List<XFile>`), `seller_rating?`, `seller_comment?`.
   Future<SubOrder> submitReview(
     int id, {
     required List<Map<String, dynamic>> items,
     int? sellerRating,
     String? sellerComment,
-  }) async =>
-      SubOrder(asMap(await _api.post('orders/$id/review', body: {
-        'items': items,
-        'seller_rating': ?sellerRating,
-        'seller_comment': ?sellerComment,
-      })));
+  }) async {
+    final form = FormData();
+    for (var i = 0; i < items.length; i++) {
+      for (final e in items[i].entries) {
+        if (e.key == 'photos') {
+          for (final p in e.value as List<XFile>) {
+            form.files.add(MapEntry('items[$i][photos][]', MultipartFile.fromBytes(await p.readAsBytes(), filename: p.name)));
+          }
+        } else {
+          form.fields.add(MapEntry('items[$i][${e.key}]', '${e.value}'));
+        }
+      }
+    }
+    if (sellerRating != null) form.fields.add(MapEntry('seller_rating', '$sellerRating'));
+    if (sellerComment != null) form.fields.add(MapEntry('seller_comment', sellerComment));
+    return SubOrder(asMap(await _api.post('orders/$id/review', body: form)));
+  }
 }
 
 final ordersApiProvider = Provider<OrdersApi>((ref) => OrdersApi(ref.watch(apiClientProvider), ref.watch(offlineRepoProvider)));

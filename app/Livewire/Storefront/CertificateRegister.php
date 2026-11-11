@@ -32,26 +32,12 @@ class CertificateRegister extends Component
 
     public function render()
     {
-        $query = strtoupper(preg_replace('/\s+/', '', $this->number));
-
-        // approved() only. This register is a PUBLIC trust surface — a
-        // certificate a seller has merely submitted is a claim, and rendering
-        // it here with its validity dates and assurance pills would publish
-        // that claim as though we had checked it (H-6).
-        $certificate = $query === '' ? null : HalalCertificate::query()
-            ->approved()
-            ->with(['events', 'store'])
-            ->withCount('products')
-            // The input is already uppercased at :35 and `number` is a plain
-            // uniquely-indexed VARCHAR with a case-insensitive collation, so the
-            // SQL-side UPPER() only defeated the index — on an unauthenticated
-            // route anyone can hit.
-            ->where('number', $query)
-            ->first();
+        // approved() only (H-6): see HalalCertificate::forRegister.
+        $certificate = HalalCertificate::forRegister($this->number);
 
         return view('livewire.storefront.certificate-register', [
             'certificate' => $certificate,
-            'searched' => $query !== '',
+            'searched' => trim($this->number) !== '',
             'bodies' => HalalCertificate::BODIES,
         ])->title(__('Certificate register'));
     }

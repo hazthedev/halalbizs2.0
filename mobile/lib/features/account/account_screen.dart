@@ -4,7 +4,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/session.dart';
-import '../../core/in_app_browser.dart';
 import '../../core/locale.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
@@ -16,8 +15,10 @@ import 'addresses_screen.dart';
 import 'coins_screen.dart';
 import 'delete_account_screen.dart';
 import 'followed_shops_screen.dart';
+import 'legal_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
+import 'web_link.dart';
 import 'wishlist_screen.dart';
 
 /// Account tab root: signed-in header + menu rows to the sub-pages.
@@ -116,6 +117,8 @@ class AccountScreen extends ConsumerWidget {
                 trailing: unreadMessages > 0 ? SoukBadge('$unreadMessages', status: 'sale') : null,
                 onTap: () => context.push('/account/messages'),
               ),
+              SoukRow(key: const Key('account-support'), icon: FontAwesomeIcons.headset, label: l.helpAndSupport, onTap: () => openWebPage(context, ref, 'support')),
+              SoukRow(key: const Key('account-legal'), icon: FontAwesomeIcons.fileLines, label: l.legalAndAbout, onTap: () => context.push('/account/legal')),
               SoukRow(key: const Key('account-language'), icon: FontAwesomeIcons.language, label: l.language, onTap: () => context.push('/account/language')),
             ]),
           ),
@@ -141,16 +144,8 @@ class AccountScreen extends ConsumerWidget {
     );
   }
 
-  /// Web seller sign-up, already signed in: a one-time link from the API,
-  /// opened in the in-app browser sheet.
-  static Future<void> _becomeSeller(BuildContext context, WidgetRef ref) async {
-    try {
-      final url = await ref.read(accountApiProvider).webSignInLink('seller-apply');
-      await ref.read(inAppBrowserProvider).open(url);
-    } catch (e) {
-      if (context.mounted) showApiError(context, e);
-    }
-  }
+  /// Web seller sign-up, already signed in (one-time link, in-app browser).
+  static Future<void> _becomeSeller(BuildContext context, WidgetRef ref) => openWebPage(context, ref, 'seller-apply');
 }
 
 /// Four order shortcuts with counts (web account dashboard: To Pay / To Ship /
@@ -264,4 +259,5 @@ List<RouteBase> get accountSubRoutes => [
       GoRoute(path: 'messages', builder: (_, _) => const ConversationsScreen(), routes: messagesSubRoutes),
       GoRoute(path: 'delete', builder: (_, _) => const DeleteAccountScreen()),
       GoRoute(path: 'language', builder: (_, _) => const LanguageScreen()),
+      GoRoute(path: 'legal', builder: (_, _) => const LegalScreen()),
     ];

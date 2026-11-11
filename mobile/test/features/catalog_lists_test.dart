@@ -87,6 +87,31 @@ void main() {
       expect(find.byKey(const Key('review-12')), findsOneWidget);
     });
 
+    testWidgets('reviews list shows the seller reply and the filter chips send the web filter key', (tester) async {
+      usePhone(tester);
+      final api = FakeApi(routes: {
+        'GET products': (_, _) => [],
+        'GET categories': (_, _) => [],
+        'GET products/madu-tualang': (_, _) => fakeProduct(),
+        'GET products/madu-tualang/reviews': (q, _) => q?['filter'] == 'photos'
+            ? []
+            : [
+                {..._review(1), 'seller_reply': {'body': 'Thank you!', 'at': null}},
+                _review(2),
+              ],
+      }, meta: {'page': 1, 'per_page': 10, 'total': 2, 'last_page': 1});
+      await Harness(api: api).pump(tester, location: '/p/madu-tualang/reviews');
+      expect(find.byKey(const Key('review-1-reply')), findsOneWidget);
+      expect(find.text('Seller response'), findsOneWidget);
+      expect(find.text('Thank you!'), findsOneWidget);
+      expect(find.byKey(const Key('review-2-reply')), findsNothing);
+
+      await tester.tap(find.byKey(const Key('reviews-filter-photos')));
+      await tester.pumpAndSettle();
+      expect(api.calls, contains('GET products/madu-tualang/reviews?filter=photos'));
+      expect(find.byKey(const Key('reviews-filter-empty')), findsOneWidget);
+    });
+
     testWidgets('no reviews: no section, and a failed reviews call never breaks the product page', (tester) async {
       usePhone(tester);
       final api = FakeApi(routes: {

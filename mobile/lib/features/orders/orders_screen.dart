@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/locale.dart';
@@ -210,6 +211,28 @@ class OrderCard extends StatelessWidget {
           Text('${l.ordersTotal}: ', style: SoukText.small),
           PriceText(o.totalSen),
         ]),
+        // Web Completed card: Review button, or "Reviewed ✓" once every item has one.
+        if (o.canReview) ...[
+          const SizedBox(height: SoukSpace.s3),
+          Align(
+            alignment: Alignment.centerRight,
+            child: SoukButton(
+              key: Key('order-card-review-${o.id}'),
+              label: l.ordersWriteReview,
+              icon: FontAwesomeIcons.star,
+              variant: SoukButtonVariant.secondary,
+              compact: true,
+              requiresOnline: true,
+              onPressed: () => context.push('/orders/${o.id}/review'),
+            ),
+          ),
+        ] else if (o.status == 'completed' && o.items.isNotEmpty && o.items.every((i) => i.reviewed)) ...[
+          const SizedBox(height: SoukSpace.s2),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(l.ordersReviewedTag, key: Key('order-card-reviewed-${o.id}'), style: SoukText.small.copyWith(color: SoukColors.inkFaint)),
+          ),
+        ],
       ]),
     );
   }

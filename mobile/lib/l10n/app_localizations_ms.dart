@@ -1889,4 +1889,116 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get followedShopsEmptyBody => 'Ikuti kedai untuk melihatnya di sini.';
+
+  @override
+  String get reviewsFilterAll => 'Semua';
+
+  @override
+  String get reviewsFilterPhotos => 'Dengan foto';
+
+  @override
+  String get reviewsFilterEmpty =>
+      'Belum ada ulasan yang sepadan dengan penapis ini.';
+
+  @override
+  String get reviewsSellerResponse => 'Respons penjual';
+
+  @override
+  String get legalAndAbout => 'Undang-undang & tentang';
+
+  @override
+  String get legalAboutUs => 'Tentang kami';
+
+  @override
+  String get legalTrustSafety => 'Kepercayaan & keselamatan';
+
+  @override
+  String get legalFaq => 'Soalan lazim';
+
+  @override
+  String get legalRefundPolicy => 'Dasar bayaran balik';
+
+  @override
+  String get legalTerms => 'Terma dan syarat';
+
+  @override
+  String get legalPrivacy => 'Dasar privasi';
+
+  @override
+  String get helpAndSupport => 'Bantuan & sokongan';
+
+  @override
+  String get ordersDownloadInvoice => 'Muat turun invois';
+
+  @override
+  String get sellerHalalCertificates => 'Sijil halal';
+
+  @override
+  String get sellerVouchers => 'Baucar';
+
+  @override
+  String get certRegister => 'Daftar sijil';
+
+  @override
+  String get certValid => 'Sijil sah';
+
+  @override
+  String get certNotValid => 'Sijil tidak sah';
+
+  @override
+  String get certIssuingBody => 'Badan pengeluar';
+
+  @override
+  String get certHolder => 'Pemegang sijil';
+
+  @override
+  String get certSchemeScope => 'Skim dan skop';
+
+  @override
+  String get certValidity => 'Tempoh sah';
+
+  @override
+  String get certFacility => 'Kemudahan';
+
+  @override
+  String get certCoveredSkus => 'SKU diliputi';
+
+  @override
+  String get certDedicated => 'Kemudahan halal khusus';
+
+  @override
+  String get certExport => 'Dokumen eksport disertakan';
+
+  @override
+  String get certAuditTrail => 'Jejak audit';
+
+  @override
+  String get certBound =>
+      'Sijil ini terikat pada SKU yang dinyatakan dalam skopnya, bukan seluruh kedai.';
+
+  @override
+  String get certNoRecord => 'Tiada rekod';
+
+  @override
+  String get certNoRecordBody =>
+      'Tiada sijil di pasaran ini menggunakan nombor tersebut. Semak digitnya atau laporkan penyenaraian yang memaparkannya.';
+
+  @override
+  String certDaysRemaining(int count) {
+    return 'Tinggal $count hari';
+  }
+
+  @override
+  String certSeeSkus(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Lihat $count SKU yang diliputi',
+      one: 'Lihat SKU yang diliputi',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ordersReviewedTag => 'Telah diulas ✓';
 }

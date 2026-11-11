@@ -421,4 +421,49 @@ void main() {
     await tester.pumpAndSettle();
     expect(bodies.last['platform_code'], 'TYPED1');
   });
+
+  testWidgets('free-shipping voucher: a picked free-shipping option and the typed field both go as shipping_code', (tester) async {
+    usePhone(tester);
+    final bodies = <Map>[];
+    final api = FakeApi(routes: checkoutRoutes({
+      'POST checkout/quote': (_, body) {
+        final b = body as Map;
+        bodies.add(b);
+        final q = fakeQuote();
+        q['voucher_options'] = {
+          'platform': [
+            {'id': 7, 'code': 'SHIPFREE', 'label': 'Free shipping label', 'store_name': null, 'min_spend_sen': 0, 'min_spend_met': true, 'short_by_sen': 0, 'discount_sen': 0, 'free_shipping': true},
+          ],
+          'shop': [],
+          'best_platform_voucher_id': null,
+        };
+        q['vouchers'] = {
+          'platform': null,
+          'shop': null,
+          'shipping': b['shipping_code'] == null ? null : {'id': 7, 'code': b['shipping_code'], 'type': 'free_shipping', 'discount_sen': 800},
+        };
+        return q;
+      },
+    }));
+    await Harness(api: api, token: 'tok').pump(tester, location: '/checkout');
+    expect(bodies.last['shipping_code'], isNull);
+
+    await centre(tester, find.byKey(const Key('checkout-voucher-option-7')));
+    await tester.tap(find.byKey(const Key('checkout-voucher-option-7')));
+    await tester.pumpAndSettle();
+    expect(bodies.last['shipping_code'], 'SHIPFREE');
+    expect(bodies.last['platform_code'], isNull, reason: 'free shipping never takes the platform slot');
+    expect(find.descendant(of: find.byKey(const Key('checkout-voucher-option-7')), matching: find.text('APPLIED')), findsOneWidget);
+
+    await centre(tester, find.byKey(const Key('checkout-voucher-option-7')));
+    await tester.tap(find.byKey(const Key('checkout-voucher-option-7')));
+    await tester.pumpAndSettle();
+    expect(bodies.last['shipping_code'], isNull);
+
+    await tester.enterText(find.byKey(const Key('checkout-shipping-code')), 'TYPEDSHIP');
+    await centre(tester, find.byKey(const Key('checkout-shipping-apply')));
+    await tester.tap(find.byKey(const Key('checkout-shipping-apply')));
+    await tester.pumpAndSettle();
+    expect(bodies.last['shipping_code'], 'TYPEDSHIP');
+  });
 }
