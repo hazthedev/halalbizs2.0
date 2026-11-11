@@ -47,3 +47,21 @@ it('shows recently viewed products once ids are hydrated from localStorage', fun
         ->assertSee('Recently viewed')
         ->assertSee('Halal Beef Jerky');
 });
+
+it('puts the banner right under the header when it is the first section (Haze 2026-11-11)', function () {
+    HomeSection::create(['type' => 'banner', 'title' => ['en' => 'Promos'], 'position' => 0, 'is_active' => true]);
+    \App\Models\Banner::create(['title' => ['en' => 'Sale'], 'position' => 0, 'is_active' => true]);
+
+    $this->get('/')->assertOk()
+        ->assertSee('<section class="w-full" aria-label="Promotions"', false)
+        ->assertDontSee('pt-6 sm:pt-8" aria-label="Promotions"', false);
+});
+
+it('keeps the banner top gap when another section sits above it', function () {
+    HomeSection::create(['type' => 'recently_viewed', 'title' => ['en' => 'Recently viewed'], 'position' => 0, 'is_active' => true]);
+    HomeSection::create(['type' => 'banner', 'title' => ['en' => 'Promos'], 'position' => 1, 'is_active' => true]);
+    \App\Models\Banner::create(['title' => ['en' => 'Sale'], 'position' => 0, 'is_active' => true]);
+
+    $this->get('/')->assertOk()
+        ->assertSee('<section class="w-full pt-6 sm:pt-8" aria-label="Promotions"', false);
+});

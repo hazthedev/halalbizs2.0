@@ -29,7 +29,7 @@
             @case('banner')
                 {{-- Full-bleed: no max-w, no side padding, no frame. The banner is the
                      image itself, edge to edge, so nothing competes with it. --}}
-                <section class="w-full pt-6 sm:pt-8" aria-label="{{ __('Promotions') }}" wire:key="section-{{ $section->id }}">
+                <section @class(['w-full', 'pt-6 sm:pt-8' => $heroUrl || ! $loop->first]) aria-label="{{ __('Promotions') }}" wire:key="section-{{ $section->id }}">
                     <div
                         wire:ignore
                         x-data="{ active: 0 }"
