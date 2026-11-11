@@ -6,6 +6,7 @@ import '../../core/api/json.dart';
 import '../../core/auth/session.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
+import '../account/inbox_actions.dart';
 import '../seller_shared/models.dart';
 import '../seller_shared/seller_api.dart';
 import '../seller_shared/seller_kit.dart';
@@ -32,7 +33,7 @@ class SellerDashboardScreen extends ConsumerWidget {
 
     return SoukPage(
       title: storeName ?? l.sellerTabDashboard,
-      actions: const [SellerBackToBuying()],
+      actions: const [InboxActions(), SellerBackToBuying()],
       showBack: false,
       scrollable: true,
       onRefresh: () => _refresh(ref),

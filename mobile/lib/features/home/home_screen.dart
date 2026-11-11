@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
+import '../account/inbox_actions.dart';
 import '../catalog/catalog_api.dart';
 import '../catalog/models.dart';
 
@@ -33,6 +34,7 @@ class HomeScreen extends ConsumerWidget {
     return SoukPage(
       title: l.appName,
       brandMark: true,
+      actions: const [InboxActions()],
       scrollable: true,
       onRefresh: () => _refresh(ref),
       fromCache: feed?.fromCache ?? false,
