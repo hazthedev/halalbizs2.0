@@ -9,6 +9,9 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Voucher;
+use App\Enums\VoucherScope;
+use App\Enums\VoucherType;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\Ipay88Service;
@@ -373,4 +376,19 @@ test('the app return page hands back to the app by itself so the in-app browser 
         ->assertOk()
         ->assertSee('location.replace("halalbizs:\/\/pay\/'.$order->order_no.'")', false)
         ->assertSee('href="halalbizs://pay/'.$order->order_no.'"', false);
+});
+
+test('POST checkout/quote applies a free-shipping voucher sent as shipping_code', function () {
+    [$user, $address, $client] = apiCheckoutBuyer();
+    $product = apiCheckoutCart($user, 1);
+    $product->store->update(['shipping_mode' => 'flat', 'shipping_flat_fee_sen' => 700, 'free_shipping_over_sen' => null]);
+    Voucher::create([
+        'scope' => VoucherScope::Platform, 'code' => 'FREESHIP', 'type' => VoucherType::FreeShipping,
+        'quota' => 5, 'per_user_limit' => 1, 'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'is_active' => true,
+    ]);
+
+    $client->postJson('/api/v1/checkout/quote', ['address_id' => $address->id, 'shipping_code' => 'FREESHIP'])
+        ->assertOk()
+        ->assertJsonPath('data.vouchers.shipping.code', 'FREESHIP')
+        ->assertJsonPath('data.shipping_total_sen', 0);
 });
