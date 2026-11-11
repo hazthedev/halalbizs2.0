@@ -22,6 +22,10 @@ class Product {
   int get reviewCount => asInt(json['review_count'] ?? asMap(json['reviews'])['count']) ?? 0;
   String? get image => asStr(json['image']);
 
+  /// The product's store has a session live now (`store_live`); [liveSlug] is its room.
+  bool get storeLive => asBool(json['store_live']) && liveSlug != null;
+  String? get liveSlug => asStr(json['live_slug']);
+
   /// Gallery: `images[{large, card}]` (detail only) in the seller's order,
   /// else the single `image`.
   List<String> get images => _gallery('card');
@@ -232,6 +236,10 @@ class Store {
   /// Per caller (bearer token); false for guests.
   bool get isFollowing => asBool(json['is_following']);
 
+  /// Live now (`store_live` + `live_slug`): the header shows the LIVE badge.
+  bool get storeLive => asBool(json['store_live']) && liveSlug != null;
+  String? get liveSlug => asStr(json['live_slug']);
+
   /// Approval date (else created), as the web store page's "Joined".
   DateTime? get joinedAt => asDate(json['joined_at']);
 }
@@ -319,4 +327,16 @@ class FlashItem {
     final sen = v == null ? null : v.regularPriceSen ?? v.priceSen;
     return sen != null && sen > priceSen ? sen : null;
   }
+}
+
+/// One row of `GET live`: a session streaming now. Watched in the web room.
+class LiveSession {
+  LiveSession(this.json);
+
+  final Map<String, dynamic> json;
+
+  String get slug => asStr(json['slug']) ?? '';
+  String get title => asStr(json['title']) ?? '';
+  String get storeName => asStr(json['store_name']) ?? '';
+  String? get thumbnail => asStr(json['thumbnail']);
 }

@@ -825,5 +825,8 @@
   "certNoRecordBody": "Tiada sijil di pasaran ini menggunakan nombor tersebut. Semak digitnya atau laporkan penyenaraian yang memaparkannya.",
   "certDaysRemaining": "Tinggal {count} hari",
   "certSeeSkus": "{count, plural, =1{Lihat SKU yang diliputi} other{Lihat {count} SKU yang diliputi}}",
-  "ordersReviewedTag": "Telah diulas ✓"
+  "ordersReviewedTag": "Telah diulas ✓",
+  "liveBadge": "Siaran Langsung",
+  "liveNowTitle": "Siaran langsung sekarang",
+  "liveByStore": "{store}"
 }

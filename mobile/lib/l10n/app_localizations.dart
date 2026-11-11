@@ -3667,6 +3667,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reviewed ✓'**
   String get ordersReviewedTag;
+
+  /// No description provided for @liveBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get liveBadge;
+
+  /// No description provided for @liveNowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live now'**
+  String get liveNowTitle;
+
+  /// No description provided for @liveByStore.
+  ///
+  /// In en, this message translates to:
+  /// **'{store}'**
+  String liveByStore(String store);
 }
 
 class _AppLocalizationsDelegate
