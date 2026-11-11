@@ -48,6 +48,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   /// 409 `checkout_failed` from the last attempt: `fields` keyed by variant id.
   ApiException? _placeError;
   bool _quoting = false;
+  // The server's best platform voucher is preselected once, on the first quote.
+  bool _bestChecked = false;
   bool _placing = false;
   // One key per attempt; a retry after a timeout reuses it, a placed order renews it.
   String _idempotencyKey = newIdempotencyKey();
@@ -98,6 +100,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (!mounted || seq != _seq) return;
       setState(() {
         _quote = q;
+        final best = q.voucherOptions('platform').where((o) => o.id == q.bestPlatformVoucherId && o.minSpendMet).firstOrNull;
+        if (!_bestChecked) {
+          _bestChecked = true;
+          if (_platformCode == null && best != null) {
+            _platformCode = best.code;
+            Future.microtask(_requote);
+          }
+        }
         // First quote: default to the first available method; keep the server's echo otherwise.
         _method ??= q.paymentMethods.where((m) => m.available).firstOrNull?.method;
         if (_useCoins && q.coinsRedeemed != _coins && q.coinsRedeemed > 0) {
@@ -391,6 +401,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     title: l.checkoutVouchers,
                     icon: FontAwesomeIcons.ticket,
                     child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                      _VoucherOptions(
+                        slot: 'platform',
+                        quote: q,
+                        busy: _quoting,
+                        onPick: (code) {
+                          _platformCode = code;
+                          _requote();
+                        },
+                      ),
                       _VoucherField(
                         slot: 'platform',
                         label: l.checkoutPlatformVoucher,
@@ -404,6 +423,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         },
                       ),
                       const SizedBox(height: SoukSpace.s3),
+                      _VoucherOptions(
+                        slot: 'shop',
+                        quote: q,
+                        busy: _quoting,
+                        onPick: (code) {
+                          _shopCode = code;
+                          _requote();
+                        },
+                      ),
                       _VoucherField(
                         slot: 'shop',
                         label: l.checkoutShopVoucher,
@@ -561,6 +589,71 @@ class _TotalRow extends StatelessWidget {
                     : SoukText.price.copyWith(fontSize: 13.5, color: discount ? SoukColors.emerald : (muted ? SoukColors.inkFaint : SoukColors.ink))),
         ]),
       );
+}
+
+/// Tap-to-apply list from `voucher_options`; tapping the applied one removes it.
+class _VoucherOptions extends StatelessWidget {
+  const _VoucherOptions({required this.slot, required this.quote, required this.busy, required this.onPick});
+
+  final String slot;
+  final CheckoutQuote quote;
+  final bool busy;
+  final ValueChanged<String?> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final options = quote.voucherOptions(slot);
+    if (options.isEmpty) return const SizedBox.shrink();
+    final appliedCode = asStr(quote.voucher(slot)?['code'])?.toUpperCase();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: SoukSpace.s3),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        for (final o in options)
+          Builder(builder: (_) {
+            final applied = appliedCode != null && appliedCode == o.code.toUpperCase();
+            final best = slot == 'platform' && o.id == quote.bestPlatformVoucherId;
+            final enabled = !busy && (applied || o.minSpendMet);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: SoukSpace.s2),
+              child: InkWell(
+                key: Key('checkout-voucher-option-${o.id}'),
+                borderRadius: BorderRadius.circular(SoukRadius.control),
+                onTap: enabled ? () => onPick(applied ? null : o.code) : null,
+                child: Opacity(
+                  opacity: o.minSpendMet || applied ? 1 : 0.55,
+                  child: Container(
+                    padding: const EdgeInsets.all(SoukSpace.s3),
+                    decoration: BoxDecoration(
+                      color: applied ? SoukColors.emeraldTint : null,
+                      border: Border.all(color: applied ? SoukColors.emerald : SoukColors.line),
+                      borderRadius: BorderRadius.circular(SoukRadius.control),
+                    ),
+                    child: Row(children: [
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          if (best || applied)
+                            Wrap(spacing: SoukSpace.s2, children: [
+                              if (best) Text(l.checkoutVoucherBest, style: SoukText.eyebrow),
+                              if (applied) Text(l.checkoutVoucherAppliedTag, style: SoukText.eyebrow),
+                            ]),
+                          Text(o.label, style: SoukText.label),
+                          Text([o.code, if (o.storeName != null) o.storeName!].join(' · '), style: SoukText.meta),
+                          if (!o.minSpendMet) Text(l.checkoutVoucherShort(formatSen(o.shortBySen)), style: SoukText.meta),
+                        ]),
+                      ),
+                      if (o.minSpendMet && (o.freeShipping || o.discountSen > 0))
+                        Text(o.freeShipping && o.discountSen == 0 ? l.checkoutVoucherFreeShipping : l.checkoutVoucherOff(formatSen(o.discountSen)),
+                            style: SoukText.small.copyWith(color: SoukColors.emerald)),
+                    ]),
+                  ),
+                ),
+              ),
+            );
+          }),
+      ]),
+    );
+  }
 }
 
 class _VoucherField extends StatelessWidget {

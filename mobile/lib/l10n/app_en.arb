@@ -773,5 +773,19 @@
     }
   },
   "productViewImage": "View image",
-  "close": "Close"
+  "close": "Close",
+  "checkoutVoucherBest": "BEST VALUE",
+  "checkoutVoucherAppliedTag": "APPLIED",
+  "checkoutVoucherFreeShipping": "Free shipping",
+  "checkoutVoucherShort": "Add {amount} more to use this voucher.",
+  "@checkoutVoucherShort": {"placeholders": {"amount": {"type": "String"}}},
+  "checkoutVoucherOff": "{amount} off",
+  "@checkoutVoucherOff": {"placeholders": {"amount": {"type": "String"}}},
+  "ordersPayNow": "Pay now",
+  "ordersBuyAgain": "Buy again",
+  "ordersBuyAgainDone": "{added, plural, =1{1 item} other{{added} items}} added to cart",
+  "@ordersBuyAgainDone": {"placeholders": {"added": {"type": "int"}}},
+  "ordersBuyAgainSkipped": "{added, plural, =1{1 item} other{{added} items}} added to cart · {skipped, plural, =1{1 item} other{{skipped} items}} skipped (not available)",
+  "@ordersBuyAgainSkipped": {"placeholders": {"added": {"type": "int"}, "skipped": {"type": "int"}}},
+  "ordersBuyAgainNone": "None of these items are available any more."
 }

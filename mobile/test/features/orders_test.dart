@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:halalbizs/core/api/api_client.dart';
+import 'package:halalbizs/features/checkout/pay_screen.dart';
 
 import '../helpers.dart';
 
@@ -11,6 +12,7 @@ Map<String, dynamic> fakeSubOrder({
   String label = 'Confirmed',
   Map<String, bool> can = const {'cancel': true, 'confirm_received': false, 'return': false, 'review': false},
   bool detail = false,
+  Map<String, String> payment = const {'method': 'cod', 'status': 'pending'},
 }) =>
     {
       'id': id,
@@ -20,14 +22,14 @@ Map<String, dynamic> fakeSubOrder({
       'status_label': label,
       'store': {'id': 3, 'slug': 'kedai-madu', 'name': 'Kedai Madu', 'logo': null},
       'items': [
-        {'id': 51, 'product_id': 1, 'product_slug': 'madu-tualang', 'name': 'Madu Tualang Asli', 'variant_label': '500g', 'qty': 2, 'unit_price_sen': 1250, 'line_total_sen': 2500, 'product_image': null, 'reviewed': false},
-        {'id': 52, 'product_id': 2, 'product_slug': 'kurma-ajwa', 'name': 'Kurma Ajwa Premium', 'variant_label': null, 'qty': 1, 'unit_price_sen': 3200, 'line_total_sen': 3200, 'product_image': null, 'reviewed': false},
+        {'id': 51, 'product_id': 1, 'variant_id': 10, 'product_slug': 'madu-tualang', 'name': 'Madu Tualang Asli', 'variant_label': '500g', 'qty': 2, 'unit_price_sen': 1250, 'line_total_sen': 2500, 'product_image': null, 'reviewed': false},
+        {'id': 52, 'product_id': 2, 'variant_id': 20, 'product_slug': 'kurma-ajwa', 'name': 'Kurma Ajwa Premium', 'variant_label': null, 'qty': 1, 'unit_price_sen': 3200, 'line_total_sen': 3200, 'product_image': null, 'reviewed': false},
       ],
       'subtotal_sen': 5700,
       'shipping_sen': 800,
       'discount_sen': 0,
       'total_sen': 6500,
-      'payment': {'method': 'cod', 'status': 'pending'},
+      'payment': payment,
       'placed_at': '2026-11-07T06:05:00Z',
       'can': can,
       'return_request': null,
@@ -186,5 +188,97 @@ void main() {
     final h = Harness(api: api, token: 'tok');
     await h.pump(tester, location: '/orders');
     expect(find.text('No orders yet'), findsOneWidget);
+  });
+
+  Map<String, FakeHandler> detailRoutes(Map<String, FakeHandler> extra) => {
+        'GET me': (_, _) => fakeUser(),
+        'GET products': (_, _) => [],
+        'GET categories': (_, _) => [],
+        'GET orders/buckets': (_, _) => [],
+        'GET orders': (_, _) => [],
+        ...extra,
+      };
+
+  testWidgets('Pay now shows only on an unpaid online order and opens retry_url, then back to the order', (tester) async {
+    usePhone(tester);
+    final poll = PayScreen.pollEvery;
+    PayScreen.pollEvery = const Duration(hours: 1);
+    addTearDown(() => PayScreen.pollEvery = poll);
+    final unpaid = fakeSubOrder(
+        id: 8, status: 'pending_payment', label: 'Pending payment', detail: true, payment: const {'method': 'ipay88', 'status': 'pending'});
+    final api = FakeApi(routes: detailRoutes({
+      'GET orders/8': (_, _) => unpaid,
+      'GET orders/9': (_, _) => fakeSubOrder(id: 9, status: 'confirmed', label: 'Confirmed', detail: true),
+      'GET orders/HB-1001/payment': (_, _) =>
+          {'order_no': 'HB-1001', 'method': 'ipay88', 'status': 'pending', 'paid': false, 'expires_at': null, 'retry_url': 'https://pay.test/retry'},
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/orders/9');
+    expect(find.byKey(const Key('order-pay-now')), findsNothing, reason: 'a confirmed (COD) order has nothing to pay');
+
+    h.router.go('/orders/8');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('order-pay-now')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('order-pay-now')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('GET orders/HB-1001/payment'));
+    expect(h.browser.opened, ['https://pay.test/retry'], reason: 'same in-app browser sheet as checkout');
+    expect(h.router.state.uri.path, '/checkout/pay/HB-1001');
+    expect(api.calls.where((c) => c.startsWith('POST checkout/quote')), isEmpty, reason: 'pushing pay must not build the checkout under it');
+
+    await tester.tap(find.byKey(const Key('pay-close')));
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/orders/8', reason: 'closing the pay screen goes back to the order');
+  });
+
+  testWidgets('Pay now on a lapsed order says it expired and opens nothing', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: detailRoutes({
+      'GET orders/8': (_, _) => fakeSubOrder(
+          id: 8, status: 'pending_payment', label: 'Payment expired', detail: true, payment: const {'method': 'ipay88', 'status': 'pending'}),
+      'GET orders/HB-1001/payment': (_, _) =>
+          {'order_no': 'HB-1001', 'method': 'ipay88', 'status': 'pending', 'paid': false, 'expires_at': '2026-01-01T00:00:00Z', 'retry_url': null},
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/orders/8');
+    await tester.tap(find.byKey(const Key('order-pay-now')));
+    await tester.pumpAndSettle();
+    expect(h.browser.opened, isEmpty);
+    expect(h.router.state.uri.path, '/orders/8');
+    expect(find.text('This order was not paid in time. Nothing was charged.'), findsOneWidget);
+  });
+
+  testWidgets('Buy again shows only on a completed order, adds each item, skips the unavailable and opens Cart', (tester) async {
+    usePhone(tester);
+    final completed = fakeSubOrder(
+        id: 6, status: 'completed', label: 'Completed', detail: true, can: const {'cancel': false, 'confirm_received': false, 'return': false, 'review': false});
+    (completed['items'] as List).add(
+        {'id': 53, 'product_id': 3, 'variant_id': null, 'product_slug': null, 'name': 'Gone Product', 'variant_label': null, 'qty': 1, 'unit_price_sen': 100, 'line_total_sen': 100, 'product_image': null, 'reviewed': false});
+    final added = <Object?>[];
+    final cart = {'groups': [], 'item_count': 2, 'selected_count': 0, 'selected_subtotal_sen': 0, 'purchasing_enabled': true};
+    final api = FakeApi(routes: detailRoutes({
+      'GET orders/6': (_, _) => completed,
+      'GET orders/5': (_, _) => fakeSubOrder(id: 5, detail: true),
+      'GET cart': (_, _) => cart,
+      'POST cart/items': (_, body) {
+        if ((body as Map)['variant_id'] == 20) return ApiException('validation_failed', 'This product is sold out.', status: 422);
+        added.add(body);
+        return cart;
+      },
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/orders/5');
+    expect(find.byKey(const Key('order-buy-again')), findsNothing, reason: 'only completed orders offer Buy again');
+
+    h.router.go('/orders/6');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('order-buy-again')));
+    await tester.pumpAndSettle();
+    expect(added, [
+      {'variant_id': 10, 'qty': 2},
+    ]);
+    expect(api.calls.where((c) => c == 'POST cart/items').length, 2, reason: 'the deleted variant is never sent');
+    expect(h.router.state.uri.path, '/cart');
+    expect(find.text('1 item added to cart · 2 items skipped (not available)'), findsOneWidget);
   });
 }

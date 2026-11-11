@@ -1589,4 +1589,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get checkoutVoucherBest => 'BEST VALUE';
+
+  @override
+  String get checkoutVoucherAppliedTag => 'APPLIED';
+
+  @override
+  String get checkoutVoucherFreeShipping => 'Free shipping';
+
+  @override
+  String checkoutVoucherShort(String amount) {
+    return 'Add $amount more to use this voucher.';
+  }
+
+  @override
+  String checkoutVoucherOff(String amount) {
+    return '$amount off';
+  }
+
+  @override
+  String get ordersPayNow => 'Pay now';
+
+  @override
+  String get ordersBuyAgain => 'Buy again';
+
+  @override
+  String ordersBuyAgainDone(int added) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: '$added items',
+      one: '1 item',
+    );
+    return '$_temp0 added to cart';
+  }
+
+  @override
+  String ordersBuyAgainSkipped(int added, int skipped) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: '$added items',
+      one: '1 item',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      skipped,
+      locale: localeName,
+      other: '$skipped items',
+      one: '1 item',
+    );
+    return '$_temp0 added to cart · $_temp1 skipped (not available)';
+  }
+
+  @override
+  String get ordersBuyAgainNone =>
+      'None of these items are available any more.';
 }

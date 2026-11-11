@@ -13,16 +13,16 @@ import 'cart_api.dart';
 /// `/checkout`, `/checkout/pay/:orderNo`, `/checkout/done/:orderNo` — top-level
 /// routes outside the tab shell (registered in `router.dart`).
 List<RouteBase> get cartSubRoutes => [
-      GoRoute(path: '/checkout', builder: (_, _) => const CheckoutScreen(), routes: [
-        GoRoute(
-          path: 'pay/:orderNo',
-          builder: (_, s) => PayScreen(
-              orderNo: s.pathParameters['orderNo']!,
-              initialUrl: s.extra as String?,
-              returned: s.uri.queryParameters['returned'] == '1'),
-        ),
-        GoRoute(path: 'done/:orderNo', builder: (_, s) => DoneScreen(orderNo: s.pathParameters['orderNo']!)),
-      ]),
+      GoRoute(path: '/checkout', builder: (_, _) => const CheckoutScreen()),
+      // Siblings, not children: pushing pay from an order must not build the checkout under it.
+      GoRoute(
+        path: '/checkout/pay/:orderNo',
+        builder: (_, s) => PayScreen(
+            orderNo: s.pathParameters['orderNo']!,
+            initialUrl: s.extra as String?,
+            returned: s.uri.queryParameters['returned'] == '1'),
+      ),
+      GoRoute(path: '/checkout/done/:orderNo', builder: (_, s) => DoneScreen(orderNo: s.pathParameters['orderNo']!)),
     ];
 
 /// `/cart` — lines grouped by store, select per line / store / all, qty,

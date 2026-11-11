@@ -2983,6 +2983,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @checkoutVoucherBest.
+  ///
+  /// In en, this message translates to:
+  /// **'BEST VALUE'**
+  String get checkoutVoucherBest;
+
+  /// No description provided for @checkoutVoucherAppliedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'APPLIED'**
+  String get checkoutVoucherAppliedTag;
+
+  /// No description provided for @checkoutVoucherFreeShipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Free shipping'**
+  String get checkoutVoucherFreeShipping;
+
+  /// No description provided for @checkoutVoucherShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {amount} more to use this voucher.'**
+  String checkoutVoucherShort(String amount);
+
+  /// No description provided for @checkoutVoucherOff.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} off'**
+  String checkoutVoucherOff(String amount);
+
+  /// No description provided for @ordersPayNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay now'**
+  String get ordersPayNow;
+
+  /// No description provided for @ordersBuyAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy again'**
+  String get ordersBuyAgain;
+
+  /// No description provided for @ordersBuyAgainDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =1{1 item} other{{added} items}} added to cart'**
+  String ordersBuyAgainDone(int added);
+
+  /// No description provided for @ordersBuyAgainSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =1{1 item} other{{added} items}} added to cart · {skipped, plural, =1{1 item} other{{skipped} items}} skipped (not available)'**
+  String ordersBuyAgainSkipped(int added, int skipped);
+
+  /// No description provided for @ordersBuyAgainNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None of these items are available any more.'**
+  String get ordersBuyAgainNone;
 }
 
 class _AppLocalizationsDelegate

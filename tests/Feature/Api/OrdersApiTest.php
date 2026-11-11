@@ -93,6 +93,7 @@ test('buckets are the web tabs and the list filters by them, newest first', func
         ->assertJsonPath('data.0.can.review', false)
         ->assertJsonPath('data.0.items.0.name', $confirmed->items->first()->product_name)
         ->assertJsonPath('data.0.items.0.unit_price_sen', 2500)
+        ->assertJsonPath('data.0.items.0.variant_id', $confirmed->items->first()->product_variant_id)
         ->assertJsonPath('data.0.items.0.reviewed', false)
         ->assertJsonPath('data.0.payment.method', 'cod')
         ->assertJsonPath('data.0.return_request', null)

@@ -33,6 +33,13 @@ class CheckoutQuote {
   Map<String, String> get voucherErrors =>
       asMap(json['voucher_errors']).map((k, v) => MapEntry(k, '$v')).cast<String, String>();
 
+  /// `voucher_options.{platform,shop}[]`: the vouchers this buyer may pick.
+  List<VoucherOption> voucherOptions(String slot) =>
+      asMapList(asMap(json['voucher_options'])[slot]).map(VoucherOption.new).toList();
+
+  /// The platform voucher the server ranks best (largest discount), or null.
+  int? get bestPlatformVoucherId => asInt(asMap(json['voucher_options'])['best_platform_voucher_id']);
+
   Map<String, dynamic> get coins => asMap(json['coins']);
   bool get coinsEnabled => asBool(coins['enabled']);
   int get coinBalance => asInt(coins['balance']) ?? 0;
@@ -42,6 +49,21 @@ class CheckoutQuote {
   String? get paymentMethod => asStr(json['payment_method']);
   bool get paymentMethodAvailable => json.containsKey('payment_method_available') ? asBool(json['payment_method_available']) : true;
   String? get blockReason => asStr(json['block_reason']);
+}
+
+class VoucherOption {
+  VoucherOption(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  String get code => asStr(json['code']) ?? '';
+  String get label => asStr(json['label']) ?? code;
+  String? get storeName => asStr(json['store_name']);
+  bool get minSpendMet => json.containsKey('min_spend_met') ? asBool(json['min_spend_met']) : true;
+  int get shortBySen => asInt(json['short_by_sen']) ?? 0;
+  int get discountSen => asInt(json['discount_sen']) ?? 0;
+  bool get freeShipping => asBool(json['free_shipping']);
 }
 
 class QuoteGroup {

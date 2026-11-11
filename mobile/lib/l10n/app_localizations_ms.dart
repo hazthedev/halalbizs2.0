@@ -1605,4 +1605,42 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get close => 'Tutup';
+
+  @override
+  String get checkoutVoucherBest => 'PALING JIMAT';
+
+  @override
+  String get checkoutVoucherAppliedTag => 'DIGUNAKAN';
+
+  @override
+  String get checkoutVoucherFreeShipping => 'Penghantaran percuma';
+
+  @override
+  String checkoutVoucherShort(String amount) {
+    return 'Tambah $amount lagi untuk guna baucar ini.';
+  }
+
+  @override
+  String checkoutVoucherOff(String amount) {
+    return 'Diskaun $amount';
+  }
+
+  @override
+  String get ordersPayNow => 'Bayar sekarang';
+
+  @override
+  String get ordersBuyAgain => 'Beli lagi';
+
+  @override
+  String ordersBuyAgainDone(int added) {
+    return '$added item ditambah ke troli';
+  }
+
+  @override
+  String ordersBuyAgainSkipped(int added, int skipped) {
+    return '$added item ditambah ke troli · $skipped item dilangkau (tiada stok)';
+  }
+
+  @override
+  String get ordersBuyAgainNone => 'Tiada item ini yang masih ada.';
 }

@@ -39,6 +39,10 @@ class SubOrder {
   bool get canReturn => asBool(can['return']);
   bool get canReview => asBool(can['review']);
 
+  /// Unpaid online order: "Pay now" asks the payment endpoint whether it can still be paid.
+  bool get canPayNow => status == 'pending_payment' && paymentMethod != 'cod' && paymentStatus == 'pending';
+  bool get canBuyAgain => status == 'completed';
+
   /// `{id, status, reason, created_at}` or null.
   Map<String, dynamic>? get returnRequest => json['return_request'] is Map ? asMap(json['return_request']) : null;
 
@@ -60,6 +64,9 @@ class OrderItem {
 
   int get id => asInt(json['id']) ?? 0;
   int? get productId => asInt(json['product_id']);
+
+  /// The variant bought; null once it was deleted (Buy again skips it).
+  int? get variantId => asInt(json['variant_id']);
   String? get productSlug => asStr(json['product_slug'] ?? json['slug']);
   String get name => asStr(json['name']) ?? '';
   String? get variantLabel => asStr(json['variant_label']);

@@ -55,6 +55,8 @@ class SubOrderResource extends JsonResource
                 'id' => $item->id,
                 'product_id' => $item->product_id,
                 'product_slug' => $item->product?->slug,
+                // The app's "Buy again" re-adds this variant via POST cart/items; null once the variant is deleted.
+                'variant_id' => $item->product_variant_id,
                 'name' => $item->product_name,
                 'variant_label' => $item->variant_label,
                 'qty' => $item->qty,

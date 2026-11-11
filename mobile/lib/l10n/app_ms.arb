@@ -706,5 +706,19 @@
   "productChoose": "Pilih {option}",
   "productStock": "Stok: {count}",
   "productViewImage": "Lihat gambar",
-  "close": "Tutup"
+  "close": "Tutup",
+  "checkoutVoucherBest": "PALING JIMAT",
+  "checkoutVoucherAppliedTag": "DIGUNAKAN",
+  "checkoutVoucherFreeShipping": "Penghantaran percuma",
+  "checkoutVoucherShort": "Tambah {amount} lagi untuk guna baucar ini.",
+  "@checkoutVoucherShort": {"placeholders": {"amount": {"type": "String"}}},
+  "checkoutVoucherOff": "Diskaun {amount}",
+  "@checkoutVoucherOff": {"placeholders": {"amount": {"type": "String"}}},
+  "ordersPayNow": "Bayar sekarang",
+  "ordersBuyAgain": "Beli lagi",
+  "ordersBuyAgainDone": "{added} item ditambah ke troli",
+  "@ordersBuyAgainDone": {"placeholders": {"added": {"type": "int"}}},
+  "ordersBuyAgainSkipped": "{added} item ditambah ke troli · {skipped} item dilangkau (tiada stok)",
+  "@ordersBuyAgainSkipped": {"placeholders": {"added": {"type": "int"}, "skipped": {"type": "int"}}},
+  "ordersBuyAgainNone": "Tiada item ini yang masih ada."
 }

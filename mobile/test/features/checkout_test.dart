@@ -344,4 +344,79 @@ void main() {
     await tester.pumpAndSettle();
     expect(h.router.state.uri.path, '/orders/32');
   });
+
+  // Bottom bar covers the viewport edge: ensureVisible's default alignment can leave a row underneath it.
+  Future<void> centre(WidgetTester t, Finder f) async {
+    Scrollable.ensureVisible(t.element(f), alignment: 0.5);
+    await t.pumpAndSettle();
+  }
+
+  testWidgets('voucher picker lists voucher_options, preselects the best, taps apply/remove, typing still works', (tester) async {
+    usePhone(tester);
+    final bodies = <Map>[];
+    Map<String, dynamic> opt(int id, String code, {int discount = 0, bool met = true, int short = 0, String? store, bool freeShipping = false}) => {
+          'id': id, 'code': code, 'label': '$code label', 'store_name': store, 'min_spend_sen': met ? 0 : 12000,
+          'min_spend_met': met, 'short_by_sen': short, 'discount_sen': discount, 'free_shipping': freeShipping,
+        };
+    final api = FakeApi(routes: checkoutRoutes({
+      'POST checkout/quote': (_, body) {
+        final b = body as Map;
+        bodies.add(b);
+        final q = fakeQuote();
+        q['voucher_options'] = {
+          'platform': [opt(1, 'SAVE5', discount: 500), opt(2, 'BEST10', discount: 1000), opt(3, 'BIG20', met: false, short: 2000)],
+          'shop': [opt(4, 'SHOP5', discount: 500, store: 'Kedai Madu')],
+          'best_platform_voucher_id': 2,
+        };
+        q['vouchers'] = {
+          'platform': b['platform_code'] == null ? null : {'id': 9, 'code': b['platform_code'], 'type': 'fixed', 'discount_sen': 1000},
+          'shop': b['shop_code'] == null ? null : {'id': 4, 'code': b['shop_code'], 'type': 'fixed', 'discount_sen': 500},
+          'shipping': null,
+        };
+        return q;
+      },
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/checkout');
+
+    for (final id in [1, 2, 3, 4]) {
+      expect(find.byKey(Key('checkout-voucher-option-$id')), findsOneWidget);
+    }
+    final best = find.byKey(const Key('checkout-voucher-option-2'));
+    expect(find.descendant(of: best, matching: find.text('BEST VALUE')), findsOneWidget);
+    expect(find.text('BEST VALUE'), findsOneWidget, reason: 'only the API-named best is marked');
+    // Preselected: the second quote carries the best code, and it reads as applied.
+    expect(bodies.first['platform_code'], isNull);
+    expect(bodies.last['platform_code'], 'BEST10');
+    expect(find.descendant(of: best, matching: find.text('APPLIED')), findsOneWidget);
+    expect(find.text('Add RM 20.00 more to use this voucher.'), findsOneWidget);
+
+    // Min spend not met: tapping does nothing.
+    final n = bodies.length;
+    await centre(tester, find.byKey(const Key('checkout-voucher-option-3')));
+    await tester.tap(find.byKey(const Key('checkout-voucher-option-3')));
+    await tester.pumpAndSettle();
+    expect(bodies.length, n);
+
+    // Tap a shop voucher: applied by code.
+    await centre(tester, find.byKey(const Key('checkout-voucher-option-4')));
+    await tester.tap(find.byKey(const Key('checkout-voucher-option-4')));
+    await tester.pumpAndSettle();
+    expect(bodies.last['shop_code'], 'SHOP5');
+    expect(bodies.last['platform_code'], 'BEST10');
+
+    // Tap the applied best again: removed, and not re-applied.
+    await centre(tester, best);
+    await tester.tap(best);
+    await tester.pumpAndSettle();
+    expect(bodies.last['platform_code'], isNull);
+    expect(find.descendant(of: best, matching: find.text('APPLIED')), findsNothing);
+
+    // Typing a code is still the fallback.
+    await tester.enterText(find.byKey(const Key('checkout-platform-code')), 'TYPED1');
+    await centre(tester, find.byKey(const Key('checkout-platform-apply')));
+    await tester.tap(find.byKey(const Key('checkout-platform-apply')));
+    await tester.pumpAndSettle();
+    expect(bodies.last['platform_code'], 'TYPED1');
+  });
 }

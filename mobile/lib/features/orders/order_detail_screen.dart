@@ -7,6 +7,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/json.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
+import '../../core/api/api_client.dart';
+import '../cart/cart_api.dart';
+import '../checkout/checkout_api.dart';
 import '../checkout/checkout_screen.dart' show paymentMethodLabel;
 import 'orders_api.dart';
 
@@ -113,6 +116,70 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     await _run(() => ref.read(ordersApiProvider).confirmReceived(widget.id), l.ordersReceivedDone);
   }
 
+  /// Same hand-off as checkout: the API's fresh `retry_url` opens in the in-app browser from the pay screen.
+  Future<void> _payNow(SubOrder o) async {
+    final l = context.l10n;
+    setState(() => _busy = true);
+    try {
+      final s = await ref.read(checkoutApiProvider).payment(o.orderNo);
+      if (!mounted) return;
+      if (s.paid) {
+        await _refresh();
+      } else if (s.retryUrl == null) {
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(SnackBar(content: Text(l.checkoutPayExpiredBody)));
+      } else {
+        await context.push('/checkout/pay/${Uri.encodeComponent(o.orderNo)}', extra: s.retryUrl);
+        if (mounted) await _refresh();
+      }
+    } catch (e) {
+      if (mounted) showApiError(context, e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Re-adds each item through the cart's add; a deleted or sold-out variant is skipped and counted.
+  Future<void> _buyAgain(SubOrder o) async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    setState(() => _busy = true);
+    var added = 0;
+    var skipped = 0;
+    try {
+      for (final it in o.items) {
+        final v = it.variantId;
+        if (v == null) {
+          skipped++;
+          continue;
+        }
+        try {
+          await ref.read(cartProvider.notifier).add(variantId: v, qty: it.qty);
+          added++;
+        } on ApiException catch (e) {
+          if (!(e.isValidation || e.isNotFound || e.status == 409)) rethrow;
+          skipped++;
+        }
+      }
+      if (!mounted) return;
+      messenger
+        ..clearSnackBars()
+        ..showSnackBar(SnackBar(
+            content: Text(added == 0
+                ? l.ordersBuyAgainNone
+                : skipped == 0
+                    ? l.ordersBuyAgainDone(added)
+                    : l.ordersBuyAgainSkipped(added, skipped))));
+      if (added > 0) router.go('/cart');
+    } catch (e) {
+      if (mounted) showApiError(context, e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -125,9 +192,13 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
       onRefresh: _refresh,
       fromCache: async.value?.fromCache ?? false,
       cachedAt: async.value?.fetchedAt,
-      bottomBar: o == null || !(o.canCancel || o.canConfirmReceived || o.canReturn || o.canReview)
+      bottomBar: o == null || !(o.canCancel || o.canConfirmReceived || o.canReturn || o.canReview || o.canPayNow || o.canBuyAgain)
           ? null
           : Wrap(spacing: SoukSpace.s2, runSpacing: SoukSpace.s2, alignment: WrapAlignment.end, children: [
+              if (o.canBuyAgain)
+                SoukButton(key: const Key('order-buy-again'), label: l.ordersBuyAgain, icon: FontAwesomeIcons.rotateRight, variant: SoukButtonVariant.primary, requiresOnline: true, busy: _busy, onPressed: () => _buyAgain(o)),
+              if (o.canPayNow)
+                SoukButton(key: const Key('order-pay-now'), label: l.ordersPayNow, icon: FontAwesomeIcons.creditCard, variant: SoukButtonVariant.primary, requiresOnline: true, busy: _busy, onPressed: () => _payNow(o)),
               if (o.canCancel)
                 SoukButton(key: const Key('order-cancel'), label: l.ordersCancelOrder, variant: SoukButtonVariant.secondary, requiresOnline: true, busy: _busy, onPressed: _cancel),
               if (o.canReturn)

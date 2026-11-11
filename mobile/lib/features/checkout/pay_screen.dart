@@ -121,7 +121,7 @@ class _PayScreenState extends ConsumerState<PayScreen> with WidgetsBindingObserv
         key: const Key('pay-close'),
         tooltip: l.cancel,
         icon: const Icon(Icons.close_rounded),
-        onPressed: () => context.go('/orders'),
+        onPressed: () => context.canPop() ? context.pop() : context.go('/orders'),
       ),
       body: s == null && _error != null
           ? ErrorPane(error: _error!, onRetry: _poll, retryLabel: l.retry)
