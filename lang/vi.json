@@ -2643,5 +2643,22 @@
     "Following :shop": "Đang theo dõi :shop",
     "{1}:count follower|[0,*]:count followers": "{1}:count người theo dõi|[0,*]:count người theo dõi",
     "No followed shops yet": "Chưa theo dõi cửa hàng nào",
-    "Follow a shop to see it here.": "Theo dõi một cửa hàng để xem tại đây."
+    "Follow a shop to see it here.": "Theo dõi một cửa hàng để xem tại đây.",
+    "On hold": "On hold",
+    "On hold until :date": "On hold until :date",
+    "Completed orders released to Available when their return window closes.": "Completed orders released to Available when their return window closes.",
+    "Settlement": "Settlement",
+    "Enter an amount above zero.": "Enter an amount above zero.",
+    "This store only owes :amount.": "This store only owes :amount.",
+    "Settlement received, ref :ref": "Settlement received, ref :ref",
+    "Record settlement": "Record settlement",
+    "Seller paid us": "Seller paid us",
+    "Amount owed: :amount": "Amount owed: :amount",
+    "Note (optional)": "Note (optional)",
+    "Settlement recorded.": "Settlement recorded.",
+    "Commission statement :month — :store": "Commission statement :month — :store",
+    "Commission on your cash-on-delivery orders in :month: :amount.": "Commission on your cash-on-delivery orders in :month: :amount.",
+    "Total you owe :app: :amount.": "Total you owe :app: :amount.",
+    "Please bank-transfer it and reply with your reference. Stores owing more than the COD limit cannot take cash on delivery until settled.": "Please bank-transfer it and reply with your reference. Stores owing more than the COD limit cannot take cash on delivery until settled.",
+    "COD unavailable: :store cannot take cash on delivery right now.": "COD unavailable: :store cannot take cash on delivery right now."
 }

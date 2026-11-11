@@ -6,9 +6,12 @@ use App\Enums\ProductStatus;
 use App\Enums\StoreStatus;
 use App\Enums\SubOrderStatus;
 use App\Livewire\Admin\Sellers\Concerns\ReviewsDocuments;
+use App\Exceptions\CheckoutException;
 use App\Models\Store;
 use App\Notifications\StoreSuspended;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Services\LedgerService;
+use App\Support\RinggitInput;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -28,6 +31,12 @@ class StoreDetail extends Component
 
     /** Percent, 0–100, nullable — null inherits the category/global rate. */
     public ?string $commissionRate = null;
+
+    public string $settleAmount = '';
+
+    public string $settleReference = '';
+
+    public string $settleNote = '';
 
     public function mount(Store $store): void
     {
@@ -87,6 +96,35 @@ class StoreDetail extends Component
             : __('Commission override saved'));
     }
 
+    /** "Seller paid us": admin records a bank transfer against COD commission owed. */
+    public function recordSettlement(LedgerService $ledger): void
+    {
+        $this->validate([
+            'settleAmount' => ['required', 'string'],
+            'settleReference' => ['required', 'string', 'max:100'],
+            'settleNote' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $amountSen = RinggitInput::toSen($this->settleAmount);
+
+        if ($amountSen === null || $amountSen <= 0) {
+            $this->addError('settleAmount', __('Enter an amount above zero.'));
+
+            return;
+        }
+
+        try {
+            $ledger->recordSettlement($this->store, $amountSen, $this->settleReference, $this->settleNote ?: null);
+        } catch (CheckoutException $e) {
+            $this->addError('settleAmount', $e->getMessage());
+
+            return;
+        }
+
+        $this->reset('settleAmount', 'settleReference', 'settleNote');
+        $this->dispatch('toast', message: __('Settlement recorded.'));
+    }
+
     protected function reviewableDocuments(): HasMany
     {
         return $this->store->documents();
@@ -99,6 +137,7 @@ class StoreDetail extends Component
         return view('livewire.admin.sellers.store-detail', [
             'liveProductsCount' => $this->store->products()->where('status', ProductStatus::Live)->count(),
             'subOrdersCount' => $this->store->subOrders()->count(),
+            'owedSen' => max(0, -app(LedgerService::class)->availableBalanceSen($this->store)),
             'gmvSen' => (int) $this->store->subOrders()->where('status', SubOrderStatus::Completed)->sum('total_sen'),
         ])->title($this->store->name);
     }
