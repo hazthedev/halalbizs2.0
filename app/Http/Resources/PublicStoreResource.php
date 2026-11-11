@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Store;
+use App\Services\StoreFollowService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,6 +28,9 @@ class PublicStoreResource extends JsonResource
             'rating_avg' => (float) $this->rating_avg,
             'review_count' => (int) $this->rating_count,
             'product_count' => $this->products()->live()->count(),
+            'followers_count' => app(StoreFollowService::class)->followersCount($this->resource),
+            // Optional bearer token on this public route; guests are never following.
+            'is_following' => app(StoreFollowService::class)->isFollowing($request->user('sanctum'), $this->resource),
             'joined_at' => ($this->approved_at ?? $this->created_at)?->toIso8601String(),
         ];
     }

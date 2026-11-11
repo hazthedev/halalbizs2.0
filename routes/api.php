@@ -99,6 +99,10 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::post('/orders/{subOrder}/return', [OrderController::class, 'returnRequest'])->whereNumber('subOrder')->name('orders.return');
         Route::post('/orders/{subOrder}/review', [OrderController::class, 'review'])->whereNumber('subOrder')->middleware('throttle:api-review')->name('orders.review');
 
+        Route::post('/stores/{store:slug}/follow', [StoreController::class, 'follow'])->middleware('throttle:30,1,follow')->name('stores.follow');
+        Route::delete('/stores/{store:slug}/follow', [StoreController::class, 'unfollow'])->middleware('throttle:30,1,follow')->name('stores.unfollow');
+        Route::get('/me/followed-stores', [StoreController::class, 'followed'])->name('me.followed-stores');
+
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
         Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 

@@ -2633,5 +2633,15 @@
     "Allergen information": "Maklumat alergen",
     "Shelf life": "Jangka hayat",
     "Storage instructions": "Cara penyimpanan",
-    "Best before / expiry": "Terbaik sebelum / tarikh luput"
+    "Best before / expiry": "Terbaik sebelum / tarikh luput",
+    "Follow": "Ikuti",
+    "Following": "Mengikuti",
+    "Followed shops": "Kedai diikuti",
+    "You cannot follow your own shop.": "Anda tidak boleh mengikuti kedai sendiri.",
+    "Too many requests. Please try again shortly.": "Terlalu banyak permintaan. Sila cuba sebentar lagi.",
+    "Unfollowed :shop": "Berhenti mengikuti :shop",
+    "Following :shop": "Mengikuti :shop",
+    "{1}:count follower|[0,*]:count followers": "{1}:count pengikut|[0,*]:count pengikut",
+    "No followed shops yet": "Belum ada kedai diikuti",
+    "Follow a shop to see it here.": "Ikuti kedai untuk melihatnya di sini."
 }

@@ -2633,5 +2633,15 @@
     "Allergen information": "Thông tin chất gây dị ứng",
     "Shelf life": "Hạn sử dụng",
     "Storage instructions": "Hướng dẫn bảo quản",
-    "Best before \/ expiry": "Sử dụng tốt nhất trước \/ hết hạn"
+    "Best before \/ expiry": "Sử dụng tốt nhất trước \/ hết hạn",
+    "Follow": "Theo dõi",
+    "Following": "Đang theo dõi",
+    "Followed shops": "Cửa hàng đã theo dõi",
+    "You cannot follow your own shop.": "Bạn không thể theo dõi cửa hàng của chính mình.",
+    "Too many requests. Please try again shortly.": "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
+    "Unfollowed :shop": "Đã bỏ theo dõi :shop",
+    "Following :shop": "Đang theo dõi :shop",
+    "{1}:count follower|[0,*]:count followers": "{1}:count người theo dõi|[0,*]:count người theo dõi",
+    "No followed shops yet": "Chưa theo dõi cửa hàng nào",
+    "Follow a shop to see it here.": "Theo dõi một cửa hàng để xem tại đây."
 }

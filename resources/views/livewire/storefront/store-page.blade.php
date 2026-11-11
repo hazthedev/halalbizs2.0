@@ -60,6 +60,7 @@
                         <span aria-hidden="true">·</span>
                         <span class="tnum">{{ number_format($total) }} {{ __('products') }}</span>
                     </p>
+                    <div class="mt-2"><livewire:storefront.follow-button :store="$store" :wire:key="'follow-'.$store->id" /></div>
                 </div>
             </div>
         </div>
