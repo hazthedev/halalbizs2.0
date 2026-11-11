@@ -141,6 +141,7 @@ class CheckoutApi {
     String? paymentMethod,
     String? platformCode,
     String? shopCode,
+    String? shippingCode,
     int coins = 0,
     Map<int, String>? sellerNotes,
   }) =>
@@ -149,6 +150,7 @@ class CheckoutApi {
         'payment_method': ?paymentMethod,
         'platform_code': ?platformCode,
         'shop_code': ?shopCode,
+        'shipping_code': ?shippingCode,
         if (coins > 0) 'coins': coins,
         if (sellerNotes != null && sellerNotes.isNotEmpty)
           'seller_notes': sellerNotes.map((k, v) => MapEntry('$k', v)),
@@ -159,10 +161,11 @@ class CheckoutApi {
     String? paymentMethod,
     String? platformCode,
     String? shopCode,
+    String? shippingCode,
     int coins = 0,
   }) async =>
       CheckoutQuote(asMap(await _api.post('checkout/quote',
-          body: _body(addressId: addressId, paymentMethod: paymentMethod, platformCode: platformCode, shopCode: shopCode, coins: coins))));
+          body: _body(addressId: addressId, paymentMethod: paymentMethod, platformCode: platformCode, shopCode: shopCode, shippingCode: shippingCode, coins: coins))));
 
   /// [idempotencyKey]: one per checkout attempt, reused on retry — the server
   /// replays the order that key already placed instead of placing a second.
@@ -172,6 +175,7 @@ class CheckoutApi {
     required String idempotencyKey,
     String? platformCode,
     String? shopCode,
+    String? shippingCode,
     int coins = 0,
     Map<int, String>? sellerNotes,
   }) async =>
@@ -182,6 +186,7 @@ class CheckoutApi {
             paymentMethod: paymentMethod,
             platformCode: platformCode,
             shopCode: shopCode,
+            shippingCode: shippingCode,
             coins: coins,
             sellerNotes: sellerNotes,
           ))));
