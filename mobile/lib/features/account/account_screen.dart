@@ -170,6 +170,9 @@ class LanguageScreen extends ConsumerWidget {
     final options = {'en': l.english, 'ms': l.malay};
     return SoukPage(
       title: l.language,
+      // Scrollable like the other short pages: a bare card in the fixed body
+      // stretched to full height (Haze 11-11 screenshot).
+      scrollable: true,
       body: SoukCard(
         padding: EdgeInsets.zero,
         child: Column(children: [
