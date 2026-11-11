@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CertificateStatus;
+use App\Services\Whip\WhipCertificate;
 use App\Support\DisplayTime;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -73,6 +75,8 @@ class HalalCertificate extends Model implements HasMedia
     {
         return [
             'whip_synced_at' => 'datetime',
+            'whip_unmatched_product_ids' => 'array',
+            'whip_allowed_product_ids' => 'array',
             'status' => CertificateStatus::class,
             'valid_from' => 'date',
             'valid_to' => 'date',
@@ -161,8 +165,43 @@ class HalalCertificate extends Model implements HasMedia
         return $this->valid_from->lte($today) && $this->valid_to->gte($today);
     }
 
+    /**
+     * Bind this store's products $ids to the certificate and unbind the rest.
+     * Given WHIP's certificate (source=whip), only products WHIP lists, or an
+     * admin allowed, bind; the others are parked in whip_unmatched_product_ids.
+     * Without it (manual) every id binds. Returns the parked product names.
+     *
+     * @return Collection<int, string>
+     */
+    public function bindProducts(array $ids, ?WhipCertificate $whip = null): Collection
+    {
+        $products = Product::query()->where('store_id', $this->store_id)->whereIn('id', $ids)
+            ->with('variants:id,product_id,sku')->get();
+        $allowed = $this->whip_allowed_product_ids ?? [];
+
+        [$bind, $parked] = $whip === null ? [$products, collect()]
+            : $products->partition(fn (Product $p) => in_array($p->id, $allowed, true) || $whip->covers($p->name, $p->variants->pluck('sku')));
+
+        Product::query()->where('halal_certificate_id', $this->id)->whereNotIn('id', $bind->modelKeys())
+            ->update(['halal_certificate_id' => null]);
+        Product::query()->whereIn('id', $bind->modelKeys())->update([
+            'halal_certificate_id' => $this->id,
+            'halal_cert_number' => $this->number,
+            'halal_cert_expiry' => $this->valid_to,
+        ]);
+        $this->forceFill(['whip_unmatched_product_ids' => $whip === null ? null : array_values($parked->modelKeys())])->save();
+
+        return $parked->pluck('name');
+    }
+
+    /** Ticked products WHIP does not list, waiting for an admin. */
+    public function unmatchedProducts(): Collection
+    {
+        return Product::query()->whereIn('id', $this->whip_unmatched_product_ids ?? [])->get(['id', 'name']);
+    }
+
     /** Copy what WHIP holds onto this row and stamp the check. Caller saves. */
-    public function takeFromWhip(\App\Services\Whip\WhipCertificate $whip, string $answer): static
+    public function takeFromWhip(WhipCertificate $whip, string $answer): static
     {
         $this->fill([
             'holder_name' => $whip->companyName ?: $this->holder_name,

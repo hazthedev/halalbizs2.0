@@ -15,7 +15,7 @@ final readonly class WhipCertificate
 
     /**
      * @param  'active'|'expired'|'not_certified'|'ambiguous'  $status
-     * @param  list<array{name: string, barcode: ?string}>  $products
+     * @param  list<array{name: string, brand: ?string, barcode: ?string}>  $products
      */
     public function __construct(
         public string $status,
@@ -54,5 +54,35 @@ final readonly class WhipCertificate
 
         // HalalBizs rows need both dates; an open-ended WHIP date goes to a human.
         return $this->validFrom && $this->validTo ? 'verified' : 'incomplete';
+    }
+
+    /**
+     * Is this seller product one of WHIP's? Exact only: a WHIP barcode equals
+     * one of the product's variant SKUs, or the normalised name equals WHIP's
+     * product name or "brand product name". No fuzzy matching.
+     *
+     * @param  iterable<string>  $skus
+     */
+    public function covers(string $name, iterable $skus): bool
+    {
+        $skus = collect($skus)->map(fn ($s) => strtolower(trim($s)))->filter()->all();
+        $name = self::normaliseName($name);
+
+        foreach ($this->products as $p) {
+            if ($p['barcode'] && in_array(strtolower(trim($p['barcode'])), $skus, true)) {
+                return true;
+            }
+            if ($name !== '' && in_array($name, [self::normaliseName($p['name']), self::normaliseName($p['brand'].' '.$p['name'])], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Lower-case, punctuation out, spaces collapsed. */
+    private static function normaliseName(?string $s): string
+    {
+        return trim(preg_replace('/\s+/', ' ', preg_replace('/[^\p{L}\p{N}\s]+/u', '', mb_strtolower((string) $s))));
     }
 }

@@ -56,8 +56,8 @@ class WhipDirectory
         $profile = $db->table('halal_application_company_profiles')->where('application_id', $row->application_id)->orderBy('id')->first();
         $body = $db->table('certification_bodies')->where('id', $row->certification_body_id)->value('name');
         $products = $db->table('halal_application_products')->where('application_id', $row->application_id)->orderBy('id')
-            ->get(['product_name', 'barcode'])
-            ->map(fn ($p) => ['name' => (string) $p->product_name, 'barcode' => $p->barcode ?: null])->all();
+            ->get(['product_name', 'brand_name', 'barcode'])
+            ->map(fn ($p) => ['name' => (string) $p->product_name, 'brand' => $p->brand_name ?: null, 'barcode' => $p->barcode ?: null])->all();
 
         return new WhipCertificate(
             status: $pick === null ? WhipCertificate::AMBIGUOUS : $states[$pick],
@@ -75,7 +75,7 @@ class WhipDirectory
     /**
      * Look up and judge in one call; never throws.
      *
-     * @return array{0: string, 1: ?WhipCertificate}  answer: verified|expired|not_certified|ambiguous|mismatch|incomplete|not_found|unavailable
+     * @return array{0: string, 1: ?WhipCertificate} answer: verified|expired|not_certified|ambiguous|mismatch|incomplete|not_found|unavailable
      */
     public function check(string $certificateNo, ?string $storeRegistrationNo): array
     {

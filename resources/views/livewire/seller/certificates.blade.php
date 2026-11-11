@@ -43,6 +43,9 @@
                                 {{ $certificate->valid_from->format('d M Y') }} – {{ $certificate->valid_to->format('d M Y') }} ·
                                 {{ trans_choice('{0} no products|{1} 1 product|[2,*] :count products', $certificate->products->count(), ['count' => $certificate->products->count()]) }}
                             </p>
+                            @if ($certificate->unmatchedProducts()->isNotEmpty())
+                                <p class="mt-1 text-[13px] text-ink-soft">{{ __('Not on your WHIP certificate, waiting for admin: :names', ['names' => $certificate->unmatchedProducts()->pluck('name')->implode(', ')]) }}</p>
+                            @endif
 
                             @if ($certificate->status === CertificateStatus::Rejected && $certificate->review_note)
                                 <p class="mt-2 max-w-prose rounded-[var(--radius-control)] bg-danger-tint px-3 py-2 text-[13px] text-danger">

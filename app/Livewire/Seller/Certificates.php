@@ -145,8 +145,9 @@ class Certificates extends Component
         }
 
         $verified = false;
+        $parked = collect();
 
-        DB::transaction(function () use ($certificate, $data, &$verified) {
+        DB::transaction(function () use ($certificate, $data, &$verified, &$parked) {
             $store = $this->currentStore();
 
             // The registration number is self-declared the first time and then
@@ -213,7 +214,8 @@ class Certificates extends Component
                     ->toMediaCollection('document');
             }
 
-            $this->syncCoveredProducts($certificate, $data['covered']);
+            // Only on a WHIP-verified row does WHIP decide which ticked products badge.
+            $parked = $certificate->bindProducts($data['covered'], $verified ? $whip : null);
 
             HalalCertificateEvent::create([
                 'halal_certificate_id' => $certificate->id,
@@ -230,29 +232,7 @@ class Certificates extends Component
         $this->dispatch('toast', message: $verified
             ? __('Verified with WHIP. Your halal badge is live.')
             : __('Sent for review. Your products stay on sale while we check it.'));
-    }
-
-    /**
-     * Bind the certificate to the seller's own SKUs.
-     *
-     * Every id is re-resolved through the store's own products, so a crafted
-     * payload cannot attach someone else's SKU. The model has a saving guard
-     * too — this is the UI half of the same rule, not the only copy of it.
-     */
-    private function syncCoveredProducts(HalalCertificate $certificate, array $covered): void
-    {
-        $ids = $this->storeProducts()->whereIn('id', $covered)->pluck('id');
-
-        Product::query()
-            ->where('halal_certificate_id', $certificate->id)
-            ->whereNotIn('id', $ids)
-            ->update(['halal_certificate_id' => null]);
-
-        $this->storeProducts()->whereIn('id', $ids)->update([
-            'halal_certificate_id' => $certificate->id,
-            'halal_cert_number' => $certificate->number,
-            'halal_cert_expiry' => $certificate->valid_to,
-        ]);
+        $parked->isNotEmpty() && $this->dispatch('toast', message: __('Not on your WHIP certificate, waiting for admin: :names', ['names' => $parked->implode(', ')]));
     }
 
     private function resetForm(): void
