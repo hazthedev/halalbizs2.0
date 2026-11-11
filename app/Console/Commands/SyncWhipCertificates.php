@@ -63,6 +63,10 @@ class SyncWhipCertificates extends Command
 
             $cert->save();
 
+            // WHIP's product list may have changed: re-apply it to what is bound or waiting.
+            $found !== null && $cert->bindProducts(
+                [...$cert->products()->pluck('id'), ...($cert->whip_unmatched_product_ids ?? [])], $found);
+
             if ($before !== $answer) {
                 $changed++;
                 HalalCertificateEvent::create([

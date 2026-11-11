@@ -6,8 +6,11 @@ use App\Livewire\Admin\Catalog\Certificates as AdminCertificates;
 use App\Livewire\Seller\Certificates;
 use App\Models\HalalCertificate;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\Whip\WhipDirectory;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -41,6 +44,7 @@ beforeEach(function () {
         $t->id();
         $t->unsignedBigInteger('application_id');
         $t->string('product_name');
+        $t->string('brand_name')->nullable();
         $t->string('barcode')->nullable();
     });
     $s->create('certification_bodies', function ($t) {
@@ -64,7 +68,9 @@ function whipCert(array $o = []): int
     $w->table('halal_application_company_profiles')->insert([
         'application_id' => $app, 'company_name' => 'WHIP Foods Sdn Bhd', 'registration_number' => $o['reg'] ?? '202001-000123',
     ]);
-    $w->table('halal_application_products')->insert(['application_id' => $app, 'product_name' => 'Kicap', 'barcode' => '955000']);
+    foreach ($o['products'] ?? [['product_name' => 'Kicap', 'barcode' => '955000']] as $p) {
+        $w->table('halal_application_products')->insert($p + ['application_id' => $app]);
+    }
 
     return $app;
 }
@@ -142,13 +148,13 @@ test('WHIP rows with an empty certificate number never match', function () {
     whipCert(['no' => '']);
     whipCert(['no' => null]);
 
-    expect(app(\App\Services\Whip\WhipDirectory::class)->lookup('  '))->toBeNull();
+    expect(app(WhipDirectory::class)->lookup('  '))->toBeNull();
 });
 
 test('number match ignores case and spaces around it, and a not-certified application is not active', function () {
     whipCert(['no' => ' wh-100 ', 'status' => 'Under Review']);
 
-    expect(app(\App\Services\Whip\WhipDirectory::class)->lookup('WH-100')->status)->toBe('not_certified');
+    expect(app(WhipDirectory::class)->lookup('WH-100')->status)->toBe('not_certified');
 });
 
 test('two active records with one number are ambiguous, not verified', function () {
@@ -163,7 +169,7 @@ test('the sync moves a certificate WHIP now holds as expired to expired and deli
     $app = whipCert();
     whipSubmit(whipSeller());
     $c = whipRow();
-    $product = Product::factory()->create(['store_id' => $c->store_id, 'status' => ProductStatus::Live, 'halal_certificate_id' => $c->id]);
+    $product = Product::factory()->create(['store_id' => $c->store_id, 'name' => 'Kicap', 'status' => ProductStatus::Live, 'halal_certificate_id' => $c->id]);
 
     DB::connection('whip')->table('halal_application_certificates')->where('application_id', $app)
         ->update(['valid_to' => now()->subDay()->toDateString()]);
@@ -222,7 +228,7 @@ test('a registration number the seller typed is not trusted: WHIP match goes to 
     whipSubmit($seller);
     expect(whipRow())->status->toBe(CertificateStatus::Pending)->source->toBe('manual')->whip_answer->toBe('verified');
 
-    $this->seed(\Database\Seeders\RoleSeeder::class);
+    $this->seed(RoleSeeder::class);
     $admin = User::factory()->create(['two_factor_method' => 'email']);
     $admin->assignRole('admin');
     $admin->syncPermissions(['certificates.manage']);
@@ -232,4 +238,94 @@ test('a registration number the seller typed is not trusted: WHIP match goes to 
 
     whipSubmit($seller->fresh(), 'WH-200');
     expect(whipRow('WH-200'))->status->toBe(CertificateStatus::Approved)->source->toBe('whip');
+});
+
+// ── Badge only on products WHIP certified ────────────────────────────────
+
+function whipProduct(HalalCertificate|Store $of, string $name, ?string $sku = null): Product
+{
+    $p = Product::factory()->create(['store_id' => $of instanceof Store ? $of->id : $of->store_id, 'name' => $name, 'status' => ProductStatus::Live]);
+    ProductVariant::factory()->create(['product_id' => $p->id, 'sku' => $sku ?? 'X-'.$p->id]);
+
+    return $p;
+}
+
+/** WHIP lists Kicap (barcode 955000) and "Brand Sos Cili"; the seller ticks 3, one not on it. */
+function whipTicked(): array
+{
+    whipCert(['products' => [
+        ['product_name' => 'Kicap', 'barcode' => '955000'],
+        ['product_name' => 'Sos Cili', 'brand_name' => null, 'barcode' => null],
+    ]]);
+    $seller = whipSeller();
+    $byBarcode = whipProduct($seller->store, 'Anything', ' 955000 ');
+    $byName = whipProduct($seller->store, 'SOS  cili!');
+    $stranger = whipProduct($seller->store, 'Ayam Goreng');
+
+    Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate')
+        ->set('number', 'WH-100')->set('issuingBody', 'JAKIM')->set('holderName', 'Typed Name')
+        ->set('validFrom', now()->subMonth()->toDateString())->set('validTo', now()->addYear()->toDateString())
+        ->set('document', UploadedFile::fake()->create('c.pdf', 50, 'application/pdf'))
+        ->set('covered', [$byBarcode->id, $byName->id, $stranger->id])
+        ->call('save')->assertHasNoErrors();
+
+    return [$seller, $byBarcode, $byName, $stranger];
+}
+
+function whipAdmin(): User
+{
+    test()->seed(RoleSeeder::class);
+    $admin = User::factory()->create(['two_factor_method' => 'email']);
+    $admin->assignRole('admin');
+    $admin->syncPermissions(['certificates.manage']);
+
+    return $admin->fresh();
+}
+
+test('a ticked product that is not on WHIP\'s certificate gets no badge', function () {
+    [, $byBarcode, $byName, $stranger] = whipTicked();
+
+    expect($byBarcode->fresh()->halalVerdict())->toBe('verified')   // barcode = sku, trimmed
+        ->and($byName->fresh()->halalVerdict())->toBe('verified')   // name, case/punctuation ignored
+        ->and($stranger->fresh()->halal_certificate_id)->toBeNull()
+        ->and(whipRow()->whip_unmatched_product_ids)->toBe([$stranger->id]);
+});
+
+test('admin Allow binds an unmatched product and the next sync keeps it', function () {
+    [, , , $stranger] = whipTicked();
+    $c = whipRow();
+
+    Livewire::actingAs(whipAdmin())->test(AdminCertificates::class)->call('allowProduct', $c->id, $stranger->id);
+
+    expect($stranger->fresh()->halalVerdict())->toBe('verified')
+        ->and($c->fresh()->whip_unmatched_product_ids)->toBe([])
+        ->and($c->events()->count())->toBe(2);
+
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+
+    expect($stranger->fresh()->halal_certificate_id)->toBe($c->id);
+});
+
+test('the sync unbinds a product WHIP dropped', function () {
+    [, $byBarcode, $byName] = whipTicked();
+    DB::connection('whip')->table('halal_application_products')->where('product_name', 'Kicap')->delete();
+
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+
+    expect($byBarcode->fresh()->halal_certificate_id)->toBeNull()
+        ->and($byName->fresh()->halal_certificate_id)->toBe(whipRow()->id)
+        ->and(whipRow()->whip_unmatched_product_ids)->toContain($byBarcode->id);
+});
+
+test('a manual certificate binds every ticked product, unchanged', function () {
+    $seller = whipSeller();
+    $p = whipProduct($seller->store, 'Ayam Goreng');
+    Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate')
+        ->set('number', 'MAN-1')->set('issuingBody', 'JAKIM')->set('holderName', 'X')
+        ->set('validFrom', now()->subMonth()->toDateString())->set('validTo', now()->addYear()->toDateString())
+        ->set('document', UploadedFile::fake()->create('c.pdf', 50, 'application/pdf'))
+        ->set('covered', [$p->id])->call('save')->assertHasNoErrors();
+
+    expect($p->fresh()->halal_certificate_id)->toBe(whipRow('MAN-1')->id)
+        ->and(whipRow('MAN-1')->whip_unmatched_product_ids)->toBeNull();
 });

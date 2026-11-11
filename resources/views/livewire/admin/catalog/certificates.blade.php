@@ -68,6 +68,12 @@
                             @if ($certificate->whipNote())
                                 <p class="mb-3 text-[13px] font-medium text-ink">{{ $certificate->whipNote() }}</p>
                             @endif
+                            @foreach ($certificate->unmatchedProducts() as $unmatched)
+                                <div class="mb-2 flex items-center justify-between gap-3 text-[13px]" wire:key="unmatched-{{ $unmatched->id }}">
+                                    <span>{{ __('Not on WHIP\'s certificate: :name', ['name' => $unmatched->name]) }}</span>
+                                    <x-ui.button variant="ghost" wire:click="allowProduct({{ $certificate->id }}, {{ $unmatched->id }})" wire:loading.attr="disabled">{{ __('Allow') }}</x-ui.button>
+                                </div>
+                            @endforeach
                             <dl class="grid gap-3 text-[13px] sm:grid-cols-2">
                                 <div>
                                     <dt class="text-ink-soft">{{ __('Holder') }}</dt>

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Catalog;
 use App\Enums\CertificateStatus;
 use App\Models\HalalCertificate;
 use App\Models\HalalCertificateEvent;
+use App\Models\Product;
 use App\Notifications\HalalCertificateDecision;
 use App\Services\Whip\WhipDirectory;
 use App\Support\DisplayTime;
@@ -65,6 +66,8 @@ class Certificates extends Component
                 [$answer, $whip] = app(WhipDirectory::class)->check($certificate->number, $certificate->store->registration_no);
                 if ($answer === 'verified') {
                     $certificate->takeFromWhip($whip, $answer);
+                    $certificate->save();
+                    $certificate->bindProducts($certificate->products()->pluck('id')->all(), $whip);
                     $certificate->store->forceFill(['registration_verified_at' => now()])->save();
                 }
             }
@@ -95,6 +98,42 @@ class Certificates extends Component
 
         $this->reviewing = null;
         $this->dispatch('toast', message: __(':number approved — the badge is live on its products.', ['number' => $certificate->number]));
+    }
+
+    /** Give the halal badge to a ticked product WHIP does not list. */
+    public function allowProduct(int $id, int $productId): void
+    {
+        $certificate = HalalCertificate::findOrFail($id);
+        abort_unless(in_array($productId, $certificate->whip_unmatched_product_ids ?? [], true), 404);
+
+        $product = Product::query()->where('store_id', $certificate->store_id)->findOrFail($productId);
+
+        DB::transaction(function () use ($certificate, $product) {
+            $product->forceFill([
+                'halal_certificate_id' => $certificate->id,
+                'halal_cert_number' => $certificate->number,
+                'halal_cert_expiry' => $certificate->valid_to,
+            ])->save();
+            $certificate->forceFill([
+                'whip_allowed_product_ids' => [...($certificate->whip_allowed_product_ids ?? []), $product->id],
+                'whip_unmatched_product_ids' => array_values(array_diff($certificate->whip_unmatched_product_ids, [$product->id])),
+            ])->save();
+
+            // Public register line: the fact only, no reviewer named.
+            HalalCertificateEvent::create([
+                'halal_certificate_id' => $certificate->id,
+                'occurred_on' => DisplayTime::today()->toDateString(),
+                'summary' => __('Product added to the certificate scope'),
+            ]);
+        });
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($certificate)
+            ->withProperties(['number' => $certificate->number, 'product' => $product->name])
+            ->log('halal_certificate.product_allowed');
+
+        $this->dispatch('toast', message: __(':name now has the halal badge.', ['name' => $product->name]));
     }
 
     public function reject(int $id): void
