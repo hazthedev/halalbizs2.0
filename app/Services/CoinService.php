@@ -73,22 +73,51 @@ class CoinService
 
         $wallet = CoinWallet::where('user_id', $user->id)->lockForUpdate()->first();
 
-        if ($wallet === null || $wallet->balance <= 0) {
+        $coins = $wallet === null ? 0 : $this->cappedCoins($requestedCoins, (int) $wallet->balance, $maxSpendableSen);
+
+        if ($wallet === null || $coins <= 0) {
             return CoinRedemptionResult::none();
         }
 
-        $rate = max(1, (int) config('coins.redemption_rate_sen', 1));
-        $maxSen = min((int) config('coins.max_redemption_sen', 5000), max(0, $maxSpendableSen - 1));
-        $coins = min($requestedCoins, (int) $wallet->balance, intdiv($maxSen, $rate));
-
-        if ($coins <= 0) {
-            return CoinRedemptionResult::none();
-        }
-
-        $sen = $coins * $rate;
+        $sen = $coins * $this->redemptionRateSen();
         $txn = $this->consumeLocked($wallet, $coins, CoinTransactionType::Redeem, null, null, $sen);
 
         return new CoinRedemptionResult($coins, $sen, $txn);
+    }
+
+    /**
+     * What redeemForCheckout() WOULD consume for this bill — same cap, no lock,
+     * no debit. The checkout quote shows this so the preview and the charge
+     * cannot drift apart.
+     */
+    public function previewRedemption(User $user, int $requestedCoins, int $maxSpendableSen): CoinRedemptionResult
+    {
+        if (! $this->enabled() || $requestedCoins <= 0 || $maxSpendableSen <= 0) {
+            return CoinRedemptionResult::none();
+        }
+
+        $coins = $this->cappedCoins($requestedCoins, $this->balance($user), $maxSpendableSen);
+
+        return $coins <= 0
+            ? CoinRedemptionResult::none()
+            : new CoinRedemptionResult($coins, $coins * $this->redemptionRateSen(), null);
+    }
+
+    /** Coins actually spendable: wallet balance, per-order ceiling, and ≥ 1 sen left payable. */
+    private function cappedCoins(int $requestedCoins, int $balance, int $maxSpendableSen): int
+    {
+        if ($balance <= 0) {
+            return 0;
+        }
+
+        $maxSen = min((int) config('coins.max_redemption_sen', 5000), max(0, $maxSpendableSen - 1));
+
+        return min($requestedCoins, $balance, intdiv($maxSen, $this->redemptionRateSen()));
+    }
+
+    private function redemptionRateSen(): int
+    {
+        return max(1, (int) config('coins.redemption_rate_sen', 1));
     }
 
     /**

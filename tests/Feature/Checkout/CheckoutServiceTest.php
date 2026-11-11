@@ -337,8 +337,11 @@ test('COD cap and disabled products are rejected', function () {
 test('holiday-mode store blocks checkout', function () {
     [$buyer, $address] = checkoutBuyer();
     $product = Product::factory()->create(['cod_enabled' => true]);
-    $product->store->update(['holiday_mode' => true]);
     cartWith($buyer, $product);
+
+    // The store closes AFTER the line is in the cart (adding to a holiday
+    // store's cart is already refused by CartService::addItem).
+    $product->store->update(['holiday_mode' => true]);
 
     expect(fn () => app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod))
         ->toThrow(CheckoutException::class, 'not accepting orders');

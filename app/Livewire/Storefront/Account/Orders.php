@@ -22,7 +22,7 @@ class Orders extends Component
     use InteractsWithCart, WithPagination;
 
     /** Tab key => sub-order statuses. "to-pay" lists parent orders instead. */
-    private const TAB_STATUSES = [
+    public const TAB_STATUSES = [
         'to-ship' => [SubOrderStatus::Confirmed, SubOrderStatus::Processing],
         'to-receive' => [SubOrderStatus::Shipped, SubOrderStatus::Delivered],
         'completed' => [SubOrderStatus::Completed],
@@ -76,13 +76,7 @@ class Orders extends Component
             return;
         }
 
-        $orderService = app(OrderService::class);
-
-        foreach ($order->subOrders as $subOrder) {
-            if ($subOrder->status === SubOrderStatus::PendingPayment) {
-                $orderService->cancel($subOrder, ActorType::Buyer, auth()->id(), __('Cancelled before payment'));
-            }
-        }
+        app(OrderService::class)->cancelUnpaid($order, ActorType::Buyer, auth()->id(), __('Cancelled before payment'));
 
         $this->dispatch('toast', message: __('Order cancelled — nothing was charged.'));
     }
@@ -123,7 +117,7 @@ class Orders extends Component
         $tabIsToPay = $this->tab === 'to-pay';
 
         return view('livewire.storefront.account.orders', [
-            'tabs' => $this->tabLabels(),
+            'tabs' => self::tabLabels(),
             'counts' => $this->counts(),
             'orders' => $tabIsToPay
                 ? $this->applyOrderSearch($this->awaitingPaymentQuery())->with('subOrders')->latest('placed_at')->paginate(10)
@@ -140,7 +134,7 @@ class Orders extends Component
     }
 
     /** @return array<string, string> */
-    private function tabLabels(): array
+    public static function tabLabels(): array
     {
         return [
             'to-pay' => __('To Pay'),
@@ -155,7 +149,7 @@ class Orders extends Component
     /** @return list<string> */
     private function tabKeys(): array
     {
-        return array_keys($this->tabLabels());
+        return array_keys(self::tabLabels());
     }
 
     /** @return array<string, int> count chips per tab */

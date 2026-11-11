@@ -1,0 +1,864 @@
+{
+  "@@locale": "en",
+  "appName": "HalalBizs",
+  "tabHome": "Home",
+  "tabSearch": "Search",
+  "tabCart": "Cart",
+  "tabOrders": "Orders",
+  "tabAccount": "Account",
+  "sellerTabDashboard": "Dashboard",
+  "sellerTabOrders": "Orders",
+  "sellerTabProducts": "Products",
+  "sellerTabEarnings": "Earnings",
+  "sellerTabStore": "Store",
+  "signIn": "Sign in",
+  "signInTitle": "Welcome back",
+  "signInSubtitle": "Sign in to your HalalBizs account.",
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm password",
+  "name": "Name",
+  "forgotPassword": "Forgot password?",
+  "createAccount": "Create account",
+  "createAccountSubtitle": "Shop halal, from sellers you can trust.",
+  "noAccount": "Don't have an account?",
+  "haveAccount": "Already have an account?",
+  "register": "Register",
+  "twoFactorTitle": "Two-factor authentication",
+  "twoFactorHintTotp": "Enter the 6-digit code from your authenticator app.",
+  "twoFactorHintEmail": "Enter the code we emailed you.",
+  "code": "Code",
+  "verify": "Verify",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "resetPassword": "Reset password",
+  "resetPasswordSubtitle": "We will email you a link to choose a new password.",
+  "sendResetLink": "Send reset link",
+  "resetLinkSent": "If that email is registered, a reset link is on its way.",
+  "verifyEmailTitle": "Verify your email",
+  "verifyEmailBody": "We sent a verification link to {email}. Open it, then come back here.",
+  "@verifyEmailBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "resendVerification": "Resend verification email",
+  "verificationSent": "Verification email sent.",
+  "iHaveVerified": "I have verified",
+  "categories": "Categories",
+  "featured": "Featured",
+  "viewAll": "View all",
+  "homePromotions": "Promotions",
+  "flashSale": "Flash Sale",
+  "flashEndsIn": "Ends in",
+  "searchHint": "Search products",
+  "searchMinChars": "Type at least 2 characters to search.",
+  "searchNeedsConnection": "Search needs a connection",
+  "searchNeedsConnectionBody": "Reconnect and try again. Cached products are still in Home.",
+  "searchNoResults": "No results for “{query}”",
+  "@searchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchNoResultsBody": "Try a different word or browse the categories.",
+  "sort": "Sort",
+  "sortRelevance": "Relevance",
+  "sortPopular": "Popular",
+  "sortNewest": "Newest",
+  "sortPriceAsc": "Price: low to high",
+  "sortPriceDesc": "Price: high to low",
+  "filterSort": "Sort & filter",
+  "filterPrice": "Price (RM)",
+  "filterMin": "Min",
+  "filterMax": "Max",
+  "filterReset": "Reset",
+  "filterApply": "Apply",
+  "filterPriceInvalid": "Enter a price like 12.50, with Min no higher than Max.",
+  "allCategories": "All",
+  "sold": "sold",
+  "addToCart": "Add to cart",
+  "outOfStock": "Out of stock",
+  "inStock": "{count} in stock",
+  "@inStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onlyLeft": "Only {count} left",
+  "@onlyLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "variant": "Variant",
+  "quantity": "Quantity",
+  "description": "Description",
+  "soldBy": "Sold by",
+  "visitStore": "Visit store",
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartComingSoon": "Cart arrives in the next slice",
+  "addedToCart": "Added to cart",
+  "signInToContinue": "Sign in to continue",
+  "noProductsYet": "No products yet",
+  "noProductsBody": "Check back soon. Sellers are adding stock.",
+  "comingNextSlice": "Coming in the next slice",
+  "comingNextSliceBody": "This screen is built in the next release.",
+  "retry": "Retry",
+  "backToHome": "Back to home",
+  "pageNotFound": "Page not found",
+  "pageNotFoundBody": "This link doesn't match a page in HalalBizs.",
+  "profile": "Profile",
+  "addresses": "Addresses",
+  "wishlist": "Wishlist",
+  "coins": "Coins",
+  "notifications": "Notifications",
+  "messages": "Messages",
+  "language": "Language",
+  "deleteAccount": "Delete account",
+  "sellerCentre": "Seller centre",
+  "becomeSeller": "Become a seller",
+  "signOut": "Sign out",
+  "signOutConfirmTitle": "Sign out?",
+  "signOutConfirmBody": "You can sign in again any time.",
+  "english": "English",
+  "malay": "Bahasa Melayu",
+  "backToShop": "Back to shop",
+  "guestAccountTitle": "Sign in to see your account",
+  "guestAccountBody": "Orders, addresses, coins and messages live here once you are signed in.",
+  "fieldRequired": "This field is required.",
+  "emailInvalid": "Enter a valid email address.",
+  "passwordMin": "Use at least 8 characters.",
+  "passwordMismatch": "Passwords do not match.",
+  "codeLength": "Enter the 6-digit code.",
+  "offlineStrip": "Offline · showing cached data",
+  "cachedStrip": "Showing cached data",
+  "cachedChip": "Cached",
+  "needsConnection": "Needs a connection",
+  "somethingWentWrong": "Something went wrong.",
+  "store": "Store",
+  "products": "Products",
+  "reviews": "Reviews",
+  "storeAbout": "About",
+  "storeJoined": "Joined {date}",
+  "@storeJoined": {"placeholders": {"date": {"type": "String"}}},
+  "category": "Category",
+  "product": "Product",
+  "errorOffline": "No connection. Showing cached data where available.",
+  "errorTimeout": "The server took too long to respond. Try again.",
+  "errorBadResponse": "Unexpected server response.",
+  "errorNoChallenge": "Sign in again to get a new code.",
+  "errorTokenStorage": "This device refused to store the sign-in token securely. Check the app's keychain access and try again.",
+  "sessionEnded": "Your session has ended. Please sign in again.",
+  "back": "Back",
+  "justNow": "just now",
+  "minutesOld": "{count} min old",
+  "@minutesOld": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursOld": "{count} h old",
+  "@hoursOld": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "any": "Any",
+  "clear": "Clear",
+  "newAddress": "New address",
+  "address": "Address",
+  "conversation": "Conversation",
+  "checkout": "Checkout",
+  "payment": "Payment",
+  "orderPlaced": "Order placed",
+  "orderDetails": "Order details",
+  "orderReturn": "Return",
+  "orderReview": "Review",
+  "sellerBackToBuying": "Back to buying",
+  "sellerRequired": "Your account is not an approved seller.",
+  "sellerTodaySales": "Today's sales",
+  "sellerTodayOrders": "Today's orders",
+  "sellerToShip": "To ship",
+  "sellerLowStock": "Low stock",
+  "sellerAvailable": "Available",
+  "sellerHeld": "Held",
+  "sellerPaidOut": "Paid out",
+  "sellerOrdersByStatus": "Orders by status",
+  "sellerRecentOrders": "Recent orders",
+  "sellerNoOrders": "No orders yet",
+  "sellerNoOrdersBody": "Orders appear here as buyers check out.",
+  "sellerAllStatuses": "All",
+  "sellerStatusPendingPayment": "Pending payment",
+  "sellerStatusConfirmed": "Confirmed",
+  "sellerStatusProcessing": "Processing",
+  "sellerStatusShipped": "Shipped",
+  "sellerStatusDelivered": "Delivered",
+  "sellerStatusCompleted": "Completed",
+  "sellerStatusCancelled": "Cancelled",
+  "sellerStatusReturnRequested": "Return requested",
+  "sellerStatusReturned": "Returned",
+  "sellerStatusRefunded": "Refunded",
+  "sellerItemsCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@sellerItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sellerOrder": "Order",
+  "sellerBuyer": "Buyer",
+  "sellerShipTo": "Ship to",
+  "sellerItems": "Items",
+  "sellerSubtotal": "Subtotal",
+  "sellerShippingFee": "Shipping",
+  "sellerDiscount": "Discount",
+  "sellerTax": "Tax",
+  "sellerTotal": "Total",
+  "sellerCommission": "Commission",
+  "sellerCommissionEstimated": "Estimated until the order completes.",
+  "sellerPayment": "Payment",
+  "sellerPaymentCod": "Cash on delivery",
+  "sellerPaymentOnline": "Online payment",
+  "sellerTracking": "Tracking",
+  "sellerTrack": "Track parcel",
+  "sellerHistory": "History",
+  "sellerReturnRequest": "Return request",
+  "sellerRespondBy": "Respond by {date}",
+  "@sellerRespondBy": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "sellerPack": "Pack",
+  "sellerShip": "Ship",
+  "sellerMarkDelivered": "Mark delivered",
+  "sellerAcceptReturn": "Accept return",
+  "sellerDisputeReturn": "Dispute",
+  "sellerConfirmReceived": "Confirm item received",
+  "sellerShipTitle": "Ship this order",
+  "sellerCourier": "Courier",
+  "sellerCourierOther": "Other",
+  "sellerCourierName": "Courier name",
+  "sellerTrackingNo": "Tracking number",
+  "sellerTrackingNoLength": "Enter 6 to 64 characters.",
+  "sellerDisputeTitle": "Dispute this return",
+  "sellerDisputeReason": "Reason",
+  "sellerDisputeReasonMin": "Write at least 10 characters.",
+  "sellerSubmit": "Submit",
+  "sellerOrderUpdated": "Order updated",
+  "sellerSearchProducts": "Search products or SKU",
+  "sellerNoProducts": "No products yet",
+  "sellerNoProductsBody": "Add your first product to start selling.",
+  "sellerNewProduct": "New product",
+  "sellerEditProduct": "Edit product",
+  "sellerStatusDraft": "Draft",
+  "sellerStatusPendingReview": "Pending review",
+  "sellerStatusLive": "Live",
+  "sellerStatusDelisted": "Delisted",
+  "sellerStatusBanned": "Banned",
+  "sellerStock": "Stock",
+  "sellerStockCount": "Stock {count}",
+  "@sellerStockCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sellerCod": "COD",
+  "sellerNameEn": "Name (English)",
+  "sellerNameMs": "Name (Malay)",
+  "sellerNameVi": "Name (Vietnamese)",
+  "sellerDescriptionEn": "Description (English)",
+  "sellerDescriptionMs": "Description (Malay)",
+  "sellerDescriptionVi": "Description (Vietnamese)",
+  "sellerCategory": "Category",
+  "sellerChooseCategory": "Choose a category",
+  "sellerPriceRm": "Price (RM)",
+  "sellerSalePriceRm": "Sale price (RM)",
+  "sellerPriceFormat": "Enter an amount like 12.50.",
+  "sellerSku": "SKU",
+  "sellerWeightG": "Weight (g)",
+  "sellerLengthMm": "Length (mm)",
+  "sellerWidthMm": "Width (mm)",
+  "sellerHeightMm": "Height (mm)",
+  "sellerCodEnabled": "Cash on delivery",
+  "sellerCodEnabledHelp": "Let buyers pay on delivery for this product.",
+  "sellerVariants": "Variants",
+  "sellerImages": "Images",
+  "sellerImagesHelp": "Up to 9 photos. Pick several at once. They show in the order you add them.",
+  "sellerImagesSaveFirst": "Save the product first to add images.",
+  "sellerImagesFull": "9 photos is the limit. Remove one to add another.",
+  "sellerImagesTooMany": "Only {count} more photos fit. A product has at most 9.",
+  "@sellerImagesTooMany": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerDescriptionHasFormatting": "This description has formatting. Edit it on the web seller centre.",
+  "sellerAddImage": "Add image",
+  "sellerRemoveImage": "Remove image",
+  "sellerRemoveImageBody": "This image will be removed from the listing.",
+  "sellerRemove": "Remove",
+  "sellerGallery": "Choose from gallery",
+  "sellerCamera": "Take a photo",
+  "sellerSave": "Save",
+  "sellerSaved": "Saved",
+  "sellerPublish": "Publish",
+  "sellerDelist": "Delist",
+  "sellerRelist": "Relist",
+  "sellerHalalBlocked": "Publishing blocked",
+  "sellerNumberInvalid": "Enter a whole number.",
+  "sellerRequestPayout": "Request payout",
+  "sellerPayoutPending": "Payout pending",
+  "sellerPayoutMin": "Minimum payout {amount}",
+  "@sellerPayoutMin": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "sellerPayoutMax": "Up to {amount} available",
+  "@sellerPayoutMax": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "sellerPayoutAmountRm": "Amount (RM)",
+  "sellerPayoutRequested": "Payout requested",
+  "sellerPayoutBelowMin": "Below the minimum payout.",
+  "sellerPayoutAboveAvailable": "More than the available balance.",
+  "sellerLedger": "Ledger",
+  "sellerNoLedger": "No activity yet",
+  "sellerNoLedgerBody": "Sales and fees show up here once orders complete.",
+  "sellerPayouts": "Payouts",
+  "sellerNoPayouts": "No payouts yet",
+  "sellerLoadMore": "Load more",
+  "sellerStoreDescription": "Description",
+  "sellerState": "State",
+  "sellerHolidayMode": "Holiday mode",
+  "sellerHolidayModeHelp": "Hide your products while you are away.",
+  "sellerShipping": "Shipping",
+  "sellerShippingMatrix": "Per-state rates are managed in the web seller centre.",
+  "sellerFlatFeeRm": "Flat fee (RM)",
+  "sellerFreeAboveRm": "Free shipping above (RM)",
+  "sellerBank": "Bank details",
+  "sellerBankName": "Bank",
+  "sellerAccountName": "Account name",
+  "sellerAccountNumber": "Account number",
+  "sellerAccountNumberHelp": "Enter the full number to replace {masked}.",
+  "@sellerAccountNumberHelp": {
+    "placeholders": {
+      "masked": {
+        "type": "String"
+      }
+    }
+  },
+  "sellerBankHelp": "Enter the full account number to change bank details.",
+  "sellerChangeLogo": "Change logo",
+  "sellerChangeBanner": "Change banner",
+  "sellerReviews": "Reviews",
+  "sellerNoReviews": "No reviews yet",
+  "sellerNoReviewsBody": "Buyer reviews of your products appear here.",
+  "sellerReplyHint": "Write a reply to this buyer",
+  "sellerPostReply": "Post reply",
+  "sellerYourReply": "Your reply",
+  "sellerReplyMin": "Write at least 5 characters.",
+  "sellerStoreSaved": "Store saved",
+  "sellerSaveStoreSettings": "Save store settings",
+  "sellerBankNeedsNumber": "Re-enter the full account number to change bank details.",
+  "sellerStatusPending": "Pending",
+  "sellerStatusPaid": "Paid",
+  "sellerStatusFailed": "Failed",
+  "sellerStatusExpired": "Expired",
+  "sellerDefaultVariant": "Default",
+  "sellerImageTooLarge": "Choose an image under {kb} KB.",
+  "@sellerImageTooLarge": {
+    "placeholders": {
+      "kb": {
+        "type": "int"
+      }
+    }
+  },
+  "sellerAcceptReturnConfirm": "Accept this return? The buyer will be asked to send the item back.",
+  "sellerDisputeConfirm": "Dispute this return? HalalBizs will review the case with your reason.",
+  "sellerDelistConfirm": "Delist this product? Buyers will no longer see it until you relist it.",
+  "sellerPayoutConfirm": "Request a payout of {amount} to your bank account?",
+  "@sellerPayoutConfirm": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cartCheckout": "Checkout",
+  "cartContinueShopping": "Continue shopping",
+  "cartEmptyTitle": "Your cart is empty",
+  "cartEmptyBody": "Find something halal and good — it will wait for you here.",
+  "cartItemCount": "{count} items",
+  "@cartItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartPurchasingPaused": "Purchasing is paused — you can browse, but not check out right now.",
+  "cartRemove": "Remove",
+  "cartSelectAll": "Select all",
+  "cartSelectToCheckout": "Select at least one item to check out.",
+  "cartSelectedSubtotal": "Subtotal · {count} selected",
+  "@cartSelectedSubtotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartUnavailable": "Unavailable",
+  "cartViewCart": "View cart",
+  "checkoutTitle": "Checkout",
+  "checkoutDeliverTo": "Deliver to",
+  "checkoutChange": "Change",
+  "checkoutNoAddress": "You have no delivery address yet — add one to place your order.",
+  "checkoutChooseMethod": "Choose an available payment method.",
+  "checkoutSellerNote": "Note to seller",
+  "checkoutSellerNoteHint": "Optional — e.g. leave at the guard house",
+  "checkoutVouchers": "Vouchers",
+  "checkoutPlatformVoucher": "HalalBizs voucher",
+  "checkoutShopVoucher": "Shop voucher",
+  "checkoutVoucherHint": "Voucher code",
+  "checkoutVoucherApply": "Apply",
+  "checkoutVoucherRemove": "Remove",
+  "checkoutVoucherApplied": "{code} applied · {amount} off",
+  "@checkoutVoucherApplied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutUseCoins": "Use coins (you have {balance})",
+  "@checkoutUseCoins": {
+    "placeholders": {
+      "balance": {
+        "type": "int"
+      }
+    }
+  },
+  "checkoutCoinsToUse": "Coins to use",
+  "checkoutCoinsWorth": "{coins} coins · {amount} off",
+  "@checkoutCoinsWorth": {
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPaymentMethod": "Payment method",
+  "checkoutMethodCod": "Cash on delivery",
+  "checkoutMethodIpay88": "Online payment (FPX, card, e-wallet)",
+  "checkoutMethodUnavailable": "Not available for this order.",
+  "checkoutSummary": "Summary",
+  "checkoutSubtotal": "Subtotal",
+  "checkoutShipping": "Shipping",
+  "checkoutShippingPending": "Choose an address",
+  "checkoutShippingDiscount": "Shipping discount",
+  "checkoutPlatformDiscount": "HalalBizs voucher",
+  "checkoutShopDiscount": "Shop discount",
+  "checkoutTax": "Tax",
+  "checkoutGrandTotal": "Grand total",
+  "checkoutPlaceOrder": "Place order",
+  "checkoutDoneTitle": "Order placed",
+  "checkoutDoneBody": "Order {orderNo} is confirmed. Your orders are here:",
+  "@checkoutDoneBody": {
+    "placeholders": {
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutViewOrders": "View orders",
+  "checkoutPayTitle": "Payment",
+  "checkoutPayBrowserTitle": "Complete payment in your browser",
+  "checkoutPayBrowserBody": "Order {orderNo} opened in your browser. Come back here when you are done — we check the payment automatically.",
+  "@checkoutPayBrowserBody": {
+    "placeholders": {
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPayExpiresAt": "Pay before {time}",
+  "@checkoutPayExpiresAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPayIHavePaid": "I have paid",
+  "checkoutPayOpenAgain": "Open payment page again",
+  "checkoutPayRetry": "Retry payment",
+  "checkoutPayExpiredTitle": "Payment window expired",
+  "checkoutPayExpiredBody": "This order was not paid in time. Nothing was charged.",
+  "ordersAll": "All",
+  "ordersOrder": "Order",
+  "ordersTotal": "Total",
+  "ordersMoreItems": "+{count} more",
+  "@ordersMoreItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersPlacedAt": "Placed {date}",
+  "@ordersPlacedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersEmptyTitle": "No orders yet",
+  "ordersEmptyBody": "Your orders appear here once you check out.",
+  "ordersEmptyBucketTitle": "No orders in this status",
+  "ordersEmptyBucketBody": "Pick another tab to see your other orders.",
+  "ordersLoadMore": "Load more",
+  "ordersTracking": "Tracking",
+  "ordersTrack": "Track",
+  "ordersReturnRequest": "Return request",
+  "ordersCancelOrder": "Cancel order",
+  "ordersCancelTitle": "Cancel this order?",
+  "ordersCancelBody": "Nothing will be charged and the items go back in stock.",
+  "ordersCancelConfirm": "Cancel order",
+  "ordersKeep": "Keep order",
+  "ordersCancelled": "Order cancelled",
+  "ordersReason": "Reason",
+  "ordersReasonHint": "Choose a reason",
+  "ordersConfirmReceived": "Confirm received",
+  "ordersReceivedTitle": "Received your order?",
+  "ordersReceivedBody": "Confirm only once everything has arrived.",
+  "ordersReceivedDone": "Order received",
+  "ordersRequestReturn": "Request return",
+  "ordersNote": "Note",
+  "ordersReturnNoteHint": "What went wrong?",
+  "ordersPhotos": "Photos",
+  "ordersPhotosHelp": "Up to {max} photos.",
+  "@ordersPhotosHelp": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersReturnConfirmTitle": "Submit this return request?",
+  "ordersReturnConfirmBody": "The seller will be notified.",
+  "ordersReturnSubmit": "Submit return request",
+  "ordersReturnSubmitted": "Return requested",
+  "ordersWriteReview": "Write a review",
+  "ordersReviewBody": "Your review",
+  "ordersReviewBodyHint": "Optional — at least 10 characters",
+  "ordersSellerRating": "Seller rating",
+  "ordersSellerComment": "Comment",
+  "ordersOptional": "Optional",
+  "ordersRateEveryItem": "Rate every item before submitting.",
+  "ordersReviewSubmit": "Submit review",
+  "ordersReviewSubmitted": "Thank you for your review.",
+  "ordersNothingToReview": "Nothing left to review",
+  "accountSave": "Save",
+  "accountDelete": "Delete",
+  "accountDefault": "Default",
+  "accountPhone": "Phone",
+  "accountPreferredLanguage": "Preferred language",
+  "accountEmailUnverified": "Email not verified yet.",
+  "accountProfileSaved": "Profile updated",
+  "accountChangePassword": "Change password",
+  "accountCurrentPassword": "Current password",
+  "accountNewPassword": "New password",
+  "accountPasswordChanged": "Password updated",
+  "accountAddAddress": "Add address",
+  "accountEditAddress": "Edit address",
+  "accountNoAddresses": "No addresses yet",
+  "accountNoAddressesBody": "Add a delivery address to check out faster.",
+  "accountAddressLabel": "Label",
+  "accountAddressLabelHint": "Home, Office…",
+  "accountRecipientName": "Recipient name",
+  "accountLine1": "Address line 1",
+  "accountLine2": "Address line 2",
+  "accountPostcode": "Postcode",
+  "accountCity": "City",
+  "accountState": "State",
+  "accountStateHint": "Choose a state",
+  "accountSetDefault": "Set as default",
+  "accountAddressSaved": "Address saved",
+  "accountDeleteAddressTitle": "Delete this address?",
+  "accountDeleteAddressBody": "You can add it again any time.",
+  "accountWishlistEmpty": "Nothing saved yet",
+  "accountWishlistEmptyBody": "Tap the heart on a product to keep it here.",
+  "accountRemoveFromWishlist": "Remove from wishlist",
+  "productAddToWishlist": "Add to wishlist",
+  "accountCoinsBalance": "Balance",
+  "accountCoinsStreak": "Streak",
+  "accountCoinsDays": "{days} days",
+  "@accountCoinsDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "accountCoinsLifetime": "{coins} coins earned in total",
+  "@accountCoinsLifetime": {
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      }
+    }
+  },
+  "accountCoinsExpiring": "Some coins expire {date}",
+  "@accountCoinsExpiring": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountCheckIn": "Check in today",
+  "accountCheckedIn": "Checked in today",
+  "accountCheckedInReason": "You have already checked in today.",
+  "accountCheckInBody": "Check in every day to grow your streak and earn more coins.",
+  "accountCheckInDone": "+{coins} coins · day {streak} streak",
+  "@accountCheckInDone": {
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      },
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "accountCoinsHistory": "History",
+  "accountCoinsNoHistory": "No coin activity yet",
+  "accountCoinsUnavailable": "Coins are not available",
+  "accountCoinsUnavailableBody": "Daily check-in is unavailable right now.",
+  "accountMarkAllRead": "Mark all read",
+  "accountNoNotifications": "No notifications",
+  "accountNoNotificationsBody": "Order updates and messages from sellers show up here.",
+  "accountDeleteWarning": "This cannot be undone.",
+  "accountDeleteBody": "Your personal details are anonymized immediately; order records stay for legal and financial reasons. Enter your password to continue.",
+  "accountDeleteConfirmTitle": "Delete your account?",
+  "accountDeleteConfirmBody": "You will be signed out and cannot sign in again with this account.",
+  "messagesChatWithSeller": "Chat with seller",
+  "messagesEmpty": "No messages yet",
+  "messagesEmptyBody": "Start a chat from any product page.",
+  "messagesNoMessagesYet": "No messages in this conversation yet.",
+  "messagesSayHello": "Say hello to the seller.",
+  "messagesTypeMessage": "Type a message",
+  "messagesSend": "Send",
+  "checkoutPlacedCheckOrders": "Your order was placed. Check your orders.",
+  "checkoutMaybePlaced": "We could not confirm whether the order went through. Check your orders before trying again.",
+  "checkoutPayLinkMissing": "The order was placed but no payment link came back. Pay it from your orders.",
+  "accountWishlistStillSaved": "Still in your wishlist — try again.",
+  "accountUnread": "Unread",
+  "ordersReviewStars": "{n, plural, =1{1 star} other{{n} stars}}",
+  "@ordersReviewStars": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersPaymentStatusPending": "Pending",
+  "ordersPaymentStatusPaid": "Paid",
+  "ordersPaymentStatusFailed": "Failed",
+  "ordersPaymentStatusExpired": "Expired",
+  "ordersPaymentStatusRefunded": "Refunded",
+  "ordersReturnStatusRequested": "Requested",
+  "ordersReturnStatusAccepted": "Accepted",
+  "ordersReturnStatusDisputed": "Disputed",
+  "ordersReturnStatusEscalated": "Escalated",
+  "ordersReturnStatusRefunded": "Refunded",
+  "ordersReturnStatusRejected": "Rejected",
+  "checkoutDonePaid": "Paid {amount} (payment {orderNo}).",
+  "@checkoutDonePaid": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutDoneCod": "Total {amount}, paid on delivery (payment {orderNo}).",
+  "@checkoutDoneCod": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutDoneSplit": "{count, plural, =1{It ships as one shipment.} other{Your order is split into {count} shipments, one per shop.}}",
+  "@checkoutDoneSplit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersOrderNo": "Order {no}",
+  "@ordersOrderNo": {
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersPaymentNo": "Payment {no}",
+  "@ordersPaymentNo": {
+    "placeholders": {
+      "no": {
+        "type": "String"
+      }
+    }
+  },
+  "productSelect": "Select: {options}",
+  "@productSelect": {
+    "placeholders": {
+      "options": {
+        "type": "String"
+      }
+    }
+  },
+  "productChoose": "Choose a {option}",
+  "@productChoose": {
+    "placeholders": {
+      "option": {
+        "type": "String"
+      }
+    }
+  },
+  "productStock": "Stock: {count}",
+  "@productStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productViewImage": "View image",
+  "close": "Close",
+  "checkoutVoucherBest": "BEST VALUE",
+  "checkoutVoucherAppliedTag": "APPLIED",
+  "checkoutVoucherFreeShipping": "Free shipping",
+  "checkoutVoucherShort": "Add {amount} more to use this voucher.",
+  "@checkoutVoucherShort": {"placeholders": {"amount": {"type": "String"}}},
+  "checkoutVoucherOff": "{amount} off",
+  "@checkoutVoucherOff": {"placeholders": {"amount": {"type": "String"}}},
+  "ordersPayNow": "Pay now",
+  "ordersBuyAgain": "Buy again",
+  "ordersBuyAgainDone": "{added, plural, =1{1 item} other{{added} items}} added to cart",
+  "@ordersBuyAgainDone": {"placeholders": {"added": {"type": "int"}}},
+  "ordersBuyAgainSkipped": "{added, plural, =1{1 item} other{{added} items}} added to cart · {skipped, plural, =1{1 item} other{{skipped} items}} skipped (not available)",
+  "@ordersBuyAgainSkipped": {"placeholders": {"added": {"type": "int"}, "skipped": {"type": "int"}}},
+  "ordersBuyAgainNone": "None of these items are available any more.",
+  "halalCertified": "Halal certified",
+  "halalCertVerified": "Halal certificate verified",
+  "halalCertLapsed": "Certificate lapsed",
+  "halalCertNotInForce": "Certificate not yet in force",
+  "halalExpiredOn": "expired {date}",
+  "@halalExpiredOn": {"placeholders": {"date": {"type": "String"}}},
+  "halalValidFrom": "valid from {date}",
+  "@halalValidFrom": {"placeholders": {"date": {"type": "String"}}},
+  "halalValidTo": "valid to {date}",
+  "@halalValidTo": {"placeholders": {"date": {"type": "String"}}},
+  "halalReadRecord": "Read the record",
+  "halalScopeTitle": "Ingredients & scope",
+  "halalScopeBody": "Certified scope: {scope}. The certificate names this SKU in its annex, so the badge is bound to the item you are buying, not to the shop that sells it.",
+  "@halalScopeBody": {"placeholders": {"scope": {"type": "String"}}},
+  "halalTraceability": "Traceability",
+  "halalFacility": "Facility",
+  "halalBatch": "Batch",
+  "halalPackedOn": "packed {date}",
+  "@halalPackedOn": {"placeholders": {"date": {"type": "String"}}},
+  "halalCertificate": "Certificate",
+  "halalExpiry": "Expiry",
+  "halalLapsed": "lapsed",
+  "halalNotInForceUntil": "not in force until {date}",
+  "@halalNotInForceUntil": {"placeholders": {"date": {"type": "String"}}},
+  "halalDaysRemaining": "{count, plural, =1{1 day remaining} other{{count} days remaining}}",
+  "@halalDaysRemaining": {"placeholders": {"count": {"type": "int"}}},
+  "halalCertifyingBody": "Certifying body",
+  "halalAssurance": "Assurance",
+  "halalAssureValid12": "Certificate valid 12 months+",
+  "halalAssureDedicated": "Dedicated halal facility",
+  "halalAssureExport": "Export paperwork included",
+  "productBuyNow": "Buy now",
+  "productCod": "Cash on delivery",
+  "productShipsFrom": "Ships from {state}",
+  "@productShipsFrom": {"placeholders": {"state": {"type": "String"}}},
+  "productShippingAtCheckout": "Shipping calculated at checkout",
+  "productTabSpecs": "Specifications",
+  "productTabQa": "Q&A",
+  "productSpecBrand": "Brand",
+  "productSpecCondition": "Condition",
+  "productSpecWeight": "Weight",
+  "productSpecCategory": "Category",
+  "productNoBrand": "No brand",
+  "productNoReviews": "No reviews yet.",
+  "productVerified": "Verified",
+  "productSellerService": "Seller service",
+  "qaTitle": "Questions & Answers ({count})",
+  "@qaTitle": {"placeholders": {"count": {"type": "int"}}},
+  "qaAskLabel": "Ask the seller a question",
+  "qaAskHint": "e.g. Is this halal-certified? Does it ship to East Malaysia?",
+  "qaPost": "Post question",
+  "qaLogin": "Log in",
+  "qaLoginToAsk": "to ask the seller a question.",
+  "qaEmpty": "No questions yet — be the first to ask.",
+  "qaAwaiting": "Awaiting seller response",
+  "qaSeller": "Seller",
+  "qaTypeFirst": "Type your question first.",
+  "qaTooShort": "Add a little more detail (at least 10 characters).",
+  "qaSent": "Question sent — we'll notify you when the seller answers."
+}

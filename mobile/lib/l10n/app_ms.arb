@@ -1,0 +1,787 @@
+{
+  "@@locale": "ms",
+  "appName": "HalalBizs",
+  "tabHome": "Laman utama",
+  "tabSearch": "Cari",
+  "tabCart": "Troli",
+  "tabOrders": "Pesanan",
+  "tabAccount": "Akaun",
+  "sellerTabDashboard": "Papan pemuka",
+  "sellerTabOrders": "Pesanan",
+  "sellerTabProducts": "Produk",
+  "sellerTabEarnings": "Pendapatan",
+  "sellerTabStore": "Kedai",
+  "signIn": "Log masuk",
+  "signInTitle": "Selamat kembali",
+  "signInSubtitle": "Log masuk ke akaun HalalBizs anda.",
+  "email": "Email",
+  "password": "Kata laluan",
+  "confirmPassword": "Sahkan kata laluan",
+  "name": "Nama",
+  "forgotPassword": "Lupa kata laluan?",
+  "createAccount": "Cipta akaun",
+  "createAccountSubtitle": "Beli-belah halal daripada penjual yang anda percayai.",
+  "noAccount": "Belum mempunyai akaun?",
+  "haveAccount": "Sudah mempunyai akaun?",
+  "register": "Daftar",
+  "twoFactorTitle": "Pengesahan dua faktor",
+  "twoFactorHintTotp": "Masukkan kod 6 digit daripada aplikasi pengesah anda.",
+  "twoFactorHintEmail": "Masukkan kod yang kami e-melkan kepada anda.",
+  "code": "Kod",
+  "verify": "Sahkan",
+  "cancel": "Batal",
+  "confirm": "Sahkan",
+  "resetPassword": "Tetapkan semula kata laluan",
+  "resetPasswordSubtitle": "Kami akan e-melkan pautan untuk memilih kata laluan baharu.",
+  "sendResetLink": "Hantar pautan tetapan semula",
+  "resetLinkSent": "Jika e-mel itu berdaftar, pautan tetapan semula sedang dihantar.",
+  "verifyEmailTitle": "Sahkan e-mel anda",
+  "verifyEmailBody": "Kami menghantar pautan pengesahan kepada {email}. Buka pautan itu, kemudian kembali ke sini.",
+  "@verifyEmailBody": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "resendVerification": "Hantar semula e-mel pengesahan",
+  "verificationSent": "E-mel pengesahan dihantar.",
+  "iHaveVerified": "Saya telah mengesahkan",
+  "categories": "Kategori",
+  "featured": "Pilihan",
+  "viewAll": "Lihat semua",
+  "homePromotions": "Promosi",
+  "flashSale": "Jualan Kilat",
+  "flashEndsIn": "Berakhir dalam",
+  "searchHint": "Cari produk",
+  "searchMinChars": "Taip sekurang-kurangnya 2 aksara untuk mencari.",
+  "searchNeedsConnection": "Carian memerlukan sambungan",
+  "searchNeedsConnectionBody": "Sambung semula dan cuba lagi. Produk cache masih ada di Laman utama.",
+  "searchNoResults": "Tiada hasil untuk “{query}”",
+  "@searchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchNoResultsBody": "Cuba perkataan lain atau layari kategori.",
+  "sort": "Susun",
+  "sortRelevance": "Kaitan",
+  "sortPopular": "Popular",
+  "sortNewest": "Terbaru",
+  "sortPriceAsc": "Harga: rendah ke tinggi",
+  "sortPriceDesc": "Harga: tinggi ke rendah",
+  "filterSort": "Susun & tapis",
+  "filterPrice": "Harga (RM)",
+  "filterMin": "Min",
+  "filterMax": "Maks",
+  "filterReset": "Set semula",
+  "filterApply": "Guna",
+  "filterPriceInvalid": "Masukkan harga seperti 12.50, dengan Min tidak melebihi Maks.",
+  "allCategories": "Semua",
+  "sold": "dijual",
+  "addToCart": "Tambah ke troli",
+  "outOfStock": "Kehabisan stok",
+  "inStock": "{count} dalam stok",
+  "@inStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onlyLeft": "Hanya tinggal {count}",
+  "@onlyLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "variant": "Varian",
+  "quantity": "Kuantiti",
+  "description": "Penerangan",
+  "soldBy": "Dijual oleh",
+  "visitStore": "Lawati kedai",
+  "reviewsCount": "{count} ulasan",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartComingSoon": "Troli akan tiba dalam bahagian seterusnya",
+  "addedToCart": "Ditambah ke troli",
+  "signInToContinue": "Log masuk untuk meneruskan",
+  "noProductsYet": "Belum ada produk",
+  "noProductsBody": "Kembali tidak lama lagi. Penjual sedang menambah stok.",
+  "comingNextSlice": "Akan datang dalam bahagian seterusnya",
+  "comingNextSliceBody": "Skrin ini dibina dalam keluaran seterusnya.",
+  "retry": "Cuba lagi",
+  "backToHome": "Kembali ke laman utama",
+  "pageNotFound": "Halaman tidak dijumpai",
+  "pageNotFoundBody": "Pautan ini tidak sepadan dengan mana-mana halaman di HalalBizs.",
+  "profile": "Profil",
+  "addresses": "Alamat",
+  "wishlist": "Senarai hajat",
+  "coins": "Syiling",
+  "notifications": "Pemberitahuan",
+  "messages": "Mesej",
+  "language": "Bahasa",
+  "deleteAccount": "Padam akaun",
+  "sellerCentre": "Pusat penjual",
+  "becomeSeller": "Jadi penjual",
+  "signOut": "Log keluar",
+  "signOutConfirmTitle": "Log keluar?",
+  "signOutConfirmBody": "Anda boleh log masuk semula pada bila-bila masa.",
+  "english": "English",
+  "malay": "Bahasa Melayu",
+  "backToShop": "Kembali ke kedai",
+  "guestAccountTitle": "Log masuk untuk melihat akaun anda",
+  "guestAccountBody": "Pesanan, alamat, syiling dan mesej ada di sini setelah anda log masuk.",
+  "fieldRequired": "Ruangan ini diperlukan.",
+  "emailInvalid": "Masukkan alamat e-mel yang sah.",
+  "passwordMin": "Gunakan sekurang-kurangnya 8 aksara.",
+  "passwordMismatch": "Kata laluan tidak sepadan.",
+  "codeLength": "Masukkan kod 6 digit.",
+  "offlineStrip": "Luar talian · memaparkan data cache",
+  "cachedStrip": "Memaparkan data cache",
+  "cachedChip": "Cache",
+  "needsConnection": "Memerlukan sambungan",
+  "somethingWentWrong": "Sesuatu telah berlaku.",
+  "store": "Kedai",
+  "products": "Produk",
+  "reviews": "Ulasan",
+  "storeAbout": "Tentang",
+  "storeJoined": "Sertai {date}",
+  "category": "Kategori",
+  "product": "Produk",
+  "errorOffline": "Tiada sambungan. Memaparkan data cache jika ada.",
+  "errorTimeout": "Pelayan mengambil masa terlalu lama untuk membalas. Cuba lagi.",
+  "errorBadResponse": "Balasan pelayan tidak dijangka.",
+  "errorNoChallenge": "Log masuk semula untuk mendapatkan kod baharu.",
+  "errorTokenStorage": "Peranti ini enggan menyimpan token log masuk dengan selamat. Semak akses rantai kunci aplikasi dan cuba lagi.",
+  "sessionEnded": "Sesi anda telah tamat. Sila log masuk semula.",
+  "back": "Kembali",
+  "justNow": "baru sahaja",
+  "minutesOld": "{count} min lalu",
+  "@minutesOld": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursOld": "{count} jam lalu",
+  "@hoursOld": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showPassword": "Tunjukkan kata laluan",
+  "hidePassword": "Sembunyikan kata laluan",
+  "any": "Mana-mana",
+  "clear": "Kosongkan",
+  "newAddress": "Alamat baharu",
+  "address": "Alamat",
+  "conversation": "Perbualan",
+  "checkout": "Bayar",
+  "payment": "Pembayaran",
+  "orderPlaced": "Pesanan dibuat",
+  "orderDetails": "Butiran pesanan",
+  "orderReturn": "Pemulangan",
+  "orderReview": "Ulasan",
+  "sellerBackToBuying": "Kembali membeli",
+  "sellerRequired": "Akaun anda bukan penjual yang diluluskan.",
+  "sellerTodaySales": "Jualan hari ini",
+  "sellerTodayOrders": "Pesanan hari ini",
+  "sellerToShip": "Untuk dihantar",
+  "sellerLowStock": "Stok rendah",
+  "sellerAvailable": "Tersedia",
+  "sellerHeld": "Ditahan",
+  "sellerPaidOut": "Telah dibayar",
+  "sellerOrdersByStatus": "Pesanan mengikut status",
+  "sellerRecentOrders": "Pesanan terkini",
+  "sellerNoOrders": "Tiada pesanan lagi",
+  "sellerNoOrdersBody": "Pesanan akan muncul di sini apabila pembeli membuat pembayaran.",
+  "sellerAllStatuses": "Semua",
+  "sellerStatusPendingPayment": "Menunggu bayaran",
+  "sellerStatusConfirmed": "Disahkan",
+  "sellerStatusProcessing": "Diproses",
+  "sellerStatusShipped": "Dihantar",
+  "sellerStatusDelivered": "Diterima",
+  "sellerStatusCompleted": "Selesai",
+  "sellerStatusCancelled": "Dibatalkan",
+  "sellerStatusReturnRequested": "Pemulangan dimohon",
+  "sellerStatusReturned": "Dipulangkan",
+  "sellerStatusRefunded": "Dibayar balik",
+  "sellerItemsCount": "{count, plural, =1{1 item} other{{count} item}}",
+  "@sellerItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sellerOrder": "Pesanan",
+  "sellerBuyer": "Pembeli",
+  "sellerShipTo": "Hantar kepada",
+  "sellerItems": "Item",
+  "sellerSubtotal": "Subjumlah",
+  "sellerShippingFee": "Penghantaran",
+  "sellerDiscount": "Diskaun",
+  "sellerTax": "Cukai",
+  "sellerTotal": "Jumlah",
+  "sellerCommission": "Komisen",
+  "sellerCommissionEstimated": "Anggaran sehingga pesanan selesai.",
+  "sellerPayment": "Pembayaran",
+  "sellerPaymentCod": "Bayaran tunai semasa penghantaran",
+  "sellerPaymentOnline": "Bayaran dalam talian",
+  "sellerTracking": "Penjejakan",
+  "sellerTrack": "Jejak bungkusan",
+  "sellerHistory": "Sejarah",
+  "sellerReturnRequest": "Permohonan pemulangan",
+  "sellerRespondBy": "Balas sebelum {date}",
+  "@sellerRespondBy": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "sellerPack": "Bungkus",
+  "sellerShip": "Hantar",
+  "sellerMarkDelivered": "Tanda sudah diterima",
+  "sellerAcceptReturn": "Terima pemulangan",
+  "sellerDisputeReturn": "Pertikai",
+  "sellerConfirmReceived": "Sahkan barang diterima",
+  "sellerShipTitle": "Hantar pesanan ini",
+  "sellerCourier": "Kurier",
+  "sellerCourierOther": "Lain-lain",
+  "sellerCourierName": "Nama kurier",
+  "sellerTrackingNo": "Nombor penjejakan",
+  "sellerTrackingNoLength": "Masukkan 6 hingga 64 aksara.",
+  "sellerDisputeTitle": "Pertikai pemulangan ini",
+  "sellerDisputeReason": "Sebab",
+  "sellerDisputeReasonMin": "Tulis sekurang-kurangnya 10 aksara.",
+  "sellerSubmit": "Hantar",
+  "sellerOrderUpdated": "Pesanan dikemas kini",
+  "sellerSearchProducts": "Cari produk atau SKU",
+  "sellerNoProducts": "Tiada produk lagi",
+  "sellerNoProductsBody": "Tambah produk pertama anda untuk mula menjual.",
+  "sellerNewProduct": "Produk baharu",
+  "sellerEditProduct": "Sunting produk",
+  "sellerStatusDraft": "Draf",
+  "sellerStatusPendingReview": "Menunggu semakan",
+  "sellerStatusLive": "Langsung",
+  "sellerStatusDelisted": "Dinyahsenarai",
+  "sellerStatusBanned": "Diharamkan",
+  "sellerStock": "Stok",
+  "sellerStockCount": "Stok {count}",
+  "@sellerStockCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sellerCod": "COD",
+  "sellerNameEn": "Nama (Inggeris)",
+  "sellerNameMs": "Nama (Melayu)",
+  "sellerNameVi": "Nama (Vietnam)",
+  "sellerDescriptionEn": "Penerangan (Inggeris)",
+  "sellerDescriptionMs": "Penerangan (Melayu)",
+  "sellerDescriptionVi": "Penerangan (Vietnam)",
+  "sellerCategory": "Kategori",
+  "sellerChooseCategory": "Pilih kategori",
+  "sellerPriceRm": "Harga (RM)",
+  "sellerSalePriceRm": "Harga jualan (RM)",
+  "sellerPriceFormat": "Masukkan jumlah seperti 12.50.",
+  "sellerSku": "SKU",
+  "sellerWeightG": "Berat (g)",
+  "sellerLengthMm": "Panjang (mm)",
+  "sellerWidthMm": "Lebar (mm)",
+  "sellerHeightMm": "Tinggi (mm)",
+  "sellerCodEnabled": "Bayaran tunai semasa penghantaran",
+  "sellerCodEnabledHelp": "Benarkan pembeli membayar semasa penghantaran untuk produk ini.",
+  "sellerVariants": "Varian",
+  "sellerImages": "Imej",
+  "sellerImagesHelp": "Sehingga 9 foto. Pilih beberapa sekali gus. Ia dipaparkan mengikut urutan anda menambahnya.",
+  "sellerImagesSaveFirst": "Simpan produk dahulu untuk menambah imej.",
+  "sellerImagesFull": "9 foto ialah had. Buang satu untuk menambah yang lain.",
+  "sellerImagesTooMany": "Hanya {count} lagi foto boleh ditambah. Satu produk maksimum 9.",
+  "sellerDescriptionHasFormatting": "Penerangan ini mempunyai format. Suntingnya di pusat penjual web.",
+  "sellerAddImage": "Tambah imej",
+  "sellerRemoveImage": "Buang imej",
+  "sellerRemoveImageBody": "Imej ini akan dibuang daripada penyenaraian.",
+  "sellerRemove": "Buang",
+  "sellerGallery": "Pilih dari galeri",
+  "sellerCamera": "Ambil gambar",
+  "sellerSave": "Simpan",
+  "sellerSaved": "Disimpan",
+  "sellerPublish": "Terbitkan",
+  "sellerDelist": "Nyahsenarai",
+  "sellerRelist": "Senarai semula",
+  "sellerHalalBlocked": "Penerbitan disekat",
+  "sellerNumberInvalid": "Masukkan nombor bulat.",
+  "sellerRequestPayout": "Mohon pembayaran",
+  "sellerPayoutPending": "Pembayaran menunggu",
+  "sellerPayoutMin": "Pembayaran minimum {amount}",
+  "@sellerPayoutMin": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "sellerPayoutMax": "Sehingga {amount} tersedia",
+  "@sellerPayoutMax": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "sellerPayoutAmountRm": "Jumlah (RM)",
+  "sellerPayoutRequested": "Pembayaran dimohon",
+  "sellerPayoutBelowMin": "Kurang daripada pembayaran minimum.",
+  "sellerPayoutAboveAvailable": "Melebihi baki tersedia.",
+  "sellerLedger": "Lejar",
+  "sellerNoLedger": "Tiada aktiviti lagi",
+  "sellerNoLedgerBody": "Jualan dan yuran akan muncul di sini setelah pesanan selesai.",
+  "sellerPayouts": "Pembayaran",
+  "sellerNoPayouts": "Tiada pembayaran lagi",
+  "sellerLoadMore": "Muatkan lagi",
+  "sellerStoreDescription": "Penerangan",
+  "sellerState": "Negeri",
+  "sellerHolidayMode": "Mod cuti",
+  "sellerHolidayModeHelp": "Sembunyikan produk anda semasa anda bercuti.",
+  "sellerShipping": "Penghantaran",
+  "sellerShippingMatrix": "Kadar mengikut negeri diurus di pusat penjual web.",
+  "sellerFlatFeeRm": "Yuran tetap (RM)",
+  "sellerFreeAboveRm": "Penghantaran percuma melebihi (RM)",
+  "sellerBank": "Butiran bank",
+  "sellerBankName": "Bank",
+  "sellerAccountName": "Nama akaun",
+  "sellerAccountNumber": "Nombor akaun",
+  "sellerAccountNumberHelp": "Masukkan nombor penuh untuk menggantikan {masked}.",
+  "@sellerAccountNumberHelp": {
+    "placeholders": {
+      "masked": {
+        "type": "String"
+      }
+    }
+  },
+  "sellerBankHelp": "Masukkan nombor akaun penuh untuk menukar butiran bank.",
+  "sellerChangeLogo": "Tukar logo",
+  "sellerChangeBanner": "Tukar sepanduk",
+  "sellerReviews": "Ulasan",
+  "sellerNoReviews": "Tiada ulasan lagi",
+  "sellerNoReviewsBody": "Ulasan pembeli tentang produk anda akan muncul di sini.",
+  "sellerReplyHint": "Tulis balasan kepada pembeli ini",
+  "sellerPostReply": "Hantar balasan",
+  "sellerYourReply": "Balasan anda",
+  "sellerReplyMin": "Tulis sekurang-kurangnya 5 aksara.",
+  "sellerStoreSaved": "Kedai disimpan",
+  "sellerSaveStoreSettings": "Simpan tetapan kedai",
+  "sellerBankNeedsNumber": "Masukkan semula nombor akaun penuh untuk menukar butiran bank.",
+  "sellerStatusPending": "Menunggu",
+  "sellerStatusPaid": "Dibayar",
+  "sellerStatusFailed": "Gagal",
+  "sellerStatusExpired": "Tamat tempoh",
+  "sellerDefaultVariant": "Lalai",
+  "sellerImageTooLarge": "Pilih imej di bawah {kb} KB.",
+  "@sellerImageTooLarge": {
+    "placeholders": {
+      "kb": {
+        "type": "int"
+      }
+    }
+  },
+  "sellerAcceptReturnConfirm": "Terima pemulangan ini? Pembeli akan diminta menghantar barang kembali.",
+  "sellerDisputeConfirm": "Pertikai pemulangan ini? HalalBizs akan menyemak kes ini dengan sebab anda.",
+  "sellerDelistConfirm": "Nyahsenarai produk ini? Pembeli tidak akan melihatnya sehingga anda menyenaraikannya semula.",
+  "sellerPayoutConfirm": "Mohon pembayaran sebanyak {amount} ke akaun bank anda?",
+  "@sellerPayoutConfirm": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cartCheckout": "Bayar",
+  "cartContinueShopping": "Teruskan membeli-belah",
+  "cartEmptyTitle": "Troli anda kosong",
+  "cartEmptyBody": "Cari sesuatu yang halal dan baik — ia akan menunggu anda di sini.",
+  "cartItemCount": "{count} item",
+  "@cartItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartPurchasingPaused": "Pembelian dijeda — anda boleh melayari, tetapi tidak boleh membayar buat masa ini.",
+  "cartRemove": "Buang",
+  "cartSelectAll": "Pilih semua",
+  "cartSelectToCheckout": "Pilih sekurang-kurangnya satu item untuk dibayar.",
+  "cartSelectedSubtotal": "Subjumlah · {count} dipilih",
+  "@cartSelectedSubtotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartUnavailable": "Tidak tersedia",
+  "cartViewCart": "Lihat troli",
+  "checkoutTitle": "Bayar",
+  "checkoutDeliverTo": "Hantar ke",
+  "checkoutChange": "Tukar",
+  "checkoutNoAddress": "Anda belum mempunyai alamat penghantaran — tambah alamat untuk membuat pesanan.",
+  "checkoutChooseMethod": "Pilih kaedah pembayaran yang tersedia.",
+  "checkoutSellerNote": "Nota kepada penjual",
+  "checkoutSellerNoteHint": "Pilihan — cth. tinggalkan di pondok pengawal",
+  "checkoutVouchers": "Baucar",
+  "checkoutPlatformVoucher": "Baucar HalalBizs",
+  "checkoutShopVoucher": "Baucar kedai",
+  "checkoutVoucherHint": "Kod baucar",
+  "checkoutVoucherApply": "Mohon",
+  "checkoutVoucherRemove": "Buang",
+  "checkoutVoucherApplied": "{code} digunakan · diskaun {amount}",
+  "@checkoutVoucherApplied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutUseCoins": "Guna syiling (anda ada {balance})",
+  "@checkoutUseCoins": {
+    "placeholders": {
+      "balance": {
+        "type": "int"
+      }
+    }
+  },
+  "checkoutCoinsToUse": "Syiling untuk digunakan",
+  "checkoutCoinsWorth": "{coins} syiling · diskaun {amount}",
+  "@checkoutCoinsWorth": {
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPaymentMethod": "Kaedah pembayaran",
+  "checkoutMethodCod": "Bayaran tunai semasa penghantaran",
+  "checkoutMethodIpay88": "Pembayaran dalam talian (FPX, kad, e-dompet)",
+  "checkoutMethodUnavailable": "Tidak tersedia untuk pesanan ini.",
+  "checkoutSummary": "Ringkasan",
+  "checkoutSubtotal": "Subjumlah",
+  "checkoutShipping": "Penghantaran",
+  "checkoutShippingPending": "Pilih alamat",
+  "checkoutShippingDiscount": "Diskaun penghantaran",
+  "checkoutPlatformDiscount": "Baucar HalalBizs",
+  "checkoutShopDiscount": "Diskaun kedai",
+  "checkoutTax": "Cukai",
+  "checkoutGrandTotal": "Jumlah keseluruhan",
+  "checkoutPlaceOrder": "Buat pesanan",
+  "checkoutDoneTitle": "Pesanan dibuat",
+  "checkoutDoneBody": "Pesanan {orderNo} telah disahkan. Pesanan anda ada di sini:",
+  "@checkoutDoneBody": {
+    "placeholders": {
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutViewOrders": "Lihat pesanan",
+  "checkoutPayTitle": "Pembayaran",
+  "checkoutPayBrowserTitle": "Selesaikan pembayaran dalam pelayar anda",
+  "checkoutPayBrowserBody": "Pesanan {orderNo} dibuka dalam pelayar anda. Kembali ke sini setelah selesai — kami menyemak pembayaran secara automatik.",
+  "@checkoutPayBrowserBody": {
+    "placeholders": {
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPayExpiresAt": "Bayar sebelum {time}",
+  "@checkoutPayExpiresAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPayIHavePaid": "Saya telah bayar",
+  "checkoutPayOpenAgain": "Buka halaman pembayaran semula",
+  "checkoutPayRetry": "Cuba bayar semula",
+  "checkoutPayExpiredTitle": "Tempoh pembayaran tamat",
+  "checkoutPayExpiredBody": "Pesanan ini tidak dibayar dalam masa yang ditetapkan. Tiada caj dikenakan.",
+  "ordersAll": "Semua",
+  "ordersOrder": "Pesanan",
+  "ordersTotal": "Jumlah",
+  "ordersMoreItems": "+{count} lagi",
+  "@ordersMoreItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersPlacedAt": "Dibuat pada {date}",
+  "@ordersPlacedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersEmptyTitle": "Belum ada pesanan",
+  "ordersEmptyBody": "Pesanan anda akan dipaparkan di sini selepas anda membayar.",
+  "ordersEmptyBucketTitle": "Tiada pesanan dalam status ini",
+  "ordersEmptyBucketBody": "Pilih tab lain untuk melihat pesanan anda yang lain.",
+  "ordersLoadMore": "Muat lagi",
+  "ordersTracking": "Penjejakan",
+  "ordersTrack": "Jejak",
+  "ordersReturnRequest": "Permohonan pemulangan",
+  "ordersCancelOrder": "Batalkan pesanan",
+  "ordersCancelTitle": "Batalkan pesanan ini?",
+  "ordersCancelBody": "Tiada caj dikenakan dan item akan dikembalikan ke stok.",
+  "ordersCancelConfirm": "Batalkan pesanan",
+  "ordersKeep": "Kekalkan pesanan",
+  "ordersCancelled": "Pesanan dibatalkan",
+  "ordersReason": "Sebab",
+  "ordersReasonHint": "Pilih sebab",
+  "ordersConfirmReceived": "Sahkan penerimaan",
+  "ordersReceivedTitle": "Sudah terima pesanan anda?",
+  "ordersReceivedBody": "Sahkan hanya setelah semuanya tiba.",
+  "ordersReceivedDone": "Pesanan diterima",
+  "ordersRequestReturn": "Mohon pemulangan",
+  "ordersNote": "Nota",
+  "ordersReturnNoteHint": "Apa yang tidak kena?",
+  "ordersPhotos": "Foto",
+  "ordersPhotosHelp": "Sehingga {max} foto.",
+  "@ordersPhotosHelp": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersReturnConfirmTitle": "Hantar permohonan pemulangan ini?",
+  "ordersReturnConfirmBody": "Penjual akan dimaklumkan.",
+  "ordersReturnSubmit": "Hantar permohonan pemulangan",
+  "ordersReturnSubmitted": "Pemulangan dimohon",
+  "ordersWriteReview": "Tulis ulasan",
+  "ordersReviewBody": "Ulasan anda",
+  "ordersReviewBodyHint": "Pilihan — sekurang-kurangnya 10 aksara",
+  "ordersSellerRating": "Penilaian penjual",
+  "ordersSellerComment": "Komen",
+  "ordersOptional": "Pilihan",
+  "ordersRateEveryItem": "Nilai setiap item sebelum menghantar.",
+  "ordersReviewSubmit": "Hantar ulasan",
+  "ordersReviewSubmitted": "Terima kasih atas ulasan anda.",
+  "ordersNothingToReview": "Tiada lagi yang perlu diulas",
+  "accountSave": "Simpan",
+  "accountDelete": "Padam",
+  "accountDefault": "Lalai",
+  "accountPhone": "Telefon",
+  "accountPreferredLanguage": "Bahasa pilihan",
+  "accountEmailUnverified": "E-mel belum disahkan.",
+  "accountProfileSaved": "Profil dikemas kini",
+  "accountChangePassword": "Tukar kata laluan",
+  "accountCurrentPassword": "Kata laluan semasa",
+  "accountNewPassword": "Kata laluan baharu",
+  "accountPasswordChanged": "Kata laluan dikemas kini",
+  "accountAddAddress": "Tambah alamat",
+  "accountEditAddress": "Sunting alamat",
+  "accountNoAddresses": "Belum ada alamat",
+  "accountNoAddressesBody": "Tambah alamat penghantaran untuk pembayaran lebih pantas.",
+  "accountAddressLabel": "Label",
+  "accountAddressLabelHint": "Rumah, Pejabat…",
+  "accountRecipientName": "Nama penerima",
+  "accountLine1": "Baris alamat 1",
+  "accountLine2": "Baris alamat 2",
+  "accountPostcode": "Poskod",
+  "accountCity": "Bandar",
+  "accountState": "Negeri",
+  "accountStateHint": "Pilih negeri",
+  "accountSetDefault": "Tetapkan sebagai lalai",
+  "accountAddressSaved": "Alamat disimpan",
+  "accountDeleteAddressTitle": "Padam alamat ini?",
+  "accountDeleteAddressBody": "Anda boleh menambahnya semula bila-bila masa.",
+  "accountWishlistEmpty": "Belum ada apa-apa disimpan",
+  "accountWishlistEmptyBody": "Ketik hati pada produk untuk menyimpannya di sini.",
+  "accountRemoveFromWishlist": "Buang daripada senarai hajat",
+  "productAddToWishlist": "Tambah ke senarai hajat",
+  "accountCoinsBalance": "Baki",
+  "accountCoinsStreak": "Rentetan",
+  "accountCoinsDays": "{days} hari",
+  "@accountCoinsDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "accountCoinsLifetime": "{coins} syiling diperoleh keseluruhannya",
+  "@accountCoinsLifetime": {
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      }
+    }
+  },
+  "accountCoinsExpiring": "Sebahagian syiling luput {date}",
+  "@accountCoinsExpiring": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountCheckIn": "Daftar masuk hari ini",
+  "accountCheckedIn": "Sudah daftar masuk hari ini",
+  "accountCheckedInReason": "Anda sudah daftar masuk hari ini.",
+  "accountCheckInBody": "Daftar masuk setiap hari untuk menambah rentetan dan memperoleh lebih banyak syiling.",
+  "accountCheckInDone": "+{coins} syiling · rentetan hari ke-{streak}",
+  "@accountCheckInDone": {
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      },
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "accountCoinsHistory": "Sejarah",
+  "accountCoinsNoHistory": "Belum ada aktiviti syiling",
+  "accountCoinsUnavailable": "Syiling tidak tersedia",
+  "accountCoinsUnavailableBody": "Daftar masuk harian tidak tersedia buat masa ini.",
+  "accountMarkAllRead": "Tandakan semua sebagai dibaca",
+  "accountNoNotifications": "Tiada pemberitahuan",
+  "accountNoNotificationsBody": "Kemas kini pesanan dan mesej daripada penjual dipaparkan di sini.",
+  "accountDeleteWarning": "Tindakan ini tidak boleh dibatalkan.",
+  "accountDeleteBody": "Butiran peribadi anda dianonimkan serta-merta; rekod pesanan disimpan atas sebab undang-undang dan kewangan. Masukkan kata laluan anda untuk meneruskan.",
+  "accountDeleteConfirmTitle": "Padam akaun anda?",
+  "accountDeleteConfirmBody": "Anda akan dilog keluar dan tidak boleh log masuk semula dengan akaun ini.",
+  "messagesChatWithSeller": "Sembang dengan penjual",
+  "messagesEmpty": "Belum ada mesej",
+  "messagesEmptyBody": "Mulakan sembang dari mana-mana halaman produk.",
+  "messagesNoMessagesYet": "Belum ada mesej dalam perbualan ini.",
+  "messagesSayHello": "Sapa penjual.",
+  "messagesTypeMessage": "Taip mesej",
+  "messagesSend": "Hantar",
+  "checkoutPlacedCheckOrders": "Pesanan anda telah dibuat. Semak pesanan anda.",
+  "checkoutMaybePlaced": "Kami tidak dapat mengesahkan sama ada pesanan itu berjaya. Semak pesanan anda sebelum mencuba lagi.",
+  "checkoutPayLinkMissing": "Pesanan dibuat tetapi tiada pautan pembayaran diterima. Bayar dari senarai pesanan anda.",
+  "accountWishlistStillSaved": "Masih dalam senarai hajat — cuba lagi.",
+  "accountUnread": "Belum dibaca",
+  "ordersReviewStars": "{n, plural, other{{n} bintang}}",
+  "@ordersReviewStars": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ordersPaymentStatusPending": "Menunggu",
+  "ordersPaymentStatusPaid": "Paid",
+  "ordersPaymentStatusFailed": "Failed",
+  "ordersPaymentStatusExpired": "Expired",
+  "ordersPaymentStatusRefunded": "Refunded",
+  "ordersReturnStatusRequested": "Requested",
+  "ordersReturnStatusAccepted": "Accepted",
+  "ordersReturnStatusDisputed": "Disputed",
+  "ordersReturnStatusEscalated": "Escalated",
+  "ordersReturnStatusRefunded": "Refunded",
+  "ordersReturnStatusRejected": "Rejected",
+  "checkoutDonePaid": "Dibayar {amount} (bayaran {orderNo}).",
+  "checkoutDoneCod": "Jumlah {amount}, dibayar semasa penghantaran (bayaran {orderNo}).",
+  "checkoutDoneSplit": "{count, plural, =1{Ia dihantar sebagai satu penghantaran.} other{Pesanan anda dibahagikan kepada {count} penghantaran, satu bagi setiap kedai.}}",
+  "ordersOrderNo": "Pesanan {no}",
+  "ordersPaymentNo": "Bayaran {no}",
+  "productSelect": "Pilih: {options}",
+  "productChoose": "Pilih {option}",
+  "productStock": "Stok: {count}",
+  "productViewImage": "Lihat gambar",
+  "close": "Tutup",
+  "checkoutVoucherBest": "PALING JIMAT",
+  "checkoutVoucherAppliedTag": "DIGUNAKAN",
+  "checkoutVoucherFreeShipping": "Penghantaran percuma",
+  "checkoutVoucherShort": "Tambah {amount} lagi untuk guna baucar ini.",
+  "@checkoutVoucherShort": {"placeholders": {"amount": {"type": "String"}}},
+  "checkoutVoucherOff": "Diskaun {amount}",
+  "@checkoutVoucherOff": {"placeholders": {"amount": {"type": "String"}}},
+  "ordersPayNow": "Bayar sekarang",
+  "ordersBuyAgain": "Beli lagi",
+  "ordersBuyAgainDone": "{added} item ditambah ke troli",
+  "@ordersBuyAgainDone": {"placeholders": {"added": {"type": "int"}}},
+  "ordersBuyAgainSkipped": "{added} item ditambah ke troli · {skipped} item dilangkau (tiada stok)",
+  "@ordersBuyAgainSkipped": {"placeholders": {"added": {"type": "int"}, "skipped": {"type": "int"}}},
+  "ordersBuyAgainNone": "Tiada item ini yang masih ada.",
+  "halalCertified": "Diperakui halal",
+  "halalCertVerified": "Sijil halal disahkan",
+  "halalCertLapsed": "Sijil telah luput",
+  "halalCertNotInForce": "Sijil belum berkuat kuasa",
+  "halalExpiredOn": "luput pada {date}",
+  "halalValidFrom": "sah dari {date}",
+  "halalValidTo": "sah hingga {date}",
+  "halalReadRecord": "Baca rekod",
+  "halalScopeTitle": "Ramuan dan skop",
+  "halalScopeBody": "Skop diperakui: {scope}. Sijil menamakan SKU ini dalam lampirannya, jadi lencana terikat pada item yang anda beli, bukan kedai yang menjualnya.",
+  "halalTraceability": "Kebolehkesanan",
+  "halalFacility": "Kemudahan",
+  "halalBatch": "Kelompok",
+  "halalPackedOn": "dibungkus pada {date}",
+  "halalCertificate": "Sijil",
+  "halalExpiry": "Tarikh luput",
+  "halalLapsed": "luput",
+  "halalNotInForceUntil": "belum berkuat kuasa sehingga {date}",
+  "halalDaysRemaining": "{count, plural, other{Tinggal {count} hari}}",
+  "halalCertifyingBody": "Badan pensijilan",
+  "halalAssurance": "Jaminan",
+  "halalAssureValid12": "Sijil sah 12 bulan ke atas",
+  "halalAssureDedicated": "Kemudahan halal khusus",
+  "halalAssureExport": "Dokumen eksport disertakan",
+  "productBuyNow": "Beli sekarang",
+  "productCod": "Bayaran tunai semasa penghantaran",
+  "productShipsFrom": "Dihantar dari {state}",
+  "productShippingAtCheckout": "Kos penghantaran dikira semasa bayar",
+  "productTabSpecs": "Spesifikasi",
+  "productTabQa": "Soal jawab",
+  "productSpecBrand": "Jenama",
+  "productSpecCondition": "Keadaan",
+  "productSpecWeight": "Berat",
+  "productSpecCategory": "Kategori",
+  "productNoBrand": "Tiada jenama",
+  "productNoReviews": "Belum ada ulasan.",
+  "productVerified": "Disahkan",
+  "productSellerService": "Perkhidmatan penjual",
+  "qaTitle": "Soalan dan Jawapan ({count})",
+  "qaAskLabel": "Tanya penjual",
+  "qaAskHint": "cth. Adakah ini diperakui halal? Adakah dihantar ke Malaysia Timur?",
+  "qaPost": "Hantar soalan",
+  "qaLogin": "Log masuk",
+  "qaLoginToAsk": "untuk bertanya kepada penjual.",
+  "qaEmpty": "Belum ada soalan — jadilah orang pertama yang bertanya.",
+  "qaAwaiting": "Menunggu respons penjual",
+  "qaSeller": "Penjual",
+  "qaTypeFirst": "Taip soalan anda dahulu.",
+  "qaTooShort": "Tambah sedikit lagi butiran (sekurang-kurangnya 10 aksara).",
+  "qaSent": "Soalan dihantar — kami akan maklumkan apabila penjual menjawab."
+}

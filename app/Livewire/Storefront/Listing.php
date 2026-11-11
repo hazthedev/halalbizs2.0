@@ -15,7 +15,6 @@ use App\Models\SearchLog;
 use App\Models\Store;
 use App\Services\VectorSearchService;
 use App\Settings\BoostSettings;
-use App\Support\DisplayTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
@@ -366,40 +365,9 @@ class Listing extends Component
             $query->where('cod_enabled', true);
         }
 
-        if ($this->assurances !== []) {
-            // approved() on both halal facets: a submitted certificate is a
-            // claim, and filtering by it would let an unreviewed one place a
-            // product in front of a buyer who asked for certified goods.
-            $query->whereHas('halalCertificate', function (Builder $cert): void {
-                $cert->approved();
-
-                foreach ($this->assurances as $assurance) {
-                    match ($assurance) {
-                        // "valid 12 months+" is about REMAINING life, not the
-                        // original term: a buyer wants cover through the year
-                        // ahead, not a certificate that was long once.
-                        'valid12' => $cert->whereDate('valid_to', '>=', DisplayTime::today()->addYear()),
-                        'dedicated' => $cert->where('dedicated_facility', true),
-                        'export' => $cert->where('export_paperwork', true),
-                        default => null,
-                    };
-                }
-            });
-        }
-
-        if ($this->certifiers !== []) {
-            // Reads the certificate RECORD, not products.halal_cert_number.
-            //
-            // That free-text column is the exact bug halalVerdict()'s docblock
-            // was written to kill, and this facet was the last reader still
-            // trusting it: a seller typing "MY-JKM-anything" into the product
-            // row filtered as JAKIM-certified with no certificate behind it,
-            // while the assurance facet immediately above already did it right
-            // via whereHas('halalCertificate'). Same shape now.
-            $codes = array_values(array_intersect($this->certifiers, self::certifierCodes()));
-
-            $query->whereHas('halalCertificate', fn (Builder $cert) => $cert->approved()->whereIn('issuing_body', $codes));
-        }
+        // Certifying body + assurance facets: Product::halalFacets(), shared
+        // with the app API (CatalogController) so the two cannot drift.
+        $query->halalFacets($this->certifiers, $this->assurances);
 
         if ($applyAttrs && $this->attrs !== []) {
             // AND across attributes, OR within an attribute (standard faceting).
