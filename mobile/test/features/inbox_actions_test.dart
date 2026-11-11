@@ -47,14 +47,20 @@ void main() {
     expect(find.byKey(const Key('inbox-chat-badge')), findsNothing);
   });
 
-  testWidgets('logged out: no icons', (tester) async {
+  testWidgets('logged out: icons show without badges, a tap goes to login (Haze 11-11)', (tester) async {
     usePhone(tester);
     final h = Harness(api: FakeApi(routes: _routes(me: false)));
     await h.pump(tester, location: '/home');
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('inbox-bell')), findsNothing);
-    expect(find.byKey(const Key('inbox-chat')), findsNothing);
+    expect(find.byKey(const Key('inbox-bell')), findsOneWidget);
+    expect(find.byKey(const Key('inbox-chat')), findsOneWidget);
+    expect(find.byKey(const Key('inbox-bell-badge')), findsNothing);
+    expect(h.api.calls.where((c) => c.startsWith('GET conversations')), isEmpty);
+
+    await tester.tap(find.byKey(const Key('inbox-chat')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('login-email')), findsOneWidget);
   });
 
   testWidgets('Seller Dashboard shows the same icons and badges', (tester) async {

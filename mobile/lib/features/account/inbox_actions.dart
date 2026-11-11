@@ -10,26 +10,28 @@ import '../messages/messages_api.dart';
 
 /// Bell + chat icons for the app bar (buyer Home, Seller Dashboard). Counts
 /// are the ones the Account menu already shows (`GET me` unread notifications,
-/// unread across `GET conversations`); a badge hides at 0 and the whole pair
-/// hides when logged out. Taps open the Account sub-pages.
+/// unread across `GET conversations`); a badge hides at 0. Guests see the
+/// icons too (as on Shopee) and a tap goes to login, then on to the page
+/// (Haze 11-11). Taps open the Account sub-pages.
 class InboxActions extends ConsumerWidget {
   const InboxActions({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final me = ref.watch(profileProvider);
-    if (me == null) return const SizedBox.shrink();
     final l = context.l10n;
-    final messages = ref.watch(unreadMessagesProvider);
+    final messages = me == null ? 0 : ref.watch(unreadMessagesProvider);
+    void open(String path) =>
+        context.push(me == null ? '/login?from=${Uri.encodeComponent(path)}' : path);
     return Row(mainAxisSize: MainAxisSize.min, children: [
       _Badged(
-        count: me.unreadNotifications,
+        count: me?.unreadNotifications ?? 0,
         badgeKey: const Key('inbox-bell-badge'),
         child: SoukIconButton(
           key: const Key('inbox-bell'),
           icon: FontAwesomeIcons.bell,
           label: l.notifications,
-          onPressed: () => context.push('/account/notifications'),
+          onPressed: () => open('/account/notifications'),
         ),
       ),
       _Badged(
@@ -39,7 +41,7 @@ class InboxActions extends ConsumerWidget {
           key: const Key('inbox-chat'),
           icon: FontAwesomeIcons.comment,
           label: l.messages,
-          onPressed: () => context.push('/account/messages'),
+          onPressed: () => open('/account/messages'),
         ),
       ),
     ]);
