@@ -2018,4 +2018,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String liveByStore(String store) {
     return '$store';
   }
+
+  @override
+  String get liveShopTheStream => 'Shop the stream';
+
+  @override
+  String get liveEndedTitle => 'This live has ended';
+
+  @override
+  String get liveEndedBody =>
+      'Nothing is streaming here right now. Check back later or browse the shop.';
+
+  @override
+  String liveOnPlatform(String platform) {
+    return 'This live is on $platform';
+  }
+
+  @override
+  String liveWatchOn(String platform) {
+    return 'Watch on $platform';
+  }
 }

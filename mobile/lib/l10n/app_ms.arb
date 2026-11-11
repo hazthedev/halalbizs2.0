@@ -828,5 +828,10 @@
   "ordersReviewedTag": "Telah diulas ✓",
   "liveBadge": "Siaran Langsung",
   "liveNowTitle": "Siaran langsung sekarang",
-  "liveByStore": "{store}"
+  "liveByStore": "{store}",
+  "liveShopTheStream": "Beli dari siaran",
+  "liveEndedTitle": "Siaran langsung ini telah tamat",
+  "liveEndedBody": "Tiada siaran sekarang. Cuba lagi nanti atau layari kedai.",
+  "liveOnPlatform": "Siaran ini di {platform}",
+  "liveWatchOn": "Tonton di {platform}"
 }

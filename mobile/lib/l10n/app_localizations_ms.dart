@@ -2012,4 +2012,24 @@ class AppLocalizationsMs extends AppLocalizations {
   String liveByStore(String store) {
     return '$store';
   }
+
+  @override
+  String get liveShopTheStream => 'Beli dari siaran';
+
+  @override
+  String get liveEndedTitle => 'Siaran langsung ini telah tamat';
+
+  @override
+  String get liveEndedBody =>
+      'Tiada siaran sekarang. Cuba lagi nanti atau layari kedai.';
+
+  @override
+  String liveOnPlatform(String platform) {
+    return 'Siaran ini di $platform';
+  }
+
+  @override
+  String liveWatchOn(String platform) {
+    return 'Tonton di $platform';
+  }
 }

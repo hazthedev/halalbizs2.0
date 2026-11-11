@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../core/in_app_browser.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
-import '../account/legal_screen.dart' show webPageUrl;
 import 'catalog_api.dart';
 import 'models.dart';
 
-/// Room page on the web (public; no sign-in link needed).
-String liveRoomUrl(String slug) => webPageUrl('/live/${Uri.encodeComponent(slug)}');
-
-/// Small red pill with a dot, the web LIVE badge. Tap opens [slug]'s room in
-/// the in-app browser (the app has no room of its own).
+/// Small red pill with a dot, the web LIVE badge. Tap opens [slug]'s in-app room.
 class LiveBadge extends ConsumerWidget {
   const LiveBadge(this.slug, {super.key});
 
@@ -21,7 +16,7 @@ class LiveBadge extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => GestureDetector(
     behavior: HitTestBehavior.opaque,
-    onTap: () => ref.read(inAppBrowserProvider).open(liveRoomUrl(slug)),
+    onTap: () => context.push('/live/${Uri.encodeComponent(slug)}'),
     child: Semantics(
       button: true,
       label: context.l10n.liveBadge,
@@ -39,7 +34,7 @@ class LiveBadge extends ConsumerWidget {
 }
 
 /// "Live" chip next to Sort & filter: renders nothing unless at least one
-/// session is live. Tap lists them; a row opens that room in the browser.
+/// session is live. Tap lists them; a row opens that room.
 class LivePill extends ConsumerWidget {
   const LivePill({super.key});
 
@@ -99,8 +94,9 @@ class _LiveSheet extends ConsumerWidget {
           title: Text(s.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: SoukText.body),
           subtitle: Text(s.storeName, style: SoukText.meta),
           onTap: () {
-            ref.read(inAppBrowserProvider).open(liveRoomUrl(s.slug));
+            final router = GoRouter.of(context);
             Navigator.of(context).pop();
+            router.push('/live/${Uri.encodeComponent(s.slug)}');
           },
         ),
     ],

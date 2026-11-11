@@ -41,6 +41,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/certificates/{number}', [CertificateController::class, 'show'])->name('api.certificates.show');
     Route::get('/home', HomeController::class)->name('api.home');
     Route::get('/live', [LiveController::class, 'index'])->name('api.live');
+    Route::get('/live/{session:slug}', [LiveController::class, 'show'])->name('api.live.show');
     Route::get('/stores/{store:slug}', [StoreController::class, 'show'])->name('api.stores.show');
     Route::get('/stores/{store:slug}/products', [StoreController::class, 'products'])->name('api.stores.products');
 });
