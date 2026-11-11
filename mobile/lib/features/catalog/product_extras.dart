@@ -276,3 +276,41 @@ class SpecsTable extends StatelessWidget {
     );
   }
 }
+
+/// Horizontal product strip (web: heading + one scrolling row of cards). Hides
+/// itself while loading, on error and when empty, like the web components.
+/// Key `<keyPrefix>-strip`; cards keep their `product-card-<slug>` key.
+class ProductStrip extends StatelessWidget {
+  const ProductStrip({super.key, required this.keyPrefix, required this.title, required this.items});
+
+  final String keyPrefix;
+  final String title;
+  final List<Product> items;
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) return const SizedBox.shrink();
+    final l = context.l10n;
+    return Column(
+      key: Key('$keyPrefix-strip'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: SoukSpace.s6),
+        SoukSectionHeading(title),
+        const SizedBox(height: SoukSpace.s3),
+        SizedBox(
+          height: 250,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: items.length,
+            separatorBuilder: (_, _) => const SizedBox(width: SoukSpace.s3),
+            itemBuilder: (_, i) => SizedBox(
+              width: 150,
+              child: ProductCard(items[i], soldLabel: l.sold, onTap: () => context.push('/p/${Uri.encodeComponent(items[i].slug)}')),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

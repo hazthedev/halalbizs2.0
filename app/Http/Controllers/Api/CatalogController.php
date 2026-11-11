@@ -11,6 +11,7 @@ use App\Http\Resources\ReviewResource;
 use App\Livewire\Storefront\Listing;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\RecommendationService;
 use App\Models\ProductVariant;
 use App\Notifications\ProductQuestionAsked;
 use Illuminate\Database\Eloquent\Builder;
@@ -160,6 +161,27 @@ class CatalogController extends Controller
         abort_unless($product->isLive(), 404);
 
         return new ProductResource($product->load(['variants', 'store', 'media', 'options.values', 'halalCertificate', 'metafields', 'brand', 'category']), detail: true);
+    }
+
+    /** Same query as the web RelatedProducts strip (RecommendationService::related). */
+    public function related(Product $product, RecommendationService $recommendations)
+    {
+        abort_unless($product->isLive(), 404);
+
+        return ProductResource::collection($recommendations->related($product));
+    }
+
+    /**
+     * The web Home "Recommended for you" strip (RecommendationService::forContext, home context, 12).
+     * Bearer token = the buyer's own signals; a guest sends `viewed[]` ids (the web's localStorage list).
+     */
+    public function recommended(Request $request, RecommendationService $recommendations)
+    {
+        $viewed = array_slice(array_values(array_filter(array_map('intval', (array) $request->query('viewed', [])))), 0, 20);
+
+        return ProductResource::collection(
+            $recommendations->forContext($request->user('sanctum'), $viewed, hydrated: true),
+        );
     }
 
     public function categories()

@@ -34,6 +34,8 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/search', [CatalogController::class, 'search'])->name('api.search');
     Route::get('/products/{product:slug}/reviews', [CatalogController::class, 'reviews'])->name('api.product.reviews');
     Route::get('/products/{product:slug}/questions', [CatalogController::class, 'questions'])->name('api.product.questions');
+    Route::get('/products/{product:slug}/related', [CatalogController::class, 'related'])->name('api.product.related');
+    Route::get('/recommended', [CatalogController::class, 'recommended'])->name('api.recommended');
     Route::get('/home', HomeController::class)->name('api.home');
     Route::get('/stores/{store:slug}', [StoreController::class, 'show'])->name('api.stores.show');
     Route::get('/stores/{store:slug}/products', [StoreController::class, 'products'])->name('api.stores.products');

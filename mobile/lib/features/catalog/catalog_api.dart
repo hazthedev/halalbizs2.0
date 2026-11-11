@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/json.dart';
+import '../../core/auth/session.dart';
 import '../../core/offline/offline.dart';
 import 'models.dart';
 import 'paged.dart';
@@ -95,6 +96,15 @@ class CatalogApi {
     return ProductPage(asMapList(data).map(Product.new).toList(), meta: PageMeta(meta));
   }
 
+  /// `GET products/{slug}/related`: the web "Verified alongside it" strip (same
+  /// category, newest first, 6). Online only: it follows the live catalogue.
+  Future<List<Product>> related(String slug) async =>
+      asMapList(await _api.get('products/${Uri.encodeComponent(slug)}/related')).map(Product.new).toList();
+
+  /// `GET recommended`: the web Home "Recommended for you" strip (12). Signed in =
+  /// the buyer's own signals; never snapshotted, so a cached feed cannot cross accounts.
+  Future<List<Product>> recommended() async => asMapList(await _api.get('recommended')).map(Product.new).toList();
+
   /// `GET products/{slug}/reviews`: visible reviews, newest first, 10 a page.
   Future<PageOf<Review>> reviews(String slug, {int page = 1}) async {
     final r = await _repo.getJson('products/${Uri.encodeComponent(slug)}/reviews', query: {if (page > 1) 'page': page});
@@ -161,3 +171,12 @@ final storeProvider =
 
 final productReviewsProvider = FutureProvider.family<PageOf<Review>, String>(
     (ref, slug) => ref.watch(catalogApiProvider).reviews(slug));
+
+final relatedProvider =
+    FutureProvider.family<List<Product>, String>((ref, slug) => ref.watch(catalogApiProvider).related(slug));
+
+/// Re-reads when the signed-in account changes (the strip is personal).
+final recommendedProvider = FutureProvider<List<Product>>((ref) {
+  ref.watch(profileProvider.select((p) => p?.id));
+  return ref.watch(catalogApiProvider).recommended();
+});

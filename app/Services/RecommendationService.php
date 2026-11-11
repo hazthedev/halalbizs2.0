@@ -277,6 +277,47 @@ class RecommendationService
     }
 
     /**
+     * "Related products" strip: same category, live, newest first, 6.
+     * Shared by the RelatedProducts Livewire component and the mobile API.
+     */
+    public function related(Product $product, int $limit = 6): Collection
+    {
+        return Product::query()
+            ->live()
+            ->whereKeyNot($product->id)
+            ->where('category_id', $product->category_id)
+            ->with(['halalCertificate', 'variants', 'media', 'store'])
+            ->orderByDesc('published_at')
+            ->take($limit)
+            ->get();
+    }
+
+    /**
+     * "Recommended for you" strip, the branching RecommendedProducts renders:
+     * a buyer gets server-side signals; a guest gets viewed-id affinity once
+     * their ids are hydrated, else (non-home contexts) popular, else nothing.
+     * The home context refuses the popularity fallback (see the component).
+     *
+     * @param  array<int>  $viewedIds
+     */
+    public function forContext(?User $user, array $viewedIds, bool $hydrated, string $context = 'home', int $limit = 12, ?int $excludeProductId = null): Collection
+    {
+        $fallbackToPopular = $context !== 'home';
+
+        if ($user !== null) {
+            return $this->forUser($user, $limit, $excludeProductId, $fallbackToPopular);
+        }
+
+        if ($hydrated && $viewedIds !== []) {
+            return $this->forViewedIds($viewedIds, $limit, $excludeProductId, $fallbackToPopular);
+        }
+
+        return $hydrated && $fallbackToPopular
+            ? $this->popular($limit, $excludeProductId !== null ? [$excludeProductId] : [])
+            : new Collection;
+    }
+
+    /**
      * Popularity fallback — live, in stock, most sold (mirrors Home 'top').
      *
      * @param  array<int>  $exclude

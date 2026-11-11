@@ -9,6 +9,7 @@ import '../../l10n/l10n.dart';
 import '../account/inbox_actions.dart';
 import '../catalog/catalog_api.dart';
 import '../catalog/models.dart';
+import '../catalog/product_extras.dart';
 
 /// Home tab, all from one `GET home`: banner carousel, flash sale strip,
 /// the Featured grid (category chips removed, Haze 11-11). Offline-first: the cached strip
@@ -68,6 +69,7 @@ class HomeScreen extends ConsumerWidget {
                     action: SoukButton(label: l.retry, onPressed: () => _refresh(ref)),
                   )
                 : ProductGrid(f.featured, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
+            ProductStrip(keyPrefix: 'recommended', title: l.recommendedForYou, items: ref.watch(recommendedProvider).value ?? const []),
           ],
         ),
       ),

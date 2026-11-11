@@ -860,5 +860,14 @@
   "qaSeller": "Seller",
   "qaTypeFirst": "Type your question first.",
   "qaTooShort": "Add a little more detail (at least 10 characters).",
-  "qaSent": "Question sent — we'll notify you when the seller answers."
+  "qaSent": "Question sent — we'll notify you when the seller answers.",
+  "recommendedForYou": "Recommended for you",
+  "relatedVerified": "Verified alongside it",
+  "follow": "Follow",
+  "following": "Following",
+  "followersCount": "{count} followers",
+  "@followersCount": {"placeholders": {"count": {"type": "int"}}},
+  "followedShops": "Followed shops",
+  "followedShopsEmptyTitle": "No followed shops yet",
+  "followedShopsEmptyBody": "Follow a shop to see it here."
 }

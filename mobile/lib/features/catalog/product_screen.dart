@@ -354,6 +354,10 @@ class _ProductBody extends StatelessWidget {
               HalalDetails(p),
               const SizedBox(height: SoukSpace.s6),
               ProductTabs(p),
+              Consumer(
+                builder: (_, ref, _) => ProductStrip(
+                    keyPrefix: 'related', title: l.relatedVerified, items: ref.watch(relatedProvider(p.slug)).value ?? const []),
+              ),
             ],
           ),
         ),

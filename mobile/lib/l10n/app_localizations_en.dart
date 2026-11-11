@@ -1864,4 +1864,30 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get qaSent =>
       'Question sent — we\'ll notify you when the seller answers.';
+
+  @override
+  String get recommendedForYou => 'Recommended for you';
+
+  @override
+  String get relatedVerified => 'Verified alongside it';
+
+  @override
+  String get follow => 'Follow';
+
+  @override
+  String get following => 'Following';
+
+  @override
+  String followersCount(int count) {
+    return '$count followers';
+  }
+
+  @override
+  String get followedShops => 'Followed shops';
+
+  @override
+  String get followedShopsEmptyTitle => 'No followed shops yet';
+
+  @override
+  String get followedShopsEmptyBody => 'Follow a shop to see it here.';
 }

@@ -783,5 +783,14 @@
   "qaSeller": "Penjual",
   "qaTypeFirst": "Taip soalan anda dahulu.",
   "qaTooShort": "Tambah sedikit lagi butiran (sekurang-kurangnya 10 aksara).",
-  "qaSent": "Soalan dihantar — kami akan maklumkan apabila penjual menjawab."
+  "qaSent": "Soalan dihantar — kami akan maklumkan apabila penjual menjawab.",
+  "recommendedForYou": "Disyorkan untuk anda",
+  "relatedVerified": "Disahkan bersamanya",
+  "follow": "Ikuti",
+  "following": "Mengikuti",
+  "followersCount": "{count} pengikut",
+  "@followersCount": {"placeholders": {"count": {"type": "int"}}},
+  "followedShops": "Kedai diikuti",
+  "followedShopsEmptyTitle": "Belum ada kedai diikuti",
+  "followedShopsEmptyBody": "Ikuti kedai untuk melihatnya di sini."
 }
