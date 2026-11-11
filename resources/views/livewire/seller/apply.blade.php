@@ -86,7 +86,7 @@
         {{-- ===== Bank details ===== --}}
         <x-ui.card class="p-6">
             <h2 class="font-display text-lg font-medium">{{ __('Bank details') }}</h2>
-            <p class="mt-1 text-[13px] text-ink-soft">{{ __('Payouts for completed orders are transferred to this account.') }}</p>
+            <p class="mt-1 text-[13px] text-ink-soft">{{ __('Payouts for completed orders are transferred to this account. Sale money is held until the return window closes, then you can withdraw it.') }}</p>
 
             <div class="mt-4 space-y-4">
                 <div>
