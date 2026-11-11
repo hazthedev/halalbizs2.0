@@ -66,14 +66,7 @@ class RelatedProducts extends Component
     public function render()
     {
         return view('livewire.storefront.related-products', [
-            'related' => Product::query()
-                ->live()
-                ->whereKeyNot($this->product->id)
-                ->where('category_id', $this->product->category_id)
-                ->with(['halalCertificate', 'variants', 'media', 'store'])
-                ->orderByDesc('published_at')
-                ->take(6)
-                ->get(),
+            'related' => app(RecommendationService::class)->related($this->product),
             // Frequently bought together — co-purchase, falls back to empty (M1.8).
             'boughtTogether' => app(RecommendationService::class)->frequentlyBoughtTogether($this->product->id),
             'wishlistedIds' => $this->wishlistedIds(),

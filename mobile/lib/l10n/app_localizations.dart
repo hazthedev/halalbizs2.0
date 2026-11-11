@@ -3421,6 +3421,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Question sent — we\'ll notify you when the seller answers.'**
   String get qaSent;
+
+  /// No description provided for @recommendedForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended for you'**
+  String get recommendedForYou;
+
+  /// No description provided for @relatedVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified alongside it'**
+  String get relatedVerified;
+
+  /// No description provided for @follow.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow'**
+  String get follow;
+
+  /// No description provided for @following.
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get following;
+
+  /// No description provided for @followersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} followers'**
+  String followersCount(int count);
+
+  /// No description provided for @followedShops.
+  ///
+  /// In en, this message translates to:
+  /// **'Followed shops'**
+  String get followedShops;
+
+  /// No description provided for @followedShopsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No followed shops yet'**
+  String get followedShopsEmptyTitle;
+
+  /// No description provided for @followedShopsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow a shop to see it here.'**
+  String get followedShopsEmptyBody;
 }
 
 class _AppLocalizationsDelegate

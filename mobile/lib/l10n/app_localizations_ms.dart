@@ -1863,4 +1863,30 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get qaSent =>
       'Soalan dihantar — kami akan maklumkan apabila penjual menjawab.';
+
+  @override
+  String get recommendedForYou => 'Disyorkan untuk anda';
+
+  @override
+  String get relatedVerified => 'Disahkan bersamanya';
+
+  @override
+  String get follow => 'Ikuti';
+
+  @override
+  String get following => 'Mengikuti';
+
+  @override
+  String followersCount(int count) {
+    return '$count pengikut';
+  }
+
+  @override
+  String get followedShops => 'Kedai diikuti';
+
+  @override
+  String get followedShopsEmptyTitle => 'Belum ada kedai diikuti';
+
+  @override
+  String get followedShopsEmptyBody => 'Ikuti kedai untuk melihatnya di sini.';
 }

@@ -190,6 +190,7 @@
                             <a href="{{ route('account.orders') }}" wire:navigate class="block px-5 py-2.5 text-[length:var(--text-base)] hover:bg-cream">{{ __('My orders') }}</a>
                             <a href="{{ route('account.messages') }}" wire:navigate class="block px-5 py-2.5 text-[length:var(--text-base)] hover:bg-cream">{{ __('Messages') }}</a>
                             <a href="{{ route('account.wishlist') }}" wire:navigate class="block px-5 py-2.5 text-[length:var(--text-base)] hover:bg-cream">{{ __('Wishlist') }}</a>
+                            <a href="{{ route('account.following') }}" wire:navigate class="block px-5 py-2.5 text-[length:var(--text-base)] hover:bg-cream">{{ __('Followed shops') }}</a>
                             @if (auth()->user()->store?->isApproved())
                                 <a href="{{ route('seller.dashboard') }}" class="block px-5 py-2.5 text-[length:var(--text-base)] hover:bg-cream">{{ __('Seller centre') }}</a>
                             @endif

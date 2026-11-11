@@ -106,6 +106,9 @@ class OrdersApi {
 
   Future<List<OrderBucket>> buckets() async => asMapList(await _api.get('orders/buckets')).map(OrderBucket.new).toList();
 
+  /// `GET orders/quick-status`: the web account dashboard's four shortcuts.
+  Future<List<OrderBucket>> quickStatus() async => asMapList(await _api.get('orders/quick-status')).map(OrderBucket.new).toList();
+
   /// `GET orders?bucket=&page=` — page 1 is snapshotted for offline.
   Future<OrdersPage> list({String? bucket, int page = 1}) async {
     final r = await _repo.getJson('orders', query: {'bucket': ?bucket, if (page > 1) 'page': page}, allowStale: page == 1);
@@ -151,6 +154,8 @@ class OrdersApi {
 final ordersApiProvider = Provider<OrdersApi>((ref) => OrdersApi(ref.watch(apiClientProvider), ref.watch(offlineRepoProvider)));
 
 final orderBucketsProvider = FutureProvider<List<OrderBucket>>((ref) => ref.watch(ordersApiProvider).buckets());
+
+final orderQuickStatusProvider = FutureProvider<List<OrderBucket>>((ref) => ref.watch(ordersApiProvider).quickStatus());
 
 final orderDetailProvider =
     FutureProvider.family<CachedResult<SubOrder>, int>((ref, id) => ref.watch(ordersApiProvider).detail(id));

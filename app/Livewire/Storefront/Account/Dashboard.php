@@ -248,36 +248,35 @@ class Dashboard extends Component
     /** @return list<array{key: string, label: string, count: int, url: string}> */
     private function quickStatus(): array
     {
-        $counts = $this->statusCounts();
+        return array_map(
+            fn (array $row) => $row + ['url' => route('account.orders', ['tab' => $row['key']])],
+            self::quickStatusFor(auth()->id()),
+        );
+    }
+
+    /**
+     * The four shortcut counts (sub-orders per status group). One source for
+     * this dashboard and GET api/v1/orders/quick-status.
+     *
+     * @return list<array{key: string, label: string, count: int}>
+     */
+    public static function quickStatusFor(int $userId): array
+    {
+        $counts = SubOrder::query()
+            ->whereHas('order', fn (Builder $query) => $query->where('user_id', $userId))
+            ->toBase()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
         $sum = fn (SubOrderStatus ...$statuses) => collect($statuses)
             ->sum(fn (SubOrderStatus $status) => (int) ($counts[$status->value] ?? 0));
 
         return [
-            [
-                'key' => 'to-pay',
-                'label' => __('To Pay'),
-                'count' => $sum(SubOrderStatus::PendingPayment),
-                'url' => route('account.orders', ['tab' => 'to-pay']),
-            ],
-            [
-                'key' => 'to-ship',
-                'label' => __('To Ship'),
-                'count' => $sum(SubOrderStatus::Confirmed, SubOrderStatus::Processing),
-                'url' => route('account.orders', ['tab' => 'to-ship']),
-            ],
-            [
-                'key' => 'to-receive',
-                'label' => __('To Receive'),
-                'count' => $sum(SubOrderStatus::Shipped, SubOrderStatus::Delivered),
-                'url' => route('account.orders', ['tab' => 'to-receive']),
-            ],
-            [
-                'key' => 'completed',
-                'label' => __('Completed'),
-                'count' => $sum(SubOrderStatus::Completed),
-                'url' => route('account.orders', ['tab' => 'completed']),
-            ],
+            ['key' => 'to-pay', 'label' => __('To Pay'), 'count' => $sum(SubOrderStatus::PendingPayment)],
+            ['key' => 'to-ship', 'label' => __('To Ship'), 'count' => $sum(SubOrderStatus::Confirmed, SubOrderStatus::Processing)],
+            ['key' => 'to-receive', 'label' => __('To Receive'), 'count' => $sum(SubOrderStatus::Shipped, SubOrderStatus::Delivered)],
+            ['key' => 'completed', 'label' => __('Completed'), 'count' => $sum(SubOrderStatus::Completed)],
         ];
     }
 

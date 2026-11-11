@@ -34,6 +34,8 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/search', [CatalogController::class, 'search'])->name('api.search');
     Route::get('/products/{product:slug}/reviews', [CatalogController::class, 'reviews'])->name('api.product.reviews');
     Route::get('/products/{product:slug}/questions', [CatalogController::class, 'questions'])->name('api.product.questions');
+    Route::get('/products/{product:slug}/related', [CatalogController::class, 'related'])->name('api.product.related');
+    Route::get('/recommended', [CatalogController::class, 'recommended'])->name('api.recommended');
     Route::get('/home', HomeController::class)->name('api.home');
     Route::get('/stores/{store:slug}', [StoreController::class, 'show'])->name('api.stores.show');
     Route::get('/stores/{store:slug}/products', [StoreController::class, 'products'])->name('api.stores.products');
@@ -88,6 +90,7 @@ Route::prefix('v1')->name('api.')->group(function () {
 
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/buckets', [OrderController::class, 'buckets'])->name('orders.buckets');
+        Route::get('/orders/quick-status', [OrderController::class, 'quickStatus'])->name('orders.quick-status');
         Route::get('/return-reasons', [OrderController::class, 'returnReasons'])->name('orders.return-reasons');
         Route::get('/orders/{orderNo}/payment', [OrderController::class, 'payment'])->name('orders.payment');
         Route::get('/orders/{subOrder}', [OrderController::class, 'show'])->whereNumber('subOrder')->name('orders.show');
@@ -95,6 +98,10 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::post('/orders/{subOrder}/confirm-received', [OrderController::class, 'confirmReceived'])->whereNumber('subOrder')->name('orders.confirm-received');
         Route::post('/orders/{subOrder}/return', [OrderController::class, 'returnRequest'])->whereNumber('subOrder')->name('orders.return');
         Route::post('/orders/{subOrder}/review', [OrderController::class, 'review'])->whereNumber('subOrder')->middleware('throttle:api-review')->name('orders.review');
+
+        Route::post('/stores/{store:slug}/follow', [StoreController::class, 'follow'])->middleware('throttle:30,1,follow')->name('stores.follow');
+        Route::delete('/stores/{store:slug}/follow', [StoreController::class, 'unfollow'])->middleware('throttle:30,1,follow')->name('stores.unfollow');
+        Route::get('/me/followed-stores', [StoreController::class, 'followed'])->name('me.followed-stores');
 
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
         Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');

@@ -9,6 +9,7 @@ import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import 'catalog_api.dart';
 import 'category_screen.dart';
+import 'follow_button.dart';
 import 'models.dart';
 import 'paged.dart';
 
@@ -155,6 +156,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                               ],
                             ),
                           ),
+                          if (s != null) ...[
+                            const SizedBox(height: SoukSpace.s2),
+                            FollowButton(slug: widget.slug, store: s),
+                          ],
                         ],
                       ),
                     ),

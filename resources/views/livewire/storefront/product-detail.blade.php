@@ -410,6 +410,7 @@
                                         <span class="flex items-center gap-1.5"><span aria-hidden="true">·</span><span>{{ $store->state }}</span></span>
                                     @endif
                                 </p>
+                                <div class="mt-2"><livewire:storefront.follow-button :store="$store" :wire:key="'follow-pdp-'.$store->id" /></div>
                             </div>
                             </div>
                             <a href="{{ auth()->check() ? route('account.messages', ['store' => $store->id, 'product' => $product->id]) : route('login') }}"

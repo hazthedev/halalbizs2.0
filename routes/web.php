@@ -154,6 +154,7 @@ Route::middleware(['auth'])->prefix('account')->name('account.')->group(function
     Route::get('/messages', Storefront\Account\Messages::class)->name('messages');
     Route::get('/addresses', Storefront\Account\Addresses::class)->name('addresses');
     Route::get('/wishlist', Storefront\Account\WishlistPage::class)->name('wishlist');
+    Route::get('/following', Storefront\Account\FollowedShopsPage::class)->name('following');
     Route::get('/coins', Storefront\Account\Coins::class)->name('coins');
     Route::get('/affiliate', Storefront\Account\Affiliate::class)->name('affiliate');
     Route::get('/subscriptions', Storefront\Account\Subscriptions::class)->name('subscriptions');

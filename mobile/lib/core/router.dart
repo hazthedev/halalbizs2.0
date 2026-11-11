@@ -145,7 +145,7 @@ RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
           GoRoute(path: '/cart', builder: (_, _) => const CartScreen()),
         ]),
         StatefulShellBranch(routes: [
-          GoRoute(path: '/orders', builder: (_, _) => const OrdersScreen(), routes: ordersSubRoutes),
+          GoRoute(path: '/orders', builder: (_, s) => OrdersScreen(initialBucket: s.uri.queryParameters['bucket']), routes: ordersSubRoutes),
         ]),
         StatefulShellBranch(routes: [
           GoRoute(path: '/account', builder: (_, _) => const AccountScreen(), routes: accountSubRoutes),

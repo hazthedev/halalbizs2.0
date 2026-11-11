@@ -11,9 +11,11 @@ import '../../l10n/l10n.dart';
 import '../messages/conversations_screen.dart';
 import '../messages/messages_api.dart';
 import 'account_api.dart';
+import '../orders/orders_api.dart';
 import 'addresses_screen.dart';
 import 'coins_screen.dart';
 import 'delete_account_screen.dart';
+import 'followed_shops_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'wishlist_screen.dart';
@@ -90,12 +92,15 @@ class AccountScreen extends ConsumerWidget {
             ]),
           ),
           const SizedBox(height: SoukSpace.s4),
+          const OrderShortcuts(),
+          const SizedBox(height: SoukSpace.s4),
           SoukCard(
             padding: EdgeInsets.zero,
             child: Column(children: [
               SoukRow(key: const Key('account-profile'), icon: FontAwesomeIcons.user, label: l.profile, onTap: () => context.push('/account/profile')),
               SoukRow(key: const Key('account-addresses'), icon: FontAwesomeIcons.locationDot, label: l.addresses, onTap: () => context.push('/account/addresses')),
               SoukRow(key: const Key('account-wishlist'), icon: FontAwesomeIcons.heart, label: l.wishlist, onTap: () => context.push('/account/wishlist')),
+              SoukRow(key: const Key('account-following'), icon: FontAwesomeIcons.store, label: l.followedShops, onTap: () => context.push('/account/following')),
               SoukRow(key: const Key('account-coins'), icon: FontAwesomeIcons.coins, label: l.coins, onTap: () => context.push('/account/coins')),
               SoukRow(
                 key: const Key('account-notifications'),
@@ -145,6 +150,61 @@ class AccountScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) showApiError(context, e);
     }
+  }
+}
+
+/// Four order shortcuts with counts (web account dashboard: To Pay / To Ship /
+/// To Receive / Completed, `GET orders/quick-status`). Tap = Orders on that tab.
+class OrderShortcuts extends ConsumerWidget {
+  const OrderShortcuts({super.key});
+
+  static const _icons = {
+    'to-pay': FontAwesomeIcons.wallet,
+    'to-ship': FontAwesomeIcons.boxOpen,
+    'to-receive': FontAwesomeIcons.truck,
+    'completed': FontAwesomeIcons.circleCheck,
+  };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rows = ref.watch(orderQuickStatusProvider).value;
+    if (rows == null || rows.isEmpty) return const SizedBox.shrink();
+    return SoukCard(
+      key: const Key('account-order-shortcuts'),
+      padding: const EdgeInsets.symmetric(vertical: SoukSpace.s3),
+      child: Row(children: [
+        for (final r in rows)
+          Expanded(
+            child: InkWell(
+              key: Key('order-shortcut-${r.key}'),
+              onTap: () => context.go('/orders?bucket=${r.key}'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: SoukSpace.s1),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Stack(clipBehavior: Clip.none, children: [
+                    Padding(padding: const EdgeInsets.all(6), child: FaIcon(_icons[r.key] ?? FontAwesomeIcons.box, size: 20, color: SoukColors.inkHead)),
+                    if (r.count > 0)
+                      Positioned(
+                        right: -4,
+                        top: -2,
+                        child: Container(
+                          key: Key('order-shortcut-${r.key}-count'),
+                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(color: SoukColors.danger, borderRadius: BorderRadius.circular(SoukRadius.pill)),
+                          alignment: Alignment.center,
+                          child: Text(r.count > 99 ? '99+' : '${r.count}',
+                              style: SoukText.meta.copyWith(color: SoukColors.onDark, fontSize: 10, height: 1.2)),
+                        ),
+                      ),
+                  ]),
+                  Text(r.label, style: SoukText.meta, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
+                ]),
+              ),
+            ),
+          ),
+      ]),
+    );
   }
 }
 
@@ -198,6 +258,7 @@ List<RouteBase> get accountSubRoutes => [
         GoRoute(path: ':id', builder: (_, s) => AddressFormScreen(id: int.tryParse(s.pathParameters['id']!))),
       ]),
       GoRoute(path: 'wishlist', builder: (_, _) => const WishlistScreen()),
+      GoRoute(path: 'following', builder: (_, _) => const FollowedShopsScreen()),
       GoRoute(path: 'coins', builder: (_, _) => const CoinsScreen()),
       GoRoute(path: 'notifications', builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: 'messages', builder: (_, _) => const ConversationsScreen(), routes: messagesSubRoutes),

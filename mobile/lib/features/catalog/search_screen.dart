@@ -16,7 +16,9 @@ import 'paged.dart';
 const kSearchDebounce = Duration(milliseconds: 300);
 
 /// Search tab: query (min 2 chars, 300 ms debounce) + category chips +
-/// the sort/filter sheet. Online-only; offline shows "Search needs a connection".
+/// the sort/filter sheet. An empty box lists popular products (`products?sort=top`)
+/// instead of a blank screen (Haze 11-11). Online-only; offline shows
+/// "Search needs a connection".
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
@@ -30,13 +32,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   String? _category;
   var _filter = const ProductFilter();
 
-  /// A query of 2+ characters has been sent (else the hint shows).
-  bool _active = false;
   bool _offline = false;
-  late final _list = PagedList<Product>((page) async => (await ref
-          .read(catalogApiProvider)
-          .search(_query.text.trim(), category: _category, filter: _filter, page: page))
-      .paged);
+  late final _list = PagedList<Product>((page) async {
+    final api = ref.read(catalogApiProvider);
+    final q = _query.text.trim();
+    final r = q.length >= 2
+        ? await api.search(q, category: _category, filter: _filter, page: page)
+        : await api.products(sort: _filter.sort == null ? 'top' : null, category: _category, filter: _filter, page: page);
+    return r.paged;
+  });
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _run();
+    });
+  }
 
   @override
   void dispose() {
@@ -52,15 +64,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   void _run() {
-    if (_query.text.trim().length < 2) {
-      setState(() => _active = false);
-      return;
-    }
+    // One character: keep what is on screen (popular or last results).
+    if (_query.text.trim().length == 1) return;
     final offline = ref.read(isOfflineProvider).value ?? false;
-    setState(() {
-      _active = true;
-      _offline = offline;
-    });
+    setState(() => _offline = offline);
     if (!offline) _list.reload(clear: true);
   }
 
@@ -156,12 +163,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _body(AppLocalizations l, Map<String, String> sorts) {
-    if (!_active) {
-      return Padding(
-        padding: const EdgeInsets.only(top: SoukSpace.s6),
-        child: Text(l.searchMinChars, textAlign: TextAlign.center, style: SoukText.meta),
-      );
-    }
     if (_offline) {
       return SoukEmptyState(
         key: const Key('search-offline'),
@@ -182,8 +183,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         },
         empty: SoukEmptyState(
           key: const Key('search-empty'),
-          title: l.searchNoResults(_query.text.trim()),
-          message: l.searchNoResultsBody,
+          title: _query.text.trim().length >= 2 ? l.searchNoResults(_query.text.trim()) : l.noProductsYet,
+          message: _query.text.trim().length >= 2 ? l.searchNoResultsBody : l.noProductsBody,
           action: SoukButton(label: l.tabHome, onPressed: () => context.go('/home')),
         ),
       ),

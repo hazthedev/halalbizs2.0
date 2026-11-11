@@ -5,7 +5,6 @@ namespace App\Livewire\Storefront;
 use App\Livewire\Concerns\InteractsWithCart;
 use App\Services\RecommendationService;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Collection;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -61,27 +60,10 @@ class RecommendedProducts extends Component
 
     public function render(): View
     {
-        $service = app(RecommendationService::class);
-
-        // On the home page "Popular now" sits directly below this strip, and a
-        // cold-start recommendation IS that same query (popular() orders by
-        // sold_count then id and says so in its own docblock). So here the
-        // popularity fallback is refused and the strip hides itself instead of
-        // repeating the section under a personalised heading. The PDP and the
-        // buyer dashboard keep the fallback — nothing duplicates it there.
-        $fallbackToPopular = $this->context !== 'home';
-
-        if (auth()->check()) {
-            $products = $service->forUser(auth()->user(), $this->limit, $this->excludeProductId, $fallbackToPopular);
-        } elseif ($this->hydrated && $this->viewedIds !== []) {
-            $products = $service->forViewedIds($this->viewedIds, $this->limit, $this->excludeProductId, $fallbackToPopular);
-        } else {
-            // First guest paint: wait for the Alpine hydrate before showing
-            // popular, so the localStorage signal isn't missed.
-            $products = $this->hydrated && $fallbackToPopular
-                ? $service->popular($this->limit, $this->excludeProductId !== null ? [$this->excludeProductId] : [])
-                : new Collection;
-        }
+        // Branching (and why home refuses the popular fallback) lives in the shared service method.
+        $products = app(RecommendationService::class)->forContext(
+            auth()->user(), $this->viewedIds, $this->hydrated, $this->context, $this->limit, $this->excludeProductId,
+        );
 
         return view('livewire.storefront.recommended-products', [
             'products' => $products,

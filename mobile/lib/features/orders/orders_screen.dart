@@ -20,14 +20,17 @@ List<RouteBase> get ordersSubRoutes => [
 /// `/orders` — bucket chips from `GET orders/buckets`, one card per sub-order,
 /// pull-to-refresh, "Load more" pagination.
 class OrdersScreen extends ConsumerStatefulWidget {
-  const OrdersScreen({super.key});
+  const OrdersScreen({super.key, this.initialBucket});
+
+  /// `/orders?bucket=to-ship` (the Account shortcuts); null = All.
+  final String? initialBucket;
 
   @override
   ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
 
 class _OrdersScreenState extends ConsumerState<OrdersScreen> {
-  String? _bucket;
+  late String? _bucket = widget.initialBucket;
   final _items = <SubOrder>[];
   int _page = 1;
   bool _hasMore = false;
@@ -41,6 +44,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   void initState() {
     super.initState();
     _load(reset: true);
+  }
+
+  @override
+  void didUpdateWidget(OrdersScreen old) {
+    super.didUpdateWidget(old);
+    if (widget.initialBucket != old.initialBucket) _pick(widget.initialBucket);
   }
 
   Future<void> _load({required bool reset}) async {

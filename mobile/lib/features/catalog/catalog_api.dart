@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/json.dart';
+import '../../core/auth/session.dart';
 import '../../core/offline/offline.dart';
 import 'models.dart';
 import 'paged.dart';
@@ -95,6 +96,15 @@ class CatalogApi {
     return ProductPage(asMapList(data).map(Product.new).toList(), meta: PageMeta(meta));
   }
 
+  /// `GET products/{slug}/related`: the web "Verified alongside it" strip (same
+  /// category, newest first, 6). Online only: it follows the live catalogue.
+  Future<List<Product>> related(String slug) async =>
+      asMapList(await _api.get('products/${Uri.encodeComponent(slug)}/related')).map(Product.new).toList();
+
+  /// `GET recommended`: the web Home "Recommended for you" strip (12). Signed in =
+  /// the buyer's own signals; never snapshotted, so a cached feed cannot cross accounts.
+  Future<List<Product>> recommended() async => asMapList(await _api.get('recommended')).map(Product.new).toList();
+
   /// `GET products/{slug}/reviews`: visible reviews, newest first, 10 a page.
   Future<PageOf<Review>> reviews(String slug, {int page = 1}) async {
     final r = await _repo.getJson('products/${Uri.encodeComponent(slug)}/reviews', query: {if (page > 1) 'page': page});
@@ -121,6 +131,23 @@ class CatalogApi {
       if (!e.isNotFound) rethrow;
       return CachedResult(Store({'slug': slug}));
     }
+  }
+
+  /// `POST|DELETE stores/{slug}/follow` (signed in): the server's state, idempotent.
+  Future<({bool following, int count})> followStore(String slug) async => _followState(await _api.post('stores/${Uri.encodeComponent(slug)}/follow'));
+
+  Future<({bool following, int count})> unfollowStore(String slug) async => _followState(await _api.delete('stores/${Uri.encodeComponent(slug)}/follow'));
+
+  ({bool following, int count}) _followState(dynamic data) {
+    final m = asMap(data);
+    return (following: asBool(m['is_following']), count: asInt(m['followers_count']) ?? 0);
+  }
+
+  /// `GET me/followed-stores` (signed in), newest follow first, 20 a page.
+  Future<PageOf<Store>> followedStores({int page = 1}) async {
+    Map<String, dynamic>? meta;
+    final data = await _api.get('me/followed-stores', query: {if (page > 1) 'page': page}, meta: (m) => meta = m);
+    return (items: asMapList(data).map(Store.new).toList(), meta: PageMeta(meta), fromCache: false, fetchedAt: null);
   }
 
   /// `GET stores/{slug}/products` (sort + page only). A price range or halal
@@ -161,3 +188,18 @@ final storeProvider =
 
 final productReviewsProvider = FutureProvider.family<PageOf<Review>, String>(
     (ref, slug) => ref.watch(catalogApiProvider).reviews(slug));
+
+final relatedProvider =
+    FutureProvider.family<List<Product>, String>((ref, slug) => ref.watch(catalogApiProvider).related(slug));
+
+/// Re-reads when the signed-in account changes (the strip is personal).
+final recommendedProvider = FutureProvider<List<Product>>((ref) {
+  ref.watch(profileProvider.select((p) => p?.id));
+  return ref.watch(catalogApiProvider).recommended();
+});
+
+/// Page 1 of the followed shops (the Account list pages on from there).
+final followedStoresProvider = FutureProvider<PageOf<Store>>((ref) {
+  ref.watch(profileProvider.select((p) => p?.id));
+  return ref.watch(catalogApiProvider).followedStores();
+});

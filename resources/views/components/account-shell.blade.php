@@ -23,6 +23,7 @@ if (config('subscriptions.enabled', true)) {
 $items += [
     'messages' => ['label' => __('Messages'), 'href' => route('account.messages')],
     'wishlist' => ['label' => __('Wishlist'), 'href' => route('account.wishlist')],
+    'following' => ['label' => __('Followed shops'), 'href' => route('account.following')],
     'notifications' => ['label' => __('Notifications'), 'href' => route('account.notifications')],
 ];
 @endphp
