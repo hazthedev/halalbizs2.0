@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/api/api_client.dart';
@@ -11,7 +12,9 @@ import 'l10n/l10n.dart';
 
 void main() {
   assertApiBaseUrl();
-  WidgetsFlutterBinding.ensureInitialized();
+  // One splash only: the native one stays up until the session restores
+  // (Haze 11-11: two logos, big then small, looked like a glitch).
+  FlutterNativeSplash.preserve(widgetsBinding: WidgetsFlutterBinding.ensureInitialized());
   runApp(const ProviderScope(retry: soukRetry, child: HalalBizsApp()));
 }
 
@@ -38,9 +41,9 @@ class HalalBizsApp extends ConsumerWidget {
   }
 }
 
-/// Covers the router with a paper splash while the stored session restores
+/// Holds the native splash over the router while the stored session restores
 /// (token → `GET me`, or the cached profile offline), so a guarded tab never
-/// flashes before the redirect lands. Cross-fades out the moment it resolves.
+/// flashes before the redirect lands; removes it the moment the session resolves.
 class _StartupGate extends ConsumerWidget {
   const _StartupGate({required this.child});
 
@@ -49,16 +52,8 @@ class _StartupGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loading = ref.watch(sessionProvider.select((s) => s is SessionLoading));
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 220),
-      switchInCurve: Curves.easeOut,
-      child: loading
-          ? const ColoredBox(
-              key: ValueKey('souk-splash'),
-              color: SoukColors.paper,
-              child: Center(child: KhatamMark(size: 64)),
-            )
-          : KeyedSubtree(key: const ValueKey('souk-app'), child: child),
-    );
+    if (loading) return const ColoredBox(color: SoukColors.paper);
+    FlutterNativeSplash.remove();
+    return child;
   }
 }
