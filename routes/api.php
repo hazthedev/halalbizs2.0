@@ -90,6 +90,7 @@ Route::prefix('v1')->name('api.')->group(function () {
 
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/buckets', [OrderController::class, 'buckets'])->name('orders.buckets');
+        Route::get('/orders/quick-status', [OrderController::class, 'quickStatus'])->name('orders.quick-status');
         Route::get('/return-reasons', [OrderController::class, 'returnReasons'])->name('orders.return-reasons');
         Route::get('/orders/{orderNo}/payment', [OrderController::class, 'payment'])->name('orders.payment');
         Route::get('/orders/{subOrder}', [OrderController::class, 'show'])->whereNumber('subOrder')->name('orders.show');

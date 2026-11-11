@@ -293,3 +293,23 @@ test('order status labels and bucket labels come back in Bahasa Melayu for Accep
     $http->getJson('/api/v1/orders/buckets')->assertJsonPath('data.0.label', 'Untuk Dibayar');
     expect($http->getJson('/api/v1/orders')->json('data.*.status_label'))->toBe(['Menunggu bayaran', 'Disahkan']);
 });
+
+test('quick-status is the web dashboard shortcuts and never counts another buyer', function () {
+    [$user, $http] = apiOrdersUser();
+    apiOrdersSubOrder($user, SubOrderStatus::PendingPayment);
+    apiOrdersSubOrder($user, SubOrderStatus::Confirmed);
+    apiOrdersSubOrder($user, SubOrderStatus::Processing);
+    apiOrdersSubOrder($user, SubOrderStatus::Delivered);
+    apiOrdersSubOrder($user, SubOrderStatus::Completed);
+    apiOrdersSubOrder($user, SubOrderStatus::Cancelled);
+    apiOrdersSubOrder(User::factory()->create(), SubOrderStatus::Confirmed);
+
+    $http->getJson('/api/v1/orders/quick-status')
+        ->assertOk()
+        ->assertJsonPath('data.*.key', ['to-pay', 'to-ship', 'to-receive', 'completed'])
+        ->assertJsonPath('data.*.count', [1, 2, 1, 1])
+        ->assertJsonPath('data.1.label', __('To Ship'));
+
+    app('auth')->forgetGuards();
+    $this->withHeader('Authorization', '')->getJson('/api/v1/orders/quick-status')->assertUnauthorized();
+});

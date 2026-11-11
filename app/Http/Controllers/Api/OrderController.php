@@ -10,6 +10,7 @@ use App\Exceptions\InvalidTransitionException;
 use App\Http\Api\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SubOrderResource;
+use App\Livewire\Storefront\Account\Dashboard;
 use App\Livewire\Storefront\Account\Orders;
 use App\Models\Order;
 use App\Models\ReturnReason;
@@ -55,6 +56,12 @@ class OrderController extends Controller
         }
 
         return ApiResponse::ok($buckets);
+    }
+
+    /** The web account dashboard's four shortcuts (Dashboard::quickStatusFor): key, label, count. */
+    public function quickStatus(Request $request): JsonResponse
+    {
+        return ApiResponse::ok(Dashboard::quickStatusFor($request->user()->id));
     }
 
     public function show(Request $request, int $subOrder): JsonResponse

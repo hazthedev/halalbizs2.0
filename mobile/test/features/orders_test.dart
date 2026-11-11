@@ -281,4 +281,41 @@ void main() {
     expect(h.router.state.uri.path, '/cart');
     expect(find.text('1 item added to cart · 2 items skipped (not available)'), findsOneWidget);
   });
+
+  testWidgets('Account shows the four order shortcuts with counts; tap opens Orders on that tab', (tester) async {
+    usePhone(tester);
+    String? bucket;
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET conversations': (_, _) => [],
+      'GET orders/quick-status': (_, _) => [
+            {'key': 'to-pay', 'label': 'To Pay', 'count': 2},
+            {'key': 'to-ship', 'label': 'To Ship', 'count': 0},
+            {'key': 'to-receive', 'label': 'To Receive', 'count': 1},
+            {'key': 'completed', 'label': 'Completed', 'count': 7},
+          ],
+      'GET orders/buckets': (_, _) => [
+            {'key': 'to-pay', 'label': 'To Pay', 'count': 2},
+            {'key': 'to-ship', 'label': 'To Ship', 'count': 0},
+          ],
+      'GET orders': (q, _) {
+        bucket = q?['bucket'] as String?;
+        return [fakeSubOrder()];
+      },
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/account');
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('account-order-shortcuts')), findsOneWidget);
+    expect(find.text('To Pay'), findsOneWidget);
+    expect(find.text('Completed'), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('order-shortcut-to-pay-count')), matching: find.text('2')), findsOneWidget);
+    expect(find.byKey(const Key('order-shortcut-to-ship-count')), findsNothing); // zero hides
+
+    await tester.tap(find.byKey(const Key('order-shortcut-to-receive')));
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.toString(), '/orders?bucket=to-receive');
+    expect(bucket, 'to-receive');
+  });
 }
