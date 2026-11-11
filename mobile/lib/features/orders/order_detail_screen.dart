@@ -276,6 +276,7 @@ class _Detail extends StatelessWidget {
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(it.name, style: SoukText.small, maxLines: 2, overflow: TextOverflow.ellipsis),
                     Text('${it.variantLabel == null ? '' : '${it.variantLabel} · '}× ${it.qty}', style: SoukText.meta),
+                    if (it.reviewed) Text(l.ordersReviewedTag, key: Key('order-item-reviewed-${it.id}'), style: SoukText.meta.copyWith(color: SoukColors.emerald)),
                   ]),
                 ),
                 PriceText(it.lineTotalSen),

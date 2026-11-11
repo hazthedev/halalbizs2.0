@@ -903,5 +903,6 @@
   "certDaysRemaining": "{count, plural, =1{{count} day remaining} other{{count} days remaining}}",
   "certSeeSkus": "{count, plural, =1{See the covered SKU} other{See the {count} covered SKUs}}",
   "@certDaysRemaining": {"placeholders": {"count": {"type": "int"}}},
-  "@certSeeSkus": {"placeholders": {"count": {"type": "int"}}}
+  "@certSeeSkus": {"placeholders": {"count": {"type": "int"}}},
+  "ordersReviewedTag": "Reviewed ✓"
 }

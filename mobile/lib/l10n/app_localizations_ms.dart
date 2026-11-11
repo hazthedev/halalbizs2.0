@@ -1998,4 +1998,7 @@ class AppLocalizationsMs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get ordersReviewedTag => 'Telah diulas ✓';
 }

@@ -3661,6 +3661,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{See the covered SKU} other{See the {count} covered SKUs}}'**
   String certSeeSkus(int count);
+
+  /// No description provided for @ordersReviewedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed ✓'**
+  String get ordersReviewedTag;
 }
 
 class _AppLocalizationsDelegate

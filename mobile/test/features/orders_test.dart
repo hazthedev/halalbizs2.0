@@ -386,6 +386,39 @@ void main() {
     await h2.pump(tester, location: '/orders/7');
     expect(find.byKey(const Key('order-invoice')), findsNothing);
   });
+
+  testWidgets('list: a completed order with unreviewed items shows Write a review on the card; fully reviewed shows Reviewed and no button', (tester) async {
+    usePhone(tester);
+    Map<String, dynamic> completed(int id, {required bool reviewed}) {
+      final o = fakeSubOrder(id: id, status: 'completed', label: 'Completed', can: {'cancel': false, 'confirm_received': false, 'return': false, 'review': !reviewed});
+      for (final it in o['items'] as List) {
+        (it as Map)['reviewed'] = reviewed;
+      }
+      return o;
+    }
+
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET orders/buckets': (_, _) => [],
+      'GET orders': (_, _) => [completed(5, reviewed: false), completed(6, reviewed: true), fakeSubOrder(id: 7)],
+      'GET orders/5': (_, _) => completed(5, reviewed: false),
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/orders');
+
+    expect(find.byKey(const Key('order-card-review-6')), findsNothing);
+    expect(find.byKey(const Key('order-card-reviewed-6')), findsOneWidget);
+    expect(find.text('Reviewed ✓'), findsOneWidget);
+    expect(find.byKey(const Key('order-card-review-7')), findsNothing);
+    expect(find.byKey(const Key('order-card-reviewed-7')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('order-card-review-5')));
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/orders/5/review');
+    expect(find.byKey(const Key('review-submit')), findsOneWidget);
+  });
 }
 
 final Uint8List _png = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
