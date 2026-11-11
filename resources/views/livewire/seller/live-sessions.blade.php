@@ -19,7 +19,10 @@
             </div>
             <div>
                 <label for="ls-video" class="text-[13px] font-medium">{{ __('Video URL (YouTube / Facebook)') }}</label>
-                <input id="ls-video" type="url" wire:model="videoUrl" placeholder="https://youtube.com/watch?v=…" class="mt-1 block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-canvas px-3 text-sm">
+                <input id="ls-video" type="url" wire:model.live.blur="videoUrl" placeholder="https://youtube.com/watch?v=…" class="mt-1 block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-canvas px-3 text-sm">
+                @if ($detectedPlatform && ! $errors->has('videoUrl'))
+                    <p class="mt-1 text-[13px] text-emerald">{{ __('Detected: :platform', ['platform' => ucfirst($detectedPlatform)]) }}</p>
+                @endif
                 @error('videoUrl') <p class="mt-1 text-[13px] text-danger">{{ $message }}</p> @enderror
             </div>
             <div>

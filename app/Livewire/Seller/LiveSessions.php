@@ -7,6 +7,7 @@ use App\Models\LiveSession;
 use App\Models\Product;
 use App\Services\LiveSessionService;
 use App\Support\DisplayTime;
+use App\Support\LiveVideoUrl;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -50,7 +51,11 @@ class LiveSessions extends Component
     {
         $validated = $this->validate([
             'title' => 'required|string|max:120',
-            'videoUrl' => 'nullable|url|max:500',
+            'videoUrl' => ['nullable', 'url', 'max:500', function (string $attribute, mixed $value, \Closure $fail) {
+                if (filled($value) && LiveVideoUrl::parse($value) === null) {
+                    $fail(__('Use a YouTube (watch, live or share link), Facebook video, Shopee Live, TikTok Live or Lazada Live link.'));
+                }
+            }],
             'voucherCode' => 'nullable|string|max:40',
             'scheduledFor' => 'nullable|date',
         ]);
@@ -139,6 +144,7 @@ class LiveSessions extends Component
                 ->latest('id')
                 ->get(),
             'managing' => $this->managingId ? $this->ownedSession($this->managingId)?->load('products') : null,
+            'detectedPlatform' => LiveVideoUrl::parse($this->videoUrl)['platform'] ?? null,
             'products' => Product::where('store_id', $store->id)->orderBy('id')->get(['id', 'name']),
         ])->title(__('Live shopping'));
     }
