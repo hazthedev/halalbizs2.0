@@ -807,5 +807,22 @@
   "helpAndSupport": "Bantuan & sokongan",
   "ordersDownloadInvoice": "Muat turun invois",
   "sellerHalalCertificates": "Sijil halal",
-  "sellerVouchers": "Baucar"
+  "sellerVouchers": "Baucar",
+  "certRegister": "Daftar sijil",
+  "certValid": "Sijil sah",
+  "certNotValid": "Sijil tidak sah",
+  "certIssuingBody": "Badan pengeluar",
+  "certHolder": "Pemegang sijil",
+  "certSchemeScope": "Skim dan skop",
+  "certValidity": "Tempoh sah",
+  "certFacility": "Kemudahan",
+  "certCoveredSkus": "SKU diliputi",
+  "certDedicated": "Kemudahan halal khusus",
+  "certExport": "Dokumen eksport disertakan",
+  "certAuditTrail": "Jejak audit",
+  "certBound": "Sijil ini terikat pada SKU yang dinyatakan dalam skopnya, bukan seluruh kedai.",
+  "certNoRecord": "Tiada rekod",
+  "certNoRecordBody": "Tiada sijil di pasaran ini menggunakan nombor tersebut. Semak digitnya atau laporkan penyenaraian yang memaparkannya.",
+  "certDaysRemaining": "Tinggal {count} hari",
+  "certSeeSkus": "{count, plural, =1{Lihat SKU yang diliputi} other{Lihat {count} SKU yang diliputi}}"
 }

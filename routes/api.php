@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\CoinController;
 use App\Http\Controllers\Api\ConfigController;
@@ -36,6 +37,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/products/{product:slug}/questions', [CatalogController::class, 'questions'])->name('api.product.questions');
     Route::get('/products/{product:slug}/related', [CatalogController::class, 'related'])->name('api.product.related');
     Route::get('/recommended', [CatalogController::class, 'recommended'])->name('api.recommended');
+    Route::get('/certificates/{number}', [CertificateController::class, 'show'])->name('api.certificates.show');
     Route::get('/home', HomeController::class)->name('api.home');
     Route::get('/stores/{store:slug}', [StoreController::class, 'show'])->name('api.stores.show');
     Route::get('/stores/{store:slug}/products', [StoreController::class, 'products'])->name('api.stores.products');

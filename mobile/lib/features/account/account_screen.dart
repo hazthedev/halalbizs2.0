@@ -4,7 +4,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/session.dart';
-import '../../core/in_app_browser.dart';
 import '../../core/locale.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';

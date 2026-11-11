@@ -150,3 +150,31 @@ test('cart and checkout lines carry the certificate number only when verified', 
     expect($quote[$verified->id]['halal_cert_number'])->toBe($cert->number)
         ->and($quote[$lapsed->id]['halal_cert_number'])->toBeNull();
 });
+
+test('GET certificates/{number} is public and carries exactly the register page record', function () {
+    $cert = hcApiCert();
+    $cert->events()->create(['occurred_on' => '2026-01-05', 'summary' => 'Surveillance audit passed']);
+    hcApiProduct($cert);
+
+    $res = $this->getJson('/api/v1/certificates/'.rawurlencode(strtolower(substr($cert->number, 0, 6)).' '.substr($cert->number, 6)))
+        ->assertOk()
+        ->assertJsonPath('data.number', $cert->number)
+        ->assertJsonPath('data.valid', true)
+        ->assertJsonPath('data.holder_name', 'Kedai Madu Sdn Bhd')
+        ->assertJsonPath('data.products_count', 1)
+        ->assertJsonPath('data.events.0.summary', 'Surveillance audit passed');
+
+    // Nothing beyond what the web register shows: no ids, reviewer, notes, documents, status.
+    expect(array_keys($res->json('data')))->toEqualCanonicalizing([
+        'number', 'valid', 'days_remaining', 'issuing_body', 'issuing_body_name', 'holder_name', 'holder_state', 'scheme',
+        'scope_note', 'valid_from', 'valid_to', 'facility', 'products_count', 'dedicated_facility', 'export_paperwork',
+        'store_slug', 'events',
+    ]);
+    expect(array_keys($res->json('data.events.0')))->toEqual(['occurred_on', 'summary']);
+});
+
+test('GET certificates/{number} is 404 for an unknown number and for one not yet approved', function () {
+    $this->getJson('/api/v1/certificates/NOPE-0000')->assertNotFound();
+    $pending = hcApiCert([], CertificateStatus::Pending);
+    $this->getJson("/api/v1/certificates/{$pending->number}")->assertNotFound();
+});
