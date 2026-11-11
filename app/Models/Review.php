@@ -83,6 +83,14 @@ class Review extends Model implements HasMedia
         $query->where('is_hidden', false);
     }
 
+    /** PDP reviews filter (web + API): photos | 1–5; anything else = all. */
+    #[Scope]
+    protected function filtered(Builder $query, ?string $filter): void
+    {
+        $query->when($filter === 'photos', fn ($q) => $q->whereHas('media', fn ($m) => $m->where('collection_name', 'photos')))
+            ->when(in_array($filter, ['1', '2', '3', '4', '5'], true), fn ($q) => $q->where('rating', (int) $filter));
+    }
+
     /** First name in full, surname masked to its initial: "Nurul Aina" → "Nurul A." */
     public function reviewerDisplayName(): string
     {

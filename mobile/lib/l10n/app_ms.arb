@@ -792,5 +792,9 @@
   "@followersCount": {"placeholders": {"count": {"type": "int"}}},
   "followedShops": "Kedai diikuti",
   "followedShopsEmptyTitle": "Belum ada kedai diikuti",
-  "followedShopsEmptyBody": "Ikuti kedai untuk melihatnya di sini."
+  "followedShopsEmptyBody": "Ikuti kedai untuk melihatnya di sini.",
+  "reviewsFilterAll": "Semua",
+  "reviewsFilterPhotos": "Dengan foto",
+  "reviewsFilterEmpty": "Belum ada ulasan yang sepadan dengan penapis ini.",
+  "reviewsSellerResponse": "Respons penjual"
 }

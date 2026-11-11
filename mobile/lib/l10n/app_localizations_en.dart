@@ -1890,4 +1890,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get followedShopsEmptyBody => 'Follow a shop to see it here.';
+
+  @override
+  String get reviewsFilterAll => 'All';
+
+  @override
+  String get reviewsFilterPhotos => 'With photos';
+
+  @override
+  String get reviewsFilterEmpty => 'No reviews match this filter yet.';
+
+  @override
+  String get reviewsSellerResponse => 'Seller response';
 }

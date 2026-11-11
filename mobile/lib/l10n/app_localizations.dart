@@ -3469,6 +3469,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Follow a shop to see it here.'**
   String get followedShopsEmptyBody;
+
+  /// No description provided for @reviewsFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get reviewsFilterAll;
+
+  /// No description provided for @reviewsFilterPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'With photos'**
+  String get reviewsFilterPhotos;
+
+  /// No description provided for @reviewsFilterEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews match this filter yet.'**
+  String get reviewsFilterEmpty;
+
+  /// No description provided for @reviewsSellerResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller response'**
+  String get reviewsSellerResponse;
 }
 
 class _AppLocalizationsDelegate

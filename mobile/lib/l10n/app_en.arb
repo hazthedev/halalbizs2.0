@@ -869,5 +869,9 @@
   "@followersCount": {"placeholders": {"count": {"type": "int"}}},
   "followedShops": "Followed shops",
   "followedShopsEmptyTitle": "No followed shops yet",
-  "followedShopsEmptyBody": "Follow a shop to see it here."
+  "followedShopsEmptyBody": "Follow a shop to see it here.",
+  "reviewsFilterAll": "All",
+  "reviewsFilterPhotos": "With photos",
+  "reviewsFilterEmpty": "No reviews match this filter yet.",
+  "reviewsSellerResponse": "Seller response"
 }

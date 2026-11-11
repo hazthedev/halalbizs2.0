@@ -122,14 +122,7 @@ class ProductReviews extends Component
 
     private function filteredReviewsQuery()
     {
-        return $this->product->reviews()
-            ->visible()
-            ->when($this->reviewFilter === 'photos', fn ($query) => $query->whereHas(
-                'media', fn ($mediaQuery) => $mediaQuery->where('collection_name', 'photos')
-            ))
-            ->when(in_array($this->reviewFilter, ['1', '2', '3', '4', '5'], true), fn ($query) => $query->where(
-                'rating', (int) $this->reviewFilter
-            ));
+        return $this->product->reviews()->visible()->filtered($this->reviewFilter);
     }
 
     /** @return array<int, int> star (5→1) → visible review count */

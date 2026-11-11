@@ -249,6 +249,7 @@ class Review {
   String get buyerName => asStr(json['buyer_name']) ?? '';
   List<String> get photos => asList(json['photos']).map(asStr).nonNulls.toList();
   DateTime? get createdAt => asDate(json['created_at']);
+  String? get sellerReply => asStr(asMap(json['seller_reply'])['body']);
 }
 
 /// `ProductQuestionResource`: question, asker_name (masked), answer (null =

@@ -1889,4 +1889,17 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get followedShopsEmptyBody => 'Ikuti kedai untuk melihatnya di sini.';
+
+  @override
+  String get reviewsFilterAll => 'Semua';
+
+  @override
+  String get reviewsFilterPhotos => 'Dengan foto';
+
+  @override
+  String get reviewsFilterEmpty =>
+      'Belum ada ulasan yang sepadan dengan penapis ini.';
+
+  @override
+  String get reviewsSellerResponse => 'Respons penjual';
 }
