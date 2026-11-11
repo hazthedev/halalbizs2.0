@@ -8,7 +8,12 @@ import '../../theme/souk_theme.dart';
 /// 45°, and a centre dot, stroked. Drawn rather than decoded so it stays
 /// crisp at any size and needs no SVG dependency.
 class KhatamMark extends StatelessWidget {
-  const KhatamMark({super.key, this.size = 24, this.color = SoukColors.emerald, this.strokeWidth});
+  const KhatamMark({
+    super.key,
+    this.size = 24,
+    this.color = SoukColors.emerald,
+    this.strokeWidth,
+  });
 
   final double size;
   final Color color;
@@ -19,18 +24,20 @@ class KhatamMark extends StatelessWidget {
   // stays [size] square and never draws behind the content beside it.
   @override
   Widget build(BuildContext context) => Semantics(
-        label: 'HalalBizs',
-        image: true,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          widthFactor: 1,
-          heightFactor: 1,
-          child: SizedBox.square(
-            dimension: size,
-            child: CustomPaint(painter: _KhatamPainter(color, strokeWidth ?? size / 12.6)),
-          ),
+    label: 'HalalBizs',
+    image: true,
+    child: Align(
+      alignment: Alignment.centerLeft,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: SizedBox.square(
+        dimension: size,
+        child: CustomPaint(
+          painter: _KhatamPainter(color, strokeWidth ?? size / 12.6),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _KhatamPainter extends CustomPainter {
@@ -48,7 +55,10 @@ class _KhatamPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
       ..strokeJoin = StrokeJoin.round;
-    final rect = RRect.fromRectAndRadius(Rect.fromLTWH(5.4 * s, 5.4 * s, 13.2 * s, 13.2 * s), Radius.circular(.6 * s));
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(5.4 * s, 5.4 * s, 13.2 * s, 13.2 * s),
+      Radius.circular(.6 * s),
+    );
     canvas.drawRRect(rect, paint);
     canvas.save();
     canvas.translate(12 * s, 12 * s);
@@ -60,7 +70,8 @@ class _KhatamPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_KhatamPainter old) => old.color != color || old.stroke != stroke;
+  bool shouldRepaint(_KhatamPainter old) =>
+      old.color != color || old.stroke != stroke;
 }
 
 /// docs/03 empty state: brass khatam medallion, one serif line, one sentence,
@@ -84,29 +95,47 @@ class SoukEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tile = compact ? 56.0 : 76.0;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: SoukSpace.s6, vertical: compact ? SoukSpace.s6 : 44),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: tile,
-            height: tile,
-            decoration: const BoxDecoration(color: SoukColors.brassTint, shape: BoxShape.circle),
-            alignment: Alignment.center,
-            child: KhatamMark(size: tile * .5, color: SoukColors.brassDeep),
-          ),
-          const SizedBox(height: SoukSpace.s4),
-          Text(title, textAlign: TextAlign.center, style: SoukText.displayH3),
-          if (message != null) ...[
-            const SizedBox(height: SoukSpace.s2),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360),
-              child: Text(message!, textAlign: TextAlign.center, style: SoukText.bodySoft),
+    // Full width so it centres even inside a start-aligned Column (it hugged
+    // the left on the seller dashboard, Haze 11-11).
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: SoukSpace.s6,
+          vertical: compact ? SoukSpace.s6 : 44,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: tile,
+              height: tile,
+              decoration: const BoxDecoration(
+                color: SoukColors.brassTint,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: KhatamMark(size: tile * .5, color: SoukColors.brassDeep),
             ),
+            const SizedBox(height: SoukSpace.s4),
+            Text(title, textAlign: TextAlign.center, style: SoukText.displayH3),
+            if (message != null) ...[
+              const SizedBox(height: SoukSpace.s2),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: Text(
+                  message!,
+                  textAlign: TextAlign.center,
+                  style: SoukText.bodySoft,
+                ),
+              ),
+            ],
+            if (action != null) ...[
+              const SizedBox(height: SoukSpace.s5),
+              action!,
+            ],
           ],
-          if (action != null) ...[const SizedBox(height: SoukSpace.s5), action!],
-        ],
+        ),
       ),
     );
   }

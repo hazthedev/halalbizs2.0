@@ -82,7 +82,7 @@ class _Body extends StatelessWidget {
       SoukSectionHeading(l.sellerOrdersByStatus),
       const SizedBox(height: SoukSpace.s3),
       if (statuses.isEmpty)
-        Text(l.sellerNoOrders, style: SoukText.meta)
+        SizedBox(width: double.infinity, child: Text(l.sellerNoOrders, key: const Key('seller-status-empty'), textAlign: TextAlign.center, style: SoukText.meta))
       else
         Wrap(spacing: SoukSpace.s2, runSpacing: SoukSpace.s2, children: [
           for (final e in statuses)
