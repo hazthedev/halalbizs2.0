@@ -58,6 +58,7 @@ function refundCompletedSubOrder(bool $registered = false): SubOrder
     $status->transition($subOrder->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
     app(OrderService::class)->markDelivered($subOrder->fresh(), ActorType::System);
     app(OrderService::class)->confirmReceived($subOrder->fresh(), $buyer->id); // → Completed (ledger booked)
+    releaseLedgerHolds();
 
     // Then through the return flow so the sub-order is refundable.
     $status->transition($subOrder->fresh(), SubOrderStatus::ReturnRequested, ActorType::Buyer, $buyer->id);
@@ -192,6 +193,7 @@ test('refunding every sub-order of a voucher order never returns more cash than 
         $status->transition($subOrder->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
         app(OrderService::class)->markDelivered($subOrder->fresh(), ActorType::System);
         app(OrderService::class)->confirmReceived($subOrder->fresh(), $buyer->id);
+        releaseLedgerHolds();
         app(RefundService::class)->refund($subOrder->fresh(), (int) $subOrder->fresh()->total_sen, ActorType::Admin, null, 'RF-'.$subOrder->id, markRefunded: true);
     }
 
@@ -256,6 +258,7 @@ function completeAndRefund(SubOrder $subOrder, User $buyer): void
     $status->transition($subOrder->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
     app(OrderService::class)->markDelivered($subOrder->fresh(), ActorType::System);
     app(OrderService::class)->confirmReceived($subOrder->fresh(), $buyer->id);
+    releaseLedgerHolds();
     app(RefundService::class)->refund($subOrder->fresh(), (int) $subOrder->fresh()->total_sen, ActorType::Admin, null, 'RF-'.$subOrder->id, markRefunded: true);
 }
 

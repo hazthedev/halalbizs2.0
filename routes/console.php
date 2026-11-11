@@ -32,6 +32,10 @@ Schedule::command('certificates:watch-expiry')->dailyAt('00:20');
 // passed. Hourly rather than daily so "unlocks 22 Aug" on the creator's
 // dashboard is true within the hour rather than up to a day late.
 Schedule::command('affiliates:lock-commissions')->hourly();
+// Seller money comes off hold once the return window closes.
+Schedule::command('ledger:release-holds')->hourly();
+// COD commission debt: monthly statement to stores with a negative balance.
+Schedule::command('ledger:send-statements')->monthlyOn(1, '09:00');
 // M2.6 — close group-buy teams whose recruiting window lapsed.
 Schedule::command('group-buy:expire')->everyFifteenMinutes();
 // M2.8 — place orders for due subscribe-and-save schedules.

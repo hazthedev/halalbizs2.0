@@ -23,7 +23,7 @@ beforeEach(fn () => $this->seed(RoleSeeder::class));
 /**
  * Walk a fresh COD or iPay88 order to completed and return the sub-order.
  */
-function completedSubOrder(PaymentMethod $method = PaymentMethod::Cod, int $priceSen = 10000, float $commission = 5.0): SubOrder
+function completedSubOrder(PaymentMethod $method = PaymentMethod::Cod, int $priceSen = 10000, float $commission = 5.0, bool $release = true): SubOrder
 {
     $buyer = User::factory()->create();
     $buyer->assignRole('buyer');
@@ -48,6 +48,10 @@ function completedSubOrder(PaymentMethod $method = PaymentMethod::Cod, int $pric
     $statusService->transition($subOrder->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
     app(OrderService::class)->markDelivered($subOrder->fresh(), ActorType::System);
     app(OrderService::class)->confirmReceived($subOrder->fresh(), $buyer->id);
+
+    if ($release) {
+        releaseLedgerHolds();
+    }
 
     return $subOrder->fresh();
 }

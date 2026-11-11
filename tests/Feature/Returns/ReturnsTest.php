@@ -124,6 +124,7 @@ function returnsCompletedSubOrder(PaymentMethod $method = PaymentMethod::Ipay88)
     $statusService->transition($subOrder->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
     app(OrderService::class)->markDelivered($subOrder->fresh(), ActorType::System);
     app(OrderService::class)->confirmReceived($subOrder->fresh(), $buyer->id);
+    releaseLedgerHolds();
 
     return $subOrder->fresh();
 }

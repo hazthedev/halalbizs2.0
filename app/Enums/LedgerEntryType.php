@@ -11,6 +11,7 @@ enum LedgerEntryType: string
     case Payout = 'payout';
     case CodOffset = 'cod_offset';
     case Boost = 'boost';
+    case Settlement = 'settlement';
 
     public function label(): string
     {
@@ -22,6 +23,7 @@ enum LedgerEntryType: string
             self::Payout => __('Payout'),
             self::CodOffset => __('COD offset'),
             self::Boost => __('Boost'),
+            self::Settlement => __('Settlement'),
         };
     }
 }

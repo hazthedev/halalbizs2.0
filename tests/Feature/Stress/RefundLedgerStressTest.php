@@ -77,6 +77,7 @@ function stressBookedSubOrder(Order $order, int $totalSen, SubOrderStatus $statu
     ]);
 
     app(LedgerService::class)->recordCompletion($subOrder); // books +sale / -commission
+    releaseLedgerHolds();
 
     return $subOrder->fresh();
 }

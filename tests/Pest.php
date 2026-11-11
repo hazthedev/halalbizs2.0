@@ -27,3 +27,14 @@ function makeAdmin(User $user): User
 
     return $user->fresh();
 }
+
+/**
+ * Completion books seller money as `pending` until the return window closes.
+ * Tests that exercise post-hold accounting call this to skip the wait.
+ */
+function releaseLedgerHolds(): void
+{
+    \App\Models\StoreLedgerEntry::query()
+        ->where('status', \App\Enums\LedgerEntryStatus::Pending)
+        ->update(['status' => \App\Enums\LedgerEntryStatus::Available]);
+}

@@ -1,4 +1,4 @@
-@php use App\Enums\LedgerEntryType; use App\Enums\PayoutStatus; @endphp
+@php use App\Enums\LedgerEntryStatus; use App\Enums\LedgerEntryType; use App\Enums\PayoutStatus; @endphp
 
 <div class="space-y-4">
 
@@ -8,7 +8,7 @@
     </div>
 
     {{-- ===== Balance cards ===== --}}
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <x-ui.card class="p-4">
             <p class="text-[13px] font-medium text-ink-soft">{{ __('Available') }}</p>
             <p class="mt-1 font-display text-[28px] font-medium leading-tight tabular-nums {{ $availableSen < 0 ? 'text-danger' : 'text-ink' }}">@money($availableSen)</p>
@@ -17,6 +17,12 @@
                      lands here too, so the copy names both causes. --}}
                 <p class="mt-1 text-[12px] text-danger">{{ __('Amount owed — from COD commission or a refund on a paid-out order. Future sales recover it; payouts resume once your balance is positive.') }}</p>
             @endif
+        </x-ui.card>
+
+        <x-ui.card class="p-4">
+            <p class="text-[13px] font-medium text-ink-soft">{{ __('On hold') }}</p>
+            <p class="mt-1 font-display text-[28px] font-medium leading-tight tabular-nums text-ink">@money($onHoldSen)</p>
+            <p class="mt-1 text-[12px] text-ink-soft">{{ __('Completed orders released to Available when their return window closes.') }}</p>
         </x-ui.card>
 
         <x-ui.card class="p-4">
@@ -105,14 +111,19 @@
                         @php
                             $chip = match ($entry->type) {
                                 LedgerEntryType::Sale => 'sale',
-                                LedgerEntryType::Adjustment => 'warn',
+                                LedgerEntryType::Adjustment, LedgerEntryType::Settlement => 'warn',
                                 default => 'neutral', // commission, cod_offset, payout, shipping
                             };
                         @endphp
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="entry-{{ $entry->id }}">
                             <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ $entry->created_at->display()->format('j M Y, g:ia') }}</td>
                             <td class="px-4 py-2.5"><x-ui.badge :variant="$chip">{{ $entry->type->label() }}</x-ui.badge></td>
-                            <td class="px-4 py-2.5">{{ $entry->description }}</td>
+                            <td class="px-4 py-2.5">
+                                {{ $entry->description }}
+                                @if ($entry->status === LedgerEntryStatus::Pending)
+                                    <span class="block text-[12px] text-warn">{{ __('On hold until :date', ['date' => $entry->available_at?->display()->format('j M Y') ?? '—']) }}</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-2.5 text-right font-mono font-medium tabular-nums whitespace-nowrap {{ $entry->amount_sen >= 0 ? 'text-emerald' : 'text-ink' }}">{{ $entry->amount_sen >= 0 ? '+' : '' }}@money($entry->amount_sen)</td>
                         </tr>
                     @endforeach

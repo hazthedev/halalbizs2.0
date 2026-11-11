@@ -20,7 +20,7 @@ class AccountDeletionService
     {
         // Sellers must settle their ledger first — a non-zero balance is
         // either money we owe them or commission they owe us.
-        if ($user->store !== null && $user->store->availableBalanceSen() !== 0) {
+        if ($user->store !== null && ($user->store->availableBalanceSen() !== 0 || $user->store->pendingBalanceSen() !== 0)) {
             return __('Your store still has a ledger balance — settle it (payout or commission) before deleting your account.');
         }
 

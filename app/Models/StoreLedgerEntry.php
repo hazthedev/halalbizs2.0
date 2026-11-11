@@ -18,7 +18,7 @@ class StoreLedgerEntry extends Model
 
     const UPDATED_AT = null;
 
-    protected $fillable = ['store_id', 'sub_order_id', 'payout_id', 'type', 'amount_sen', 'status', 'description'];
+    protected $fillable = ['store_id', 'sub_order_id', 'payout_id', 'type', 'amount_sen', 'status', 'available_at', 'description'];
 
     protected function casts(): array
     {
@@ -27,6 +27,7 @@ class StoreLedgerEntry extends Model
             'status' => LedgerEntryStatus::class,
             'amount_sen' => 'integer',
             'created_at' => 'datetime',
+            'available_at' => 'datetime',
         ];
     }
 

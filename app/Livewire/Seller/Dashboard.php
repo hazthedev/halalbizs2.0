@@ -293,7 +293,7 @@ class Dashboard extends Component
      *  - gross: Σ revenue-status sub-order totals this period
      *  - commission: Σ commission debits (negative) this period, shown absolute
      *
-     * @return array{available: int, gross: int, commission: int}
+     * @return array{available: int, on_hold: int, gross: int, commission: int}
      */
     private function earnings(): array
     {
@@ -312,6 +312,7 @@ class Dashboard extends Component
 
         return [
             'available' => $store->availableBalanceSen(),
+            'on_hold' => $store->pendingBalanceSen(),
             'gross' => $gross,
             'commission' => abs($commission), // entries are signed (negative) — display the charge
         ];

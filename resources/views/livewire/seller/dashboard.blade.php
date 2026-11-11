@@ -90,6 +90,10 @@
                 <dd class="font-mono font-medium tabular-nums {{ $earnings['available'] < 0 ? 'text-danger' : 'text-emerald' }}">@money($earnings['available'])</dd>
             </div>
             <div class="flex items-baseline gap-1.5">
+                <dt class="text-ink-soft">{{ __('On hold') }}</dt>
+                <dd class="font-mono font-medium tabular-nums text-ink">@money($earnings['on_hold'])</dd>
+            </div>
+            <div class="flex items-baseline gap-1.5">
                 <dt class="text-ink-soft">{{ __('Gross (period)') }}</dt>
                 <dd class="font-mono font-medium tabular-nums text-ink">@money($earnings['gross'])</dd>
             </div>
