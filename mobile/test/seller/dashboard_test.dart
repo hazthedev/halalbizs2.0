@@ -30,4 +30,25 @@ void main() {
     expect(h.router.state.uri.path, '/account');
     expect(api.calls.where((c) => c.startsWith('GET seller/')), isEmpty);
   });
+
+  testWidgets('empty dashboard: both "No orders yet" states are centred (Haze 11-11)', (tester) async {
+    usePhone(tester);
+    // Wider than the copy, so a shrink-wrapped state would sit left (as on Haze's phone).
+    tester.view.physicalSize = const Size(1800, 2700);
+    tester.view.devicePixelRatio = 3;
+    final empty = {...fakeDashboard(), 'orders_by_status': <String, int>{}, 'recent_orders': <dynamic>[]};
+    final api = FakeApi(routes: {...sellerBaseRoutes(), 'GET seller/dashboard': (_, _) => empty});
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller');
+    await tester.pumpAndSettle();
+
+    final screenMid = tester.view.physicalSize.width / tester.view.devicePixelRatio / 2;
+    for (final key in ['seller-dashboard-empty', 'seller-status-empty']) {
+      final box = find.byKey(Key(key));
+      await tester.ensureVisible(box);
+      await tester.pumpAndSettle();
+      final text = find.descendant(of: box, matching: find.byType(Text), matchRoot: true).first;
+      expect((tester.getCenter(text).dx - screenMid).abs(), lessThan(2), reason: key);
+    }
+  });
 }
