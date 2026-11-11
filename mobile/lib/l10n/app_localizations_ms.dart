@@ -2001,4 +2001,15 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ordersReviewedTag => 'Telah diulas ✓';
+
+  @override
+  String get liveBadge => 'Siaran Langsung';
+
+  @override
+  String get liveNowTitle => 'Siaran langsung sekarang';
+
+  @override
+  String liveByStore(String store) {
+    return '$store';
+  }
 }

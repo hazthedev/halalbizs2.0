@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Product;
+use App\Services\LiveSessionService;
 use App\Settings\CodSettings;
 use App\Settings\GeneralSettings;
 use Illuminate\Http\Request;
@@ -43,7 +44,7 @@ class ProductResource extends JsonResource
                 'stock' => $variant->stock,
             ])->values()),
             'halal' => $this->halal(),
-        ];
+        ] + $this->liveFields();
 
         if (! $this->detail) {
             return $data;
@@ -89,6 +90,14 @@ class ProductResource extends JsonResource
      *
      * @return array<string, mixed>
      */
+    /** @return array{store_live: bool, live_slug?: string} */
+    private function liveFields(): array
+    {
+        $slug = app(LiveSessionService::class)->liveStoreIds()[$this->store_id] ?? null;
+
+        return $slug ? ['store_live' => true, 'live_slug' => $slug] : ['store_live' => false];
+    }
+
     private function sellerCard(): array
     {
         $store = $this->store;

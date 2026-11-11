@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Store;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -19,6 +20,26 @@ use Illuminate\Support\Str;
  */
 class LiveSessionService
 {
+    private const LIVE_CACHE_KEY = 'live.store-ids';
+
+    /**
+     * store_id => slug of its newest live session. THE badge query: web cards,
+     * store header and the API all read this, one cached query (<=60 s) per
+     * request instead of one per card. goLive/end forget it.
+     *
+     * @return array<int, string>
+     */
+    public function liveStoreIds(): array
+    {
+        if (! $this->enabled()) {
+            return [];
+        }
+
+        return Cache::remember(self::LIVE_CACHE_KEY, 60, fn () => LiveSession::query()->live()
+            ->orderBy('started_at')->orderBy('id')
+            ->pluck('slug', 'store_id')->all());
+    }
+
     public function enabled(): bool
     {
         return (bool) config('live.enabled', true);
@@ -47,11 +68,13 @@ class LiveSessionService
         }
 
         $session->update(['status' => LiveSessionStatus::Live, 'started_at' => $session->started_at ?? now()]);
+        Cache::forget(self::LIVE_CACHE_KEY);
     }
 
     public function end(LiveSession $session): void
     {
         $session->update(['status' => LiveSessionStatus::Ended, 'ended_at' => now()]);
+        Cache::forget(self::LIVE_CACHE_KEY);
     }
 
     /** Spotlight a product (must belong to the session's rail). */

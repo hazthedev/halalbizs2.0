@@ -19,10 +19,17 @@
         {{-- Stage --}}
         <div>
             <div class="relative flex aspect-video items-center justify-center overflow-hidden rounded-[var(--radius-card)] border border-emerald-edge bg-emerald-night">
-                @if ($embedUrl)
-                    <iframe src="{{ $embedUrl }}" class="absolute inset-0 size-full" frameborder="0"
+                @if ($video && $video['embed'])
+                    <iframe src="{{ $video['embed'] }}" class="absolute inset-0 size-full" frameborder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
                             title="{{ $session->title }}"></iframe>
+                @elseif ($video && $video['link'])
+                    @php($platformName = ['shopee' => 'Shopee', 'tiktok' => 'TikTok', 'lazada' => 'Lazada'][$video['platform']])
+                    <div class="px-4 text-center text-on-dark/80">
+                        <p class="text-sm">{{ __('This live is on :platform', ['platform' => $platformName]) }}</p>
+                        <a href="{{ $video['link'] }}" target="_blank" rel="noopener noreferrer"
+                           class="mt-3 inline-flex min-h-11 items-center rounded-[var(--radius-pill)] bg-emerald px-5 text-sm font-medium text-white hover:bg-emerald-deep">{{ __('Watch on :platform', ['platform' => $platformName]) }}</a>
+                    </div>
                 @else
                     <div class="text-center text-on-dark/70">
                         <x-ui.star-mark :size="44" class="mx-auto text-brass/60" />

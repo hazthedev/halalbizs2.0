@@ -2007,4 +2007,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ordersReviewedTag => 'Reviewed ✓';
+
+  @override
+  String get liveBadge => 'Live';
+
+  @override
+  String get liveNowTitle => 'Live now';
+
+  @override
+  String liveByStore(String store) {
+    return '$store';
+  }
 }

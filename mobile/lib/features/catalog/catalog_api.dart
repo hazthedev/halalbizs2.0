@@ -83,6 +83,12 @@ class CatalogApi {
     return CachedResult(asMapList(r.data).map(Category.new).toList(), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
   }
 
+  /// Sessions live right now (public). Empty = the Live pill stays hidden.
+  Future<List<LiveSession>> live() async {
+    final r = await _repo.getJson('live');
+    return asMapList(r.data).map(LiveSession.new).where((s) => s.slug.isNotEmpty).toList();
+  }
+
   /// Search is online-only (no snapshot): results change with every keystroke.
   /// The API answers every hit at once today (no paging meta), so "more" never shows.
   Future<ProductPage> search(String q, {String? category, ProductFilter filter = const ProductFilter(), int page = 1}) async {
@@ -177,6 +183,9 @@ final homeProvider = FutureProvider<HomeFeed>((ref) => ref.watch(catalogApiProvi
 /// page only; the API accepts `latest|top|price_asc|price_desc`).
 final featuredProductsProvider =
     FutureProvider<ProductPage>((ref) => ref.watch(catalogApiProvider).products(sort: 'top'));
+
+/// Autodisposed: the pill re-asks each time the search tab is opened.
+final liveSessionsProvider = FutureProvider.autoDispose<List<LiveSession>>((ref) => ref.watch(catalogApiProvider).live());
 
 final categoriesProvider =
     FutureProvider<CachedResult<List<Category>>>((ref) => ref.watch(catalogApiProvider).categories());

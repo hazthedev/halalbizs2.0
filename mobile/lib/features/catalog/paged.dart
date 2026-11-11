@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../seller_shared/rm.dart';
+import 'live.dart';
 import 'models.dart';
 
 /// One page of a list from the API, plus whether it came from the snapshot.
@@ -150,6 +151,7 @@ class PagedProductGrid extends StatelessWidget {
     required this.sorts,
     required this.onFilter,
     required this.empty,
+    this.livePill = false,
   });
 
   final PagedList<Product> list;
@@ -160,20 +162,26 @@ class PagedProductGrid extends StatelessWidget {
   final ValueChanged<ProductFilter> onFilter;
   final Widget empty;
 
+  /// Search only: the red Live pill beside the filter button (hidden with 0 live).
+  final bool livePill;
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
     final n = filter.count;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SoukChip(
-        key: const Key('product-filter'),
-        label: n > 0 ? '${l.filterSort} · $n' : l.filterSort,
-        selected: n > 0,
-        onTap: () async {
-          final f = await showProductFilterSheet(context, filter, sorts);
-          if (f != null) onFilter(f);
-        },
-      ),
+      Row(children: [
+        SoukChip(
+          key: const Key('product-filter'),
+          label: n > 0 ? '${l.filterSort} · $n' : l.filterSort,
+          selected: n > 0,
+          onTap: () async {
+            final f = await showProductFilterSheet(context, filter, sorts);
+            if (f != null) onFilter(f);
+          },
+        ),
+        if (livePill) ...[const SizedBox(width: SoukSpace.s2), const LivePill()],
+      ]),
       const SizedBox(height: SoukSpace.s4),
       if (list.error != null)
         ErrorPane(error: list.error!, onRetry: list.reload, retryLabel: l.retry)

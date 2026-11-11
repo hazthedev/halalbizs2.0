@@ -177,6 +177,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         list: _list,
         filter: _filter,
         sorts: sorts,
+        livePill: true,
         onFilter: (f) {
           setState(() => _filter = f);
           _run();

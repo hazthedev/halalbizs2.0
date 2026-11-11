@@ -38,6 +38,9 @@
                 <div class="min-w-0">
                     <h1 class="flex flex-wrap items-center gap-2 font-display text-2xl font-medium text-ink">
                         {{ $store->name }}
+                        @if ($liveSlug = app(\App\Services\LiveSessionService::class)->liveStoreIds()[$store->id] ?? null)
+                            <x-live-badge :slug="$liveSlug" />
+                        @endif
                         <x-ui.badge variant="verified">
                             <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                             {{ __('Verified') }}

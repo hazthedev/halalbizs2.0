@@ -10,6 +10,7 @@ import '../../l10n/l10n.dart';
 import 'catalog_api.dart';
 import 'category_screen.dart';
 import 'follow_button.dart';
+import 'live.dart';
 import 'models.dart';
 import 'paged.dart';
 
@@ -113,6 +114,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(name, style: SoukText.displayH3, maxLines: 2, overflow: TextOverflow.ellipsis),
+                          if (s?.storeLive ?? false)
+                            Padding(
+                              padding: const EdgeInsets.only(top: SoukSpace.s1),
+                              child: Align(alignment: Alignment.centerLeft, child: LiveBadge(s!.liveSlug!, key: const Key('store-live'))),
+                            ),
                           if (s?.descriptionPlain?.isNotEmpty ?? false)
                             InkWell(
                               key: const Key('store-about'),

@@ -904,5 +904,9 @@
   "certSeeSkus": "{count, plural, =1{See the covered SKU} other{See the {count} covered SKUs}}",
   "@certDaysRemaining": {"placeholders": {"count": {"type": "int"}}},
   "@certSeeSkus": {"placeholders": {"count": {"type": "int"}}},
-  "ordersReviewedTag": "Reviewed ✓"
+  "ordersReviewedTag": "Reviewed ✓",
+  "liveBadge": "Live",
+  "liveNowTitle": "Live now",
+  "liveByStore": "{store}",
+  "@liveByStore": {"placeholders": {"store": {"type": "String"}}}
 }
