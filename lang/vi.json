@@ -2621,5 +2621,17 @@
     "This marketplace is currently for product listings and enquiries only.": "Chợ hiện chỉ dành cho niêm yết sản phẩm và gửi yêu cầu.",
     "This marketplace is currently in listing-only mode. Purchasing is unavailable.": "Chợ hiện đang ở chế độ chỉ niêm yết. Tính năng mua hàng không khả dụng.",
     "Turn this off for listing-only mode. Products, search, wishlists and buyer enquiries stay available, while cart additions, recurring purchases, group buys and checkout are blocked.": "Tắt tùy chọn này để dùng chế độ chỉ niêm yết. Sản phẩm, tìm kiếm, danh sách yêu thích và yêu cầu của người mua vẫn hoạt động; việc thêm vào giỏ, mua định kỳ, mua chung và thanh toán sẽ bị chặn.",
-    "Also available in": "Cũng có trên"
+    "Also available in": "Cũng có trên",
+    "Halal certification": "Chứng nhận Halal",
+    "Halal certification body": "Tổ chức chứng nhận Halal",
+    "Halal certificate number": "Số chứng nhận Halal",
+    "Certificate valid until": "Chứng nhận có hiệu lực đến",
+    "Certifications": "Chứng nhận",
+    "Country of origin": "Xuất xứ",
+    "Ingredients": "Thành phần",
+    "SIRIM registration number": "Số đăng ký SIRIM",
+    "Allergen information": "Thông tin chất gây dị ứng",
+    "Shelf life": "Hạn sử dụng",
+    "Storage instructions": "Hướng dẫn bảo quản",
+    "Best before \/ expiry": "Sử dụng tốt nhất trước \/ hết hạn"
 }
