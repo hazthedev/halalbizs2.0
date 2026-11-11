@@ -34,7 +34,7 @@ class Store extends Model implements HasMedia
     // set its own commission.
     protected $fillable = [
         'name', 'slug', 'description', 'rejection_reason',
-        'holiday_mode', 'state', 'sst_registered', 'sst_number', 'tin',
+        'holiday_mode', 'state', 'sst_registered', 'sst_number', 'tin', 'registration_no',
         'bank_details', 'approved_at',
         'shipping_mode', 'shipping_flat_fee_sen', 'shipping_matrix', 'free_shipping_over_sen',
         'shipping_origin_postcode',

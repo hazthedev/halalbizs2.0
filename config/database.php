@@ -84,6 +84,22 @@ return [
             ]) : [],
         ],
 
+        // WHIP (halal certification platform), same server. READ ONLY: the user
+        // holds SELECT only, and nothing in this app ever writes through it.
+        'whip' => [
+            'driver' => env('WHIP_DB_DRIVER', 'mariadb'),
+            'host' => env('WHIP_DB_HOST', '127.0.0.1'),
+            'port' => env('WHIP_DB_PORT', '3306'),
+            'database' => env('WHIP_DB_DATABASE', 'weststar_wghtc'),
+            'username' => env('WHIP_DB_USERNAME', ''),
+            'password' => env('WHIP_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'foreign_key_constraints' => false,
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),

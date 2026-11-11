@@ -27,6 +27,9 @@ Schedule::command('tracking:register-open')->everyFifteenMinutes()->withoutOverl
 // trading — a product must not be on sale under a lapsed certificate for a
 // working day because the job runs at noon.
 Schedule::command('certificates:watch-expiry')->dailyAt('00:20');
+// Follow WHIP (read-only) for certificates it vouches for. Every 4 h, so the
+// 24 h freshness rule on the badge has five tries before it drops.
+Schedule::command('certificates:sync-whip')->everyFourHours()->withoutOverlapping(30);
 
 // Affiliate commission comes off hold once the return window + buffer has
 // passed. Hourly rather than daily so "unlocks 22 Aug" on the creator's

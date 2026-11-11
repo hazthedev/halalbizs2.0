@@ -132,6 +132,11 @@ class Product extends Model implements HasMedia
             return 'pending';
         }
 
+        // A WHIP-sourced certificate not re-confirmed within 24 h fails closed.
+        if ($cert->isWhipStale()) {
+            return 'pending';
+        }
+
         if ($cert->isValid()) {
             return 'verified';
         }

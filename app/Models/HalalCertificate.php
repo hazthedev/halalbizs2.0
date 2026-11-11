@@ -30,6 +30,7 @@ class HalalCertificate extends Model implements HasMedia
         'scheme', 'scope_note', 'valid_from', 'valid_to', 'facility',
         'dedicated_facility', 'export_paperwork',
     ];
+    // source, whip_* are NOT fillable: only the WHIP check may set them.
 
     /**
      * Fails closed, and matches the column default the migration lands on:
@@ -71,6 +72,7 @@ class HalalCertificate extends Model implements HasMedia
     protected function casts(): array
     {
         return [
+            'whip_synced_at' => 'datetime',
             'status' => CertificateStatus::class,
             'valid_from' => 'date',
             'valid_to' => 'date',
@@ -157,6 +159,50 @@ class HalalCertificate extends Model implements HasMedia
         $today = DisplayTime::today();
 
         return $this->valid_from->lte($today) && $this->valid_to->gte($today);
+    }
+
+    /** Copy what WHIP holds onto this row and stamp the check. Caller saves. */
+    public function takeFromWhip(\App\Services\Whip\WhipCertificate $whip, string $answer): static
+    {
+        $this->fill([
+            'holder_name' => $whip->companyName ?: $this->holder_name,
+            'issuing_body_name' => $whip->bodyName ?: $this->issuing_body_name,
+            'valid_from' => $whip->validFrom ?: $this->valid_from,
+            'valid_to' => $whip->validTo ?: $this->valid_to,
+        ]);
+
+        return $this->forceFill([
+            'source' => 'whip',
+            'whip_application_id' => $whip->applicationId,
+            'whip_synced_at' => now(),
+            'whip_answer' => $answer,
+        ]);
+    }
+
+    /**
+     * A WHIP-sourced certificate is trusted for 24 h after its last good sync.
+     * Older (or never synced) and the badge fails closed; nothing is delisted.
+     */
+    public function isWhipStale(): bool
+    {
+        return $this->source === 'whip'
+            && ($this->whip_synced_at === null || $this->whip_synced_at->lt(now()->subHours(24)));
+    }
+
+    /** One plain line for the admin screen: what WHIP said at the last check. */
+    public function whipNote(): ?string
+    {
+        return match ($this->whip_answer) {
+            'verified' => __('WHIP: certified and in date, same company registration number.'),
+            'expired' => __('WHIP: found, but the certificate has expired.'),
+            'not_certified' => __('WHIP: found, but not certified (or not yet in force).'),
+            'mismatch' => __('WHIP: found, but its company registration number differs from this store\'s.'),
+            'ambiguous' => __('WHIP: several records share this number; check by hand.'),
+            'incomplete' => __('WHIP: found and certified, but its dates are incomplete.'),
+            'not_found' => __('WHIP: no certificate with this number.'),
+            'unavailable' => __('WHIP: could not be reached, not checked.'),
+            default => null,
+        };
     }
 
     /** A submitted certificate is a claim; an approved one is evidence. */
