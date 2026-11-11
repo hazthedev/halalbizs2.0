@@ -176,3 +176,40 @@ it('renders a watch-on button and no iframe for an external session', function (
         ->assertSeeHtml('target="_blank" rel="noopener noreferrer"')
         ->assertDontSeeHtml('<iframe');
 });
+
+it('serves one room on /api/v1/live/{slug}: youtube embed, rail of live products only', function () {
+    $store = Store::factory()->approved()->create();
+    $session = discoverySession($store);
+    $shown = Product::factory()->for($store)->create(['status' => ProductStatus::Live]);
+    $draft = Product::factory()->for($store)->create(['status' => ProductStatus::Draft]);
+    $session->products()->attach([$shown->id => ['position' => 0], $draft->id => ['position' => 1]]);
+
+    $this->getJson("/api/v1/live/{$session->slug}")->assertOk()
+        ->assertJsonPath('data.title', 'Eid sale')
+        ->assertJsonPath('data.store.slug', $store->slug)
+        ->assertJsonPath('data.platform', 'youtube')
+        ->assertJsonPath('data.embed_url', 'https://www.youtube.com/embed/dQw4w9WgXcQ')
+        ->assertJsonPath('data.external_url', null)
+        ->assertJsonPath('data.is_live', true)
+        ->assertJsonCount(1, 'data.products')
+        ->assertJsonPath('data.products.0.slug', $shown->slug);
+});
+
+it('gives an external platform a link and no embed on the room endpoint', function () {
+    $session = discoverySession(Store::factory()->approved()->create(), 'live', 'https://live.shopee.com.my/share?session=1');
+
+    $this->getJson("/api/v1/live/{$session->slug}")->assertOk()
+        ->assertJsonPath('data.platform', 'shopee')
+        ->assertJsonPath('data.embed_url', null)
+        ->assertJsonPath('data.external_url', 'https://live.shopee.com.my/share?session=1');
+});
+
+it('mirrors the web room: ended is still served as not live, unknown slug or feature off is 404', function () {
+    $ended = discoverySession(Store::factory()->approved()->create(), 'ended');
+
+    $this->getJson("/api/v1/live/{$ended->slug}")->assertOk()->assertJsonPath('data.is_live', false);
+    $this->getJson('/api/v1/live/nope')->assertNotFound();
+
+    config(['live.enabled' => false]);
+    $this->getJson("/api/v1/live/{$ended->slug}")->assertNotFound();
+});
