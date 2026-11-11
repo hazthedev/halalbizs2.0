@@ -1902,4 +1902,25 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get reviewsSellerResponse => 'Respons penjual';
+
+  @override
+  String get legalAndAbout => 'Undang-undang & tentang';
+
+  @override
+  String get legalAboutUs => 'Tentang kami';
+
+  @override
+  String get legalTrustSafety => 'Kepercayaan & keselamatan';
+
+  @override
+  String get legalFaq => 'Soalan lazim';
+
+  @override
+  String get legalRefundPolicy => 'Dasar bayaran balik';
+
+  @override
+  String get legalTerms => 'Terma dan syarat';
+
+  @override
+  String get legalPrivacy => 'Dasar privasi';
 }

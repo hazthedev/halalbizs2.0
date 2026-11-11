@@ -178,4 +178,24 @@ void main() {
     expect((linkBody as Map?)?['to'], 'seller-apply');
     expect(h.browser.opened, ['https://web.test/app/sign-in?nonce=n&signature=s']);
   });
+
+  testWidgets('Legal & about lists the web footer pages and opens each /page/{slug} in the in-app browser', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET me': (_, _) => fakeUser(),
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET conversations': (_, _) => [],
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/account/legal');
+
+    for (final slug in ['about', 'trust-safety', 'faq', 'refund-policy', 'terms', 'privacy']) {
+      expect(find.byKey(Key('legal-$slug')), findsOneWidget);
+    }
+    await tester.tap(find.byKey(const Key('legal-privacy')));
+    await tester.pumpAndSettle();
+    expect(h.browser.opened.single, endsWith('/page/privacy'));
+    expect(find.text('Privacy policy'), findsOneWidget);
+  });
 }

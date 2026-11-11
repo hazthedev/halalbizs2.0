@@ -873,5 +873,12 @@
   "reviewsFilterAll": "All",
   "reviewsFilterPhotos": "With photos",
   "reviewsFilterEmpty": "No reviews match this filter yet.",
-  "reviewsSellerResponse": "Seller response"
+  "reviewsSellerResponse": "Seller response",
+  "legalAndAbout": "Legal & about",
+  "legalAboutUs": "About us",
+  "legalTrustSafety": "Trust & safety",
+  "legalFaq": "FAQ",
+  "legalRefundPolicy": "Refund policy",
+  "legalTerms": "Terms & conditions",
+  "legalPrivacy": "Privacy policy"
 }

@@ -1902,4 +1902,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewsSellerResponse => 'Seller response';
+
+  @override
+  String get legalAndAbout => 'Legal & about';
+
+  @override
+  String get legalAboutUs => 'About us';
+
+  @override
+  String get legalTrustSafety => 'Trust & safety';
+
+  @override
+  String get legalFaq => 'FAQ';
+
+  @override
+  String get legalRefundPolicy => 'Refund policy';
+
+  @override
+  String get legalTerms => 'Terms & conditions';
+
+  @override
+  String get legalPrivacy => 'Privacy policy';
 }

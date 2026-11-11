@@ -16,6 +16,7 @@ import 'addresses_screen.dart';
 import 'coins_screen.dart';
 import 'delete_account_screen.dart';
 import 'followed_shops_screen.dart';
+import 'legal_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'wishlist_screen.dart';
@@ -116,6 +117,7 @@ class AccountScreen extends ConsumerWidget {
                 trailing: unreadMessages > 0 ? SoukBadge('$unreadMessages', status: 'sale') : null,
                 onTap: () => context.push('/account/messages'),
               ),
+              SoukRow(key: const Key('account-legal'), icon: FontAwesomeIcons.fileLines, label: l.legalAndAbout, onTap: () => context.push('/account/legal')),
               SoukRow(key: const Key('account-language'), icon: FontAwesomeIcons.language, label: l.language, onTap: () => context.push('/account/language')),
             ]),
           ),
@@ -264,4 +266,5 @@ List<RouteBase> get accountSubRoutes => [
       GoRoute(path: 'messages', builder: (_, _) => const ConversationsScreen(), routes: messagesSubRoutes),
       GoRoute(path: 'delete', builder: (_, _) => const DeleteAccountScreen()),
       GoRoute(path: 'language', builder: (_, _) => const LanguageScreen()),
+      GoRoute(path: 'legal', builder: (_, _) => const LegalScreen()),
     ];

@@ -3493,6 +3493,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Seller response'**
   String get reviewsSellerResponse;
+
+  /// No description provided for @legalAndAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal & about'**
+  String get legalAndAbout;
+
+  /// No description provided for @legalAboutUs.
+  ///
+  /// In en, this message translates to:
+  /// **'About us'**
+  String get legalAboutUs;
+
+  /// No description provided for @legalTrustSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust & safety'**
+  String get legalTrustSafety;
+
+  /// No description provided for @legalFaq.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ'**
+  String get legalFaq;
+
+  /// No description provided for @legalRefundPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund policy'**
+  String get legalRefundPolicy;
+
+  /// No description provided for @legalTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & conditions'**
+  String get legalTerms;
+
+  /// No description provided for @legalPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get legalPrivacy;
 }
 
 class _AppLocalizationsDelegate

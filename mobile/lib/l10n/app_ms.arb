@@ -796,5 +796,12 @@
   "reviewsFilterAll": "Semua",
   "reviewsFilterPhotos": "Dengan foto",
   "reviewsFilterEmpty": "Belum ada ulasan yang sepadan dengan penapis ini.",
-  "reviewsSellerResponse": "Respons penjual"
+  "reviewsSellerResponse": "Respons penjual",
+  "legalAndAbout": "Undang-undang & tentang",
+  "legalAboutUs": "Tentang kami",
+  "legalTrustSafety": "Kepercayaan & keselamatan",
+  "legalFaq": "Soalan lazim",
+  "legalRefundPolicy": "Dasar bayaran balik",
+  "legalTerms": "Terma dan syarat",
+  "legalPrivacy": "Dasar privasi"
 }
