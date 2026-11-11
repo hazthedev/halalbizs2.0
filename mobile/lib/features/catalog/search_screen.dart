@@ -5,17 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/api/api_client.dart';
 import '../../core/offline/offline.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import 'catalog_api.dart';
+import 'models.dart';
+import 'paged.dart';
 
 /// Debounce between the last keystroke and the request.
 const kSearchDebounce = Duration(milliseconds: 300);
 
-/// Search tab: query (min 2 chars, 300 ms debounce) + category chips + sort.
-/// Online-only; offline shows "Search needs a connection".
+/// Search tab: query (min 2 chars, 300 ms debounce) + category chips +
+/// the sort/filter sheet. Online-only; offline shows "Search needs a connection".
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
@@ -27,14 +28,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _query = TextEditingController();
   Timer? _debounce;
   String? _category;
-  String _sort = 'relevance';
-  AsyncValue<ProductPage>? _results;
-  int _request = 0;
+  var _filter = const ProductFilter();
+
+  /// A query of 2+ characters has been sent (else the hint shows).
+  bool _active = false;
+  bool _offline = false;
+  late final _list = PagedList<Product>((page) async => (await ref
+          .read(catalogApiProvider)
+          .search(_query.text.trim(), category: _category, filter: _filter, page: page))
+      .paged);
 
   @override
   void dispose() {
     _debounce?.cancel();
     _query.dispose();
+    _list.dispose();
     super.dispose();
   }
 
@@ -43,28 +51,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _debounce = Timer(kSearchDebounce, _run);
   }
 
-  Future<void> _run() async {
-    // Bumped first so a cleared box also discards any in-flight result.
-    final id = ++_request;
-    final q = _query.text.trim();
-    if (q.length < 2) {
-      setState(() => _results = null);
+  void _run() {
+    if (_query.text.trim().length < 2) {
+      setState(() => _active = false);
       return;
     }
-    if (ref.read(isOfflineProvider).value ?? false) {
-      setState(() => _results = AsyncValue.error(ApiException.offline(), StackTrace.current));
-      return;
-    }
-    setState(() => _results = const AsyncValue.loading());
-    try {
-      final page = await ref.read(catalogApiProvider).search(q,
-          category: _category, sort: _sort == 'relevance' ? null : _sort);
-      if (!mounted || id != _request) return;
-      setState(() => _results = AsyncValue.data(page));
-    } catch (e, s) {
-      if (!mounted || id != _request) return;
-      setState(() => _results = AsyncValue.error(e, s));
-    }
+    final offline = ref.read(isOfflineProvider).value ?? false;
+    setState(() {
+      _active = true;
+      _offline = offline;
+    });
+    if (!offline) _list.reload(clear: true);
   }
 
   @override
@@ -117,6 +114,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ),
       ),
       scrollable: true,
+      onScrollEnd: _list.autoMore,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -151,61 +149,44 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             ),
           const SizedBox(height: SoukSpace.s3),
-          Row(children: [
-            Text(l.sort, style: SoukText.label),
-            const SizedBox(width: SoukSpace.s3),
-            Expanded(
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  key: const Key('search-sort'),
-                  value: _sort,
-                  isExpanded: true,
-                  isDense: true,
-                  style: SoukText.small,
-                  borderRadius: BorderRadius.circular(SoukRadius.control),
-                  items: [for (final e in sorts.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
-                  onChanged: (v) {
-                    if (v == null) return;
-                    setState(() => _sort = v);
-                    _run();
-                  },
-                ),
-              ),
-            ),
-          ]),
-          const SizedBox(height: SoukSpace.s4),
-          _body(l),
+          _body(l, sorts),
         ],
       ),
     );
   }
 
-  Widget _body(AppLocalizations l) {
-    final r = _results;
-    if (r == null) {
+  Widget _body(AppLocalizations l, Map<String, String> sorts) {
+    if (!_active) {
       return Padding(
         padding: const EdgeInsets.only(top: SoukSpace.s6),
         child: Text(l.searchMinChars, textAlign: TextAlign.center, style: SoukText.meta),
       );
     }
-    return r.when(
-      loading: () => const SoukSkeleton.cards(rows: 4),
-      error: (e, _) => e is ApiException && e.isOffline
-          ? SoukEmptyState(
-              key: const Key('search-offline'),
-              title: l.searchNeedsConnection,
-              message: l.searchNeedsConnectionBody,
-              action: SoukButton(label: l.retry, onPressed: _run, requiresOnline: true),
-            )
-          : ErrorPane(error: e, onRetry: _run, retryLabel: l.retry),
-      data: (p) => p.items.isEmpty
-          ? SoukEmptyState(
-              key: const Key('search-empty'),
-              title: l.searchNoResults(_query.text.trim()),
-              message: l.searchNoResultsBody,
-              action: SoukButton(label: l.tabHome, onPressed: () => context.go('/home')),
-            )
-          : ProductGrid(p.items, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
+    if (_offline) {
+      return SoukEmptyState(
+        key: const Key('search-offline'),
+        title: l.searchNeedsConnection,
+        message: l.searchNeedsConnectionBody,
+        action: SoukButton(label: l.retry, onPressed: _run, requiresOnline: true),
+      );
+    }
+    return ListenableBuilder(
+      listenable: _list,
+      builder: (context, _) => PagedProductGrid(
+        list: _list,
+        filter: _filter,
+        sorts: sorts,
+        onFilter: (f) {
+          setState(() => _filter = f);
+          _run();
+        },
+        empty: SoukEmptyState(
+          key: const Key('search-empty'),
+          title: l.searchNoResults(_query.text.trim()),
+          message: l.searchNoResultsBody,
+          action: SoukButton(label: l.tabHome, onPressed: () => context.go('/home')),
+        ),
+      ),
     );
   }
 }

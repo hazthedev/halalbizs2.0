@@ -12,7 +12,9 @@ import '../account/wishlist_heart.dart';
 import '../cart/cart_api.dart';
 import '../messages/messages_api.dart';
 import 'catalog_api.dart';
+import 'halal.dart';
 import 'models.dart';
+import 'reviews.dart';
 import 'variant_sheet.dart';
 
 /// `/p/:slug` — gallery, name, price (range until a variant is picked, sale
@@ -56,6 +58,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
 
   Future<void> _refresh() async {
     ref.invalidate(productProvider(widget.slug));
+    ref.invalidate(productReviewsProvider(widget.slug));
     try {
       await ref.read(productProvider(widget.slug).future);
     } catch (_) {
@@ -259,6 +262,11 @@ class _ProductBody extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(p.name, key: const Key('product-name'), style: SoukText.displayH2),
+              // Web: the certificate sits above the price — it outranks it here.
+              if (p.halal case final cert?) ...[
+                const SizedBox(height: SoukSpace.s3),
+                HalalPanel(cert),
+              ],
               const SizedBox(height: SoukSpace.s3),
               // Wrap: a min – max range is two large prices and may not fit one line.
               Wrap(crossAxisAlignment: WrapCrossAlignment.end, children: [
@@ -341,6 +349,7 @@ class _ProductBody extends StatelessWidget {
                   ]),
                 ),
               ],
+              HalalDetails(p),
               if (p.description.isNotEmpty) ...[
                 const SizedBox(height: SoukSpace.s6),
                 Text(l.description, style: SoukText.displayH3),
@@ -348,6 +357,7 @@ class _ProductBody extends StatelessWidget {
                 // Seller rich text. Core package only: links render as text, never open.
                 HtmlWidget(p.description, textStyle: SoukText.bodySoft),
               ],
+              ProductReviews(slug: p.slug),
             ],
           ),
         ),

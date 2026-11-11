@@ -64,6 +64,9 @@ class CartLine {
   String? get productSlug => asStr(product['slug']);
   String get name => asStr(product['name']) ?? '';
   String? get thumb => asStr(product['thumb']);
+
+  /// Set only when the product's certificate is verified (web basket line).
+  String? get halalCertNumber => asStr(product['halal_cert_number']);
   String? get variantLabel => asStr(json['variant_label']);
   int get qty => asInt(json['qty']) ?? 1;
   int get unitPriceSen => asInt(json['unit_price_sen']) ?? 0;

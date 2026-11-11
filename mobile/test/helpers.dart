@@ -25,12 +25,15 @@ typedef FakeHandler = dynamic Function(Map<String, dynamic>? query, Object? body
 /// In-memory [ApiClient]: `routes['GET products']` answers the call. Unknown
 /// routes throw `not_found`. Every call is recorded in [calls].
 class FakeApi extends ApiClient {
-  FakeApi({Map<String, FakeHandler>? routes, this.meta})
+  FakeApi({Map<String, FakeHandler>? routes, this.meta, this.metaFor})
       : routes = routes ?? {},
         super(MemoryTokenStore());
 
   final Map<String, FakeHandler> routes;
   final Map<String, dynamic>? meta;
+
+  /// Per-call meta (paged lists: page 2 answers `page: 2`); wins over [meta].
+  final Map<String, dynamic>? Function(String path, Map<String, dynamic>? query)? metaFor;
   final List<String> calls = [];
 
   dynamic _call(String method, String path, Map<String, dynamic>? query, Object? body,
@@ -41,7 +44,8 @@ class FakeApi extends ApiClient {
     if (h == null) throw ApiException('not_found', 'The route api/v1/$path could not be found.', status: 404);
     final out = h(query, body);
     if (out is ApiException) throw out;
-    if (metaCb != null && meta != null) metaCb(meta!);
+    final m = metaFor?.call(path, query) ?? meta;
+    if (metaCb != null && m != null) metaCb(m);
     return out;
   }
 

@@ -14,14 +14,16 @@ void main() {
     usePhone(tester);
     final db = AppDb.test(NativeDatabase.memory());
     await db.putResponse(
-      OfflineRepo.cacheKey('products', {'sort': 'top'}),
-      jsonEncode([fakeProduct(name: 'Madu Tualang Asli (cached)')]),
-      jsonEncode({'current_page': 1, 'last_page': 1, 'total': 1}),
+      'home',
+      jsonEncode({
+        'featured': [fakeProduct(name: 'Madu Tualang Asli (cached)')],
+        'categories': [],
+        'flash_sale': null,
+        'banners': [],
+      }),
+      null,
     );
-    final api = FakeApi(routes: {
-      'GET products': (_, _) => ApiException.offline(),
-      'GET categories': (_, _) => ApiException.offline(),
-    });
+    final api = FakeApi(routes: {'GET home': (_, _) => ApiException.offline()});
     final h = Harness(api: api, db: db, offline: true);
     await h.pump(tester);
     await tester.pumpAndSettle();

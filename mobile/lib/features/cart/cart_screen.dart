@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
+import '../catalog/halal.dart';
 import '../checkout/checkout_screen.dart';
 import '../checkout/done_screen.dart';
 import '../checkout/pay_screen.dart';
@@ -262,6 +263,11 @@ class _LineRow extends StatelessWidget {
               ),
             ]),
             if (line.variantLabel != null) Text(line.variantLabel!, style: SoukText.meta),
+            if (line.halalCertNumber case final no?)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: HalalTick(no, key: Key('cart-halal-${line.variantId}')),
+              ),
             const SizedBox(height: SoukSpace.s1),
             Row(children: [
               Expanded(

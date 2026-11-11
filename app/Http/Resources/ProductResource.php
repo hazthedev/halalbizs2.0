@@ -40,6 +40,7 @@ class ProductResource extends JsonResource
                 'option_value_ids' => array_map('intval', $variant->option_value_ids ?? []),
                 'stock' => $variant->stock,
             ])->values()),
+            'halal' => $this->halal(),
         ];
 
         if (! $this->detail) {
@@ -48,6 +49,13 @@ class ProductResource extends JsonResource
 
         // Same groups and order as the web picker (ProductDetail: options.values by position).
         return $data + [
+            // Traceability rows the web PDP shows beside the certificate.
+            'halal_batch_code' => $this->halal_batch_code,
+            // The number as printed on the listing — the web table's fallback
+            // "Certificate" row when no certificate record is bound.
+            'halal_cert_number' => $this->halal_cert_number,
+            'halal_packed_on' => $this->halal_packed_on?->toDateString(),
+            'metafields' => $this->metafieldGroups(),
             'images' => $this->getMedia('images')->map(fn ($media) => [
                 'large' => $media->getUrl(),
                 'card' => $media->getUrl('card'),
@@ -58,5 +66,75 @@ class ProductResource extends JsonResource
                 'values' => $option->values->map(fn ($value) => ['id' => $value->id, 'value' => $value->value])->values()->all(),
             ])->values()->all(),
         ];
+    }
+
+    /**
+     * The certificate block the web PDP panel, traceability table and card
+     * badge read. `verdict` is Product::halalVerdict() — the ONE owner of the
+     * badge; the app renders it, never re-derives it. Null when the SKU has
+     * no certificate record (the web renders nothing then either).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function halal(): ?array
+    {
+        $cert = $this->halalCertificate;
+
+        if ($cert === null) {
+            return null;
+        }
+
+        $block = [
+            'verdict' => $this->halalVerdict(),
+            'number' => $cert->number,
+            'issuing_body' => $cert->issuing_body,
+            'valid_from' => $cert->valid_from->toDateString(),
+            'valid_to' => $cert->valid_to->toDateString(),
+            // Malaysia-day count, so the phone's clock never decides it.
+            'days_remaining' => $cert->daysRemaining(),
+        ];
+
+        if (! $this->detail) {
+            return $block;
+        }
+
+        return $block + [
+            'issuing_body_name' => $cert->issuing_body_name,
+            'scheme' => $cert->scheme,
+            'scope_note' => $cert->scope_note,
+            'facility' => $cert->facility,
+            'dedicated_facility' => $cert->dedicated_facility,
+            'export_paperwork' => $cert->export_paperwork,
+            // The web "Read the record" button: the public register lookup.
+            'register_url' => route('certificate.register', ['no' => $cert->number]),
+        ];
+    }
+
+    /**
+     * x-product-metafields: groups in config order (the 'halal' group is the
+     * web's "Halal certification" box), empty groups dropped.
+     *
+     * @return list<array{key: string, label: string, rows: list<array{label: string, value: string}>}>
+     */
+    private function metafieldGroups(): array
+    {
+        if (! config('metafields.enabled', true)) {
+            return [];
+        }
+
+        $values = $this->metafields->keyBy('key');
+        $definitions = collect(config('metafields.definitions', []));
+
+        return collect(config('metafields.groups', []))
+            ->map(fn (string $label, string $group) => [
+                'key' => $group,
+                'label' => __($label),
+                'rows' => $definitions->filter(fn ($d) => ($d['group'] ?? 'details') === $group)->keys()
+                    ->map(fn ($key) => $values->get($key))->filter()
+                    ->map(fn ($row) => ['label' => $row->label(), 'value' => (string) $row->value])
+                    ->values()->all(),
+            ])
+            ->filter(fn (array $group) => $group['rows'] !== [])
+            ->values()->all();
     }
 }

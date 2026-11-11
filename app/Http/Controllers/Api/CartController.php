@@ -122,6 +122,8 @@ class CartController extends Controller
                         'slug' => $product->slug,
                         'name' => $product->getTranslation('name', $locale) ?: $product->getTranslation('name', 'en'),
                         'thumb' => $variant->getFirstMediaUrl('image', 'thumb') ?: ($product->getFirstMediaUrl('images', 'thumb') ?: null),
+                        // The web basket's line badge: the number, only when verified.
+                        'halal_cert_number' => $product->halalVerdict() === 'verified' ? $product->halalCertificate->number : null,
                     ],
                     'variant_label' => $variant->options_label,
                     'qty' => $line->qty,

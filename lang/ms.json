@@ -2621,5 +2621,17 @@
     "Turn this off for listing-only mode. Products, search, wishlists and buyer enquiries stay available, while cart additions, recurring purchases, group buys and checkout are blocked.": "Matikan pilihan ini untuk mod penyenaraian sahaja. Produk, carian, senarai hajat dan pertanyaan pembeli kekal tersedia, manakala penambahan troli, pembelian berulang, belian berkumpulan dan pembayaran disekat.",
     "Also available in": "Turut tersedia di",
     "Payment expired": "Tempoh bayaran tamat",
-    "Admin accounts sign in on the website.": "Akaun admin log masuk di laman web."
+    "Admin accounts sign in on the website.": "Akaun admin log masuk di laman web.",
+    "Halal certification": "Pensijilan halal",
+    "Halal certification body": "Badan pensijilan halal",
+    "Halal certificate number": "Nombor sijil halal",
+    "Certificate valid until": "Sijil sah hingga",
+    "Certifications": "Pensijilan",
+    "Country of origin": "Negara asal",
+    "Ingredients": "Ramuan",
+    "SIRIM registration number": "Nombor pendaftaran SIRIM",
+    "Allergen information": "Maklumat alergen",
+    "Shelf life": "Jangka hayat",
+    "Storage instructions": "Cara penyimpanan",
+    "Best before / expiry": "Terbaik sebelum / tarikh luput"
 }

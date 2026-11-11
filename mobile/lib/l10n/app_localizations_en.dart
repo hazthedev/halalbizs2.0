@@ -144,6 +144,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewAll => 'View all';
 
   @override
+  String get homePromotions => 'Promotions';
+
+  @override
+  String get flashSale => 'Flash Sale';
+
+  @override
+  String get flashEndsIn => 'Ends in';
+
+  @override
   String get searchHint => 'Search products';
 
   @override
@@ -182,6 +191,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortPriceDesc => 'Price: high to low';
+
+  @override
+  String get filterSort => 'Sort & filter';
+
+  @override
+  String get filterPrice => 'Price (RM)';
+
+  @override
+  String get filterMin => 'Min';
+
+  @override
+  String get filterMax => 'Max';
+
+  @override
+  String get filterReset => 'Reset';
+
+  @override
+  String get filterApply => 'Apply';
+
+  @override
+  String get filterPriceInvalid =>
+      'Enter a price like 12.50, with Min no higher than Max.';
 
   @override
   String get allCategories => 'All';
@@ -349,6 +380,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get products => 'Products';
+
+  @override
+  String get reviews => 'Reviews';
+
+  @override
+  String get storeAbout => 'About';
+
+  @override
+  String storeJoined(String date) {
+    return 'Joined $date';
+  }
 
   @override
   String get category => 'Category';
@@ -1646,4 +1688,96 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ordersBuyAgainNone =>
       'None of these items are available any more.';
+
+  @override
+  String get halalCertified => 'Halal certified';
+
+  @override
+  String get halalCertVerified => 'Halal certificate verified';
+
+  @override
+  String get halalCertLapsed => 'Certificate lapsed';
+
+  @override
+  String get halalCertNotInForce => 'Certificate not yet in force';
+
+  @override
+  String halalExpiredOn(String date) {
+    return 'expired $date';
+  }
+
+  @override
+  String halalValidFrom(String date) {
+    return 'valid from $date';
+  }
+
+  @override
+  String halalValidTo(String date) {
+    return 'valid to $date';
+  }
+
+  @override
+  String get halalReadRecord => 'Read the record';
+
+  @override
+  String get halalScopeTitle => 'Ingredients & scope';
+
+  @override
+  String halalScopeBody(String scope) {
+    return 'Certified scope: $scope. The certificate names this SKU in its annex, so the badge is bound to the item you are buying, not to the shop that sells it.';
+  }
+
+  @override
+  String get halalTraceability => 'Traceability';
+
+  @override
+  String get halalFacility => 'Facility';
+
+  @override
+  String get halalBatch => 'Batch';
+
+  @override
+  String halalPackedOn(String date) {
+    return 'packed $date';
+  }
+
+  @override
+  String get halalCertificate => 'Certificate';
+
+  @override
+  String get halalExpiry => 'Expiry';
+
+  @override
+  String get halalLapsed => 'lapsed';
+
+  @override
+  String halalNotInForceUntil(String date) {
+    return 'not in force until $date';
+  }
+
+  @override
+  String halalDaysRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days remaining',
+      one: '1 day remaining',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get halalCertifyingBody => 'Certifying body';
+
+  @override
+  String get halalAssurance => 'Assurance';
+
+  @override
+  String get halalAssureValid12 => 'Certificate valid 12 months+';
+
+  @override
+  String get halalAssureDedicated => 'Dedicated halal facility';
+
+  @override
+  String get halalAssureExport => 'Export paperwork included';
 }

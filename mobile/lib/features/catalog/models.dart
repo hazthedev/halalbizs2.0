@@ -78,6 +78,52 @@ class Product {
   String? get storeSlug => asStr(asMap(json['store'])['slug']);
   List<Variant> get variants => asMapList(json['variants']).map(Variant.new).toList();
   bool get inStock => variants.isEmpty ? true : variants.any((v) => v.stock > 0);
+
+  /// The certificate block (null = no certificate record, show nothing).
+  HalalCert? get halal => json['halal'] is Map ? HalalCert(asMap(json['halal'])) : null;
+
+  /// Traceability (detail only): batch, packing date, the printed number.
+  String? get halalBatchCode => asStr(json['halal_batch_code']);
+  DateTime? get halalPackedOn => asDate(json['halal_packed_on']);
+  String? get halalCertNumber => asStr(json['halal_cert_number']);
+
+  /// `metafields[{key, label, rows[{label, value}]}]` (detail only), labels
+  /// already translated server-side; the `halal` group is the web's
+  /// "Halal certification" box.
+  List<MetafieldGroup> get metafields => asMapList(json['metafields']).map(MetafieldGroup.new).toList();
+}
+
+/// `ProductResource.halal`. [verdict] is the server's Product::halalVerdict()
+/// (`verified|lapsed|pending`) — rendered, never re-derived here.
+class HalalCert {
+  HalalCert(this.json);
+
+  final Map<String, dynamic> json;
+
+  String get verdict => asStr(json['verdict']) ?? 'unverified';
+  bool get verified => verdict == 'verified';
+  String get number => asStr(json['number']) ?? '';
+  String? get issuingBody => asStr(json['issuing_body']);
+  DateTime? get validFrom => asDate(json['valid_from']);
+  DateTime? get validTo => asDate(json['valid_to']);
+
+  /// Malaysia-day count from the server; negative once lapsed.
+  int get daysRemaining => asInt(json['days_remaining']) ?? 0;
+  String? get scopeNote => asStr(json['scope_note']);
+  String? get facility => asStr(json['facility']);
+  String? get registerUrl => asStr(json['register_url']);
+}
+
+/// One metafield group: `{key, label, rows[{label, value}]}`.
+class MetafieldGroup {
+  MetafieldGroup(this.json);
+
+  final Map<String, dynamic> json;
+
+  String get key => asStr(json['key']) ?? '';
+  String get label => asStr(json['label']) ?? '';
+  List<({String label, String value})> get rows =>
+      [for (final r in asMapList(json['rows'])) (label: asStr(r['label']) ?? '', value: asStr(r['value']) ?? '')];
 }
 
 /// `variants[{id, sku, options_label, price_sen, stock}]`; `price_sen` is the
@@ -156,6 +202,24 @@ class Store {
   String? get banner => asStr(json['banner']);
   int? get productCount => asInt(json['product_count']);
   double? get ratingAvg => asDouble(json['rating_avg']);
+
+  /// Approval date (else created), as the web store page's "Joined".
+  DateTime? get joinedAt => asDate(json['joined_at']);
+}
+
+/// `ReviewResource`: id, rating, body, buyer_name (already masked server-side,
+/// "Aisyah R."), photos[] (thumb URLs), created_at.
+class Review {
+  Review(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  int get rating => (asInt(json['rating']) ?? 0).clamp(0, 5);
+  String get body => asStr(json['body']) ?? '';
+  String get buyerName => asStr(json['buyer_name']) ?? '';
+  List<String> get photos => asList(json['photos']).map(asStr).nonNulls.toList();
+  DateTime? get createdAt => asDate(json['created_at']);
 }
 
 /// Pagination from the envelope `meta` (`page` from ApiResponse, or the
@@ -179,3 +243,35 @@ String htmlToPlain(String html) => html_parser
     .text!
     .replaceAll(RegExp(r'\s+'), ' ')
     .trim();
+
+/// `GET home` → `banners[]` (HomeController): artwork with the copy baked
+/// in, so [title] is the screen-reader label. [appUrl] is the go_router
+/// route (`AppLinks`), null when the target has no app screen.
+class HomeBanner {
+  HomeBanner(this.json);
+
+  final Map<String, dynamic> json;
+
+  int get id => asInt(json['id']) ?? 0;
+  String get title => asStr(json['title']) ?? '';
+  String? get image => asStr(json['image']);
+  String? get appUrl => asStr(json['app_url']);
+}
+
+/// `GET home` → `flash_sale.products[]`: a product plus its `flash` block.
+/// [originalSen] is the flash variant's own price (what the web strikes).
+class FlashItem {
+  FlashItem(Map<String, dynamic> json)
+      : product = Product(json),
+        _flash = asMap(json['flash']);
+
+  final Product product;
+  final Map<String, dynamic> _flash;
+
+  int get priceSen => asInt(_flash['price_sen']) ?? 0;
+  int? get originalSen {
+    final v = product.variants.firstWhereOrNull((v) => v.id == asInt(_flash['variant_id']));
+    final sen = v == null ? null : v.regularPriceSen ?? v.priceSen;
+    return sen != null && sen > priceSen ? sen : null;
+  }
+}

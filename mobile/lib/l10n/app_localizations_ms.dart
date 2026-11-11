@@ -146,6 +146,15 @@ class AppLocalizationsMs extends AppLocalizations {
   String get viewAll => 'Lihat semua';
 
   @override
+  String get homePromotions => 'Promosi';
+
+  @override
+  String get flashSale => 'Jualan Kilat';
+
+  @override
+  String get flashEndsIn => 'Berakhir dalam';
+
+  @override
   String get searchHint => 'Cari produk';
 
   @override
@@ -184,6 +193,28 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get sortPriceDesc => 'Harga: tinggi ke rendah';
+
+  @override
+  String get filterSort => 'Susun & tapis';
+
+  @override
+  String get filterPrice => 'Harga (RM)';
+
+  @override
+  String get filterMin => 'Min';
+
+  @override
+  String get filterMax => 'Maks';
+
+  @override
+  String get filterReset => 'Set semula';
+
+  @override
+  String get filterApply => 'Guna';
+
+  @override
+  String get filterPriceInvalid =>
+      'Masukkan harga seperti 12.50, dengan Min tidak melebihi Maks.';
 
   @override
   String get allCategories => 'Semua';
@@ -354,6 +385,17 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get products => 'Produk';
+
+  @override
+  String get reviews => 'Ulasan';
+
+  @override
+  String get storeAbout => 'Tentang';
+
+  @override
+  String storeJoined(String date) {
+    return 'Sertai $date';
+  }
 
   @override
   String get category => 'Kategori';
@@ -1643,4 +1685,95 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get ordersBuyAgainNone => 'Tiada item ini yang masih ada.';
+
+  @override
+  String get halalCertified => 'Diperakui halal';
+
+  @override
+  String get halalCertVerified => 'Sijil halal disahkan';
+
+  @override
+  String get halalCertLapsed => 'Sijil telah luput';
+
+  @override
+  String get halalCertNotInForce => 'Sijil belum berkuat kuasa';
+
+  @override
+  String halalExpiredOn(String date) {
+    return 'luput pada $date';
+  }
+
+  @override
+  String halalValidFrom(String date) {
+    return 'sah dari $date';
+  }
+
+  @override
+  String halalValidTo(String date) {
+    return 'sah hingga $date';
+  }
+
+  @override
+  String get halalReadRecord => 'Baca rekod';
+
+  @override
+  String get halalScopeTitle => 'Ramuan dan skop';
+
+  @override
+  String halalScopeBody(String scope) {
+    return 'Skop diperakui: $scope. Sijil menamakan SKU ini dalam lampirannya, jadi lencana terikat pada item yang anda beli, bukan kedai yang menjualnya.';
+  }
+
+  @override
+  String get halalTraceability => 'Kebolehkesanan';
+
+  @override
+  String get halalFacility => 'Kemudahan';
+
+  @override
+  String get halalBatch => 'Kelompok';
+
+  @override
+  String halalPackedOn(String date) {
+    return 'dibungkus pada $date';
+  }
+
+  @override
+  String get halalCertificate => 'Sijil';
+
+  @override
+  String get halalExpiry => 'Tarikh luput';
+
+  @override
+  String get halalLapsed => 'luput';
+
+  @override
+  String halalNotInForceUntil(String date) {
+    return 'belum berkuat kuasa sehingga $date';
+  }
+
+  @override
+  String halalDaysRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tinggal $count hari',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get halalCertifyingBody => 'Badan pensijilan';
+
+  @override
+  String get halalAssurance => 'Jaminan';
+
+  @override
+  String get halalAssureValid12 => 'Sijil sah 12 bulan ke atas';
+
+  @override
+  String get halalAssureDedicated => 'Kemudahan halal khusus';
+
+  @override
+  String get halalAssureExport => 'Dokumen eksport disertakan';
 }

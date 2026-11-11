@@ -235,6 +235,53 @@ class Product extends Model implements HasMedia
     }
 
     /**
+     * The listing's two halal facets — certifying body (OR within) and
+     * assurance (AND across) — shared by the web Listing and the app API so
+     * the two can never drift. Unknown codes are dropped, not trusted.
+     *
+     * @param  array<int, string>  $bodies  HalalCertificate::BODIES keys
+     * @param  array<int, string>  $assurances  'valid12' | 'dedicated' | 'export'
+     */
+    #[Scope]
+    protected function halalFacets(Builder $query, array $bodies, array $assurances): void
+    {
+        if ($assurances !== []) {
+            // approved() on both halal facets: a submitted certificate is a
+            // claim, and filtering by it would let an unreviewed one place a
+            // product in front of a buyer who asked for certified goods.
+            $query->whereHas('halalCertificate', function (Builder $cert) use ($assurances): void {
+                $cert->approved();
+
+                foreach ($assurances as $assurance) {
+                    match ($assurance) {
+                        // "valid 12 months+" is about REMAINING life, not the
+                        // original term: a buyer wants cover through the year
+                        // ahead, not a certificate that was long once.
+                        'valid12' => $cert->whereDate('valid_to', '>=', DisplayTime::today()->addYear()),
+                        'dedicated' => $cert->where('dedicated_facility', true),
+                        'export' => $cert->where('export_paperwork', true),
+                        default => null,
+                    };
+                }
+            });
+        }
+
+        if ($bodies !== []) {
+            // Reads the certificate RECORD, not products.halal_cert_number.
+            //
+            // That free-text column is the exact bug halalVerdict()'s docblock
+            // was written to kill, and this facet was the last reader still
+            // trusting it: a seller typing "MY-JKM-anything" into the product
+            // row filtered as JAKIM-certified with no certificate behind it,
+            // while the assurance facet immediately above already did it right
+            // via whereHas('halalCertificate'). Same shape now.
+            $codes = array_values(array_intersect($bodies, array_keys(HalalCertificate::BODIES)));
+
+            $query->whereHas('halalCertificate', fn (Builder $cert) => $cert->approved()->whereIn('issuing_body', $codes));
+        }
+    }
+
+    /**
      * Real-column keyword search — the MySQL/SQLite fallback for when Scout's
      * Meilisearch index isn't available. Scout's collection/database engines
      * query toSearchableArray() keys as if they were columns (name_en, category,

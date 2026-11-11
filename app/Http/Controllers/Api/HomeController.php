@@ -37,7 +37,7 @@ class HomeController extends Controller
 
         $flashItems = FlashSaleItem::query()
             ->whereHas('flashSale', fn ($sale) => $sale->live())
-            ->with(['variant.product.media', 'variant.product.store', 'variant.product.variants'])
+            ->with(['variant.product.media', 'variant.product.store', 'variant.product.variants', 'variant.product.halalCertificate'])
             ->orderByDesc('id')
             ->get()
             ->filter(fn (FlashSaleItem $item) => $item->variant?->product?->isLive())
