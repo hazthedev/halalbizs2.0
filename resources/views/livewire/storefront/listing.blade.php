@@ -44,7 +44,10 @@
             </div>
         @endif
 
-        <div class="ml-auto">
+        <div class="ml-auto flex items-center gap-2">
+            @if ($isSearch && app(\App\Services\LiveSessionService::class)->liveStoreIds() !== [])
+                <x-live-badge data-live-pill />
+            @endif
             <label for="listing-sort" class="sr-only">{{ __('Sort by') }}</label>
             <select
                 id="listing-sort"
