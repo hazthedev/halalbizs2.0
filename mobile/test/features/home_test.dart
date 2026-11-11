@@ -23,7 +23,7 @@ Map<String, dynamic> fakeBanner(int id, {String? appUrl}) => {
     };
 
 void main() {
-  testWidgets('home renders categories and the featured grid from the API payload', (tester) async {
+  testWidgets('home renders the featured grid (no category pills) from the API payload', (tester) async {
     usePhone(tester);
     final api = FakeApi(routes: {
       'GET home': (_, _) => fakeHome(
@@ -44,8 +44,8 @@ void main() {
     expect(h.router.state.uri.path, '/home');
     expect(api.calls, contains('GET home'));
     expect(api.calls, isNot(contains('GET products?sort=top')));
-    expect(find.byKey(const Key('home-categories')), findsOneWidget);
-    expect(find.text('Makanan'), findsOneWidget);
+    expect(find.byKey(const Key('home-categories')), findsNothing); // Haze 11-11: no category pills on Home
+    expect(find.text('Makanan'), findsNothing);
     expect(find.byKey(const Key('product-card-madu-tualang')), findsOneWidget);
     expect(find.byKey(const Key('product-card-kurma-ajwa')), findsOneWidget);
     expect(find.text('Madu Tualang Asli'), findsOneWidget);

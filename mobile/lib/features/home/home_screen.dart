@@ -10,7 +10,7 @@ import '../catalog/catalog_api.dart';
 import '../catalog/models.dart';
 
 /// Home tab, all from one `GET home`: banner carousel, flash sale strip,
-/// category chips and the Featured grid. Offline-first: the cached strip
+/// the Featured grid (category chips removed, Haze 11-11). Offline-first: the cached strip
 /// shows when the payload came from the snapshot.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -56,8 +56,6 @@ class HomeScreen extends ConsumerWidget {
               FlashSaleStrip(endsAt: f.flashEndsAt!, items: f.flashItems),
               const SizedBox(height: SoukSpace.s5),
             ],
-            _CategoryStrip(f.categories),
-            const SizedBox(height: SoukSpace.s5),
             SoukSectionHeading(l.featured, linkLabel: l.viewAll, onLink: () => context.push('/featured')),
             const SizedBox(height: SoukSpace.s3),
             f.featured.isEmpty
@@ -297,33 +295,6 @@ class _FlashCard extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Horizontal category chips → `/c/:slug`.
-class _CategoryStrip extends StatelessWidget {
-  const _CategoryStrip(this.categories);
-
-  final List<Category> categories;
-
-  @override
-  Widget build(BuildContext context) {
-    if (categories.isEmpty) return const SizedBox.shrink();
-    return SizedBox(
-      height: SoukSpace.minTap,
-      child: ListView.separated(
-        key: const Key('home-categories'),
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        separatorBuilder: (_, _) => const SizedBox(width: SoukSpace.s2),
-        itemBuilder: (_, i) => SoukChip(
-          key: Key('home-category-${categories[i].slug}'),
-          label: categories[i].name,
-          selected: false,
-          onTap: () => context.push('/c/${Uri.encodeComponent(categories[i].slug)}'),
         ),
       ),
     );
