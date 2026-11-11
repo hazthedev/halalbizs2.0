@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../features/account/wishlist_heart.dart';
 import '../../../features/catalog/halal.dart';
+import '../../../features/catalog/live.dart';
 import '../../../features/catalog/models.dart';
 import '../../../l10n/l10n.dart';
 import '../../theme/souk_theme.dart';
@@ -96,6 +97,8 @@ class ProductCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    if (p.storeLive)
+                      Positioned(top: 6, left: 6, child: LiveBadge(p.liveSlug!, key: Key('product-live-${p.slug}'))),
                     if (wishlist)
                       Positioned(
                         top: 6,
