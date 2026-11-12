@@ -27,6 +27,70 @@
 
     <p class="text-[13px] text-ink-soft">{{ __('These sections render on the storefront home page, top to bottom.') }}</p>
 
+    {{-- Which layout is on screen: the everyday one, or one that shows by itself between two dates (item 12). --}}
+    <x-ui.card class="space-y-3 p-4">
+        <div class="flex flex-wrap items-end gap-3">
+            <div class="min-w-56">
+                <label for="layout-choice" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Layout') }}</label>
+                <select id="layout-choice" wire:change="chooseLayout($event.target.value === '' ? null : Number($event.target.value))"
+                        class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    <option value="" @selected($layout === null)>{{ __('Everyday layout') }}</option>
+                    @foreach ($layouts as $option)
+                        <option value="{{ $option->id }}" @selected($layout?->id === $option->id)>{{ $option->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            @if ($layout !== null)
+                <a href="{{ route('admin.content.preview', ['path' => '/?layout='.$layout->id]) }}" target="_blank" rel="noopener"
+                   class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Preview this layout') }}</a>
+            @endif
+
+            @can('cms.publish')
+                @if ($layout !== null)
+                    <button type="button" wire:click="editLayout"
+                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Change name or dates') }}</button>
+                    <button type="button" wire:click="deleteLayout({{ $layout->id }})"
+                            wire:confirm="{{ __('Delete this layout and its sections? The everyday layout is not touched.') }}"
+                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete layout') }}</button>
+                @endif
+                <x-ui.button variant="ghost" wire:click="newLayout" class="ml-auto">{{ __('New scheduled layout') }}</x-ui.button>
+            @endcan
+        </div>
+
+        <p class="text-[13px] text-ink-soft">
+            @if ($layout === null)
+                {{ __('The everyday layout shows whenever no scheduled layout is running.') }}
+            @else
+                {{ $layout->starts_at->display()->format('d M Y H:i') }} → {{ $layout->ends_at->display()->format('d M Y H:i') }} ·
+                @if ($layout->isShowingNow())
+                    <x-ui.badge variant="neutral">{{ __('Showing now') }}</x-ui.badge>
+                @elseif ($layout->ends_at->isPast())
+                    {{ __('Ended. The everyday layout is back.') }}
+                @else
+                    {{ __('Switches on by itself at the start and back to the everyday layout at the end.') }}
+                @endif
+            @endif
+        </p>
+
+        @if ($showLayoutForm)
+            <form wire:submit="saveLayout" class="space-y-4 border-t border-line pt-4">
+                <div class="grid gap-4 lg:grid-cols-3">
+                    <x-ui.input :label="__('Layout name')" wire:model="layoutName" maxlength="80" :error="$errors->first('layoutName')" :hint="__('For example: Ramadan.')" />
+                    <x-ui.input :label="__('Starts at')" type="datetime-local" wire:model="layoutStarts" :error="$errors->first('layoutStarts')" />
+                    <x-ui.input :label="__('Ends at')" type="datetime-local" wire:model="layoutEnds" :error="$errors->first('layoutEnds')" />
+                </div>
+                @unless ($editingLayout)
+                    <p class="text-[13px] text-ink-faint">{{ __('It starts as a copy of the everyday layout. Change its sections, then publish them before the start.') }}</p>
+                @endunless
+                <div class="flex items-center gap-2">
+                    <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="saveLayout">{{ __('Save layout') }}</x-ui.button>
+                    <x-ui.button variant="ghost" wire:click="cancelLayout">{{ __('Cancel') }}</x-ui.button>
+                </div>
+            </form>
+        @endif
+    </x-ui.card>
+
     <x-ui.card>
         @if ($sections->isEmpty())
             <x-ui.empty-state :title="__('The home page is empty')" :message="__('Add a section above — buyers see it the moment it\'s active.')" />
@@ -77,7 +141,7 @@
                                 </span>
                             </button>
 
-                            <x-ui.draft-actions type="section" :id="$section->id" :draft="$section->draft" preview-path="/" />
+                            <x-ui.draft-actions type="section" :id="$section->id" :draft="$section->draft" :preview-path="$layout === null ? '/' : '/?layout='.$layout->id" />
 
                             <button type="button" wire:click="{{ $editingId === $section->id ? 'cancel' : 'edit('.$section->id.')' }}"
                                     class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">

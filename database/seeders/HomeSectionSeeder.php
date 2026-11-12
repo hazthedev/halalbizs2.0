@@ -20,7 +20,7 @@ class HomeSectionSeeder extends Seeder
 
         foreach ($sections as $i => $section) {
             HomeSection::updateOrCreate(
-                ['type' => $section['type']],
+                ['type' => $section['type'], 'scheduled_layout_id' => null], // the everyday layout only
                 $section + ['position' => $i, 'is_active' => true],
             );
         }
