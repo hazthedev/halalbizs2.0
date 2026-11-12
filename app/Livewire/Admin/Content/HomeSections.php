@@ -10,7 +10,7 @@ use Livewire\Component;
 
 /**
  * Home sections manager (docs/08 §G) — drives storefront Home (B1).
- * Payload keys MUST stay 'source' / 'limit' — Storefront\Home reads them.
+ * Payload keys MUST stay 'source' / 'limit' — App\Services\HomeLayout reads them.
  */
 #[Layout('layouts.admin')]
 class HomeSections extends Component
@@ -109,7 +109,7 @@ class HomeSections extends Component
 
         ContentLocales::write($section, 'title', $this->title, englishRequired: false);
 
-        // Payload contract per type — keys identical to Storefront\Home::sectionData().
+        // Payload contract per type — keys identical to HomeLayout::sectionData().
         $section->payload = match ($section->type) {
             'category_grid' => ['limit' => (int) $this->limit],
             'product_carousel', 'product_grid' => ['source' => $this->source, 'limit' => (int) $this->limit],

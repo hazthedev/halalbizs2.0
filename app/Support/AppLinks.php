@@ -21,6 +21,13 @@ final class AppLinks
         '#^/p/([^/]+)$#' => '/p/$1',
         '#^/s/([^/]+)$#' => '/s/$1',
         '#^/c/([^/]+)$#' => '/c/$1',
+        // Banner destinations (Admin → Content → Banners picker).
+        '#^/live/([^/]+)$#' => '/live/$1',
+        '#^/page/([^/]+)$#' => '/page/$1',
+        '#^/help/article/(\d+)$#' => '/help/$1',
+        '#^/help$#' => '/help',
+        '#^/flash-sale$#' => '/flash-sale',
+        '#^/search$#' => '/search',
     ];
 
     public static function fromWebUrl(?string $url): ?string
@@ -39,7 +46,13 @@ final class AppLinks
 
         foreach (self::MAP as $pattern => $route) {
             if (preg_match($pattern, $path)) {
-                return preg_replace($pattern, $route, $path);
+                $appRoute = preg_replace($pattern, $route, $path);
+
+                // The search words are the destination; other query strings are dropped.
+                parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+                $words = $appRoute === '/search' && is_string($query['q'] ?? null) ? trim($query['q']) : '';
+
+                return $words !== '' ? '/search?q='.rawurlencode($words) : $appRoute;
             }
         }
 
