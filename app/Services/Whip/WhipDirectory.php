@@ -17,6 +17,26 @@ use Throwable;
  */
 class WhipDirectory
 {
+    /** Latest certificates belonging to this company; never search with a blank SSM. */
+    public function forCompany(string $registrationNo): array
+    {
+        $registration = WhipCertificate::normaliseRegistration($registrationNo);
+        if ($registration === '') {
+            return [];
+        }
+
+        $numbers = DB::connection('whip')->table('halal_application_company_profiles as p')
+            ->join('halal_application_certificates as c', 'c.application_id', '=', 'p.application_id')
+            ->whereRaw("UPPER(REPLACE(REPLACE(TRIM(p.registration_number), '-', ''), ' ', '')) = ?", [$registration])
+            ->whereNotNull('c.certificate_no')->where('c.certificate_no', '!=', '')
+            ->whereRaw('c.id = (select max(c2.id) from halal_application_certificates c2 where c2.application_id = c.application_id)')
+            ->orderBy('c.id', 'desc')->pluck('c.certificate_no')->unique();
+
+        return $numbers->map(fn ($no) => $this->lookup($no))
+            ->filter(fn ($c) => $c !== null && WhipCertificate::normaliseRegistration($c->registrationNumber) === $registration)
+            ->values()->all();
+    }
+
     /**
      * Not found = null. A connection/query failure THROWS: callers decide how to fail closed.
      */
@@ -35,7 +55,7 @@ class WhipDirectory
             ->join('halal_applications as a', 'a.id', '=', 'c.application_id')
             ->whereRaw('UPPER(TRIM(c.certificate_no)) = ?', [$no])
             ->whereRaw('c.id = (select max(c2.id) from halal_application_certificates c2 where c2.application_id = c.application_id)')
-            ->get(['c.id', 'c.application_id', 'c.certificate_no', 'c.valid_from', 'c.valid_to', 'a.status', 'a.certification_body_id']);
+            ->get(['c.id', 'c.application_id', 'c.certificate_no', 'c.valid_from', 'c.valid_to', 'c.services_text', 'a.status', 'a.certification_body_id']);
 
         if ($rows->isEmpty()) {
             return null;
@@ -69,6 +89,7 @@ class WhipDirectory
             bodyName: $body,
             products: $products,
             applicationId: (int) $row->application_id,
+            scopeNote: $row->services_text ?: null,
         );
     }
 

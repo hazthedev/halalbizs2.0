@@ -27,6 +27,7 @@ final readonly class WhipCertificate
         public ?string $bodyName,
         public array $products,
         public int $applicationId,
+        public ?string $scopeNote = null,
     ) {}
 
     /** Company registration numbers compare upper-case with spaces and dashes removed. */

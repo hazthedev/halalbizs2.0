@@ -33,6 +33,7 @@ beforeEach(function () {
         $t->string('certificate_no')->nullable();
         $t->date('valid_from')->nullable();
         $t->date('valid_to')->nullable();
+        $t->text('services_text')->nullable();
     });
     $s->create('halal_application_company_profiles', function ($t) {
         $t->id();
@@ -101,6 +102,62 @@ function whipRow(string $number = 'WH-100'): HalalCertificate
 {
     return HalalCertificate::where('number', $number)->firstOrFail();
 }
+
+test('a seller finds and links only certificates for their verified store SSM without retyping certificate fields', function () {
+    whipCert();
+    whipCert(['no' => 'PRIVATE-OTHER', 'reg' => '999999-X']);
+    $seller = whipSeller();
+
+    Livewire::actingAs($seller)->test(Certificates::class)
+        ->call('findWhipCertificates')->assertSee('WH-100')->assertDontSee('PRIVATE-OTHER')
+        ->call('linkWhipCertificate', 'WH-100')->assertHasNoErrors();
+
+    expect($seller->store->halalCertificates()->first())
+        ->number->toBe('WH-100')->source->toBe('whip')->status->toBe(CertificateStatus::Approved);
+});
+
+test('linking a WHIP certificate preserves its full scope beyond the manual form limit', function () {
+    whipCert();
+    $scope = str_repeat('Sauces and condiments. ', 30);
+    DB::connection('whip')->table('halal_application_certificates')->update(['services_text' => $scope]);
+    Livewire::actingAs(whipSeller())->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')->assertHasNoErrors();
+    expect(whipRow()->scope_note)->toBe($scope);
+});
+
+test('sync keeps an approved WHIP certificate approved when its company name becomes blank', function () {
+    whipCert();
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    DB::connection('whip')->table('halal_application_company_profiles')->update(['company_name' => null]);
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+    expect(whipRow()->status)->toBe(CertificateStatus::Approved)
+        ->and(whipRow()->whip_answer)->toBe('verified')
+        ->and(whipRow()->holder_name)->toBe('WHIP Foods Sdn Bhd');
+});
+
+test('WHIP discovery requires a verified SSM and direct link requests cannot borrow another company certificate', function () {
+    whipCert(['reg' => '999999-X']);
+    $unverified = whipSeller(confirmed: false);
+    Livewire::actingAs($unverified)->test(Certificates::class)
+        ->call('findWhipCertificates')->assertHasErrors('whip')->assertDontSee('WH-100');
+    Livewire::actingAs($unverified)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')->assertForbidden();
+
+    Livewire::actingAs(whipSeller())->test(Certificates::class)
+        ->set('whipCertificates', [['number' => 'WH-100', 'scope' => null, 'status' => 'active', 'expiry' => null, 'can_link' => true]])
+        ->call('linkWhipCertificate', 'WH-100')->assertHasErrors('whip');
+    expect(HalalCertificate::count())->toBe(0);
+});
+
+test('WHIP discovery shows scope and expired status but a changed certificate cannot be linked', function () {
+    $app = whipCert();
+    DB::connection('whip')->table('halal_application_certificates')->update(['services_text' => 'Sauces and condiments']);
+    $seller = whipSeller();
+    $page = Livewire::actingAs($seller)->test(Certificates::class)->call('findWhipCertificates')
+        ->assertSee('Sauces and condiments');
+    DB::connection('whip')->table('halal_applications')->where('id', $app)->update(['status' => 'revoked']);
+    $page->call('linkWhipCertificate', 'WH-100')->assertHasErrors('whip');
+    expect(HalalCertificate::count())->toBe(0);
+});
 
 test('a certificate number that WHIP holds as certified and in date, for the same company registration number, is verified from WHIP', function () {
     $app = whipCert();
@@ -328,4 +385,18 @@ test('a manual certificate binds every ticked product, unchanged', function () {
 
     expect($p->fresh()->halal_certificate_id)->toBe(whipRow('MAN-1')->id)
         ->and(whipRow('MAN-1')->whip_unmatched_product_ids)->toBeNull();
+});
+
+test('a WHIP certificate missing its company name stays unlinked for review', function () {
+    whipCert();
+    DB::connection('whip')->table('halal_application_company_profiles')->update(['company_name' => null]);
+    Livewire::actingAs(whipSeller())->test(Certificates::class)
+        ->call('linkWhipCertificate', 'WH-100')->assertHasErrors('whip');
+    expect(HalalCertificate::count())->toBe(0);
+});
+
+test('linking WHIP again keeps products already waiting for admin review', function () {
+    [$seller, , , $parked] = whipTicked();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')->assertHasNoErrors();
+    expect(whipRow()->whip_unmatched_product_ids)->toBe([$parked->id]);
 });
