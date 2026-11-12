@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/json.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
+import '../preview/preview_mode.dart';
 import '../account/inbox_actions.dart';
 import '../catalog/catalog_api.dart';
 import '../catalog/models.dart';
@@ -41,20 +42,23 @@ class HomeScreen extends ConsumerWidget {
       onRefresh: () => _refresh(ref),
       fromCache: feed?.fromCache ?? false,
       cachedAt: feed?.fetchedAt,
-      body: home.when(
-        skipLoadingOnRefresh: true,
-        loading: () => const Column(children: [
-          SoukSkeleton.block(height: SoukSpace.minTap),
-          SizedBox(height: SoukSpace.s5),
-          SoukSkeleton.cards(rows: 4),
-        ]),
-        error: (e, _) => ErrorPane(error: e, onRetry: () => _refresh(ref), retryLabel: l.retry),
-        data: (f) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (f.announcement != null) _AnnouncementBar(f.announcement!),
-          if (f.hero != null) _Hero(f.hero!),
-          f.blocks == null ? _FixedHome(f, onRefresh: () => _refresh(ref)) : _BlocksHome(f),
-        ]),
-      ),
+      body: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        const PreviewStrip(),
+        home.when(
+          skipLoadingOnRefresh: true,
+          loading: () => const Column(children: [
+            SoukSkeleton.block(height: SoukSpace.minTap),
+            SizedBox(height: SoukSpace.s5),
+            SoukSkeleton.cards(rows: 4),
+          ]),
+          error: (e, _) => ErrorPane(error: e, onRetry: () => _refresh(ref), retryLabel: l.retry),
+          data: (f) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            if (f.announcement != null) _AnnouncementBar(f.announcement!),
+            if (f.hero != null) _Hero(f.hero!),
+            f.blocks == null ? _FixedHome(f, onRefresh: () => _refresh(ref)) : _BlocksHome(f),
+          ]),
+        ),
+      ]),
     );
   }
 }

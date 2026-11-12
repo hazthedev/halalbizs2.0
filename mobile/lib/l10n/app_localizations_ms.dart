@@ -1907,6 +1907,12 @@ class AppLocalizationsMs extends AppLocalizations {
   String get legalAndAbout => 'Undang-undang & tentang';
 
   @override
+  String get previewDrafts => 'Pratonton draf';
+
+  @override
+  String get previewStrip => 'Pratonton: draf dipaparkan';
+
+  @override
   String get contactSupport => 'Hubungi sokongan';
 
   @override

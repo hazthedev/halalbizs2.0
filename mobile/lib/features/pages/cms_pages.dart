@@ -9,11 +9,13 @@ import '../../core/offline/offline.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../account/web_link.dart';
+import '../preview/preview_mode.dart';
 
 /// One read for every admin-written screen (`pages`, `pages/{slug}`, `help`,
 /// `help/{id}`): through [OfflineRepo], so the last copy shows offline.
 final cmsProvider = FutureProvider.autoDispose.family<CachedResult<dynamic>, String>(
-    (ref, path) => ref.watch(offlineRepoProvider).getJson(path));
+    (ref, path) =>
+        ref.watch(offlineRepoProvider).getJson(path, query: previewQuery(ref.watch(previewModeProvider))));
 
 /// List page: title + rows + the cached strip, shared by Legal and Help.
 class _CmsPage extends ConsumerWidget {
@@ -32,12 +34,15 @@ class _CmsPage extends ConsumerWidget {
       onRefresh: () async => ref.refresh(cmsProvider(path).future).then((_) {}, onError: (_) {}),
       fromCache: async.value?.fromCache ?? false,
       cachedAt: async.value?.fetchedAt,
-      body: async.when(
-        skipLoadingOnRefresh: true,
-        loading: () => const SoukSkeleton.block(height: 160),
-        error: (e, _) => ErrorPane(error: e, onRetry: () => ref.invalidate(cmsProvider(path))),
-        data: (r) => builder(context, r.data),
-      ),
+      body: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        const PreviewStrip(),
+        async.when(
+          skipLoadingOnRefresh: true,
+          loading: () => const SoukSkeleton.block(height: 160),
+          error: (e, _) => ErrorPane(error: e, onRetry: () => ref.invalidate(cmsProvider(path))),
+          data: (r) => builder(context, r.data),
+        ),
+      ]),
     );
   }
 }

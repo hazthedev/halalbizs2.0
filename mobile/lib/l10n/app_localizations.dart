@@ -3500,6 +3500,18 @@ abstract class AppLocalizations {
   /// **'Legal & about'**
   String get legalAndAbout;
 
+  /// No description provided for @previewDrafts.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview drafts'**
+  String get previewDrafts;
+
+  /// No description provided for @previewStrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: drafts shown'**
+  String get previewStrip;
+
   /// No description provided for @contactSupport.
   ///
   /// In en, this message translates to:

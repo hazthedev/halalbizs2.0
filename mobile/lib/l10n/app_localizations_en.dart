@@ -1907,6 +1907,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get legalAndAbout => 'Legal & about';
 
   @override
+  String get previewDrafts => 'Preview drafts';
+
+  @override
+  String get previewStrip => 'Preview: drafts shown';
+
+  @override
   String get contactSupport => 'Contact support';
 
   @override

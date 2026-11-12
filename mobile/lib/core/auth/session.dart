@@ -30,6 +30,9 @@ class Profile {
   bool get emailVerified => asBool(json['email_verified']) || json['email_verified_at'] != null;
   List<String> get roles => asList(json['roles']).map((r) => '$r').toList();
 
+  /// Staff may switch on the drafts preview (`can_preview_content`; absent = false).
+  bool get canPreviewContent => asBool(json['can_preview_content']);
+
   /// `{id, slug, name, status}` of the user's store, if any.
   Map<String, dynamic>? get store => json['store'] is Map ? asMap(json['store']) : null;
   int? get storeId => asInt(store?['id']);
