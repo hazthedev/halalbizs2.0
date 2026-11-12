@@ -286,6 +286,7 @@ test('system page slug is locked and the page cannot be deleted', function () {
         ->call('save')
         ->assertHasNoErrors()
         ->call('delete', $terms->id);
+    publishDrafts();
 
     $terms->refresh();
 
@@ -304,6 +305,7 @@ test('terms and privacy cannot be deactivated but other system pages can', funct
         ->test(Pages::class)
         ->call('toggleActive', $terms->id)
         ->call('toggleActive', $about->id);
+    publishDrafts();
 
     expect($terms->refresh()->is_active)->toBeTrue()
         ->and($about->refresh()->is_active)->toBeFalse();
@@ -318,6 +320,7 @@ test('page body is sanitized to the allowed tag list on save', function () {
         ->set('body.en', '<script>alert(1)</script><p>Ships in <strong>2 days</strong>.</p><iframe src="x"></iframe><h2>Zones</h2>')
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     $page = Page::where('slug', 'shipping-guide')->sole();
 

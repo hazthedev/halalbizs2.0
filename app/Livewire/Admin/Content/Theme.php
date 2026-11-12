@@ -108,7 +108,8 @@ class Theme extends Component
 
     public function removeHeroImage(): void
     {
-        app(ContentDrafts::class)->stage(ThemeAsset::hero(), auth()->user(), clearMedia: ['image']);
+        // Carry the open draft's values along; only the picture changes.
+        app(ContentDrafts::class)->stage(ThemeAsset::hero(), auth()->user(), $this->previewedSettings()->toArray(), clearMedia: ['image']);
 
         $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }

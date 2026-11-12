@@ -38,7 +38,8 @@ test('editing a page records who changed it, with the old and new text', functio
         ->set('title.en', 'About HalalBizs')
         ->set('body.en', '<p>New</p>')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'page', $page->id);
 
     $entry = Activity::where('subject_type', Page::class)->where('event', 'updated')->sole();
 
@@ -89,7 +90,7 @@ test('the audit log lists content changes and filters by content type', function
     $page = Page::create(['slug' => 'about', 'title' => ['en' => 'About us'], 'body' => ['en' => '<p>Old</p>'], 'is_active' => true]);
     Banner::create(['title' => ['en' => 'Raya'], 'position' => 1, 'is_active' => true]);
 
-    Livewire::actingAs($admin)->test(Pages::class)->call('toggleActive', $page->id);
+    Livewire::actingAs($admin)->test(Pages::class)->call('toggleActive', $page->id)->call('publishDraft', 'page', $page->id);
 
     Livewire::actingAs($admin)->test(AuditLog::class)
         ->assertSee('Aisyah Editor')

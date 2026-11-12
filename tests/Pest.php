@@ -32,6 +32,21 @@ function makeAdmin(User $user): User
     return $user->fresh();
 }
 
+/** CMS Tier 2: staff who may write content drafts but not publish them. */
+function contentEditor(): User
+{
+    $user = User::factory()->create(['two_factor_method' => 'email']);
+    $user->assignRole('admin');
+    $user->syncPermissions(['cms.manage']);
+
+    return $user->fresh();
+}
+
+function contentPublisher(): User
+{
+    return makeAdmin(User::factory()->create(['two_factor_method' => 'email']));
+}
+
 /**
  * CMS Tier 2: a content save is a draft until a publisher publishes it.
  * Tests about what shoppers end up seeing call this after the save.

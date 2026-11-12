@@ -154,7 +154,7 @@ class HomeSections extends Component
         [$ordered[$index], $ordered[$target]] = [$ordered[$target], $ordered[$index]];
 
         foreach (array_values($ordered) as $position => $section) {
-            if ($section->position !== $position) {
+            if ((int) $section->position !== $position) {
                 $section->position = $position;
                 app(ContentDrafts::class)->stage($section, auth()->user());
             }

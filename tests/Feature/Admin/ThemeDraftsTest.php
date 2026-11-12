@@ -98,3 +98,15 @@ test('the hero picture is drafted, shown in preview only, and a reset is a draft
     Livewire::actingAs($editor)->test(Theme::class)->call('resetDefaults');
     expect(app(ThemeSettings::class)->refresh()->hero_image_enabled)->toBeTrue();
 });
+
+test('removing the hero picture keeps the words already drafted', function () {
+    $publisher = contentPublisher();
+
+    Livewire::actingAs($publisher)->test(Theme::class)
+        ->set('announcementEnabled', true)
+        ->set('announcementTextEn', 'Drafted words')
+        ->call('save')
+        ->call('removeHeroImage');
+
+    expect(ThemeAsset::hero()->draft->payload['announcement_text_en'])->toBe('Drafted words');
+});

@@ -19,7 +19,7 @@ class ContentController extends Controller
 {
     public function pages(): JsonResponse
     {
-        return ApiResponse::ok(app(ContentDrafts::class)->visible(Page::class)->sortBy('id')->map(fn (Page $page) => [
+        return ApiResponse::ok(app(ContentDrafts::class)->visible(Page::class)->sortBy('id')->values()->map(fn (Page $page) => [
             'slug' => $page->slug,
             'title' => $page->getTranslation('title', app()->getLocale()),
         ])->all());

@@ -13,21 +13,6 @@ use Livewire\Livewire;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
 
-/** Staff who may write content but not publish it. */
-function contentEditor(): User
-{
-    $user = User::factory()->create(['two_factor_method' => 'email']);
-    $user->assignRole('admin');
-    $user->syncPermissions(['cms.manage']);
-
-    return $user->fresh();
-}
-
-function contentPublisher(): User
-{
-    return makeAdmin(User::factory()->create(['two_factor_method' => 'email']));
-}
-
 function aboutPage(): Page
 {
     return Page::create(['slug' => 'about', 'title' => ['en' => 'About us'], 'body' => ['en' => '<p>Old words</p>'], 'is_active' => true]);
@@ -226,4 +211,38 @@ test('the app is told whether the signed-in person may preview drafts', function
 
     Sanctum::actingAs(User::factory()->create());
     $this->getJson('/api/v1/me')->assertJsonPath('data.can_preview_content', false);
+});
+
+// ── Preview on the API (the app), and rules a preview must still obey ──────
+
+test('the API shows drafts only to a staff token with ?preview=1, and lists stay lists', function () {
+    $page = aboutPage();
+    Page::create(['slug' => 'aaa-first', 'title' => ['en' => 'Later id, same list'], 'body' => ['en' => '<p>x</p>'], 'is_active' => true]);
+    $editor = contentEditor();
+
+    Livewire::actingAs($editor)->test(Pages::class)->call('edit', $page->id)->set('title.en', 'About HalalBizs')->call('save');
+
+    auth()->guard('web')->logout(); // the Livewire call above signed the editor in on this test's session
+    $this->getJson('/api/v1/pages/about?preview=1')->assertJsonPath('data.title', 'About us');
+
+    Sanctum::actingAs(User::factory()->create());
+    $this->getJson('/api/v1/pages/about?preview=1')->assertJsonPath('data.title', 'About us');
+
+    Sanctum::actingAs($editor);
+    $this->getJson('/api/v1/pages/about')->assertJsonPath('data.title', 'About us');
+    $this->getJson('/api/v1/pages/about?preview=1')->assertJsonPath('data.title', 'About HalalBizs');
+
+    $list = $this->getJson('/api/v1/pages?preview=1')->json('data');
+    expect(array_is_list($list))->toBeTrue()
+        ->and(array_column($list, 'title'))->toBe(['About HalalBizs', 'Later id, same list']);
+});
+
+test('a preview still hides a banner outside its dates', function () {
+    Banner::create(['title' => ['en' => 'Next month'], 'position' => 1, 'is_active' => true, 'starts_at' => now()->addMonth()]);
+    $now = Banner::create(['title' => ['en' => 'Now'], 'position' => 2, 'is_active' => true]);
+
+    $drafts = app(ContentDrafts::class);
+    $drafts->previewing = true;
+
+    expect($drafts->visible(Banner::class)->pluck('id')->all())->toBe([$now->id]);
 });
