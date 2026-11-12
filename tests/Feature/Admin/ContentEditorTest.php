@@ -62,6 +62,7 @@ test('what the editor produces is kept, and anything unsafe is still removed', f
         ->set('body.en', $fromEditor)
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     $saved = $page->fresh()->getTranslation('body', 'en');
 

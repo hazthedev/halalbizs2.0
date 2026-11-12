@@ -1,8 +1,10 @@
 <?php
 
 use App\Enums\LedgerEntryStatus;
+use App\Models\ContentVersion;
 use App\Models\StoreLedgerEntry;
 use App\Models\User;
+use App\Services\ContentDrafts;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -28,6 +30,18 @@ function makeAdmin(User $user): User
     $user->syncPermissions(RoleSeeder::ADMIN_PERMISSIONS);
 
     return $user->fresh();
+}
+
+/**
+ * CMS Tier 2: a content save is a draft until a publisher publishes it.
+ * Tests about what shoppers end up seeing call this after the save.
+ */
+function publishDrafts(): void
+{
+    $publisher = User::factory()->create();
+
+    ContentVersion::where('status', 'draft')->get()
+        ->each(fn (ContentVersion $draft) => app(ContentDrafts::class)->publish($draft->subject, $publisher));
 }
 
 /**

@@ -152,7 +152,8 @@ class Pages extends Component
     public function render()
     {
         return view('livewire.admin.content.pages', [
-            'pages' => Page::orderBy('slug')->get(),
+            // Rows show the pending draft, so an editor sees their own work.
+            'pages' => Page::with('draft')->orderBy('slug')->get()->each(fn (Page $page) => app(ContentDrafts::class)->preview($page)),
             'editingIsSystem' => $this->editingId !== null
                 && in_array(Page::find($this->editingId)?->slug, self::SYSTEM_SLUGS, true),
         ])->title(__('Pages'));

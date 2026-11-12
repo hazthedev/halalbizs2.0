@@ -29,6 +29,8 @@ class UserResource extends JsonResource
                 'name' => $store->name,
                 'status' => $store->status->value,
             ],
+            // Staff who may manage content can ask the API for drafts (`?preview=1`).
+            'can_preview_content' => $this->can('cms.manage'),
             'unread_notifications' => $this->unreadNotifications()->count(),
             // Loyalty coins are a count, not money — no _sen suffix on purpose.
             'coins' => app(CoinService::class)->balance($this->resource),

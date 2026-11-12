@@ -8,6 +8,7 @@ use App\Services\ContentDrafts;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
@@ -181,4 +182,48 @@ test('removing a picture is drafted too', function () {
     $drafts->publish($banner, contentPublisher());
 
     expect($banner->fresh()->getMedia('image_vi'))->toHaveCount(0);
+});
+
+// ── Item 11: the preview screen shows the real page at web and phone size ──
+
+test('the preview screen frames the real page twice, with drafts on, and only our own pages', function () {
+    $editor = contentEditor();
+
+    $this->actingAs($editor)->get('/admin/content/preview?path=/page/about')
+        ->assertOk()
+        ->assertSee('src="'.url('/page/about').'?preview=1"', false)
+        ->assertSee('data-preview="web"', false)
+        ->assertSee('data-preview="phone"', false);
+
+    // A path with its own query keeps it; anything that is not a path on this site falls back to home.
+    $this->actingAs($editor)->get('/admin/content/preview?path='.urlencode('/search?q=dates'))
+        ->assertSee('src="'.url('/search').'?q=dates&amp;preview=1"', false);
+    $this->actingAs($editor)->get('/admin/content/preview?path='.urlencode('//evil.example/x'))
+        ->assertSee('src="'.url('/').'?preview=1"', false);
+    $this->actingAs($editor)->get('/admin/content/preview?path='.urlencode('https://evil.example'))
+        ->assertSee('src="'.url('/').'?preview=1"', false);
+});
+
+test('the pages list marks a pending draft and offers publish only to a publisher', function () {
+    $page = aboutPage();
+    $editor = contentEditor();
+
+    Livewire::actingAs($editor)->test(Pages::class)->call('edit', $page->id)->set('title.en', 'About HalalBizs')->call('save')
+        ->assertSee(__('Draft'))
+        ->assertSee('About HalalBizs')
+        ->assertSee(__('Preview'))
+        ->assertDontSeeHtml('publishDraft(')
+        ->assertDontSeeHtml('wire:click="delete(');
+
+    Livewire::actingAs(contentPublisher())->test(Pages::class)
+        ->assertSeeHtml("publishDraft('page', {$page->id})")
+        ->assertSee(__('Throw away'));
+});
+
+test('the app is told whether the signed-in person may preview drafts', function () {
+    Sanctum::actingAs(contentEditor());
+    $this->getJson('/api/v1/me')->assertJsonPath('data.can_preview_content', true);
+
+    Sanctum::actingAs(User::factory()->create());
+    $this->getJson('/api/v1/me')->assertJsonPath('data.can_preview_content', false);
 });

@@ -135,7 +135,8 @@ class ContentDrafts
      */
     public function preview(Model $subject): Model
     {
-        $draft = $subject->draft()->first();
+        // A list that eager-loaded `draft` costs no query per row.
+        $draft = $subject->relationLoaded('draft') ? $subject->draft : $subject->draft()->first();
 
         if ($draft === null) {
             return $subject;
