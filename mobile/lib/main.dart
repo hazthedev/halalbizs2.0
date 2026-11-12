@@ -7,6 +7,7 @@ import 'core/api/api_client.dart';
 import 'core/auth/session.dart';
 import 'core/locale.dart';
 import 'core/router.dart';
+import 'core/version_gate.dart';
 import 'core/widgets/souk_kit.dart';
 import 'l10n/l10n.dart';
 
@@ -54,6 +55,6 @@ class _StartupGate extends ConsumerWidget {
     final loading = ref.watch(sessionProvider.select((s) => s is SessionLoading));
     if (loading) return const ColoredBox(color: SoukColors.paper);
     FlutterNativeSplash.remove();
-    return child;
+    return VersionGate(child: child);
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/api/json.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../account/inbox_actions.dart';
@@ -48,33 +49,185 @@ class HomeScreen extends ConsumerWidget {
           SoukSkeleton.cards(rows: 4),
         ]),
         error: (e, _) => ErrorPane(error: e, onRetry: () => _refresh(ref), retryLabel: l.retry),
-        data: (f) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (f.banners.isNotEmpty) ...[
-              BannerCarousel(f.banners),
-              const SizedBox(height: SoukSpace.s5),
-            ],
-            if (f.flashEndsAt != null && f.flashItems.isNotEmpty) ...[
-              FlashSaleStrip(endsAt: f.flashEndsAt!, items: f.flashItems),
-              const SizedBox(height: SoukSpace.s5),
-            ],
-            SoukSectionHeading(l.featured, linkLabel: l.viewAll, onLink: () => context.push('/featured')),
-            const SizedBox(height: SoukSpace.s3),
-            f.featured.isEmpty
-                ? SoukEmptyState(
-                    key: const Key('home-empty'),
-                    title: l.noProductsYet,
-                    message: l.noProductsBody,
-                    action: SoukButton(label: l.retry, onPressed: () => _refresh(ref)),
-                  )
-                : ProductGrid(f.featured, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
-            ProductStrip(keyPrefix: 'recommended', title: l.recommendedForYou, items: ref.watch(recommendedProvider).value ?? const []),
-          ],
-        ),
+        data: (f) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (f.announcement != null) _AnnouncementBar(f.announcement!),
+          if (f.hero != null) _Hero(f.hero!),
+          f.blocks == null ? _FixedHome(f, onRefresh: () => _refresh(ref)) : _BlocksHome(f),
+        ]),
       ),
     );
   }
+}
+
+/// `#RRGGBB` from the admin; anything else falls back to the theme colour.
+Color _hex(dynamic v, Color fallback) {
+  final m = RegExp(r'^#([0-9a-fA-F]{6})$').firstMatch('$v');
+  return m == null ? fallback : Color(0xFF000000 | int.parse(m[1]!, radix: 16));
+}
+
+/// The admin's one-line announcement, edge to edge at the top of Home.
+class _AnnouncementBar extends StatelessWidget {
+  const _AnnouncementBar(this.json);
+
+  final Map<String, dynamic> json;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = asStr(json['text']) ?? '';
+    if (text.isEmpty) return const SizedBox.shrink();
+    return Container(
+      key: const Key('home-announcement'),
+      width: double.infinity,
+      color: _hex(json['bg'], SoukColors.emerald),
+      padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s3, vertical: SoukSpace.s2),
+      margin: const EdgeInsets.only(bottom: SoukSpace.s3),
+      child: Text(text, textAlign: TextAlign.center, style: SoukText.meta.copyWith(color: _hex(json['text_color'], SoukColors.paper))),
+    );
+  }
+}
+
+/// The occasion image under the announcement bar.
+class _Hero extends StatelessWidget {
+  const _Hero(this.json);
+
+  final Map<String, dynamic> json;
+
+  @override
+  Widget build(BuildContext context) {
+    if ((asStr(json['image']) ?? '').isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: SoukSpace.s5),
+      child: Semantics(
+        label: asStr(json['occasion']),
+        image: true,
+        child: AspectRatio(key: const Key('home-hero'), aspectRatio: 2, child: ProductImage(asStr(json['image']))),
+      ),
+    );
+  }
+}
+
+/// Today's fixed layout: the fallback when an older server sends no `blocks`.
+class _FixedHome extends ConsumerWidget {
+  const _FixedHome(this.f, {required this.onRefresh});
+
+  final HomeFeed f;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (f.banners.isNotEmpty) ...[
+          BannerCarousel(f.banners),
+          const SizedBox(height: SoukSpace.s5),
+        ],
+        ..._flashSale(f),
+        SoukSectionHeading(l.featured, linkLabel: l.viewAll, onLink: () => context.push('/featured')),
+        const SizedBox(height: SoukSpace.s3),
+        f.featured.isEmpty
+            ? SoukEmptyState(
+                key: const Key('home-empty'),
+                title: l.noProductsYet,
+                message: l.noProductsBody,
+                action: SoukButton(label: l.retry, onPressed: onRefresh),
+              )
+            : ProductGrid(f.featured, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
+        ProductStrip(keyPrefix: 'recommended', title: l.recommendedForYou, items: ref.watch(recommendedProvider).value ?? const []),
+      ],
+    );
+  }
+}
+
+List<Widget> _flashSale(HomeFeed f) => [
+      if (f.flashEndsAt != null && f.flashItems.isNotEmpty) ...[
+        FlashSaleStrip(endsAt: f.flashEndsAt!, items: f.flashItems),
+        const SizedBox(height: SoukSpace.s5),
+      ],
+    ];
+
+/// The admin's home: one widget per block, in order. A type this app does not
+/// know (or `recently_viewed`, which it has no feature for) is skipped, so a
+/// new block type never breaks an older app. Flash sale follows the first banner block.
+class _BlocksHome extends ConsumerWidget {
+  const _BlocksHome(this.f);
+
+  final HomeFeed f;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    void openProduct(Product p) => context.push('/p/${Uri.encodeComponent(p.slug)}');
+    final blocks = f.blocks!;
+    final flashAt = blocks.indexWhere((b) => b['type'] == 'banner');
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      if (flashAt < 0) ..._flashSale(f),
+      for (final (i, b) in blocks.indexed) ...[
+        _block(context, ref, l, b, openProduct),
+        if (i == flashAt) ..._flashSale(f),
+      ],
+    ]);
+  }
+
+  Widget _block(BuildContext context, WidgetRef ref, AppLocalizations l, Map<String, dynamic> b, void Function(Product) onTap) {
+    final title = asStr(b['title']) ?? '';
+    final key = 'home-block-${b['id']}';
+    Widget section(Widget child) => Column(key: Key(key), crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (title.isNotEmpty) ...[SoukSectionHeading(title), const SizedBox(height: SoukSpace.s3)],
+          child,
+          const SizedBox(height: SoukSpace.s5),
+        ]);
+    final products = asMapList(b['products']).map(Product.new).toList();
+    switch (b['type']) {
+      case 'banner':
+        final banners = asMapList(b['banners']).map(HomeBanner.new).where((x) => x.image != null).toList();
+        return banners.isEmpty
+            ? const SizedBox.shrink()
+            : Column(key: Key(key), children: [BannerCarousel(banners), const SizedBox(height: SoukSpace.s5)]);
+      case 'category_grid':
+        return section(_CategoryGrid(asMapList(b['categories']).map(Category.new).toList()));
+      case 'product_carousel':
+        return ProductStrip(key: Key(key), keyPrefix: key, title: title, items: products);
+      case 'product_grid':
+        return products.isEmpty ? const SizedBox.shrink() : section(ProductGrid(products, soldLabel: l.sold, onTap: onTap));
+      case 'recommended':
+        return ProductStrip(
+            key: Key(key), keyPrefix: 'recommended', title: title.isEmpty ? l.recommendedForYou : title, items: ref.watch(recommendedProvider).value ?? const []);
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+}
+
+/// Category tiles (3 across): picture or initial over the name; tap = `/c/<slug>`.
+class _CategoryGrid extends StatelessWidget {
+  const _CategoryGrid(this.categories);
+
+  final List<Category> categories;
+
+  @override
+  Widget build(BuildContext context) => GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 3,
+        mainAxisSpacing: SoukSpace.s3,
+        crossAxisSpacing: SoukSpace.s3,
+        childAspectRatio: .9,
+        children: [
+          for (final c in categories)
+            InkWell(
+              key: Key('home-category-${c.slug}'),
+              onTap: () => context.push('/c/${Uri.encodeComponent(c.slug)}'),
+              borderRadius: BorderRadius.circular(SoukRadius.card),
+              child: Column(children: [
+                Expanded(child: AspectRatio(aspectRatio: 1, child: ProductImage(c.image))),
+                const SizedBox(height: SoukSpace.s1),
+                Text(c.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: SoukText.meta),
+              ]),
+            ),
+        ],
+      );
 }
 
 /// Swipeable banners (web home: 3:1 artwork, paper dots, 6 s auto-advance,
@@ -148,7 +301,10 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   child: GestureDetector(
                     key: Key('home-banner-${b.id}'),
                     onTap: link == null ? null : () => context.push(link),
-                    child: ProductImage(b.image, radius: 0),
+                    child: Stack(fit: StackFit.expand, children: [
+                      ProductImage(b.image, radius: 0),
+                      if (b.subtitle != null || b.ctaLabel != null) _BannerText(b),
+                    ]),
                   ),
                 );
               },
@@ -183,6 +339,37 @@ class _BannerCarouselState extends State<BannerCarousel> {
       ),
     );
   }
+}
+
+/// Subtitle and button text over the banner, on a dark gradient so the picture stays readable.
+class _BannerText extends StatelessWidget {
+  const _BannerText(this.b);
+
+  final HomeBanner b;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [Colors.black.withValues(alpha: .65), Colors.transparent]),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(SoukSpace.s3),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              if (b.subtitle != null)
+                Text(b.subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis, style: SoukText.meta.copyWith(color: SoukColors.onDark)),
+              if (b.ctaLabel != null) ...[
+                const SizedBox(height: SoukSpace.s2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s3, vertical: SoukSpace.s1),
+                  decoration: BoxDecoration(color: SoukColors.paper, borderRadius: BorderRadius.circular(SoukRadius.pill)),
+                  child: Text(b.ctaLabel!, style: SoukText.meta.copyWith(color: SoukColors.emerald)),
+                ),
+              ],
+            ]),
+          ),
+        ),
+      );
 }
 
 /// Live flash sale (web `/flash-sale`): heading + "Ends in hh:mm:ss" pill,
@@ -300,6 +487,35 @@ class _FlashCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// `/flash-sale` (a banner link): the live deals from `GET home`, same cards as the strip.
+class FlashSaleScreen extends ConsumerWidget {
+  const FlashSaleScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final home = ref.watch(homeProvider);
+    final f = home.value;
+    return SoukPage(
+      title: l.flashSale,
+      scrollable: true,
+      fromCache: f?.fromCache ?? false,
+      cachedAt: f?.fetchedAt,
+      body: home.when(
+        skipLoadingOnRefresh: true,
+        loading: () => const SoukSkeleton.cards(rows: 2),
+        error: (e, _) => ErrorPane(error: e, onRetry: () => ref.invalidate(homeProvider), retryLabel: l.retry),
+        data: (f) {
+          final live = f.flashEndsAt != null && f.flashEndsAt!.isAfter(DateTime.now());
+          return !live || f.flashItems.isEmpty
+              ? SoukEmptyState(key: const Key('flash-empty'), title: l.flashSaleEmpty)
+              : ProductGrid([for (final i in f.flashItems) i.product], soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}'));
+        },
       ),
     );
   }

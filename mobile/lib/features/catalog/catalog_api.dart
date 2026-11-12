@@ -33,7 +33,10 @@ class HomeFeed {
         categories = asMapList(json['categories']).map(Category.new).toList(),
         banners = asMapList(json['banners']).map(HomeBanner.new).where((b) => b.image != null).toList(),
         flashEndsAt = asDate(asMap(json['flash_sale'])['ends_at']),
-        flashItems = asMapList(asMap(json['flash_sale'])['products']).map(FlashItem.new).toList();
+        flashItems = asMapList(asMap(json['flash_sale'])['products']).map(FlashItem.new).toList(),
+        blocks = json['blocks'] is List ? asMapList(json['blocks']) : null,
+        announcement = json['announcement'] is Map ? asMap(json['announcement']) : null,
+        hero = json['hero'] is Map ? asMap(json['hero']) : null;
 
   final List<Product> featured;
   final List<Category> categories;
@@ -42,6 +45,11 @@ class HomeFeed {
   /// Null when no sale is live (`flash_sale: null`).
   final DateTime? flashEndsAt;
   final List<FlashItem> flashItems;
+
+  /// The admin's home sections, in order; null = older server (fixed layout).
+  final List<Map<String, dynamic>>? blocks;
+  final Map<String, dynamic>? announcement;
+  final Map<String, dynamic>? hero;
   final bool fromCache;
   final DateTime? fetchedAt;
 }

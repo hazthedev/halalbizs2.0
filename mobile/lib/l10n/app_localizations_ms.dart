@@ -1907,22 +1907,29 @@ class AppLocalizationsMs extends AppLocalizations {
   String get legalAndAbout => 'Undang-undang & tentang';
 
   @override
-  String get legalAboutUs => 'Tentang kami';
+  String get contactSupport => 'Hubungi sokongan';
 
   @override
-  String get legalTrustSafety => 'Kepercayaan & keselamatan';
+  String get helpEmpty => 'Belum ada artikel bantuan';
 
   @override
-  String get legalFaq => 'Soalan lazim';
+  String get pagesEmpty => 'Belum ada halaman';
 
   @override
-  String get legalRefundPolicy => 'Dasar bayaran balik';
+  String get flashSaleEmpty => 'Tiada jualan kilat sekarang';
 
   @override
-  String get legalTerms => 'Terma dan syarat';
+  String get updateRequiredTitle => 'Kemas kini diperlukan';
 
   @override
-  String get legalPrivacy => 'Dasar privasi';
+  String get updateRequiredBody =>
+      'Sila kemas kini HalalBizs untuk terus membeli-belah.';
+
+  @override
+  String get maintenanceTitle => 'Kami akan kembali tidak lama lagi';
+
+  @override
+  String get tryAgain => 'Cuba lagi';
 
   @override
   String get helpAndSupport => 'Bantuan & sokongan';

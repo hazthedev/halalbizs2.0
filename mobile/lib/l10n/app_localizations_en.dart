@@ -1907,22 +1907,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get legalAndAbout => 'Legal & about';
 
   @override
-  String get legalAboutUs => 'About us';
+  String get contactSupport => 'Contact support';
 
   @override
-  String get legalTrustSafety => 'Trust & safety';
+  String get helpEmpty => 'No help articles yet';
 
   @override
-  String get legalFaq => 'FAQ';
+  String get pagesEmpty => 'No pages yet';
 
   @override
-  String get legalRefundPolicy => 'Refund policy';
+  String get flashSaleEmpty => 'No flash sale right now';
 
   @override
-  String get legalTerms => 'Terms & conditions';
+  String get updateRequiredTitle => 'Update required';
 
   @override
-  String get legalPrivacy => 'Privacy policy';
+  String get updateRequiredBody => 'Please update HalalBizs to keep shopping.';
+
+  @override
+  String get maintenanceTitle => 'We will be back soon';
+
+  @override
+  String get tryAgain => 'Try again';
 
   @override
   String get helpAndSupport => 'Help & support';

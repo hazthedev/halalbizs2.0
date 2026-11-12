@@ -9,13 +9,13 @@ import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../messages/conversations_screen.dart';
 import '../messages/messages_api.dart';
+import '../pages/cms_pages.dart';
 import 'account_api.dart';
 import '../orders/orders_api.dart';
 import 'addresses_screen.dart';
 import 'coins_screen.dart';
 import 'delete_account_screen.dart';
 import 'followed_shops_screen.dart';
-import 'legal_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'web_link.dart';
@@ -117,7 +117,7 @@ class AccountScreen extends ConsumerWidget {
                 trailing: unreadMessages > 0 ? SoukBadge('$unreadMessages', status: 'sale') : null,
                 onTap: () => context.push('/account/messages'),
               ),
-              SoukRow(key: const Key('account-support'), icon: FontAwesomeIcons.headset, label: l.helpAndSupport, onTap: () => openWebPage(context, ref, 'support')),
+              SoukRow(key: const Key('account-support'), icon: FontAwesomeIcons.headset, label: l.helpAndSupport, onTap: () => context.push('/help')),
               SoukRow(key: const Key('account-legal'), icon: FontAwesomeIcons.fileLines, label: l.legalAndAbout, onTap: () => context.push('/account/legal')),
               SoukRow(key: const Key('account-language'), icon: FontAwesomeIcons.language, label: l.language, onTap: () => context.push('/account/language')),
             ]),

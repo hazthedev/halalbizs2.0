@@ -18,6 +18,7 @@ import '../features/home/home_screen.dart';
 import '../features/messages/messages_api.dart';
 import '../features/orders/orders_api.dart';
 import '../features/orders/orders_screen.dart';
+import '../features/pages/cms_pages.dart';
 import '../features/seller_dashboard/seller_dashboard_screen.dart';
 import '../features/seller_earnings/seller_earnings_screen.dart';
 import '../features/seller_orders/seller_orders_screen.dart';
@@ -135,6 +136,10 @@ RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
         StatefulShellBranch(routes: [
           GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
           GoRoute(path: '/featured', builder: (_, _) => const FeaturedScreen()),
+          GoRoute(path: '/flash-sale', builder: (_, _) => const FlashSaleScreen()),
+          GoRoute(path: '/page/:slug', builder: (_, s) => CmsDocScreen(path: 'pages/${Uri.encodeComponent(s.pathParameters['slug']!)}')),
+          GoRoute(path: '/help', builder: (_, _) => const HelpScreen()),
+          GoRoute(path: '/help/:id', builder: (_, s) => CmsDocScreen(path: 'help/${Uri.encodeComponent(s.pathParameters['id']!)}')),
           GoRoute(path: '/p/:slug', builder: (_, s) => ProductScreen(slug: s.pathParameters['slug']!)),
           GoRoute(path: '/p/:slug/reviews', builder: (_, s) => ReviewsScreen(slug: s.pathParameters['slug']!)),
           GoRoute(path: '/certificate/:number', builder: (_, s) => CertificateRecordScreen(number: s.pathParameters['number']!)),
@@ -143,7 +148,7 @@ RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
           GoRoute(path: '/c/:slug', builder: (_, s) => CategoryScreen(slug: s.pathParameters['slug']!)),
         ]),
         StatefulShellBranch(routes: [
-          GoRoute(path: '/search', builder: (_, _) => const SearchScreen()),
+          GoRoute(path: '/search', builder: (_, s) => SearchScreen(key: ValueKey(s.uri.query), q: s.uri.queryParameters['q'])),
         ]),
         StatefulShellBranch(routes: [
           GoRoute(path: '/cart', builder: (_, _) => const CartScreen()),
