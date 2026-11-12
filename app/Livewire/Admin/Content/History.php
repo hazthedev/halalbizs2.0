@@ -27,8 +27,6 @@ class History extends Component
     {
         $this->type = (string) request()->query('type', $this->type);
         $this->id = (int) request()->query('id', $this->id);
-
-        $this->subject();
     }
 
     public function restore(int $versionId, bool $publish = false): void
@@ -52,12 +50,13 @@ class History extends Component
 
     public function render()
     {
-        $subject = $this->subject();
-        $versions = $subject->versions()->with('publisher')->get();
+        // Opened without an item (or one that is gone): an empty list, not an error page.
+        $subject = isset(ContentDrafts::SUBJECTS[$this->type]) ? ContentDrafts::SUBJECTS[$this->type]::find($this->id) : null;
+        $versions = $subject?->versions()->with('publisher')->get() ?? collect();
 
         return view('livewire.admin.content.history', [
-            'name' => $this->name($subject),
-            'hasDraft' => $subject->draft()->exists(),
+            'name' => $subject === null ? '' : $this->name($subject),
+            'hasDraft' => (bool) $subject?->draft()->exists(),
             // Newest first; each row lists the fields that differ from the version before it.
             'rows' => $versions->values()->map(fn (ContentVersion $version, int $index) => [
                 'version' => $version,

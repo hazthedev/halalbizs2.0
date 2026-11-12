@@ -1,5 +1,5 @@
 <div class="space-y-4">
-    <x-ui.section-heading :title="__('History').': '.$name" as="h1" />
+    <x-ui.section-heading :title="$name === '' ? __('History') : __('History').': '.$name" as="h1" />
     <p class="text-[13px] text-ink-soft">
         {{ __('Every publish of this item, newest first. Restore brings a version back as a draft; shoppers see it only after it is published.') }}
         @if ($hasDraft)
