@@ -21,8 +21,8 @@ class ContentVersion extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    /** Collections a subject may have (Banner: image, image_vi, video; ThemeAsset: image; Page: share_image). */
-    public const MEDIA = ['image', 'image_vi', 'video', 'share_image'];
+    /** Collections a subject may have (Banner: image, image_vi, video; ThemeAsset: image; Page: share_image; HomeSection: tile_1..4). */
+    public const MEDIA = ['image', 'image_vi', 'video', 'share_image', 'tile_1', 'tile_2', 'tile_3', 'tile_4'];
 
     protected $guarded = [];
 
@@ -43,6 +43,7 @@ class ContentVersion extends Model implements HasMedia
 
         $this->addMediaConversion('card')->width(1600)->performOnCollections('image', 'image_vi');
         $this->addMediaConversion('small')->width(800)->format('webp')->performOnCollections('image', 'image_vi');
+        $this->addMediaConversion('tile')->width(800)->performOnCollections(...HomeSection::tileCollections());
     }
 
     protected function casts(): array
