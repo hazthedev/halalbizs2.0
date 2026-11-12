@@ -40,14 +40,18 @@ class HomeLayout
 
     /**
      * Active sections in admin order, each with its data. Empty sections
-     * disappear, except the self-contained ones.
+     * disappear, except the self-contained ones. $for ('web' or 'app') drops
+     * sections the admin set to the other side only.
      *
      * @param  array<int, int>  $recentlyViewedIds
      * @return BaseCollection<int, array{section: HomeSection, data: Collection}>
      */
-    public function sections(array $recentlyViewedIds = []): BaseCollection
+    public function sections(array $recentlyViewedIds = [], string $for = 'web'): BaseCollection
     {
+        $other = $for === 'web' ? 'app' : 'web';
+
         return app(ContentDrafts::class)->visible(HomeSection::class)
+            ->reject(fn (HomeSection $section) => $section->show_on === $other)
             ->map(fn (HomeSection $section) => [
                 'section' => $section,
                 'data' => $this->sectionData($section, $recentlyViewedIds),
@@ -106,7 +110,7 @@ class HomeLayout
     public function forApp(string $locale): array
     {
         $build = function () use ($locale) {
-            $rows = $this->sections();
+            $rows = $this->sections(for: 'app');
             $theme = app(ThemeSettings::class);
             $heroUrl = $this->heroUrl($theme);
 
