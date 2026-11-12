@@ -2737,5 +2737,18 @@
     "Throw away": "Buang",
     "Web preview": "Pratonton web",
     "Web": "Web",
-    "drafts are shown here. Shoppers do not see this yet.": "draf ditunjukkan di sini. Pembeli belum melihatnya."
+    "drafts are shown here. Shoppers do not see this yet.": "draf ditunjukkan di sini. Pembeli belum melihatnya.",
+    "Restored. It is live now.": "Dipulihkan. Kini disiarkan.",
+    "Restored as a draft. It goes live when published.": "Dipulihkan sebagai draf. Ia disiarkan apabila diterbitkan.",
+    "Every publish of this item, newest first. Restore brings a version back as a draft; shoppers see it only after it is published.": "Setiap penerbitan item ini, yang terbaharu dahulu. Pulihkan membawa balik satu versi sebagai draf; pembeli melihatnya hanya selepas ia diterbitkan.",
+    "This item has a draft waiting. Restoring replaces that draft.": "Item ini ada draf yang menunggu. Memulihkan akan menggantikan draf itu.",
+    "No history yet": "Belum ada sejarah",
+    "History starts with the first change published after drafts were introduced.": "Sejarah bermula dengan perubahan pertama yang diterbitkan selepas draf diperkenalkan.",
+    "By": "Oleh",
+    "What changed": "Apa yang berubah",
+    "Before drafts were introduced": "Sebelum draf diperkenalkan",
+    "Deleted account": "Akaun dipadam",
+    "Restore as draft": "Pulihkan sebagai draf",
+    "Put this version live right now, without a draft?": "Siarkan versi ini sekarang juga, tanpa draf?",
+    "Restore and publish": "Pulihkan dan terbitkan"
 }

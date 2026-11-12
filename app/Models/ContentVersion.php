@@ -36,6 +36,11 @@ class ContentVersion extends Model implements HasMedia
     /** Same copies the subjects make, so a preview draws like the live page. */
     public function registerMediaConversions(?Media $media = null): void
     {
+        // History copies are kept for a restore, not shown: no extra sizes for them.
+        if ($this->status === 'published') {
+            return;
+        }
+
         $this->addMediaConversion('card')->width(1600)->performOnCollections('image', 'image_vi');
         $this->addMediaConversion('small')->width(800)->format('webp')->performOnCollections('image', 'image_vi');
     }
@@ -51,6 +56,11 @@ class ContentVersion extends Model implements HasMedia
     public function subject(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function publisher(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'published_by');
     }
 
     public function author(): BelongsTo
