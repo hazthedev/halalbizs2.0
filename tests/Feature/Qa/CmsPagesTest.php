@@ -53,6 +53,7 @@ function cmsSaveAndFetch(Page $page, string $body): string
         ->set('body.en', $body)
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     return test()->get('/page/'.$page->slug)->getContent();
 }
@@ -81,6 +82,7 @@ it('renders optional locale bodies and falls back to English when one is cleared
         ->set('body.vi', '<p>NỘI-DUNG-TIẾNG-VIỆT</p>')
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     // The locale has to come from the SESSION — SetLocale middleware resolves it
     // per request and overwrites anything app()->setLocale() set beforehand.
@@ -97,6 +99,7 @@ it('renders optional locale bodies and falls back to English when one is cleared
         ->set('body.vi', '')
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     expect(test()->withSession(['locale' => 'ms'])->get('/page/qa-page')->getContent())
         ->toContain('ENGLISH-BODY');
@@ -111,6 +114,7 @@ it('takes an unpublished page off the storefront', function () {
     test()->get('/page/qa-page')->assertOk();
 
     Livewire::actingAs(cmsAdmin())->test(Pages::class)->call('toggleActive', $page->id);
+    publishDrafts();
 
     expect($page->fresh()->is_active)->toBeFalse();
     test()->get('/page/qa-page')->assertNotFound();
@@ -120,6 +124,7 @@ it('refuses to unpublish terms and privacy', function (string $slug) {
     $page = cmsPage($slug);
 
     Livewire::actingAs(cmsAdmin())->test(Pages::class)->call('toggleActive', $page->id);
+    publishDrafts();
 
     expect($page->fresh()->is_active)->toBeTrue();
     test()->get('/page/'.$slug)->assertOk();
@@ -137,6 +142,7 @@ it('keeps a system page slug locked even when the form posts a new one', functio
         ->set('body.en', '<p>still terms</p>')
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     expect($page->fresh()->slug)->toBe('terms');
     test()->get('/page/terms')->assertOk();
@@ -160,6 +166,7 @@ it('moves a custom page when its slug changes', function () {
         ->set('slug', 'new-slug')
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     test()->get('/page/old-slug')->assertNotFound();
     test()->get('/page/new-slug')->assertOk();
@@ -308,6 +315,7 @@ it('rejects a body past the column limit instead of truncating it', function () 
         ->set('body.en', str_repeat('a', 65001))
         ->call('save')
         ->assertHasErrors(['body.en']);
+    publishDrafts();
 
     expect($page->fresh()->getTranslation('body', 'en'))->toBe('<p>original body</p>');
 });
@@ -334,6 +342,7 @@ it('publishes an edited help article to the public page', function () {
         ->set('body.en', '<h2>New</h2><p>ARTICLE-MARKER-7</p>')
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     $html = test()->get('/help/article/'.$article->id)->getContent();
 
@@ -349,6 +358,7 @@ it('takes an unpublished help article off the storefront', function () {
     Livewire::actingAs(cmsAdmin())
         ->test(Articles::class)
         ->call('toggleActive', $article->id);
+    publishDrafts();
 
     test()->get('/help/article/'.$article->id)->assertNotFound();
 });
@@ -362,6 +372,7 @@ it('does not lose a help article body to broken markup either', function () {
         ->set('body.en', '</div><p>ARTICLE-KEEP-ME</p>')
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     expect($article->fresh()->getTranslation('body', 'en'))->toContain('ARTICLE-KEEP-ME');
     expect(test()->get('/help/article/'.$article->id)->getContent())->toContain('ARTICLE-KEEP-ME');

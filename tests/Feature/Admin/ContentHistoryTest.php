@@ -11,6 +11,7 @@ use App\Models\Banner;
 use App\Models\HelpArticle;
 use App\Models\HomeSection;
 use App\Models\Page;
+use App\Models\ThemeAsset;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
@@ -37,7 +38,8 @@ test('editing a page records who changed it, with the old and new text', functio
         ->set('title.en', 'About HalalBizs')
         ->set('body.en', '<p>New</p>')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'page', $page->id);
 
     $entry = Activity::where('subject_type', Page::class)->where('event', 'updated')->sole();
 
@@ -55,8 +57,8 @@ test('banner, home section and help article changes are recorded too', function 
     $article = HelpArticle::create(['category' => HelpCategory::Buying, 'title' => ['en' => 'Track'], 'body' => ['en' => '<p>x</p>'], 'position' => 1, 'is_active' => true]);
     Activity::query()->delete(); // only what the admin does next
 
-    Livewire::actingAs($admin)->test(Banners::class)->call('toggleActive', $banner->id);
-    Livewire::actingAs($admin)->test(HomeSections::class)->call('toggleActive', $section->id);
+    Livewire::actingAs($admin)->test(Banners::class)->call('toggleActive', $banner->id)->call('publishDraft', 'banner', $banner->id);
+    Livewire::actingAs($admin)->test(HomeSections::class)->call('toggleActive', $section->id)->call('publishDraft', 'section', $section->id);
     Livewire::actingAs($admin)->test(Articles::class)->call('delete', $article->id);
 
     expect(Activity::where('causer_id', $admin->id)->orderBy('id')->get()->map(fn (Activity $a) => [class_basename($a->subject_type), $a->event])->all())
@@ -72,7 +74,8 @@ test('saving the announcement bar records the settings that changed', function (
         ->set('announcementEnabled', true)
         ->set('announcementTextEn', 'Free shipping this week')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'theme', ThemeAsset::hero()->id);
 
     $entry = Activity::where('log_name', 'theme')->sole();
 
@@ -87,7 +90,7 @@ test('the audit log lists content changes and filters by content type', function
     $page = Page::create(['slug' => 'about', 'title' => ['en' => 'About us'], 'body' => ['en' => '<p>Old</p>'], 'is_active' => true]);
     Banner::create(['title' => ['en' => 'Raya'], 'position' => 1, 'is_active' => true]);
 
-    Livewire::actingAs($admin)->test(Pages::class)->call('toggleActive', $page->id);
+    Livewire::actingAs($admin)->test(Pages::class)->call('toggleActive', $page->id)->call('publishDraft', 'page', $page->id);
 
     Livewire::actingAs($admin)->test(AuditLog::class)
         ->assertSee('Aisyah Editor')

@@ -7,6 +7,7 @@ use App\Http\Middleware\ApiVerified;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureSeller;
 use App\Http\Middleware\HandleUrlRedirects;
+use App\Http\Middleware\PreviewDrafts;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SellerApi;
 use App\Http\Middleware\SetDisplayCurrency;
@@ -44,12 +45,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SetLocale::class,
             SetDisplayCurrency::class,
+            PreviewDrafts::class,
         ]);
 
         // The API's stateless twin of the two above: Accept-Language and
         // X-Display-Currency headers instead of the session (mobile plan §1).
         $middleware->api(append: [
             ApiLocale::class,
+            PreviewDrafts::class,
         ]);
 
         // SecurityHeaders is registered on the application's GLOBAL

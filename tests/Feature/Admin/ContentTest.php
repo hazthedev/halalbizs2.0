@@ -47,7 +47,8 @@ test('admin creates a banner with image, schedule, and translations', function (
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
         ->set('imageVi', UploadedFile::fake()->image('banner-vi.jpg', 1200, 400))
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'banner', Banner::sole()->id); // a save is a draft; the banner counts once published
 
     $banner = Banner::sole();
 
@@ -75,7 +76,8 @@ test('a banner video saves and renders as an autoplaying slide on the home page'
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
         ->set('video', UploadedFile::fake()->create('promo.mp4', 2048, 'video/mp4'))
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'banner', Banner::sole()->id);
 
     $banner = Banner::sole();
 
@@ -141,7 +143,8 @@ test('banner image is required on create but not on edit', function () {
         ->call('edit', $banner->id)
         ->set('title.en', 'Existing — renamed')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'banner', $banner->id);
 
     expect($banner->refresh()->getTranslation('title', 'en'))->toBe('Existing — renamed');
 });
@@ -168,7 +171,9 @@ test('admin toggles, reorders, and deletes banners', function () {
     Livewire::actingAs($admin)
         ->test(Banners::class)
         ->call('toggleActive', $first->id)
-        ->call('move', $second->id, -1);
+        ->call('move', $second->id, -1)
+        ->call('publishDraft', 'banner', $first->id)
+        ->call('publishDraft', 'banner', $second->id);
 
     expect($first->refresh()->is_active)->toBeFalse()
         ->and($second->refresh()->position)->toBe(0)
@@ -188,7 +193,7 @@ test('home section payload saves with the storefront contract keys and home stil
     test()->seed(HomeSectionSeeder::class);
     $section = HomeSection::where('type', 'product_carousel')->sole();
 
-    Livewire::actingAs(contentAdmin())
+    Livewire::actingAs($admin = contentAdmin())
         ->test(HomeSections::class)
         ->call('edit', $section->id)
         ->set('title.en', 'Hot right now')
@@ -197,7 +202,8 @@ test('home section payload saves with the storefront contract keys and home stil
         ->set('source', 'top')
         ->set('limit', '6')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'section', $section->id);
 
     $section->refresh();
 
@@ -219,7 +225,8 @@ test('category grid payload keeps only the limit key', function () {
         ->call('edit', $section->id)
         ->set('limit', '4')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'section', $section->id);
 
     expect($section->refresh()->payload)->toBe(['limit' => 4]);
 
@@ -245,12 +252,14 @@ test('only missing section types can be added, and sections reorder and delete',
         ->call('addSection');
 
     $grid = HomeSection::where('type', 'product_grid')->sole();
-    expect($grid->payload)->toBe(['source' => 'top', 'limit' => 12]);
+    expect($grid->payload)->toBe(['source' => 'top', 'limit' => 12])
+        ->and($grid->is_active)->toBeFalse(); // stored hidden until a publisher publishes it
 
     Livewire::actingAs($admin)
         ->test(HomeSections::class)
         ->call('move', $grid->id, -1)
-        ->call('toggleActive', $grid->id);
+        ->call('toggleActive', $grid->id)
+        ->call('publishAllDrafts');
 
     expect($grid->refresh()->position)->toBe(0)
         ->and($grid->is_active)->toBeFalse();
@@ -277,6 +286,7 @@ test('system page slug is locked and the page cannot be deleted', function () {
         ->call('save')
         ->assertHasNoErrors()
         ->call('delete', $terms->id);
+    publishDrafts();
 
     $terms->refresh();
 
@@ -295,6 +305,7 @@ test('terms and privacy cannot be deactivated but other system pages can', funct
         ->test(Pages::class)
         ->call('toggleActive', $terms->id)
         ->call('toggleActive', $about->id);
+    publishDrafts();
 
     expect($terms->refresh()->is_active)->toBeTrue()
         ->and($about->refresh()->is_active)->toBeFalse();
@@ -309,6 +320,7 @@ test('page body is sanitized to the allowed tag list on save', function () {
         ->set('body.en', '<script>alert(1)</script><p>Ships in <strong>2 days</strong>.</p><iframe src="x"></iframe><h2>Zones</h2>')
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     $page = Page::where('slug', 'shipping-guide')->sole();
 

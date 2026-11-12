@@ -2700,5 +2700,17 @@
     "JPG or PNG, up to 4 MB. Wide picture, 3 times as wide as tall, at least 1200 pixels wide (e.g. 1500 × 500).": "JPG hoặc PNG, tối đa 4 MB. Ảnh ngang, rộng gấp 3 lần chiều cao, rộng ít nhất 1200 pixel (ví dụ 1500 × 500).",
     "Heading": "Tiêu đề",
     "Small heading": "Tiêu đề nhỏ",
-    "Link address (leave empty to remove the link)": "Địa chỉ liên kết (để trống để xóa liên kết)"
+    "Link address (leave empty to remove the link)": "Địa chỉ liên kết (để trống để xóa liên kết)",
+    "Draft thrown away": "Đã bỏ bản nháp",
+    "Phone preview": "Xem trước trên điện thoại",
+    "Preview": "Xem trước",
+    "Publish all": "Xuất bản tất cả",
+    "Published. It is live now.": "Đã xuất bản. Hiện đang hiển thị.",
+    "Saved as a draft. It goes live when published.": "Đã lưu bản nháp. Nội dung sẽ hiển thị khi được xuất bản.",
+    "This is the real page with drafts switched on. Shoppers do not see it until a publisher publishes.": "Đây là trang thật với bản nháp được bật. Người mua chỉ thấy sau khi người xuất bản xuất bản.",
+    "Throw away this draft? The live version stays as it is.": "Bỏ bản nháp này? Phiên bản đang hiển thị giữ nguyên.",
+    "Throw away": "Bỏ",
+    "Web preview": "Xem trước trên web",
+    "Web": "Web",
+    "drafts are shown here. Shoppers do not see this yet.": "bản nháp được hiển thị ở đây. Người mua chưa thấy nội dung này."
 }

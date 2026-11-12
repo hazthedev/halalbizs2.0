@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasDrafts;
 use App\Models\Concerns\LogsContentChanges;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,6 +12,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Page extends Model
 {
+    use HasDrafts;
     use HasFactory, HasTranslations, LogsContentChanges;
 
     public array $translatable = ['title', 'body'];

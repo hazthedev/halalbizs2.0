@@ -4,6 +4,7 @@ namespace App\Livewire\Storefront\Help;
 
 use App\Enums\HelpCategory;
 use App\Models\HelpArticle;
+use App\Services\ContentDrafts;
 use App\Support\JsonSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
@@ -23,11 +24,16 @@ class Index extends Component
     public function render()
     {
         $locale = app()->getLocale();
+        $drafts = app(ContentDrafts::class);
         $query = HelpArticle::query()->active();
 
         $term = trim($this->search);
 
-        if ($term !== '') {
+        if ($drafts->previewing) {
+            // A preview searches the drafted words: in memory, over the few articles there are.
+            $articles = $drafts->visible(HelpArticle::class)->filter(fn (HelpArticle $article) => $term === ''
+                || collect([$locale, 'en'])->contains(fn ($lang) => mb_stripos($article->getTranslation('title', $lang, false).' '.$article->getTranslation('body', $lang, false), $term) !== false));
+        } elseif ($term !== '') {
             // M-19: title/body are translatable JSON, so on MySQL the arrow
             // operator returns a BINARY-collated value and every lowercase
             // query matched nothing. This is the only search box on /help.
@@ -44,7 +50,7 @@ class Index extends Component
             });
         }
 
-        $articles = $query->orderBy('position')->orderBy('id')->get();
+        $articles ??= $query->orderBy('position')->orderBy('id')->get();
 
         $groups = collect(HelpCategory::cases())
             ->map(fn (HelpCategory $category) => [

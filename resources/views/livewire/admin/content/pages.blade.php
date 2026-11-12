@@ -118,7 +118,12 @@
                                     <x-ui.badge variant="neutral" class="ml-1">{{ __('System') }}</x-ui.badge>
                                 @endif
                             </td>
-                            <td class="px-3 py-2 font-medium text-ink">{{ $page->getTranslation('title', 'en') }}</td>
+                            <td class="px-3 py-2 font-medium text-ink">
+                                {{ $page->getTranslation('title', 'en') }}
+                                @if ($page->draft !== null)
+                                    <x-ui.badge variant="warn" class="ml-1">{{ __('Draft') }}</x-ui.badge>
+                                @endif
+                            </td>
                             <td class="px-3 py-2">
                                 <button type="button" role="switch" aria-checked="{{ $page->is_active ? 'true' : 'false' }}"
                                         wire:click="toggleActive({{ $page->id }})" @disabled($isLockedActive)
@@ -132,13 +137,14 @@
                             <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">{{ $page->updated_at?->diffForHumans() }}</td>
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
+                                    <x-ui.draft-actions type="page" :id="$page->id" :draft="$page->draft" :preview-path="'/page/'.$page->slug" />
                                     <button type="button" wire:click="edit({{ $page->id }})"
                                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
-                                    @unless ($isSystem)
+                                    @if (! $isSystem && auth()->user()->can('cms.publish'))
                                         <button type="button" wire:click="delete({{ $page->id }})"
                                                 wire:confirm="{{ __('Delete this page? This cannot be undone.') }}"
                                                 class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
-                                    @endunless
+                                    @endif
                                 </div>
                             </td>
                         </tr>

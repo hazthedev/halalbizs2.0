@@ -171,6 +171,7 @@ it('does not keep event handlers or javascript: urls on an admin-authored CMS pa
         ->set('isActive', true)
         ->call('save')
         ->assertHasNoErrors();
+    publishDrafts();
 
     $html = $this->get('/page/qa-injection-page')->assertOk()->getContent();
 

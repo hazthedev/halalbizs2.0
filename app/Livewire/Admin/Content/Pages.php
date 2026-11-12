@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Content;
 
+use App\Livewire\Concerns\ManagesDrafts;
 use App\Models\Page;
+use App\Services\ContentDrafts;
 use App\Support\ContentLocales;
 use App\Support\HtmlSanitizer;
 use Illuminate\Validation\Rule;
@@ -19,6 +21,8 @@ use Livewire\Component;
 #[Layout('layouts.admin')]
 class Pages extends Component
 {
+    use ManagesDrafts;
+
     public const SYSTEM_SLUGS = ['about', 'trust-safety', 'terms', 'privacy', 'refund-policy', 'faq'];
 
     /** Legally required at all times — deactivation blocked. */
@@ -47,7 +51,8 @@ class Pages extends Component
 
     public function edit(int $pageId): void
     {
-        $page = Page::findOrFail($pageId);
+        // An open draft is what the editor carries on with.
+        $page = app(ContentDrafts::class)->preview(Page::findOrFail($pageId));
 
         $this->resetForm();
         $this->editingId = $page->id;
@@ -65,7 +70,7 @@ class Pages extends Component
 
     public function save(): void
     {
-        $editing = $this->editingId !== null ? Page::findOrFail($this->editingId) : null;
+        $editing = $this->editingId !== null ? app(ContentDrafts::class)->preview(Page::findOrFail($this->editingId)) : null;
         $systemPage = $editing !== null && in_array($editing->slug, self::SYSTEM_SLUGS, true);
 
         $rules = [
@@ -101,15 +106,15 @@ class Pages extends Component
         ContentLocales::write($page, 'title', $this->title);
         ContentLocales::write($page, 'body', $this->body, transform: $this->sanitize(...));
 
-        $page->save();
+        app(ContentDrafts::class)->stage($page, auth()->user());
 
-        $this->dispatch('toast', message: $editing !== null ? __('Page updated') : __('Page created'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
         $this->resetForm();
     }
 
     public function toggleActive(int $pageId): void
     {
-        $page = Page::findOrFail($pageId);
+        $page = app(ContentDrafts::class)->preview(Page::findOrFail($pageId));
 
         if (in_array($page->slug, self::ALWAYS_ACTIVE_SLUGS, true)) {
             $this->dispatch('toast', message: __('Terms and privacy pages must stay published.'), type: 'error');
@@ -117,13 +122,16 @@ class Pages extends Component
             return;
         }
 
-        $page->update(['is_active' => ! $page->is_active]);
+        $page->is_active = ! $page->is_active;
+        app(ContentDrafts::class)->stage($page, auth()->user());
 
-        $this->dispatch('toast', message: $page->is_active ? __('Page published') : __('Page unpublished'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }
 
     public function delete(int $pageId): void
     {
+        $this->authorize('cms.publish');
+
         $page = Page::findOrFail($pageId);
 
         if (in_array($page->slug, self::SYSTEM_SLUGS, true)) {
@@ -144,7 +152,8 @@ class Pages extends Component
     public function render()
     {
         return view('livewire.admin.content.pages', [
-            'pages' => Page::orderBy('slug')->get(),
+            // Rows show the pending draft, so an editor sees their own work.
+            'pages' => Page::with('draft')->orderBy('slug')->get()->each(fn (Page $page) => app(ContentDrafts::class)->preview($page)),
             'editingIsSystem' => $this->editingId !== null
                 && in_array(Page::find($this->editingId)?->slug, self::SYSTEM_SLUGS, true),
         ])->title(__('Pages'));

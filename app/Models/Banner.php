@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasDrafts;
 use App\Models\Concerns\LogsContentChanges;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,6 +15,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Banner extends Model implements HasMedia
 {
+    use HasDrafts;
     use HasFactory, HasTranslations, InteractsWithMedia, LogsContentChanges;
 
     public array $translatable = ['title', 'subtitle', 'cta_label'];
@@ -74,6 +76,14 @@ class Banner extends Model implements HasMedia
         }
 
         return $media->getUrl('small').' 800w, '.$media->getUrl('card').' 1600w';
+    }
+
+    /** The same rule as the `active` scope, for a banner that carries an unsaved draft (preview). */
+    public function isActiveNow(): bool
+    {
+        return $this->is_active
+            && ($this->starts_at === null || $this->starts_at->lte(now()))
+            && ($this->ends_at === null || $this->ends_at->gte(now()));
     }
 
     #[Scope]

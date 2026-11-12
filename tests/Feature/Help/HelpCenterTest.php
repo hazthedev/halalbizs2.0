@@ -146,7 +146,9 @@ test('article page lists related articles from the same category', function () {
 // ── Admin CRUD ──────────────────────────────────────────────────────────
 
 test('admin creates a help article with translations and a sanitized body', function () {
-    Livewire::actingAs(helpCenterAdmin())
+    $admin = helpCenterAdmin();
+
+    Livewire::actingAs($admin)
         ->test(Articles::class)
         ->call('create')
         ->set('category', 'payments')
@@ -160,7 +162,12 @@ test('admin creates a help article with translations and a sanitized body', func
         ->call('save')
         ->assertHasNoErrors();
 
+    // A save is a draft: the new article is stored hidden until a publisher publishes it.
     $article = HelpArticle::sole();
+    expect($article->is_active)->toBeFalse();
+
+    Livewire::actingAs($admin)->test(Articles::class)->call('publishDraft', 'article', $article->id);
+    $article->refresh();
 
     expect($article->category->value)->toBe('payments')
         ->and($article->getTranslation('title', 'en'))->toBe('COD limits')
@@ -204,11 +211,13 @@ test('admin updates, toggles, and deletes an article', function () {
         ->call('save')
         ->assertHasNoErrors();
 
+    Livewire::actingAs($admin)->test(Articles::class)->call('publishDraft', 'article', $article->id);
+
     $article->refresh();
     expect($article->getTranslation('title', 'en'))->toBe('New title')
         ->and($article->category->value)->toBe('account');
 
-    Livewire::actingAs($admin)->test(Articles::class)->call('toggleActive', $article->id);
+    Livewire::actingAs($admin)->test(Articles::class)->call('toggleActive', $article->id)->call('publishDraft', 'article', $article->id);
     expect($article->refresh()->is_active)->toBeFalse();
 
     Livewire::actingAs($admin)->test(Articles::class)->call('delete', $article->id);
@@ -230,7 +239,8 @@ test('clearing the ms translation removes it and en remains the fallback', funct
         ->set('title.ms', '')
         ->set('body.ms', '')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'article', $article->id);
 
     $article->refresh();
     expect($article->getTranslations('title'))->not->toHaveKey('ms')

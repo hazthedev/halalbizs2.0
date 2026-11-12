@@ -2,6 +2,10 @@
 
     <x-ui.section-heading :title="__('Theme')" as="h1">
         <x-slot:actions>
+            @if ($draft !== null)
+                <x-ui.badge variant="neutral">{{ __('Draft') }}</x-ui.badge>
+            @endif
+            <x-ui.draft-actions type="theme" :id="$heroId" :draft="$draft" preview-path="/" />
             <x-ui.button variant="ghost" wire:click="resetDefaults"
                          wire:confirm="{{ __('Reset the occasion theme to defaults? The announcement, schedule, and hero image are cleared.') }}">
                 {{ __('Reset to defaults') }}
