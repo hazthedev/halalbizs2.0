@@ -162,7 +162,7 @@
                     <div wire:loading wire:target="imageVi" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                     @if ($imageVi)
                         <img src="{{ $imageVi->temporaryUrl() }}" alt="{{ __('Vietnamese banner preview') }}" class="mt-2 h-24 rounded-[var(--radius-card)] border border-line object-cover">
-                    @elseif ($editingId !== null && ($viImage = \App\Models\Banner::find($editingId)?->getFirstMediaUrl('image_vi', 'card')))
+                    @elseif ($editing && ($viImage = $editing->getFirstMediaUrl('image_vi')))
                         <div class="mt-2 flex items-center gap-3">
                             <img src="{{ $viImage }}" alt="{{ __('Vietnamese banner preview') }}" class="h-24 rounded-[var(--radius-card)] border border-line object-cover">
                             <button type="button" wire:click="removeVietnameseImage" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint">{{ __('Remove') }}</button>
@@ -180,7 +180,7 @@
                         <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('MP4 or WebM, up to 30 MB. Plays muted on loop in the home carousel; the image is the fallback.') }}</p>
                     @enderror
                     <div wire:loading wire:target="video" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
-                    @if ($editingId !== null && \App\Models\Banner::find($editingId)?->getFirstMedia('video') !== null)
+                    @if ($editing?->getFirstMedia('video') !== null)
                         <button type="button" wire:click="removeVideo"
                                 wire:confirm="{{ __('Remove the video from this banner? It falls back to the image.') }}"
                                 class="mt-2 inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
@@ -251,6 +251,9 @@
                                         <span class="flex h-10 w-20 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-line bg-paper text-ink-faint">—</span>
                                     @endif
                                     <span class="font-medium text-ink">{{ $banner->getTranslation('title', 'en') }}</span>
+                                    @if ($banner->draft)
+                                        <x-ui.badge variant="neutral">{{ __('Draft') }}</x-ui.badge>
+                                    @endif
                                 </div>
                             </td>
                             <td class="max-w-44 truncate px-3 py-2 font-mono text-[12px] text-ink-soft">{{ $banner->link_url ?? '—' }}</td>
@@ -275,6 +278,15 @@
                                 <div class="flex items-center justify-end gap-1">
                                     <button type="button" wire:click="edit({{ $banner->id }})"
                                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
+                                    @if ($banner->draft)
+                                        @can('cms.publish')
+                                            <button type="button" wire:click="publishDraft('banner', {{ $banner->id }})"
+                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Publish') }}</button>
+                                            <button type="button" wire:click="discardDraft('banner', {{ $banner->id }})"
+                                                    wire:confirm="{{ __('Throw away this draft? The live banner stays as it is.') }}"
+                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Throw away') }}</button>
+                                        @endcan
+                                    @endif
                                     <button type="button" wire:click="delete({{ $banner->id }})"
                                             wire:confirm="{{ __('Delete this banner? This cannot be undone.') }}"
                                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>

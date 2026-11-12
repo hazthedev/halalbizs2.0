@@ -55,7 +55,7 @@ test('banner, home section and help article changes are recorded too', function 
     $article = HelpArticle::create(['category' => HelpCategory::Buying, 'title' => ['en' => 'Track'], 'body' => ['en' => '<p>x</p>'], 'position' => 1, 'is_active' => true]);
     Activity::query()->delete(); // only what the admin does next
 
-    Livewire::actingAs($admin)->test(Banners::class)->call('toggleActive', $banner->id);
+    Livewire::actingAs($admin)->test(Banners::class)->call('toggleActive', $banner->id)->call('publishDraft', 'banner', $banner->id);
     Livewire::actingAs($admin)->test(HomeSections::class)->call('toggleActive', $section->id);
     Livewire::actingAs($admin)->test(Articles::class)->call('delete', $article->id);
 

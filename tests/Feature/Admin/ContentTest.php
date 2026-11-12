@@ -47,7 +47,8 @@ test('admin creates a banner with image, schedule, and translations', function (
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
         ->set('imageVi', UploadedFile::fake()->image('banner-vi.jpg', 1200, 400))
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'banner', Banner::sole()->id); // a save is a draft; the banner counts once published
 
     $banner = Banner::sole();
 
@@ -75,7 +76,8 @@ test('a banner video saves and renders as an autoplaying slide on the home page'
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
         ->set('video', UploadedFile::fake()->create('promo.mp4', 2048, 'video/mp4'))
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'banner', Banner::sole()->id);
 
     $banner = Banner::sole();
 
@@ -141,7 +143,8 @@ test('banner image is required on create but not on edit', function () {
         ->call('edit', $banner->id)
         ->set('title.en', 'Existing — renamed')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'banner', $banner->id);
 
     expect($banner->refresh()->getTranslation('title', 'en'))->toBe('Existing — renamed');
 });
@@ -168,7 +171,9 @@ test('admin toggles, reorders, and deletes banners', function () {
     Livewire::actingAs($admin)
         ->test(Banners::class)
         ->call('toggleActive', $first->id)
-        ->call('move', $second->id, -1);
+        ->call('move', $second->id, -1)
+        ->call('publishDraft', 'banner', $first->id)
+        ->call('publishDraft', 'banner', $second->id);
 
     expect($first->refresh()->is_active)->toBeFalse()
         ->and($second->refresh()->position)->toBe(0)

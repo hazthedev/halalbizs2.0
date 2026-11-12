@@ -72,7 +72,8 @@ test('a saved banner gets a small fast copy and the home page offers it to phone
         ->set('title.en', 'Raya Sale')
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1800, 600))
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'banner', Banner::sole()->id);
 
     $media = Banner::sole()->getFirstMedia('image');
 

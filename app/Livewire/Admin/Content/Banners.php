@@ -2,15 +2,18 @@
 
 namespace App\Livewire\Admin\Content;
 
+use App\Livewire\Concerns\ManagesDrafts;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\Store;
+use App\Services\ContentDrafts;
 use App\Support\ContentLocales;
 use App\Support\DisplayTime;
 use App\Support\HtmlSanitizer;
 use App\Support\ImageShape;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -27,6 +30,7 @@ use Livewire\WithFileUploads;
 #[Layout('layouts.admin')]
 class Banners extends Component
 {
+    use ManagesDrafts;
     use WithFileUploads;
 
     public bool $showForm = false;
@@ -90,7 +94,8 @@ class Banners extends Component
 
     public function edit(int $bannerId): void
     {
-        $banner = Banner::findOrFail($bannerId);
+        // An open draft is what the editor carries on with.
+        $banner = app(ContentDrafts::class)->preview(Banner::findOrFail($bannerId));
 
         $this->resetForm();
         $this->editingId = $banner->id;
@@ -147,7 +152,7 @@ class Banners extends Component
         }
 
         $banner = $this->editingId !== null
-            ? Banner::findOrFail($this->editingId)
+            ? app(ContentDrafts::class)->preview(Banner::findOrFail($this->editingId))
             : new Banner(['position' => ((int) Banner::max('position')) + 1]);
 
         $banner->fill([
@@ -161,42 +166,31 @@ class Banners extends Component
         ContentLocales::write($banner, 'subtitle', $this->subtitle, englishRequired: false);
         ContentLocales::write($banner, 'cta_label', $this->ctaLabel, englishRequired: false);
 
-        $banner->save();
+        $uploads = array_filter(['image' => $this->image, 'image_vi' => $this->imageVi, 'video' => $this->video]);
 
-        if ($this->image !== null) {
-            // singleFile collection — replaces the previous image.
-            $banner->addMedia($this->image->getRealPath())
-                ->usingFileName($this->image->getClientOriginalName())
-                ->toMediaCollection('image');
+        $draft = app(ContentDrafts::class)->stage($banner, auth()->user(), withFiles: $uploads !== []);
+
+        foreach ($uploads as $collection => $file) {
+            // singleFile collection — replaces the previous file when published.
+            $draft->addMedia($file->getRealPath())
+                ->usingFileName($file->getClientOriginalName())
+                ->toMediaCollection($collection);
         }
 
-        if ($this->imageVi !== null) {
-            $banner->addMedia($this->imageVi->getRealPath())
-                ->usingFileName($this->imageVi->getClientOriginalName())
-                ->toMediaCollection('image_vi');
-        }
-
-        if ($this->video !== null) {
-            // singleFile collection — replaces the previous video.
-            $banner->addMedia($this->video->getRealPath())
-                ->usingFileName($this->video->getClientOriginalName())
-                ->toMediaCollection('video');
-        }
-
-        $this->dispatch('toast', message: $this->editingId !== null ? __('Banner updated') : __('Banner created'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
         $this->resetForm();
     }
 
-    /** Drops the motion slide — the banner falls back to its image. */
+    /** Drops the motion slide at publish — the banner falls back to its image. */
     public function removeVideo(): void
     {
         if ($this->editingId === null) {
             return;
         }
 
-        Banner::findOrFail($this->editingId)->clearMediaCollection('video');
+        $this->stageClear('video');
 
-        $this->dispatch('toast', message: __('Banner video removed'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }
 
     public function removeVietnameseImage(): void
@@ -207,23 +201,24 @@ class Banners extends Component
             return;
         }
 
-        Banner::findOrFail($this->editingId)->clearMediaCollection('image_vi');
+        $this->stageClear('image_vi');
         $this->imageVi = null;
-        $this->dispatch('toast', message: __('Vietnamese banner image removed'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }
 
     public function toggleActive(int $bannerId): void
     {
-        $banner = Banner::findOrFail($bannerId);
-        $banner->update(['is_active' => ! $banner->is_active]);
+        $banner = app(ContentDrafts::class)->preview(Banner::findOrFail($bannerId));
+        $banner->is_active = ! $banner->is_active;
+        app(ContentDrafts::class)->stage($banner, auth()->user());
 
-        $this->dispatch('toast', message: $banner->is_active ? __('Banner enabled') : __('Banner disabled'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }
 
-    /** Swap with the neighbour, then re-index positions 0..n. */
+    /** Swap with the neighbour (as previewed, draft positions included), then re-index 0..n; only banners that move get a draft. */
     public function move(int $bannerId, int $direction): void
     {
-        $banners = Banner::orderBy('position')->orderBy('id')->get()->values();
+        $banners = $this->previewed()->values();
         $index = $banners->search(fn (Banner $banner) => $banner->id === $bannerId);
         $target = $index === false ? false : $index + ($direction < 0 ? -1 : 1);
 
@@ -235,14 +230,17 @@ class Banners extends Component
         [$ordered[$index], $ordered[$target]] = [$ordered[$target], $ordered[$index]];
 
         foreach (array_values($ordered) as $position => $banner) {
-            if ($banner->position !== $position) {
-                $banner->update(['position' => $position]);
+            if ((int) $banner->position !== $position) {
+                $banner->position = $position;
+                app(ContentDrafts::class)->stage($banner, auth()->user());
             }
         }
     }
 
     public function delete(int $bannerId): void
     {
+        $this->authorize('cms.publish');
+
         Banner::findOrFail($bannerId)->delete();
 
         if ($this->editingId === $bannerId) {
@@ -315,8 +313,28 @@ class Banners extends Component
             'pageOptions' => $this->destination === 'page'
                 ? Page::active()->orderBy('id')->get()->mapWithKeys(fn (Page $p) => [$p->slug => $p->getTranslation('title', 'en')])->all()
                 : [],
-            'banners' => Banner::with('media')->orderBy('position')->orderBy('id')->get(),
+            'banners' => $this->previewed(),
+            'editing' => $this->editingId !== null ? $this->previewed()->firstWhere('id', $this->editingId) : null,
         ])->title(__('Banners'));
+    }
+
+    /** Every banner as it would look once published, in that order. A banner without a draft is not re-queried. */
+    private function previewed(): Collection
+    {
+        $drafts = app(ContentDrafts::class);
+
+        return Banner::with(['media', 'draft.media'])->get()
+            ->map(fn (Banner $banner) => $banner->draft === null ? $banner : $drafts->preview($banner))
+            ->sortBy(fn (Banner $banner) => [(int) $banner->position, $banner->id])
+            ->values();
+    }
+
+    /** Empty a live file collection at publish, and drop what the draft holds for it. */
+    private function stageClear(string $collection): void
+    {
+        $banner = app(ContentDrafts::class)->preview(Banner::findOrFail($this->editingId));
+
+        app(ContentDrafts::class)->stage($banner, auth()->user(), clearMedia: [$collection])->clearMediaCollection($collection);
     }
 
     /** The web path this form's destination stands for; null = no link. */
