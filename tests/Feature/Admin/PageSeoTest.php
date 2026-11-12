@@ -11,7 +11,7 @@ beforeEach(fn () => $this->seed(RoleSeeder::class));
 
 function seoPage(): Page
 {
-    return Page::create(['slug' => 'shipping', 'title' => ['en' => 'Shipping guide'], 'body' => ['en' => '<p>We ship <strong>nationwide</strong> from Kuala Lumpur within two working days.</p>'], 'is_active' => true]);
+    return Page::create(['slug' => 'shipping', 'title' => ['en' => 'Shipping guide'], 'body' => ['en' => '<h2>Delivery</h2><p>We ship <strong>nationwide</strong> from Kuala Lumpur within two working days.</p>'], 'is_active' => true]);
 }
 
 // ── Item 17: search engine title, description and share picture per page ───
@@ -52,7 +52,7 @@ test('a page without search fields falls back to its title and the start of its 
 
     $html = $this->get('/page/shipping')->getContent();
 
-    expect($html)->toContain('<meta name="description" content="We ship nationwide from Kuala Lumpur within two working days.">')
+    expect($html)->toContain('<meta name="description" content="Delivery We ship nationwide from Kuala Lumpur within two working days.">')
         ->toContain('<meta property="og:title" content="Shipping guide">')
         ->not->toContain('og:image');
 });

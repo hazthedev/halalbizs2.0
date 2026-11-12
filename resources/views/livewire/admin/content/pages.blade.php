@@ -101,7 +101,7 @@
                 </fieldset>
 
                 @unless ($editingIsSystem)
-                    <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
+                    <label class="flex w-fit min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
                         <input type="checkbox" wire:model="showInFooter" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                         {{ __('Show a link to this page in the website footer') }}
                     </label>

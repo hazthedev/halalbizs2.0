@@ -43,11 +43,11 @@ class Page extends Model implements HasMedia
         return $this->getTranslation('seo_title', $locale) ?: $this->getTranslation('title', $locale);
     }
 
-    /** Description for search engines and shares: the admin's own, or the start of the page text. */
+    /** Own description, or the start of the page text (a space where a block ends, so a heading and its text do not run together). */
     public function seoDescription(string $locale): string
     {
         return $this->getTranslation('seo_description', $locale)
-            ?: Str::limit(trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($this->getTranslation('body', $locale))))), 160);
+            ?: Str::limit(trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags(preg_replace('#<(/(?:p|h\d|li|div|blockquote)|br)\b#i', ' <$1', $this->getTranslation('body', $locale)))))), 160);
     }
 
     #[Scope]
