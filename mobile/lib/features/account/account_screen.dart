@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/auth/session.dart';
 import '../../core/locale.dart';
@@ -131,6 +132,7 @@ class AccountScreen extends ConsumerWidget {
               SoukRow(key: const Key('account-language'), icon: FontAwesomeIcons.language, label: l.language, onTap: () => context.push('/account/language')),
             ]),
           ),
+          const ContactUs(),
           const SizedBox(height: SoukSpace.s4),
           SoukCard(
             padding: EdgeInsets.zero,
@@ -155,6 +157,57 @@ class AccountScreen extends ConsumerWidget {
 
   /// Web seller sign-up, already signed in (one-time link, in-app browser).
   static Future<void> _becomeSeller(BuildContext context, WidgetRef ref) => openWebPage(context, ref, 'seller-apply');
+}
+
+/// "Contact us" from `GET config` `contact` + `social` (CMS-editable). Missing
+/// keys (old server) or empty values draw nothing; social links open only as https.
+class ContactUs extends ConsumerWidget {
+  const ContactUs({super.key});
+
+  static const _social = {
+    'facebook': ('Facebook', FontAwesomeIcons.facebook),
+    'instagram': ('Instagram', FontAwesomeIcons.instagram),
+    'tiktok': ('TikTok', FontAwesomeIcons.tiktok),
+    'youtube': ('YouTube', FontAwesomeIcons.youtube),
+    'x': ('X', FontAwesomeIcons.xTwitter),
+  };
+
+  static void _open(Uri u) => launchUrl(u, mode: LaunchMode.externalApplication);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cfg = ref.watch(configProvider).value;
+    if (cfg == null) return const SizedBox.shrink();
+    String? text(Map m, String k) {
+      final v = m[k];
+      return v is String && v.trim().isNotEmpty ? v.trim() : null;
+    }
+
+    final c = cfg['contact'] is Map ? cfg['contact'] as Map : const {};
+    final s = cfg['social'] is Map ? cfg['social'] as Map : const {};
+    final email = text(c, 'email'), phone = text(c, 'phone'), address = text(c, 'address');
+    final wa = (text(c, 'whatsapp') ?? '').replaceAll(RegExp(r'\D'), '');
+    final rows = <Widget>[
+      if (email != null)
+        SoukRow(key: const Key('account-contact-email'), icon: FontAwesomeIcons.envelope, label: email, onTap: () => _open(Uri(scheme: 'mailto', path: email))),
+      if (phone != null)
+        SoukRow(key: const Key('account-contact-phone'), icon: FontAwesomeIcons.phone, label: phone, onTap: () => _open(Uri(scheme: 'tel', path: phone))),
+      if (wa.isNotEmpty)
+        SoukRow(key: const Key('account-contact-whatsapp'), icon: FontAwesomeIcons.whatsapp, label: text(c, 'whatsapp')!, onTap: () => _open(Uri.https('wa.me', '/$wa'))),
+      if (address != null) SoukRow(key: const Key('account-contact-address'), icon: FontAwesomeIcons.locationDot, label: address),
+      for (final e in _social.entries)
+        if (Uri.tryParse(text(s, e.key) ?? '') case final u? when u.scheme == 'https' && u.host.isNotEmpty)
+          SoukRow(key: Key('account-social-${e.key}'), icon: e.value.$2, label: e.value.$1, onTap: () => _open(u)),
+    ];
+    if (rows.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: SoukSpace.s4),
+      child: Column(key: const Key('account-contact'), crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(padding: const EdgeInsets.only(bottom: SoukSpace.s2), child: Text(context.l10n.contactUs, style: SoukText.eyebrow)),
+        SoukCard(padding: EdgeInsets.zero, child: Column(children: rows)),
+      ]),
+    );
+  }
 }
 
 /// Four order shortcuts with counts (web account dashboard: To Pay / To Ship /

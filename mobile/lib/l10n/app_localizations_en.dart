@@ -1910,6 +1910,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get previewDrafts => 'Preview drafts';
 
   @override
+  String get contactUs => 'Contact us';
+
+  @override
   String get previewStrip => 'Preview: drafts shown';
 
   @override

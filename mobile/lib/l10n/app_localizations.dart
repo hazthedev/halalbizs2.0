@@ -3506,6 +3506,12 @@ abstract class AppLocalizations {
   /// **'Preview drafts'**
   String get previewDrafts;
 
+  /// No description provided for @contactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us'**
+  String get contactUs;
+
   /// No description provided for @previewStrip.
   ///
   /// In en, this message translates to:
