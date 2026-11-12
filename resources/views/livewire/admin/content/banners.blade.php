@@ -69,7 +69,64 @@
                     <x-ui.input :label="__('Button text (Vietnamese)')" wire:model="ctaLabel.vi" :error="$errors->first('ctaLabel.vi')" :hint="__('Optional — English is shown when empty.')" />
                 </div>
 
-                <x-ui.input :label="__('Link URL')" wire:model="linkUrl" placeholder="/c/snacks" :error="$errors->first('linkUrl')" :hint="__('Optional — where the banner clicks through to.')" />
+                {{-- Where the banner goes: picked from a list so the same choice
+                     opens on the website and in the phone app. --}}
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="banner-destination" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('When tapped, open') }}</label>
+                        <select id="banner-destination" wire:model.live="destination"
+                                class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                            <option value="none">{{ __('Nothing (no link)') }}</option>
+                            <option value="product">{{ __('A product') }}</option>
+                            <option value="store">{{ __('A store') }}</option>
+                            <option value="category">{{ __('A category') }}</option>
+                            <option value="flash_sale">{{ __('The flash sale') }}</option>
+                            <option value="page">{{ __('A page (terms, FAQ…)') }}</option>
+                            <option value="help">{{ __('The help centre') }}</option>
+                            <option value="search">{{ __('Search results') }}</option>
+                            <option value="custom">{{ __('A web address (website only)') }}</option>
+                        </select>
+                        <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('Every choice except a web address also opens inside the phone app.') }}</p>
+                    </div>
+
+                    <div wire:key="destination-{{ $destination }}">
+                        @if (in_array($destination, ['product', 'store'], true))
+                            <x-ui.input :label="$destination === 'product' ? __('Find the product') : __('Find the store')"
+                                        wire:model.live.debounce.300ms="destinationQuery" autocomplete="off"
+                                        :placeholder="__('Type part of the name')"
+                                        :error="$errors->first('destinationSlug')"
+                                        :hint="$destinationSlug !== '' ? __('Picked. Type again to change it.') : __('Type at least 2 letters, then pick from the list.')" />
+                            @if ($destinationMatches !== [])
+                                <ul class="mt-1.5 divide-y divide-line overflow-hidden rounded-[var(--radius-control)] border border-line-strong bg-surface">
+                                    @foreach ($destinationMatches as $slug => $name)
+                                        <li wire:key="match-{{ $slug }}">
+                                            <button type="button" wire:click="chooseDestination(@js($slug))"
+                                                    class="block min-h-11 w-full px-3 py-2 text-left text-[13px] text-ink hover:bg-emerald-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald">
+                                                {{ $name }}
+                                            </button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @elseif ($destinationSlug === '' && mb_strlen(trim($destinationQuery)) >= 2)
+                                <p class="mt-1.5 text-[13px] text-ink-soft">{{ __('Nothing live matches that name.') }}</p>
+                            @endif
+                        @elseif (in_array($destination, ['category', 'page'], true))
+                            <label for="banner-destination-slug" class="mb-1.5 block text-[13px] font-medium text-ink">{{ $destination === 'category' ? __('Category') : __('Page') }}</label>
+                            <select id="banner-destination-slug" wire:model="destinationSlug"
+                                    class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                <option value="">{{ __('Choose…') }}</option>
+                                @foreach ($destination === 'category' ? $categoryOptions : $pageOptions as $slug => $name)
+                                    <option value="{{ $slug }}">{{ $name }}</option>
+                                @endforeach
+                            </select>
+                            @error('destinationSlug')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
+                        @elseif ($destination === 'search')
+                            <x-ui.input :label="__('Words to search for')" wire:model="destinationQuery" maxlength="80" placeholder="kurma ajwa" :error="$errors->first('destinationQuery')" />
+                        @elseif ($destination === 'custom')
+                            <x-ui.input :label="__('Web address')" wire:model="linkUrl" placeholder="https://…" :error="$errors->first('linkUrl')" :hint="__('The phone app cannot open this. The banner will not be tappable there.')" />
+                        @endif
+                    </div>
+                </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <x-ui.input :label="__('Starts at')" type="datetime-local" wire:model="startsAt" :error="$errors->first('startsAt')" :hint="__('Optional — blank shows immediately.')" />

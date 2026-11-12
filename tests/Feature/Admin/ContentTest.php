@@ -40,6 +40,7 @@ test('admin creates a banner with image, schedule, and translations', function (
         ->set('title.en', 'Raya Sale')
         ->set('title.ms', 'Jualan Raya')
         ->set('title.vi', 'Khuyến mãi Raya')
+        ->set('destination', 'custom')
         ->set('linkUrl', '/c/snacks')
         ->set('startsAt', '2026-06-01T00:00')
         ->set('endsAt', '2026-06-30T23:59')
