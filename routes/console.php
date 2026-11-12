@@ -23,13 +23,14 @@ Schedule::command('coins:expire')->dailyAt('01:00');
 Schedule::command('tracking:register-open')->everyFifteenMinutes()->withoutOverlapping(5);
 
 // Halal certificate expiry watch: delist products under an expired certificate,
-// restore them on renewal, nudge sellers 60 days out. Early, before the day's
+// restore them on renewal, nudge manual-certificate sellers 90 days out. Early, before the day's
 // trading — a product must not be on sale under a lapsed certificate for a
 // working day because the job runs at noon.
 Schedule::command('certificates:watch-expiry')->dailyAt('00:20');
 // Follow WHIP (read-only) for certificates it vouches for. Every 4 h, so the
 // 24 h freshness rule on the badge has five tries before it drops.
 Schedule::command('certificates:sync-whip')->everyFourHours()->withoutOverlapping(30);
+Schedule::command('certificates:remind-whip-expiry')->dailyAt('08:00')->timezone('Asia/Kuala_Lumpur')->withoutOverlapping(30);
 
 // Affiliate commission comes off hold once the return window + buffer has
 // passed. Hourly rather than daily so "unlocks 22 Aug" on the creator's

@@ -136,6 +136,7 @@ class WatchCertificateExpiry extends Command
         $nudged = 0;
 
         HalalCertificate::query()
+            ->where('source', '!=', 'whip')
             ->whereNull('renewal_notified_at')
             ->whereDate('valid_to', '>=', $today)
             ->whereDate('valid_to', '<=', $today->copy()->addDays($window))

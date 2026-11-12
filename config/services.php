@@ -2,6 +2,10 @@
 
 return [
 
+    'whip' => [
+        'renew_url' => env('WHIP_RENEW_URL', 'https://whip.wghtc.com/company_login.php'),
+    ],
+
     // Anthropic Claude — AI listing copy (M1.6) + shop concierge (M2.2).
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
