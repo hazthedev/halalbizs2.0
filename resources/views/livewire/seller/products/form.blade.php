@@ -54,9 +54,27 @@
                         <label for="description.en" class="block text-[13px] font-medium text-ink">{{ __('Description (English)') }}</label>
                         {{-- "Generate with AI" button hidden (owner, 2026-11-03). generateCopy() stays on the component. --}}
                     </div>
-                    <textarea id="description.en" wire:model="description.en" rows="6"
-                              class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
-                              placeholder="{{ __('What is it, what is it made of, how big is it…') }}"></textarea>
+                    <div wire:ignore data-description-editor="en"
+                         x-data="descriptionEditor($wire.entangle('description.en'), 'description.en', @js(__('Description (English)')))"
+                         class="overflow-hidden rounded-[var(--radius-control)] border border-line-strong bg-surface focus-within:ring-2 focus-within:ring-emerald">
+                        <div class="flex flex-wrap gap-1 border-b border-line p-1" role="toolbar" aria-label="{{ __('Text formatting') }}">
+                            @foreach (['bold' => __('Bold'), 'italic' => __('Italic'), 'bulletList' => __('Bullet list'), 'orderedList' => __('Numbered list')] as $format => $formatLabel)
+                                <button type="button" x-on:click="toggle('{{ $format }}')"
+                                        x-bind:aria-pressed="!!active['{{ $format }}']" aria-label="{{ $formatLabel }}" title="{{ $formatLabel }}"
+                                        x-bind:class="active['{{ $format }}'] ? 'bg-emerald-tint text-emerald' : 'text-ink-soft'"
+                                        class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    @if ($format === 'bold')<strong aria-hidden="true">B</strong>
+                                    @elseif ($format === 'italic')<em aria-hidden="true">I</em>
+                                    @elseif ($format === 'bulletList')
+                                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1"/></svg>
+                                    @else
+                                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6h11M10 12h11M10 18h11M3 3h1v6M2 14c0-3 5-3 5 0 0 2-5 2-5 6h5"/></svg>
+                                    @endif
+                                </button>
+                            @endforeach
+                        </div>
+                        <div x-ref="editor" dir="auto"></div>
+                    </div>
                     @error('description.en')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
             </div>
@@ -72,8 +90,27 @@
                 />
                 <div>
                     <label for="description.ms" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Description (Malay)') }}</label>
-                    <textarea id="description.ms" wire:model="description.ms" rows="6"
-                              class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
+                    <div wire:ignore data-description-editor="ms"
+                         x-data="descriptionEditor($wire.entangle('description.ms'), 'description.ms', @js(__('Description (Malay)')))"
+                         class="overflow-hidden rounded-[var(--radius-control)] border border-line-strong bg-surface focus-within:ring-2 focus-within:ring-emerald">
+                        <div class="flex flex-wrap gap-1 border-b border-line p-1" role="toolbar" aria-label="{{ __('Text formatting') }}">
+                            @foreach (['bold' => __('Bold'), 'italic' => __('Italic'), 'bulletList' => __('Bullet list'), 'orderedList' => __('Numbered list')] as $format => $formatLabel)
+                                <button type="button" x-on:click="toggle('{{ $format }}')"
+                                        x-bind:aria-pressed="!!active['{{ $format }}']" aria-label="{{ $formatLabel }}" title="{{ $formatLabel }}"
+                                        x-bind:class="active['{{ $format }}'] ? 'bg-emerald-tint text-emerald' : 'text-ink-soft'"
+                                        class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    @if ($format === 'bold')<strong aria-hidden="true">B</strong>
+                                    @elseif ($format === 'italic')<em aria-hidden="true">I</em>
+                                    @elseif ($format === 'bulletList')
+                                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1"/></svg>
+                                    @else
+                                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6h11M10 12h11M10 18h11M3 3h1v6M2 14c0-3 5-3 5 0 0 2-5 2-5 6h5"/></svg>
+                                    @endif
+                                </button>
+                            @endforeach
+                        </div>
+                        <div x-ref="editor" dir="auto"></div>
+                    </div>
                     <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('Optional — falls back to English when empty.') }}</p>
                 </div>
             </div>
@@ -89,8 +126,27 @@
                 />
                 <div>
                     <label for="description.vi" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Description (Vietnamese)') }}</label>
-                    <textarea id="description.vi" wire:model="description.vi" rows="6"
-                              class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
+                    <div wire:ignore data-description-editor="vi"
+                         x-data="descriptionEditor($wire.entangle('description.vi'), 'description.vi', @js(__('Description (Vietnamese)')))"
+                         class="overflow-hidden rounded-[var(--radius-control)] border border-line-strong bg-surface focus-within:ring-2 focus-within:ring-emerald">
+                        <div class="flex flex-wrap gap-1 border-b border-line p-1" role="toolbar" aria-label="{{ __('Text formatting') }}">
+                            @foreach (['bold' => __('Bold'), 'italic' => __('Italic'), 'bulletList' => __('Bullet list'), 'orderedList' => __('Numbered list')] as $format => $formatLabel)
+                                <button type="button" x-on:click="toggle('{{ $format }}')"
+                                        x-bind:aria-pressed="!!active['{{ $format }}']" aria-label="{{ $formatLabel }}" title="{{ $formatLabel }}"
+                                        x-bind:class="active['{{ $format }}'] ? 'bg-emerald-tint text-emerald' : 'text-ink-soft'"
+                                        class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                    @if ($format === 'bold')<strong aria-hidden="true">B</strong>
+                                    @elseif ($format === 'italic')<em aria-hidden="true">I</em>
+                                    @elseif ($format === 'bulletList')
+                                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1"/></svg>
+                                    @else
+                                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 6h11M10 12h11M10 18h11M3 3h1v6M2 14c0-3 5-3 5 0 0 2-5 2-5 6h5"/></svg>
+                                    @endif
+                                </button>
+                            @endforeach
+                        </div>
+                        <div x-ref="editor" dir="auto"></div>
+                    </div>
                     <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('Optional — falls back to English when empty.') }}</p>
                     @error('description.vi')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
