@@ -3,6 +3,7 @@
 namespace App\Livewire\Storefront;
 
 use App\Models\Page;
+use App\Services\ContentDrafts;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -13,7 +14,7 @@ class StaticPage extends Component
 
     public function mount(string $slug): void
     {
-        $this->page = Page::active()->where('slug', $slug)->firstOrFail();
+        $this->page = app(ContentDrafts::class)->find(Page::class, 'slug', $slug) ?? abort(404);
     }
 
     public function render()

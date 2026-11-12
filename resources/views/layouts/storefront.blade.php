@@ -13,6 +13,13 @@
       x-data
       x-init="$store.cart.set({{ app(\App\Services\CartService::class)->itemCount(auth()->user()) }})">
 
+    {{-- Staff preview of content drafts (PreviewDrafts middleware): say so, loudly. --}}
+    @if (app(\App\Services\ContentDrafts::class)->previewing)
+        <p class="bg-brass-deep px-4 py-1.5 text-center text-[13px] font-semibold text-white" role="status">
+            {{ __('Preview') }}: {{ __('drafts are shown here. Shoppers do not see this yet.') }}
+        </p>
+    @endif
+
     {{-- Top-of-page sentinel — the sticky header elevates once this scrolls out
          (IntersectionObserver in hbHeaderElevate, no scroll listener). --}}
     <div id="hb-top-sentinel" aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-6"></div>

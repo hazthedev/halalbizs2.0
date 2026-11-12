@@ -17,6 +17,7 @@ class RoleSeeder extends Seeder
         'finance.manage',
         'vouchers.manage',
         'cms.manage',
+        'cms.publish',
         'settings.manage',
         'localization.manage',
     ];

@@ -28,6 +28,7 @@ use App\Observers\HalalCertificateBindingObserver;
 use App\Observers\ProductEmbeddingObserver;
 use App\Observers\ProductMetafieldObserver;
 use App\Observers\SlugRedirectObserver;
+use App\Services\ContentDrafts;
 use App\Services\EInvoice\EInvoiceProvider;
 use App\Services\EInvoice\MyInvoisProvider;
 use App\Services\EInvoice\NullProvider;
@@ -66,6 +67,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // One per request: it remembers whether this request is a staff preview.
+        $this->app->scoped(ContentDrafts::class);
+
         // Phone-verification delivery. WhatsApp (Cloud API, free tier) once its
         // token + phone-number id are configured; the log stub otherwise, so a
         // preview/dev without Meta credentials still works. Same graceful
