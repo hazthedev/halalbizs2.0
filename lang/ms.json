@@ -2686,5 +2686,15 @@
     "Enter a full https:// web address, with no username or password in it.": "Masukkan alamat web https:// penuh tanpa nama pengguna atau kata laluan.",
     "Give this link a name — shoppers see it, not the address.": "Namakan pautan ini — pembeli melihat nama tersebut, bukannya alamat.",
     "You have already added this link.": "Anda telah menambah pautan ini.",
-    "Use a YouTube (watch, live or share link), Facebook video, Shopee Live, TikTok Live or Lazada Live link.": "Gunakan pautan YouTube (tonton, langsung atau kongsi), video Facebook, Shopee Live, TikTok Live atau Lazada Live."
+    "Use a YouTube (watch, live or share link), Facebook video, Shopee Live, TikTok Live or Lazada Live link.": "Gunakan pautan YouTube (tonton, langsung atau kongsi), video Facebook, Shopee Live, TikTok Live atau Lazada Live.",
+    "Mobile app": "Aplikasi mudah alih",
+    "Minimum app version": "Versi aplikasi minimum",
+    "Phones on an older version are asked to update before they can continue.": "Telefon dengan versi lebih lama diminta mengemas kini sebelum boleh meneruskan.",
+    "Show a maintenance notice in the app": "Paparkan notis penyelenggaraan dalam aplikasi",
+    "Maintenance notice (English)": "Notis penyelenggaraan (Bahasa Inggeris)",
+    "Maintenance notice (Malay)": "Notis penyelenggaraan (Bahasa Melayu)",
+    "Left empty, the English notice is shown.": "Jika dibiarkan kosong, notis Bahasa Inggeris dipaparkan.",
+    "Save mobile app": "Simpan aplikasi mudah alih",
+    "Mobile app settings saved": "Tetapan aplikasi mudah alih disimpan",
+    "Use three numbers with dots, like 1.4.0.": "Gunakan tiga nombor dengan titik, seperti 1.4.0."
 }

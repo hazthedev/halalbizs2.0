@@ -9,7 +9,11 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureSeller;
 use App\Listeners\DispatchOrderWebhooks;
 use App\Listeners\NotifyBackInStockSubscribers;
+use App\Models\Banner;
 use App\Models\Category;
+use App\Models\FlashSale;
+use App\Models\FlashSaleItem;
+use App\Models\HomeSection;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Payout;
@@ -17,6 +21,7 @@ use App\Models\Product;
 use App\Models\ProductMetafield;
 use App\Models\ReturnRequest;
 use App\Models\Store;
+use App\Models\ThemeAsset;
 use App\Observers\AdminAlertObserver;
 use App\Observers\AffiliateAttributionObserver;
 use App\Observers\HalalCertificateBindingObserver;
@@ -26,6 +31,7 @@ use App\Observers\SlugRedirectObserver;
 use App\Services\EInvoice\EInvoiceProvider;
 use App\Services\EInvoice\MyInvoisProvider;
 use App\Services\EInvoice\NullProvider;
+use App\Services\HomeLayout;
 use App\Services\Search\EmbeddingProvider;
 use App\Services\Search\LocalHashEmbedder;
 use App\Services\Search\RemoteEmbedder;
@@ -33,6 +39,7 @@ use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
 use App\Services\Sms\WhatsAppSender;
 use App\Settings\SecuritySettings;
+use App\Settings\ThemeSettings;
 use App\Support\ClientIp;
 use App\Support\DisplayTime;
 use App\Support\Money;
@@ -52,6 +59,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Livewire;
+use Spatie\LaravelSettings\Events\SettingsSaved;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -107,6 +116,15 @@ class AppServiceProvider extends ServiceProvider
         // writer the L3 fillable trim missed. Production stays lenient: better
         // a stale column than a 500 on a path no test covered.
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
+
+        // CMS: the app's cached home (HomeLayout::forApp) is cleared the moment
+        // any content it is built from is saved, so an admin sees the change
+        // at once. Product and stock changes are not listed: they ride the TTL.
+        foreach ([Banner::class, HomeSection::class, Category::class, FlashSale::class, FlashSaleItem::class, ThemeAsset::class, Media::class] as $content) {
+            $content::saved(fn () => HomeLayout::flush());
+            $content::deleted(fn () => HomeLayout::flush());
+        }
+        Event::listen(SettingsSaved::class, fn (SettingsSaved $event) => $event->settings instanceof ThemeSettings ? HomeLayout::flush() : null);
 
         // Public API rate limit (docs/10): 60 req/min per IP. Auth login already
         // self-throttles in the Login component (5 attempts).

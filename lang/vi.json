@@ -2660,5 +2660,15 @@
     "Commission on your cash-on-delivery orders in :month: :amount.": "Commission on your cash-on-delivery orders in :month: :amount.",
     "Total you owe :app: :amount.": "Total you owe :app: :amount.",
     "Please bank-transfer it and reply with your reference. Stores owing more than the COD limit cannot take cash on delivery until settled.": "Please bank-transfer it and reply with your reference. Stores owing more than the COD limit cannot take cash on delivery until settled.",
-    "COD unavailable: :store cannot take cash on delivery right now.": "COD unavailable: :store cannot take cash on delivery right now."
+    "COD unavailable: :store cannot take cash on delivery right now.": "COD unavailable: :store cannot take cash on delivery right now.",
+    "Mobile app": "Ứng dụng di động",
+    "Minimum app version": "Phiên bản ứng dụng tối thiểu",
+    "Phones on an older version are asked to update before they can continue.": "Điện thoại dùng phiên bản cũ hơn sẽ được yêu cầu cập nhật trước khi tiếp tục.",
+    "Show a maintenance notice in the app": "Hiển thị thông báo bảo trì trong ứng dụng",
+    "Maintenance notice (English)": "Thông báo bảo trì (tiếng Anh)",
+    "Maintenance notice (Malay)": "Thông báo bảo trì (tiếng Mã Lai)",
+    "Left empty, the English notice is shown.": "Nếu để trống, thông báo tiếng Anh sẽ được hiển thị.",
+    "Save mobile app": "Lưu ứng dụng di động",
+    "Mobile app settings saved": "Đã lưu cài đặt ứng dụng di động",
+    "Use three numbers with dots, like 1.4.0.": "Dùng ba số cách nhau bằng dấu chấm, ví dụ 1.4.0."
 }

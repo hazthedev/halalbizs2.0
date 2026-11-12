@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\CoinController;
 use App\Http\Controllers\Api\ConfigController;
+use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\HomeController;
@@ -39,7 +40,13 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/products/{product:slug}/related', [CatalogController::class, 'related'])->name('api.product.related');
     Route::get('/recommended', [CatalogController::class, 'recommended'])->name('api.recommended');
     Route::get('/certificates/{number}', [CertificateController::class, 'show'])->name('api.certificates.show');
-    Route::get('/home', HomeController::class)->name('api.home');
+    // etag: an unchanged home answers 304 with no body (CMS item 10).
+    Route::get('/home', HomeController::class)->middleware('cache.headers:etag')->name('api.home');
+    // CMS item 5: pages and help as data, for native app screens with an offline copy.
+    Route::get('/pages', [ContentController::class, 'pages'])->name('api.pages');
+    Route::get('/pages/{slug}', [ContentController::class, 'page'])->name('api.pages.show');
+    Route::get('/help', [ContentController::class, 'help'])->name('api.help');
+    Route::get('/help/{article}', [ContentController::class, 'helpArticle'])->whereNumber('article')->name('api.help.show');
     Route::get('/live', [LiveController::class, 'index'])->name('api.live');
     Route::get('/live/{session:slug}', [LiveController::class, 'show'])->name('api.live.show');
     Route::get('/stores/{store:slug}', [StoreController::class, 'show'])->name('api.stores.show');

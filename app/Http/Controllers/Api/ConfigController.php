@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Services\CartService;
 use App\Settings\CodSettings;
 use App\Settings\GeneralSettings;
+use App\Settings\MobileAppSettings;
 use App\Support\MalaysianStates;
 use Illuminate\Http\JsonResponse;
 
@@ -16,7 +17,7 @@ use Illuminate\Http\JsonResponse;
  */
 class ConfigController extends Controller
 {
-    public function __invoke(GeneralSettings $general, CodSettings $cod, CartService $cart): JsonResponse
+    public function __invoke(GeneralSettings $general, CodSettings $cod, CartService $cart, MobileAppSettings $app): JsonResponse
     {
         $base = rtrim((string) config('app.url'), '/');
 
@@ -26,7 +27,13 @@ class ConfigController extends Controller
             'locales' => $general->enabled_locales,
             'currencies' => $general->display_currencies,
             'states' => MalaysianStates::ALL,
-            'min_app_version' => '1.0.0',
+            // Admin → Settings → Mobile app. The app blocks itself below the
+            // minimum and shows the notice while maintenance is on.
+            'min_app_version' => $app->min_version,
+            'maintenance' => [
+                'enabled' => $app->maintenance_enabled,
+                'message' => $app->maintenanceMessage(app()->getLocale()),
+            ],
             'urls' => [
                 'privacy' => $base.'/page/privacy',
                 'terms' => $base.'/page/terms',

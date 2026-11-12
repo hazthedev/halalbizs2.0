@@ -7,6 +7,7 @@ use App\Services\Ipay88Service;
 use App\Settings\CodSettings;
 use App\Settings\GeneralSettings;
 use App\Settings\Ipay88Settings;
+use App\Settings\MobileAppSettings;
 use App\Settings\ModerationSettings;
 use App\Settings\OrderSettings;
 use App\Settings\SecuritySettings;
@@ -86,8 +87,23 @@ class Settings extends Component
 
     public bool $sandbox = true;
 
+    // ── Mobile app ─────────────────────────────────────────────────────
+    public string $minAppVersion = '';
+
+    public bool $appMaintenanceEnabled = false;
+
+    public string $appMaintenanceMessageEn = '';
+
+    public string $appMaintenanceMessageMs = '';
+
     public function mount(): void
     {
+        $mobile = app(MobileAppSettings::class);
+        $this->minAppVersion = $mobile->min_version;
+        $this->appMaintenanceEnabled = $mobile->maintenance_enabled;
+        $this->appMaintenanceMessageEn = $mobile->maintenance_message_en;
+        $this->appMaintenanceMessageMs = $mobile->maintenance_message_ms;
+
         $general = app(GeneralSettings::class);
         $this->siteName = $general->site_name;
         $this->displayCurrencies = $general->display_currencies;
@@ -187,6 +203,27 @@ class Settings extends Component
         $settings->save();
 
         $this->dispatch('toast', message: __('COD settings saved'));
+    }
+
+    public function saveMobileApp(): void
+    {
+        $this->validate([
+            'minAppVersion' => ['required', 'regex:/^\\d+\\.\\d+\\.\\d+$/'],
+            // The app cannot show an empty notice, so English is required while it is on.
+            'appMaintenanceMessageEn' => ['required_if_accepted:appMaintenanceEnabled', 'string', 'max:200'],
+            'appMaintenanceMessageMs' => ['string', 'max:200'],
+        ], [
+            'minAppVersion.regex' => __('Use three numbers with dots, like 1.4.0.'),
+        ]);
+
+        $settings = app(MobileAppSettings::class);
+        $settings->min_version = $this->minAppVersion;
+        $settings->maintenance_enabled = $this->appMaintenanceEnabled;
+        $settings->maintenance_message_en = trim($this->appMaintenanceMessageEn);
+        $settings->maintenance_message_ms = trim($this->appMaintenanceMessageMs);
+        $settings->save();
+
+        $this->dispatch('toast', message: __('Mobile app settings saved'));
     }
 
     public function saveModeration(): void
