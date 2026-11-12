@@ -4,16 +4,22 @@ use App\Enums\CertificateStatus;
 use App\Enums\ProductStatus;
 use App\Livewire\Admin\Catalog\Certificates as AdminCertificates;
 use App\Livewire\Seller\Certificates;
+use App\Models\Brand;
+use App\Models\Category;
 use App\Models\HalalCertificate;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\ProductWriteService;
 use App\Services\Whip\WhipDirectory;
+use App\Settings\ModerationSettings;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -157,6 +163,92 @@ test('WHIP discovery shows scope and expired status but a changed certificate ca
     DB::connection('whip')->table('halal_applications')->where('id', $app)->update(['status' => 'revoked']);
     $page->call('linkWhipCertificate', 'WH-100')->assertHasErrors('whip');
     expect(HalalCertificate::count())->toBe(0);
+});
+
+test('a bound WHIP certificate imports products as reviewable drafts once with brand and barcode', function () {
+    Brand::create(['name' => 'SEDAP', 'is_active' => true]);
+    whipCert(['products' => [['product_name' => 'Kicap', 'brand_name' => 'Sedap', 'barcode' => '955000']]]);
+    $seller = whipSeller();
+    $category = Category::factory()->create(['is_active' => true]);
+    $page = Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    $page->set('importCategoryId', $category->id)->call('importWhipProducts', whipRow()->id)->assertHasNoErrors();
+    $product = $seller->store->products()->with('variants', 'brand')->firstOrFail();
+    expect($product->status)->toBe(ProductStatus::Draft)
+        ->and($product->name)->toBe('Kicap')->and($product->brand->name)->toBe('SEDAP')
+        ->and($product->variants->sole()->sku)->toBe('955000')
+        ->and($product->halal_certificate_id)->toBe(whipRow()->id);
+    $page->call('importWhipProducts', whipRow()->id)->assertHasNoErrors();
+    expect($seller->store->products()->count())->toBe(1);
+    $this->actingAs(User::factory()->create())->get('/p/'.$product->slug)->assertNotFound();
+});
+
+test('an unknown WHIP brand creates no shared catalogue brand and leaves the draft brand unset', function () {
+    whipCert(['products' => [['product_name' => 'Kicap', 'brand_name' => 'Unknown WHIP Brand', 'barcode' => '955000']]]);
+    $seller = whipSeller();
+    $category = Category::factory()->create(['is_active' => true]);
+    $before = Brand::count();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')
+        ->set('importCategoryId', $category->id)->call('importWhipProducts', whipRow()->id)->assertHasNoErrors();
+    expect(Brand::count())->toBe($before)
+        ->and($seller->store->products()->firstOrFail()->brand_id)->toBeNull();
+});
+
+test('an inactive catalogue brand is not assigned by a WHIP import', function () {
+    Brand::create(['name' => 'Sedap', 'is_active' => false]);
+    whipCert(['products' => [['product_name' => 'Kicap', 'brand_name' => 'Sedap', 'barcode' => null]]]);
+    $seller = whipSeller();
+    $category = Category::factory()->create(['is_active' => true]);
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')
+        ->set('importCategoryId', $category->id)->call('importWhipProducts', whipRow()->id)->assertHasNoErrors();
+    expect(Brand::count())->toBe(1)
+        ->and($seller->store->products()->firstOrFail()->brand_id)->toBeNull();
+});
+
+test('an imported WHIP draft cannot be published before its price is reviewed', function () {
+    whipCert();
+    $seller = whipSeller();
+    $category = Category::factory()->create(['is_active' => true]);
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')
+        ->set('importCategoryId', $category->id)->call('importWhipProducts', whipRow()->id);
+    $product = $seller->store->products()->firstOrFail();
+    $product->addMedia(UploadedFile::fake()->image('sauce.jpg'))->toMediaCollection('images');
+    app(ModerationSettings::class)->require_product_approval = false;
+    expect(fn () => app(ProductWriteService::class)->publish($product))
+        ->toThrow(ValidationException::class);
+    expect($product->fresh()->status)->toBe(ProductStatus::Draft);
+});
+
+test('product import rejects another store certificate and an unconfirmed WHIP renewal', function () {
+    $app = whipCert();
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    $certificate = whipRow();
+    $category = Category::factory()->create(['is_active' => true]);
+    expect(fn () => Livewire::actingAs(whipSeller('999999-X'))->test(Certificates::class)
+        ->set('importCategoryId', $category->id)->call('importWhipProducts', $certificate->id))
+        ->toThrow(ModelNotFoundException::class);
+    DB::connection('whip')->table('halal_applications')->where('id', $app)->update(['status' => 'revoked']);
+    Livewire::actingAs($seller)->test(Certificates::class)
+        ->set('importCategoryId', $category->id)->call('importWhipProducts', $certificate->id)->assertHasErrors('whip');
+    expect($seller->store->products()->count())->toBe(0);
+});
+
+test('imported drafts stay private until seller publication and lose certification on the existing recheck', function () {
+    whipCert();
+    $seller = whipSeller();
+    $category = Category::factory()->create(['is_active' => true]);
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')
+        ->set('importCategoryId', $category->id)->call('importWhipProducts', whipRow()->id)->assertHasNoErrors();
+    $product = $seller->store->products()->firstOrFail();
+    $this->actingAs(User::factory()->create())->get('/p/'.$product->slug)->assertNotFound();
+    $product->addMedia(UploadedFile::fake()->image('sauce.jpg'))->toMediaCollection('images');
+    app(ProductWriteService::class)->update($product, ['price_sen' => 250, 'stock' => 10]);
+    app(ModerationSettings::class)->require_product_approval = false;
+    app(ProductWriteService::class)->publish($product);
+    $this->get('/p/'.$product->slug)->assertOk()->assertSee('Halal certificate verified');
+    DB::connection('whip')->table('halal_applications')->update(['status' => 'revoked']);
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+    expect($product->fresh()->halalVerdict())->not->toBe('verified');
 });
 
 test('a certificate number that WHIP holds as certified and in date, for the same company registration number, is verified from WHIP', function () {
@@ -398,5 +490,13 @@ test('a WHIP certificate missing its company name stays unlinked for review', fu
 test('linking WHIP again keeps products already waiting for admin review', function () {
     [$seller, , , $parked] = whipTicked();
     Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')->assertHasNoErrors();
+    expect(whipRow()->whip_unmatched_product_ids)->toBe([$parked->id]);
+});
+
+test('importing WHIP products keeps products already waiting for admin review', function () {
+    [$seller, , , $parked] = whipTicked();
+    $category = Category::factory()->create(['is_active' => true]);
+    Livewire::actingAs($seller)->test(Certificates::class)->set('importCategoryId', $category->id)
+        ->call('importWhipProducts', whipRow()->id)->assertHasNoErrors();
     expect(whipRow()->whip_unmatched_product_ids)->toBe([$parked->id]);
 });

@@ -15,7 +15,7 @@ final readonly class WhipCertificate
 
     /**
      * @param  'active'|'expired'|'not_certified'|'ambiguous'  $status
-     * @param  list<array{name: string, brand: ?string, barcode: ?string}>  $products
+     * @param  list<array{id?: int, name: string, brand: ?string, barcode: ?string}>  $products
      */
     public function __construct(
         public string $status,

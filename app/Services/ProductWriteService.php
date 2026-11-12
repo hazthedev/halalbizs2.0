@@ -150,6 +150,11 @@ class ProductWriteService
             throw ValidationException::withMessages(['images' => __('Add at least one image before publishing.')]);
         }
 
+        $variants = $product->variants()->get(['price_sen']);
+        if ($variants->isEmpty() || $variants->contains(fn ($variant) => $variant->price_sen <= 0)) {
+            throw ValidationException::withMessages(['price_sen' => __('Set a price above RM 0 for every variant before publishing.')]);
+        }
+
         $this->goLive($product);
 
         if ($product->status === ProductStatus::Live && $product->published_at === null) {

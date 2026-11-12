@@ -35,6 +35,22 @@
         @endforeach
     </x-ui.card>
 
+    @if ($certificates->contains('source', 'whip'))
+        <x-ui.card class="space-y-3 p-5">
+            <h2 class="font-display text-lg font-medium">{{ __('Import certified products') }}</h2>
+            <p class="text-sm text-ink-soft">{{ __('WHIP products are imported as drafts. Review the details, add photos and prices, then publish each product yourself.') }}</p>
+            <label for="importCategoryId" class="block text-sm font-medium">{{ __('Category for imported drafts') }}</label>
+            <select id="importCategoryId" wire:model="importCategoryId" class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface p-3 text-sm sm:max-w-sm">
+                <option value="">{{ __('Choose a category') }}</option>
+                @foreach ($importCategories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
+            </select>
+            @error('importCategoryId') <p role="alert" class="text-sm text-danger">{{ $message }}</p> @enderror
+            <a href="{{ route('seller.products.index') }}" wire:navigate class="inline-flex min-h-11 items-center text-sm text-emerald underline">{{ __('Review my product drafts') }}</a>
+        </x-ui.card>
+    @endif
+
     @if (! $creating && $editing === null)
         <div>
             <x-ui.button wire:click="startCreate">{{ __('Register a certificate') }}</x-ui.button>
@@ -82,9 +98,14 @@
                         </div>
 
                         @if ($editing !== $certificate->id)
+                            <div class="flex flex-wrap gap-2">
+                            @if ($certificate->source === 'whip' && $certificate->status === CertificateStatus::Approved)
+                                <x-ui.button variant="secondary" wire:click="importWhipProducts({{ $certificate->id }})" wire:loading.attr="disabled">{{ __('Import product drafts') }}</x-ui.button>
+                            @endif
                             <x-ui.button variant="ghost" wire:click="edit({{ $certificate->id }})">
                                 {{ $certificate->status === CertificateStatus::Rejected ? __('Fix and resubmit') : __('Renew or edit') }}
                             </x-ui.button>
+                            </div>
                         @endif
                     </div>
                 </x-ui.card>
