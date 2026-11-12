@@ -194,14 +194,116 @@ class _BlocksHome extends ConsumerWidget {
       case 'product_carousel':
         return ProductStrip(key: Key(key), keyPrefix: key, title: title, items: products);
       case 'product_grid':
+      case 'picked_products':
         return products.isEmpty ? const SizedBox.shrink() : section(ProductGrid(products, soldLabel: l.sold, onTap: onTap));
       case 'recommended':
         return ProductStrip(
             key: Key(key), keyPrefix: 'recommended', title: title.isEmpty ? l.recommendedForYou : title, items: ref.watch(recommendedProvider).value ?? const []);
+      case 'notice':
+        final text = asStr(b['text']) ?? '';
+        return text.isEmpty
+            ? const SizedBox.shrink()
+            : section(Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(SoukSpace.s4),
+                decoration: BoxDecoration(
+                  color: SoukColors.emeraldTint,
+                  border: Border.all(color: SoukColors.emeraldTintEdge),
+                  borderRadius: BorderRadius.circular(SoukRadius.card),
+                ),
+                child: Text(text, style: SoukText.body),
+              ));
+      case 'picked_stores':
+        final stores = asMapList(b['stores']).where((x) => asStr(x['slug']) != null).toList();
+        return stores.isEmpty
+            ? const SizedBox.shrink()
+            : section(SizedBox(
+                height: 104,
+                child: ListView(scrollDirection: Axis.horizontal, children: [for (final s in stores) _StoreTile(s)]),
+              ));
+      case 'picture_tiles':
+        final tiles = asMapList(b['tiles']).where((x) => asStr(x['image']) != null).toList();
+        return tiles.isEmpty ? const SizedBox.shrink() : section(_PictureTiles(tiles));
       default:
         return const SizedBox.shrink();
     }
   }
+}
+
+/// Hand-picked store: logo (or initial) over the name; tap = `/s/<slug>`.
+class _StoreTile extends StatelessWidget {
+  const _StoreTile(this.store);
+
+  final Map<String, dynamic> store;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = asStr(store['name']) ?? '';
+    final slug = asStr(store['slug'])!;
+    return InkWell(
+      key: Key('home-store-$slug'),
+      onTap: () => context.push('/s/${Uri.encodeComponent(slug)}'),
+      borderRadius: BorderRadius.circular(SoukRadius.card),
+      child: Container(
+        width: 84,
+        padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s1),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          SizedBox(
+            width: 64,
+            height: 64,
+            child: asStr(store['logo']) != null
+                ? ProductImage(asStr(store['logo']), radius: 32)
+                : DecoratedBox(
+                    decoration: const BoxDecoration(color: SoukColors.cream, shape: BoxShape.circle),
+                    child: Center(child: Text(name.isEmpty ? '?' : name.characters.first.toUpperCase(), style: SoukText.lead)),
+                  ),
+          ),
+          const SizedBox(height: SoukSpace.s1),
+          Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: SoukText.meta),
+        ]),
+      ),
+    );
+  }
+}
+
+/// 2 per row; image with the label under it; tap = the tile's `app_url`, none = not tappable.
+class _PictureTiles extends StatelessWidget {
+  const _PictureTiles(this.tiles);
+
+  final List<Map<String, dynamic>> tiles;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(builder: (context, c) {
+        final w = (c.maxWidth - SoukSpace.s3) / 2;
+        return Wrap(spacing: SoukSpace.s3, runSpacing: SoukSpace.s3, children: [
+        for (final (i, t) in tiles.indexed)
+          Builder(builder: (context) {
+            final link = asStr(t['app_url']);
+            final label = asStr(t['label']);
+            return SizedBox(
+              width: w,
+              child: Semantics(
+                button: link != null,
+                child: InkWell(
+                  key: Key('home-tile-$i'),
+                  onTap: link == null ? null : () => context.push(link),
+                  borderRadius: BorderRadius.circular(SoukRadius.card),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 48),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      AspectRatio(aspectRatio: 4 / 3, child: ProductImage(asStr(t['image']))),
+                      if (label != null && label.isNotEmpty) ...[
+                        const SizedBox(height: SoukSpace.s1),
+                        Text(label, maxLines: 2, overflow: TextOverflow.ellipsis, style: SoukText.small),
+                      ],
+                    ]),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ]);
+      });
 }
 
 /// Category tiles (3 across): picture or initial over the name; tap = `/c/<slug>`.
