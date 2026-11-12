@@ -12,6 +12,7 @@ use App\Models\FlashSaleItem;
 use App\Models\HomeSection;
 use App\Models\Product;
 use App\Models\ProductBoost;
+use App\Models\ScheduledLayout;
 use App\Models\ThemeAsset;
 use App\Settings\BoostSettings;
 use App\Settings\ThemeSettings;
@@ -49,9 +50,11 @@ class HomeLayout
     public function sections(array $recentlyViewedIds = [], string $for = 'web'): BaseCollection
     {
         $other = $for === 'web' ? 'app' : 'web';
+        $all = app(ContentDrafts::class)->visible(HomeSection::class)
+            ->reject(fn (HomeSection $section) => $section->show_on === $other);
 
-        return app(ContentDrafts::class)->visible(HomeSection::class)
-            ->reject(fn (HomeSection $section) => $section->show_on === $other)
+        $rows = fn (?int $layoutId) => $all
+            ->filter(fn (HomeSection $section) => $section->scheduled_layout_id === $layoutId)
             ->map(fn (HomeSection $section) => [
                 'section' => $section,
                 'data' => $this->sectionData($section, $recentlyViewedIds),
@@ -60,6 +63,26 @@ class HomeLayout
                 && ! in_array($row['section']->type, self::SELF_CONTAINED, true))
             ->values()
             ->toBase();
+
+        $layoutId = $this->layoutId();
+        $scheduled = $layoutId === null ? null : $rows($layoutId);
+
+        // A scheduled layout with nothing to show never blanks the home.
+        return $scheduled === null || $scheduled->isEmpty() ? $rows(null) : $scheduled;
+    }
+
+    /**
+     * The scheduled layout showing now; null = the everyday layout. Picked by
+     * the clock on every read, so the switch on and back needs no scheduler.
+     * A staff preview can ask for one ahead of time with ?layout=<id>.
+     */
+    public function layoutId(): ?int
+    {
+        $asked = (int) request()->query('layout');
+
+        return app(ContentDrafts::class)->previewing && $asked > 0
+            ? ScheduledLayout::whereKey($asked)->value('id')
+            : ScheduledLayout::current()?->id;
     }
 
     /** Occasion hero image URL: only when enabled, in window, and uploaded. */
@@ -135,7 +158,14 @@ class HomeLayout
         };
 
         // A staff preview is one person's draft: it neither reads nor feeds the shoppers' cache.
-        return app(ContentDrafts::class)->previewing ? $build() : Cache::remember(self::cacheKey($locale), self::CACHE_TTL, $build);
+        if (app(ContentDrafts::class)->previewing) {
+            return $build();
+        }
+
+        // The cached copy never outlives the next start or end of a scheduled layout.
+        $ttl = max(1, min(self::CACHE_TTL, ScheduledLayout::secondsToNextSwitch() ?? self::CACHE_TTL));
+
+        return Cache::remember(self::cacheKey($locale), $ttl, $build);
     }
 
     /** Called on every save of home content (AppServiceProvider), so admins see their change at once. */

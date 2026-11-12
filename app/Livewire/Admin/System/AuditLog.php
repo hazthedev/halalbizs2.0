@@ -8,6 +8,7 @@ use App\Models\HomeSection;
 use App\Models\Page;
 use App\Models\Payout;
 use App\Models\Product;
+use App\Models\ScheduledLayout;
 use App\Models\Store;
 use App\Models\SubOrder;
 use App\Support\DisplayTime;
@@ -34,6 +35,7 @@ class AuditLog extends Component
         'Banner' => Banner::class,
         'Page' => Page::class,
         'HomeSection' => HomeSection::class,
+        'ScheduledLayout' => ScheduledLayout::class,
         'HelpArticle' => HelpArticle::class,
         'Theme' => 'theme',
         'Site info' => 'site-info',

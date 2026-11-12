@@ -24,6 +24,8 @@ class HomeSection extends Model
         return [
             'payload' => 'array',
             'is_active' => 'boolean',
+            // Not fillable on purpose: a draft can never move a section to another layout.
+            'scheduled_layout_id' => 'integer',
         ];
     }
 
