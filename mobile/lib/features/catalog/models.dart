@@ -204,6 +204,7 @@ class Category {
   String get slug => asStr(json['slug']) ?? '';
   String get name => asStr(json['name']) ?? '';
   int? get parentId => asInt(json['parent_id']);
+  String? get image => asStr(json['image']);
 }
 
 /// `GET stores/{slug}` (slice 2): name, slug, description, logo, banner,

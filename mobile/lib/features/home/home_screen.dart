@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/api/json.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../account/inbox_actions.dart';
@@ -48,33 +49,134 @@ class HomeScreen extends ConsumerWidget {
           SoukSkeleton.cards(rows: 4),
         ]),
         error: (e, _) => ErrorPane(error: e, onRetry: () => _refresh(ref), retryLabel: l.retry),
-        data: (f) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (f.banners.isNotEmpty) ...[
-              BannerCarousel(f.banners),
-              const SizedBox(height: SoukSpace.s5),
-            ],
-            if (f.flashEndsAt != null && f.flashItems.isNotEmpty) ...[
-              FlashSaleStrip(endsAt: f.flashEndsAt!, items: f.flashItems),
-              const SizedBox(height: SoukSpace.s5),
-            ],
-            SoukSectionHeading(l.featured, linkLabel: l.viewAll, onLink: () => context.push('/featured')),
-            const SizedBox(height: SoukSpace.s3),
-            f.featured.isEmpty
-                ? SoukEmptyState(
-                    key: const Key('home-empty'),
-                    title: l.noProductsYet,
-                    message: l.noProductsBody,
-                    action: SoukButton(label: l.retry, onPressed: () => _refresh(ref)),
-                  )
-                : ProductGrid(f.featured, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
-            ProductStrip(keyPrefix: 'recommended', title: l.recommendedForYou, items: ref.watch(recommendedProvider).value ?? const []),
-          ],
-        ),
+        data: (f) => f.blocks == null ? _FixedHome(f, onRefresh: () => _refresh(ref)) : _BlocksHome(f),
       ),
     );
   }
+}
+
+/// Today's fixed layout: the fallback when an older server sends no `blocks`.
+class _FixedHome extends ConsumerWidget {
+  const _FixedHome(this.f, {required this.onRefresh});
+
+  final HomeFeed f;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (f.banners.isNotEmpty) ...[
+          BannerCarousel(f.banners),
+          const SizedBox(height: SoukSpace.s5),
+        ],
+        ..._flashSale(f),
+        SoukSectionHeading(l.featured, linkLabel: l.viewAll, onLink: () => context.push('/featured')),
+        const SizedBox(height: SoukSpace.s3),
+        f.featured.isEmpty
+            ? SoukEmptyState(
+                key: const Key('home-empty'),
+                title: l.noProductsYet,
+                message: l.noProductsBody,
+                action: SoukButton(label: l.retry, onPressed: onRefresh),
+              )
+            : ProductGrid(f.featured, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
+        ProductStrip(keyPrefix: 'recommended', title: l.recommendedForYou, items: ref.watch(recommendedProvider).value ?? const []),
+      ],
+    );
+  }
+}
+
+List<Widget> _flashSale(HomeFeed f) => [
+      if (f.flashEndsAt != null && f.flashItems.isNotEmpty) ...[
+        FlashSaleStrip(endsAt: f.flashEndsAt!, items: f.flashItems),
+        const SizedBox(height: SoukSpace.s5),
+      ],
+    ];
+
+/// The admin's home: one widget per block, in order. A type this app does not
+/// know (or `recently_viewed`, which it has no feature for) is skipped, so a
+/// new block type never breaks an older app. Flash sale follows the first banner block.
+class _BlocksHome extends ConsumerWidget {
+  const _BlocksHome(this.f);
+
+  final HomeFeed f;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    void openProduct(Product p) => context.push('/p/${Uri.encodeComponent(p.slug)}');
+    final blocks = f.blocks!;
+    final flashAt = blocks.indexWhere((b) => b['type'] == 'banner');
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      if (flashAt < 0) ..._flashSale(f),
+      for (final (i, b) in blocks.indexed) ...[
+        _block(context, ref, l, b, openProduct),
+        if (i == flashAt) ..._flashSale(f),
+      ],
+    ]);
+  }
+
+  Widget _block(BuildContext context, WidgetRef ref, AppLocalizations l, Map<String, dynamic> b, void Function(Product) onTap) {
+    final title = asStr(b['title']) ?? '';
+    final key = 'home-block-${b['id']}';
+    Widget section(Widget child) => Column(key: Key(key), crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (title.isNotEmpty) ...[SoukSectionHeading(title), const SizedBox(height: SoukSpace.s3)],
+          child,
+          const SizedBox(height: SoukSpace.s5),
+        ]);
+    final products = asMapList(b['products']).map(Product.new).toList();
+    switch (b['type']) {
+      case 'banner':
+        final banners = asMapList(b['banners']).map(HomeBanner.new).where((x) => x.image != null).toList();
+        return banners.isEmpty
+            ? const SizedBox.shrink()
+            : Column(key: Key(key), children: [BannerCarousel(banners), const SizedBox(height: SoukSpace.s5)]);
+      case 'category_grid':
+        return section(_CategoryGrid(asMapList(b['categories']).map(Category.new).toList()));
+      case 'product_carousel':
+        return ProductStrip(key: Key(key), keyPrefix: key, title: title, items: products);
+      case 'product_grid':
+        return products.isEmpty ? const SizedBox.shrink() : section(ProductGrid(products, soldLabel: l.sold, onTap: onTap));
+      case 'recommended':
+        return ProductStrip(
+            key: Key(key), keyPrefix: 'recommended', title: title.isEmpty ? l.recommendedForYou : title, items: ref.watch(recommendedProvider).value ?? const []);
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+}
+
+/// Category tiles (3 across): picture or initial over the name; tap = `/c/<slug>`.
+class _CategoryGrid extends StatelessWidget {
+  const _CategoryGrid(this.categories);
+
+  final List<Category> categories;
+
+  @override
+  Widget build(BuildContext context) => GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 3,
+        mainAxisSpacing: SoukSpace.s3,
+        crossAxisSpacing: SoukSpace.s3,
+        childAspectRatio: .9,
+        children: [
+          for (final c in categories)
+            InkWell(
+              key: Key('home-category-${c.slug}'),
+              onTap: () => context.push('/c/${Uri.encodeComponent(c.slug)}'),
+              borderRadius: BorderRadius.circular(SoukRadius.card),
+              child: Column(children: [
+                Expanded(child: AspectRatio(aspectRatio: 1, child: ProductImage(c.image))),
+                const SizedBox(height: SoukSpace.s1),
+                Text(c.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: SoukText.meta),
+              ]),
+            ),
+        ],
+      );
 }
 
 /// Swipeable banners (web home: 3:1 artwork, paper dots, 6 s auto-advance,
