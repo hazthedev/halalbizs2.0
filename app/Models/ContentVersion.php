@@ -21,8 +21,8 @@ class ContentVersion extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    /** Collections a subject may have (Banner: image, image_vi, video; ThemeAsset: image). */
-    public const MEDIA = ['image', 'image_vi', 'video'];
+    /** Collections a subject may have (Banner: image, image_vi, video; ThemeAsset: image; Page: share_image). */
+    public const MEDIA = ['image', 'image_vi', 'video', 'share_image'];
 
     protected $guarded = [];
 

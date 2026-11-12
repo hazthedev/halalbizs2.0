@@ -20,6 +20,6 @@ class StaticPage extends Component
     public function render()
     {
         return view('livewire.storefront.static-page')
-            ->title($this->page->getTranslation('title', app()->getLocale()));
+            ->title($this->page->seoTitle(app()->getLocale()));
     }
 }

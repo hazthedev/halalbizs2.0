@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 
 /**
  * CMS pages (docs/08 §G) — language tabs, sanitized HTML body.
@@ -22,6 +24,7 @@ use Livewire\Component;
 class Pages extends Component
 {
     use ManagesDrafts;
+    use WithFileUploads;
 
     public const SYSTEM_SLUGS = ['about', 'trust-safety', 'terms', 'privacy', 'refund-policy', 'faq'];
 
@@ -43,6 +46,17 @@ class Pages extends Component
 
     public bool $isActive = true;
 
+    /** Search engine / share title; empty = the page title. @var array{en: string, ms: string, vi: string} */
+    public array $seoTitle = ['en' => '', 'ms' => '', 'vi' => ''];
+
+    /** Search engine / share description; empty = the start of the page text. @var array{en: string, ms: string, vi: string} */
+    public array $seoDescription = ['en' => '', 'ms' => '', 'vi' => ''];
+
+    public ?TemporaryUploadedFile $shareImage = null;
+
+    /** Custom pages only: a link in the website footer. */
+    public bool $showInFooter = false;
+
     public function create(): void
     {
         $this->resetForm();
@@ -60,6 +74,9 @@ class Pages extends Component
         $this->title = ContentLocales::read($page, 'title');
         $this->body = ContentLocales::read($page, 'body');
         $this->isActive = $page->is_active;
+        $this->seoTitle = ContentLocales::read($page, 'seo_title');
+        $this->seoDescription = ContentLocales::read($page, 'seo_description');
+        $this->showInFooter = (bool) $page->show_in_footer;
         $this->showForm = true;
     }
 
@@ -80,6 +97,11 @@ class Pages extends Component
             'body.en' => ['required', 'string', 'max:65000'],
             'body.ms' => ['nullable', 'string', 'max:65000'],
             'body.vi' => ['nullable', 'string', 'max:65000'],
+            // Lengths search engines show in full.
+            'seoTitle.*' => ['nullable', 'string', 'max:70'],
+            'seoDescription.*' => ['nullable', 'string', 'max:200'],
+            // Share cards are wide: 1200 x 630 is the usual size.
+            'shareImage' => ['nullable', 'image', 'max:4096', 'dimensions:min_width=600,min_height=315'],
         ];
 
         if (! $systemPage) {
@@ -105,11 +127,37 @@ class Pages extends Component
 
         ContentLocales::write($page, 'title', $this->title);
         ContentLocales::write($page, 'body', $this->body, transform: $this->sanitize(...));
+        ContentLocales::write($page, 'seo_title', $this->seoTitle, englishRequired: false);
+        ContentLocales::write($page, 'seo_description', $this->seoDescription, englishRequired: false);
 
-        app(ContentDrafts::class)->stage($page, auth()->user());
+        // System pages already have their fixed place in the footer.
+        $page->show_in_footer = ! in_array($page->slug, self::SYSTEM_SLUGS, true) && $this->showInFooter;
+
+        $draft = app(ContentDrafts::class)->stage($page, auth()->user(), withFiles: $this->shareImage !== null);
+
+        if ($this->shareImage !== null) {
+            $draft->addMedia($this->shareImage->getRealPath())
+                ->usingFileName($this->shareImage->getClientOriginalName())
+                ->toMediaCollection('share_image');
+        }
 
         $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
         $this->resetForm();
+    }
+
+    /** Takes the share picture off at publish; a picture waiting in the draft goes too. */
+    public function removeShareImage(): void
+    {
+        if ($this->editingId === null) {
+            return;
+        }
+
+        $page = app(ContentDrafts::class)->preview(Page::findOrFail($this->editingId));
+
+        app(ContentDrafts::class)->stage($page, auth()->user(), clearMedia: ['share_image'])->clearMediaCollection('share_image');
+        $this->shareImage = null;
+
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }
 
     public function toggleActive(int $pageId): void
@@ -154,6 +202,9 @@ class Pages extends Component
         return view('livewire.admin.content.pages', [
             // Rows show the pending draft, so an editor sees their own work.
             'pages' => Page::with('draft')->orderBy('slug')->get()->each(fn (Page $page) => app(ContentDrafts::class)->preview($page)),
+            'editingShareImage' => $this->editingId !== null
+                ? app(ContentDrafts::class)->preview(Page::findOrFail($this->editingId))->getFirstMediaUrl('share_image')
+                : '',
             'editingIsSystem' => $this->editingId !== null
                 && in_array(Page::find($this->editingId)?->slug, self::SYSTEM_SLUGS, true),
         ])->title(__('Pages'));
@@ -169,7 +220,7 @@ class Pages extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['showForm', 'editingId', 'slug', 'title', 'body', 'isActive']);
+        $this->reset(['showForm', 'editingId', 'slug', 'title', 'body', 'isActive', 'seoTitle', 'seoDescription', 'shareImage', 'showInFooter']);
         $this->resetErrorBag();
     }
 }

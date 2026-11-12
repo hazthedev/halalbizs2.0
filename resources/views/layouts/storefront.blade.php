@@ -333,6 +333,10 @@
                 <p class="font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-on-dark-faint">{{ __('Company') }}</p>
                 <ul class="mt-4 space-y-2.5 text-[length:var(--text-base)]">
                     <li><a href="{{ route('page.show', 'about') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('About us') }}</a></li>
+                    {{-- Custom pages ticked "show in footer" (Admin → Content → Pages). ponytail: one small query per page view, cache if the footer ever shows in a profile. --}}
+                    @foreach (app(\App\Services\ContentDrafts::class)->visible(\App\Models\Page::class)->where('show_in_footer', true)->sortBy('id') as $footerPage)
+                        <li><a href="{{ route('page.show', $footerPage->slug) }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ $footerPage->title }}</a></li>
+                    @endforeach
                     <li><a href="{{ route('seller.apply') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Sell on HalalBizs') }}</a></li>
                 </ul>
 
