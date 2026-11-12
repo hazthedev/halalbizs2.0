@@ -1,6 +1,30 @@
 <div class="space-y-4">
     <x-ui.section-heading as="h1" :title="__('Dashboard')" />
 
+    <x-ui.card class="space-y-3 p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="font-display text-lg font-medium">{{ __('My WHIP applications') }}</h2>
+            <x-ui.button variant="secondary" wire:click="refreshWhipApplications" wire:loading.attr="disabled">{{ __('Refresh status') }}</x-ui.button>
+        </div>
+        @if ($whipMessage)
+            <p role="status" class="text-sm text-ink-soft">{{ $whipMessage }}</p>
+        @endif
+        @error('whip') <p role="alert" class="text-sm text-danger">{{ $message }}</p> @enderror
+        @foreach ($whipApplications as $application)
+            <div class="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3" wire:key="whip-app-{{ $loop->index }}">
+                <p class="break-all font-mono text-sm">{{ $application['number'] }}</p>
+                <x-ui.badge variant="neutral">{{ __(ucfirst($application['status'])) }}</x-ui.badge>
+                @if ($followedWhipApplicationId === $application['id'])
+                    <span class="text-sm text-emerald">{{ __('Following') }}</span>
+                @else
+                    <x-ui.button variant="secondary" wire:click="followWhipApplication({{ $application['id'] }})" wire:loading.attr="disabled">{{ __('Follow application') }}</x-ui.button>
+                @endif
+            </div>
+        @endforeach
+        <p class="text-sm text-ink-soft">{{ __('Follow an application to link its certificate and matching products automatically when WHIP certifies it. Our regular recheck keeps them up to date.') }}</p>
+        <a href="{{ route('seller.certificates') }}" wire:navigate class="inline-flex min-h-11 items-center text-sm text-emerald underline">{{ __('Manage my certificates') }}</a>
+    </x-ui.card>
+
     {{-- ===== Stat cards (count-up per design §7, reduced-motion renders final) ===== --}}
     @php
         $stats = [

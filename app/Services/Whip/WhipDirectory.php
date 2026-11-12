@@ -26,6 +26,8 @@ class WhipDirectory
         }
 
         $numbers = DB::connection('whip')->table('halal_application_company_profiles as p')
+            ->join('halal_applications as a', 'a.id', '=', 'p.application_id')
+            ->whereColumn('p.user_id', 'a.user_id')
             ->join('halal_application_certificates as c', 'c.application_id', '=', 'p.application_id')
             ->whereRaw("UPPER(REPLACE(REPLACE(TRIM(p.registration_number), '-', ''), ' ', '')) = ?", [$registration])
             ->whereNotNull('c.certificate_no')->where('c.certificate_no', '!=', '')
@@ -35,6 +37,22 @@ class WhipDirectory
         return $numbers->map(fn ($no) => $this->lookup($no))
             ->filter(fn ($c) => $c !== null && WhipCertificate::normaliseRegistration($c->registrationNumber) === $registration)
             ->values()->all();
+    }
+
+    /** Application owner and company profile must agree, including before certification. */
+    public function applicationsForCompany(string $registrationNo): array
+    {
+        $registration = WhipCertificate::normaliseRegistration($registrationNo);
+        if ($registration === '') {
+            return [];
+        }
+
+        return DB::connection('whip')->table('halal_applications as a')
+            ->join('halal_application_company_profiles as p', 'p.application_id', '=', 'a.id')
+            ->whereColumn('p.user_id', 'a.user_id')
+            ->whereRaw("UPPER(REPLACE(REPLACE(TRIM(p.registration_number), '-', ''), ' ', '')) = ?", [$registration])
+            ->select('a.id', 'a.application_no', 'a.status')->distinct()->orderByDesc('a.id')->get()
+            ->map(fn ($row) => ['id' => (int) $row->id, 'number' => $row->application_no, 'status' => $row->status])->all();
     }
 
     /**

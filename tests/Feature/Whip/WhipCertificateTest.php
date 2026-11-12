@@ -4,6 +4,7 @@ use App\Enums\CertificateStatus;
 use App\Enums\ProductStatus;
 use App\Livewire\Admin\Catalog\Certificates as AdminCertificates;
 use App\Livewire\Seller\Certificates;
+use App\Livewire\Seller\Dashboard;
 use App\Livewire\Seller\Notifications;
 use App\Models\Brand;
 use App\Models\Category;
@@ -38,6 +39,9 @@ beforeEach(function () {
     $s = Schema::connection('whip');
     $s->create('halal_applications', function ($t) {
         $t->id();
+        $t->unsignedBigInteger('user_id')->default(1);
+        $t->string('application_no')->default('HALAL-TEST');
+        $t->dateTime('submitted_at')->nullable();
         $t->unsignedBigInteger('certification_body_id')->default(1);
         $t->string('status');
     });
@@ -51,6 +55,7 @@ beforeEach(function () {
     });
     $s->create('halal_application_company_profiles', function ($t) {
         $t->id();
+        $t->unsignedBigInteger('user_id')->default(1);
         $t->unsignedBigInteger('application_id');
         $t->string('company_name')->nullable();
         $t->string('registration_number')->nullable();
@@ -338,6 +343,31 @@ test('a failed WHIP reminder enqueue leaves its milestone available for retry', 
     $this->assertDatabaseCount('jobs', 2);
 });
 
+test('seller dashboard tracks their verified company WHIP application before any certificate exists', function () {
+    $db = DB::connection('whip');
+    $application = $db->table('halal_applications')->insertGetId(['user_id' => 101, 'application_no' => 'HALAL-200', 'status' => 'Submitted']);
+    $db->table('halal_application_company_profiles')->insert(['application_id' => $application, 'user_id' => 101, 'registration_number' => '202001-000123']);
+    $other = $db->table('halal_applications')->insertGetId(['user_id' => 202, 'application_no' => 'PRIVATE-OTHER', 'status' => 'Draft']);
+    $db->table('halal_application_company_profiles')->insert(['application_id' => $other, 'user_id' => 202, 'registration_number' => '999999-X']);
+    $badOwner = $db->table('halal_applications')->insertGetId(['user_id' => 303, 'application_no' => 'WRONG-OWNER', 'status' => 'Draft']);
+    $db->table('halal_application_company_profiles')->insert(['application_id' => $badOwner, 'user_id' => 404, 'registration_number' => '202001000123']);
+
+    Livewire::actingAs(whipSeller())->test(Dashboard::class)
+        ->assertSee('HALAL-200')->assertSee('Submitted')->assertDontSee('PRIVATE-OTHER')->assertDontSee('WRONG-OWNER')
+        ->tap(function ($page) use ($db, $application) {
+            $db->table('halal_applications')->where('id', $application)->update(['status' => 'certified']);
+            $page->call('refreshWhipApplications')->assertSee('Certified');
+        });
+    Livewire::actingAs(whipSeller(confirmed: false))->test(Dashboard::class)
+        ->assertDontSee('HALAL-200');
+});
+
+test('WHIP application tracker remains usable when the directory is unavailable', function () {
+    Schema::connection('whip')->drop('halal_applications');
+    Livewire::actingAs(whipSeller())->test(Dashboard::class)
+        ->assertSee('WHIP is unavailable')->assertSee('Manage my certificates');
+});
+
 test('a certificate number that WHIP holds as certified and in date, for the same company registration number, is verified from WHIP', function () {
     $app = whipCert();
     whipSubmit(whipSeller());
@@ -586,4 +616,63 @@ test('importing WHIP products keeps products already waiting for admin review', 
     Livewire::actingAs($seller)->test(Certificates::class)->set('importCategoryId', $category->id)
         ->call('importWhipProducts', whipRow()->id)->assertHasNoErrors();
     expect(whipRow()->whip_unmatched_product_ids)->toBe([$parked->id]);
+});
+
+test('following a pending WHIP application lets the existing recheck bind its issued certificate and matching products', function () {
+    $application = whipCert(['status' => 'Submitted']);
+    DB::connection('whip')->table('halal_application_certificates')->delete();
+    $seller = whipSeller();
+    $product = whipProduct($seller->store, 'Kicap', '955000');
+    $other = whipProduct($seller->store, 'Uncertified product');
+    Livewire::actingAs($seller)->test(Dashboard::class)
+        ->call('followWhipApplication', $application)->assertHasNoErrors();
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+    expect($product->fresh()->halal_certificate_id)->toBeNull();
+
+    DB::connection('whip')->table('halal_applications')->where('id', $application)->update(['status' => 'certified']);
+    DB::connection('whip')->table('halal_application_certificates')->insert([
+        'application_id' => $application, 'certificate_no' => 'WH-ISSUED',
+        'valid_from' => now()->subDay()->toDateString(), 'valid_to' => now()->addYear()->toDateString(),
+    ]);
+    DB::connection('whip')->table('halal_application_company_profiles')->where('application_id', $application)->update(['company_name' => null]);
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+    expect($product->fresh()->halal_certificate_id)->toBeNull();
+    DB::connection('whip')->table('halal_application_company_profiles')->where('application_id', $application)->update(['company_name' => 'WHIP Foods Sdn Bhd']);
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+    expect($product->fresh()->halalVerdict())->toBe('verified')
+        ->and($product->fresh()->halalCertificate->number)->toBe('WH-ISSUED')
+        ->and($other->fresh()->halal_certificate_id)->toBeNull();
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+    expect($seller->store->halalCertificates()->count())->toBe(1);
+});
+
+test('an application cannot be followed using a forged card or an unverified SSM', function () {
+    $application = whipCert();
+    foreach ([whipSeller('999999-X'), whipSeller(confirmed: false)] as $seller) {
+        Livewire::actingAs($seller)->test(Dashboard::class)
+            ->set('whipApplications', [['id' => $application, 'number' => 'WH-100', 'status' => 'certified']])
+            ->call('followWhipApplication', $application)->assertForbidden();
+        expect($seller->store->fresh()->whip_application_id)->toBeNull();
+    }
+});
+
+test('a followed application lookup outage leaves existing certificate checks unchanged', function () {
+    whipCert();
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    $seller->store->forceFill(['whip_application_id' => whipRow()->whip_application_id])->save();
+    DB::connection('whip')->table('halal_applications')->update(['status' => 'revoked']);
+    $directory = Mockery::mock(WhipDirectory::class)->makePartial();
+    $directory->shouldReceive('forCompany')->andThrow(new RuntimeException('WHIP unavailable'));
+    app()->instance(WhipDirectory::class, $directory);
+    $this->artisan('certificates:sync-whip')->assertFailed();
+    expect(whipRow()->status)->toBe(CertificateStatus::Approved)->and(whipRow()->whip_answer)->toBe('verified');
+});
+
+test('following an application reports a directory outage without saving a choice', function () {
+    $seller = whipSeller();
+    Schema::connection('whip')->drop('halal_applications');
+    Livewire::actingAs($seller)->test(Dashboard::class)
+        ->call('followWhipApplication', 1)->assertHasErrors('whip');
+    expect($seller->store->fresh()->whip_application_id)->toBeNull();
 });
