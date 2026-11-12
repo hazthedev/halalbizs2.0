@@ -11,10 +11,12 @@ use App\Services\Whip\WhipDirectory;
 use App\Support\DisplayTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Throwable;
 
 /**
  * The seller's halal certificates — the write path audit H-6 found missing.
@@ -73,6 +75,58 @@ class Certificates extends Component
 
     /** SKU binding: product ids covered by the certificate open in $editing. */
     public array $covered = [];
+
+    public array $whipCertificates = [];
+
+    public bool $whipSearched = false;
+
+    public function findWhipCertificates(): void
+    {
+        $this->whipCertificates = [];
+        $this->whipSearched = false;
+        $this->resetErrorBag('whip');
+        $store = $this->currentStore()->fresh();
+        if (blank($store->registration_no)) {
+            $this->validate(['registrationNo' => ['required', 'string', 'max:40']]);
+            $store->forceFill(['registration_no' => trim($this->registrationNo)])->save();
+        }
+        if ($store->registration_verified_at === null) {
+            $this->addError('whip', __('Your SSM number needs to be checked by our team before we can show your WHIP records.'));
+
+            return;
+        }
+        try {
+            $this->whipCertificates = array_map(fn ($c) => [
+                'number' => $c->certificateNo, 'scope' => $c->scopeNote,
+                'status' => $c->status, 'expiry' => $c->validTo,
+                'can_link' => $c->answerFor($store->registration_no) === 'verified' && filled($c->companyName),
+            ], app(WhipDirectory::class)->forCompany($store->registration_no));
+            $this->whipSearched = true;
+        } catch (Throwable) {
+            $this->addError('whip', __('WHIP is unavailable. Please try again later.'));
+        }
+    }
+
+    public function linkWhipCertificate(string $number): void
+    {
+        $this->resetErrorBag('whip');
+        $store = $this->currentStore()->fresh();
+        DB::transaction(function () use ($store, $number) {
+            $store = $store->newQuery()->lockForUpdate()->findOrFail($store->id);
+            abort_unless($store->registration_verified_at !== null && filled($store->registration_no), 403);
+            $certificate = HalalCertificate::whereRaw('UPPER(TRIM(number)) = ?', [strtoupper(trim($number))])->lockForUpdate()->first();
+            abort_if($certificate !== null && $certificate->store_id !== $store->id, 403);
+            [$answer, $whip] = app(WhipDirectory::class)->check($number, $store->registration_no);
+            if ($answer !== 'verified' || blank($whip?->companyName)) {
+                throw ValidationException::withMessages(['whip' => __('WHIP could not confirm a complete, current certificate for your verified SSM number.')]);
+            }
+            $certificate ??= new HalalCertificate(['store_id' => $store->id, 'number' => $whip->certificateNo, 'issuing_body' => 'WHIP']);
+            $certificate->takeFromWhip($whip, 'verified')->fill(['scope_note' => $whip->scopeNote]);
+            $certificate->forceFill(['status' => CertificateStatus::Approved, 'submitted_at' => now(), 'reviewed_at' => now(), 'review_note' => null])->save();
+            $certificate->bindProducts([...$certificate->products()->pluck('id'), ...($certificate->whip_unmatched_product_ids ?? [])], $whip);
+        });
+        $this->dispatch('toast', message: __('Certificate linked from WHIP.'));
+    }
 
     public function startCreate(): void
     {

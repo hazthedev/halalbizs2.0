@@ -8,6 +8,33 @@
         :subtitle="__('Register the certificate a recognised body issued you, then tick the products its scope covers. We check it before the badge appears.')"
     />
 
+    <x-ui.card class="space-y-3 p-5">
+        <h2 class="font-display text-lg font-medium">{{ __('Find my WHIP certificates') }}</h2>
+        <p class="text-sm text-ink-soft">{{ __('Use your verified company SSM number to link a certificate without retyping it.') }}</p>
+        @if (blank(auth()->user()->store?->registration_no))
+            <x-ui.input :label="__('Company SSM number')" name="whipRegistrationNo" wire:model="registrationNo" :error="$errors->first('registrationNo')" />
+        @else
+            <p class="text-sm">{{ __('Company SSM number') }}: {{ auth()->user()->store->registration_no }}</p>
+        @endif
+        <x-ui.button wire:click="findWhipCertificates" wire:loading.attr="disabled">{{ __('Find my certificates') }}</x-ui.button>
+        @error('whip') <p role="alert" class="text-sm text-danger">{{ $message }}</p> @enderror
+        @if ($whipSearched && empty($whipCertificates))
+            <p class="text-sm text-ink-soft">{{ __('No WHIP certificates found for your company SSM number.') }}</p>
+        @endif
+        @foreach ($whipCertificates as $found)
+            <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3" wire:key="whip-{{ $found['number'] }}">
+                <div class="min-w-0">
+                    <p class="break-words font-mono text-sm font-medium">{{ $found['number'] }}</p>
+                    <p class="text-sm text-ink-soft">{{ $found['scope'] ?: __('Scope not supplied') }}</p>
+                    <p class="text-sm text-ink-soft">{{ __(ucfirst(str_replace('_', ' ', $found['status']))) }} · {{ __('Valid until') }} {{ $found['expiry'] ?: __('Not supplied') }}</p>
+                </div>
+                @if ($found['can_link'])
+                    <x-ui.button variant="secondary" wire:click="linkWhipCertificate({{ Illuminate\Support\Js::from($found['number']) }})" wire:loading.attr="disabled">{{ __('Link certificate') }}</x-ui.button>
+                @endif
+            </div>
+        @endforeach
+    </x-ui.card>
+
     @if (! $creating && $editing === null)
         <div>
             <x-ui.button wire:click="startCreate">{{ __('Register a certificate') }}</x-ui.button>
