@@ -1,7 +1,7 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <x-ui.section-heading as="h1" :title="__('Products')">
+    <x-ui.section-heading as="h1" class="flex-wrap" :title="__('Products')">
         <x-slot:actions>
             <x-ui.button :href="route('seller.products.import')" variant="ghost">{{ __('Bulk import') }}</x-ui.button>
             <x-ui.button :href="route('seller.products.create')">
@@ -63,6 +63,8 @@
             </button>
         </div>
     @endif
+
+    <p class="text-[13px] text-ink-soft lg:hidden">{{ __('Scroll sideways to see prices, status and actions.') }}</p>
 
     {{-- Datagrid --}}
     <x-ui.card class="overflow-x-auto">

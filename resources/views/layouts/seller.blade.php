@@ -18,7 +18,7 @@
             </button>
             <a href="{{ route('seller.dashboard') }}" wire:navigate class="flex items-center gap-2 font-display text-lg font-medium text-on-dark">
                 <x-ui.star-mark :size="20" class="text-brass" />
-                HalalBizs <span class="font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] text-on-dark-faint">{{ __('Seller Centre') }}</span>
+                HalalBizs <span class="hidden sm:inline font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] text-on-dark-faint">{{ __('Seller Centre') }}</span>
             </a>
             <div class="ml-auto flex items-center gap-2">
                 <a href="{{ route('home') }}" class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium text-on-dark/64 hover:text-on-dark">{{ __('View storefront') }}</a>
