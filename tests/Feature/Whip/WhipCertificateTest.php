@@ -380,6 +380,26 @@ test('sellers without certificates can get certified through the configured WHIP
     Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')->assertDontSee('Get certified');
 });
 
+test('buyers see certificate body number expiry and verify link only while this product remains certified', function () {
+    [, $product] = whipTicked();
+    $certificate = whipRow();
+    $this->actingAs(User::factory()->create())->get('/p/'.$product->slug)->assertOk()
+        ->assertSee('Test CB')->assertSee('WH-100')->assertSee('Read the record');
+    $certificate->forceFill(['valid_to' => now()->subDay()])->save();
+    $this->get('/p/'.$product->slug)->assertOk()->assertDontSee('WH-100')->assertDontSee('Read the record');
+});
+
+test('buyers never see WHIP certificate details for unmatched stale rejected or unpublished products', function () {
+    [, $product, , $unmatched] = whipTicked();
+    $certificate = whipRow();
+    $this->actingAs(User::factory()->create());
+    $this->get('/p/'.$unmatched->slug)->assertOk()->assertDontSee('Read the record');
+    foreach ([['whip_answer' => 'mismatch'], ['whip_synced_at' => now()->subHours(25)], ['status' => CertificateStatus::Rejected]] as $state) {
+        $certificate->forceFill(['status' => CertificateStatus::Approved, 'whip_answer' => 'verified', 'whip_synced_at' => now()])->forceFill($state)->save();
+        $this->get('/p/'.$product->slug)->assertOk()->assertDontSee('WH-100')->assertDontSee('Read the record');
+    }
+});
+
 test('a certificate number that WHIP holds as certified and in date, for the same company registration number, is verified from WHIP', function () {
     $app = whipCert();
     whipSubmit(whipSeller());
