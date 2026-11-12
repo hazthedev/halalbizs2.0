@@ -30,6 +30,11 @@ class SecurityHeaders
                 'https://www.facebook.com',
             ];
 
+            // The admin preview screen frames our own storefront pages (drafts at web and phone width).
+            if ($request->routeIs('admin.content.preview')) {
+                array_unshift($frameHosts, "'self'");
+            }
+
             $tracking = app(TrackingSettings::class);
 
             if ($tracking->ga4_id !== '') {

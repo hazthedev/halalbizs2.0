@@ -180,6 +180,10 @@ test('the preview screen frames the real page twice, with drafts on, and only ou
         ->assertSee('data-preview="web"', false)
         ->assertSee('data-preview="phone"', false);
 
+    // The browser must be allowed to frame our own pages here, and only here.
+    expect($this->actingAs($editor)->get('/admin/content/preview')->headers->get('Content-Security-Policy'))->toContain("frame-src 'self' ")
+        ->and($this->actingAs($editor)->get('/admin/content/pages')->headers->get('Content-Security-Policy'))->not->toContain("frame-src 'self'");
+
     // A path with its own query keeps it; anything that is not a path on this site falls back to home.
     $this->actingAs($editor)->get('/admin/content/preview?path='.urlencode('/search?q=dates'))
         ->assertSee('src="'.url('/search').'?q=dates&amp;preview=1"', false);
