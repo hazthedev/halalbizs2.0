@@ -1910,6 +1910,9 @@ class AppLocalizationsMs extends AppLocalizations {
   String get previewDrafts => 'Pratonton draf';
 
   @override
+  String get contactUs => 'Hubungi kami';
+
+  @override
   String get previewStrip => 'Pratonton: draf dipaparkan';
 
   @override
