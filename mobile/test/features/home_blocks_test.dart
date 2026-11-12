@@ -73,4 +73,40 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(h.router.state.uri.path, '/c/kurma');
   });
+
+  testWidgets('new block types: notice, picked products, picked stores, picture tiles', (tester) async {
+    final h = await pumpHome(tester, home(blocks: [
+      {'id': 11, 'type': 'notice', 'title': '', 'text': 'Closed for Raya'},
+      {'id': 12, 'type': 'notice', 'title': '', 'text': 'Second notice'},
+      {'id': 13, 'type': 'picked_products', 'title': 'Our picks', 'products': [fakeProduct(id: 5, slug: 'pk', name: 'Picked Dates')]},
+      {'id': 14, 'type': 'picked_stores', 'title': 'Stores', 'stores': [
+        {'id': 1, 'slug': 'kedai-a', 'name': 'Kedai Alpha', 'logo': null},
+      ]},
+      {'id': 15, 'type': 'picture_tiles', 'title': '', 'tiles': [
+        {'image': 'https://x.test/a.jpg', 'label': 'Tile One', 'link_url': null, 'app_url': '/c/kurma'},
+        {'image': 'https://x.test/b.jpg', 'label': 'Tile Two', 'link_url': null, 'app_url': null},
+      ]},
+    ]));
+    expect(tester.takeException(), isNull);
+    for (final t in ['Closed for Raya', 'Second notice', 'Our picks', 'Picked Dates', 'Kedai Alpha', 'Tile One', 'Tile Two']) {
+      expect(find.text(t), findsOneWidget, reason: t);
+    }
+    await tester.tap(find.byKey(const Key('home-store-kedai-a')));
+    await tester.pump(const Duration(seconds: 1));
+    expect(h.router.state.uri.path, '/s/kedai-a');
+  });
+
+  testWidgets('empty notice, stores and tiles draw nothing', (tester) async {
+    await pumpHome(tester, home(blocks: [
+      {'id': 21, 'type': 'notice', 'title': '', 'text': ''},
+      {'id': 22, 'type': 'picked_stores', 'title': 'No stores here', 'stores': []},
+      {'id': 23, 'type': 'picture_tiles', 'title': 'No tiles here', 'tiles': []},
+      grid(1, 'Known one', 'a'),
+    ]));
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const Key('home-block-21')), findsNothing);
+    expect(find.byKey(const Key('home-block-22')), findsNothing);
+    expect(find.byKey(const Key('home-block-23')), findsNothing);
+    expect(find.text('Known one'), findsOneWidget);
+  });
 }
