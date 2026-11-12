@@ -36,6 +36,7 @@ class AuditLog extends Component
         'HomeSection' => HomeSection::class,
         'HelpArticle' => HelpArticle::class,
         'Theme' => 'theme',
+        'Site info' => 'site-info',
     ];
 
     public string $subjectType = '';
@@ -71,8 +72,8 @@ class AuditLog extends Component
             ->with('causer')
             ->when(
                 $this->subjectType !== '' && isset(self::SUBJECT_TYPES[$this->subjectType]),
-                fn ($query) => $this->subjectType === 'Theme'
-                    ? $query->where('log_name', 'theme')
+                fn ($query) => in_array($this->subjectType, ['Theme', 'Site info'], true)
+                    ? $query->where('log_name', self::SUBJECT_TYPES[$this->subjectType])
                     : $query->where('subject_type', self::SUBJECT_TYPES[$this->subjectType]),
             )
             ->when($this->isDay($this->dateFrom), fn ($query) => $query->where('created_at', '>=', DisplayTime::dayStart($this->dateFrom)))

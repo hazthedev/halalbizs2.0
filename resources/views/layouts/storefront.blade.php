@@ -273,6 +273,35 @@
                         @endforeach
                     @endforeach
                 </ul>
+
+                @php($info = app(\App\Settings\SiteInfoSettings::class))
+                @php($socials = array_filter(['Facebook' => $info->social_facebook, 'Instagram' => $info->social_instagram, 'TikTok' => $info->social_tiktok, 'YouTube' => $info->social_youtube, 'X' => $info->social_x]))
+                @if ($info->contact_email !== '' || $info->contact_phone !== '' || $info->contact_whatsapp !== '' || $info->contact_address !== '' || $socials !== [])
+                    <div class="mt-6">
+                        <p class="font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-on-dark-faint">{{ __('Contact') }}</p>
+                        <ul class="mt-4 space-y-2.5 text-[length:var(--text-base)]">
+                            @if ($info->contact_email !== '')
+                                <li><a href="mailto:{{ $info->contact_email }}" class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ $info->contact_email }}</a></li>
+                            @endif
+                            @if ($info->contact_phone !== '')
+                                <li><a href="tel:{{ $info->contact_phone }}" class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ $info->contact_phone }}</a></li>
+                            @endif
+                            @if ($info->contact_whatsapp !== '')
+                                <li><a href="https://wa.me/{{ preg_replace('/\D/', '', $info->contact_whatsapp) }}" rel="noopener noreferrer" target="_blank" class="transition-colors duration-(--dur-micro) hover:text-on-dark">WhatsApp {{ $info->contact_whatsapp }}</a></li>
+                            @endif
+                            @if ($info->contact_address !== '')
+                                <li>{{ $info->contact_address }}</li>
+                            @endif
+                        </ul>
+                        @if ($socials !== [])
+                            <ul class="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[length:var(--text-base)]">
+                                @foreach ($socials as $network => $url)
+                                    <li><a href="{{ $url }}" rel="noopener noreferrer" target="_blank" class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ $network }}</a></li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                @endif
             </div>
 
             {{-- Marketplace column: the real department tree --}}

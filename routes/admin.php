@@ -53,6 +53,7 @@ Route::middleware('can:cms.manage')->group(function () {
     Route::get('/content/banners', Admin\Content\Banners::class)->name('content.banners');
     Route::get('/content/home-sections', Admin\Content\HomeSections::class)->name('content.home-sections');
     Route::get('/content/pages', Admin\Content\Pages::class)->name('content.pages');
+    Route::get('/content/site-info', Admin\Content\SiteInfo::class)->name('content.site-info');
     Route::get('/content/theme', Admin\Content\Theme::class)->name('content.theme');
     Route::get('/content/preview', Admin\Content\Preview::class)->name('content.preview');
     Route::get('/content/history', Admin\Content\History::class)->name('content.history');
