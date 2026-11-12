@@ -4,6 +4,7 @@ import '../../core/api/api_client.dart';
 import '../../core/api/json.dart';
 import '../../core/auth/session.dart';
 import '../../core/offline/offline.dart';
+import '../preview/preview_mode.dart';
 import 'models.dart';
 import 'paged.dart';
 
@@ -76,8 +77,8 @@ class CatalogApi {
     return ProductPage.from(r);
   }
 
-  Future<HomeFeed> home() async {
-    final r = await _repo.getJson('home');
+  Future<HomeFeed> home({bool preview = false}) async {
+    final r = await _repo.getJson('home', query: previewQuery(preview));
     return HomeFeed(asMap(r.data), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
   }
 
@@ -190,7 +191,7 @@ final catalogApiProvider =
     Provider<CatalogApi>((ref) => CatalogApi(ref.watch(offlineRepoProvider), ref.watch(apiClientProvider)));
 
 /// Home tab: banners, flash sale, categories and featured from `GET home`.
-final homeProvider = FutureProvider<HomeFeed>((ref) => ref.watch(catalogApiProvider).home());
+final homeProvider = FutureProvider<HomeFeed>((ref) => ref.watch(catalogApiProvider).home(preview: ref.watch(previewModeProvider)));
 
 /// `/featured` ("View all"): the paged `sort=top` list (`GET home` sends one
 /// page only; the API accepts `latest|top|price_asc|price_desc`).

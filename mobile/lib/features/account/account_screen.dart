@@ -10,6 +10,7 @@ import '../../l10n/l10n.dart';
 import '../messages/conversations_screen.dart';
 import '../messages/messages_api.dart';
 import '../pages/cms_pages.dart';
+import '../preview/preview_mode.dart';
 import 'account_api.dart';
 import '../orders/orders_api.dart';
 import 'addresses_screen.dart';
@@ -119,6 +120,14 @@ class AccountScreen extends ConsumerWidget {
               ),
               SoukRow(key: const Key('account-support'), icon: FontAwesomeIcons.headset, label: l.helpAndSupport, onTap: () => context.push('/help')),
               SoukRow(key: const Key('account-legal'), icon: FontAwesomeIcons.fileLines, label: l.legalAndAbout, onTap: () => context.push('/account/legal')),
+              if (me.canPreviewContent)
+                SoukRow(
+                  key: const Key('account-preview-drafts'),
+                  icon: FontAwesomeIcons.eye,
+                  label: l.previewDrafts,
+                  trailing: Switch(value: ref.watch(previewModeProvider), onChanged: ref.read(previewModeProvider.notifier).set),
+                  onTap: () => ref.read(previewModeProvider.notifier).set(!ref.read(previewModeProvider)),
+                ),
               SoukRow(key: const Key('account-language'), icon: FontAwesomeIcons.language, label: l.language, onTap: () => context.push('/account/language')),
             ]),
           ),
