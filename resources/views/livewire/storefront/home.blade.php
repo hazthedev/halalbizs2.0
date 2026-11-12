@@ -72,6 +72,7 @@
                                         // dedicated still artwork rather than showing the wrong text.
                                         $bannerVideo = app()->getLocale() === 'vi' ? '' : $banner->getFirstMediaUrl('video');
                                         $bannerImage = $banner->imageUrl(app()->getLocale());
+                                        $bannerSrcset = $banner->imageSrcset(app()->getLocale());
                                     @endphp
                                     <div class="swiper-slide">
                                         @if ($banner->link_url)
@@ -89,7 +90,8 @@
                                                 {{-- The copy is composited INTO the artwork now, so alt is the
                                                      only route a screen reader has to it. --}}
                                                 <img src="{{ $bannerImage }}" alt="{{ $bannerTitle }}{{ $bannerSubtitle !== '' ? '. '.$bannerSubtitle : '' }}"
-                                                     class="aspect-[3/1] w-full bg-paper object-cover" @if (! $loop->first) loading="lazy" @endif>
+                                                     @if ($bannerSrcset !== '') srcset="{{ $bannerSrcset }}" sizes="100vw" @endif
+                                                     class="aspect-[3/1] w-full bg-paper object-cover" @if ($loop->first) fetchpriority="high" @else loading="lazy" @endif>
                                             @endif
 
                                         @if ($banner->link_url)

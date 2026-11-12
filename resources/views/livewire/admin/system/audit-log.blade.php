@@ -52,10 +52,11 @@
                 </thead>
                 @foreach ($activities as $activity)
                     @php
-                        $new = $activity->properties['attributes'] ?? [];
-                        $old = $activity->properties['old'] ?? [];
+                        // activitylog v5 keeps model diffs in attribute_changes; older rows used properties.
+                        $new = $activity->attribute_changes['attributes'] ?? $activity->properties['attributes'] ?? [];
+                        $old = $activity->attribute_changes['old'] ?? $activity->properties['old'] ?? [];
                         $hasDiff = $new !== [] || $old !== [];
-                        $format = fn ($value) => $value === null ? '—' : (is_scalar($value) ? (string) $value : json_encode($value));
+                        $format = fn ($value) => $value === null ? '—' : (is_string($value) || is_numeric($value) ? (string) $value : json_encode($value));
                     @endphp
                     {{-- One tbody per activity so the diff row can share Alpine state --}}
                     <tbody x-data="{ open: false }" wire:key="activity-{{ $activity->id }}">

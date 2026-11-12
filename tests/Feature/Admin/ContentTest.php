@@ -155,7 +155,7 @@ test('banner schedule must end after it starts', function () {
         ->set('title.en', 'Backwards window')
         ->set('startsAt', '2026-06-30T00:00')
         ->set('endsAt', '2026-06-01T00:00')
-        ->set('image', UploadedFile::fake()->image('banner.jpg'))
+        ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
         ->call('save')
         ->assertHasErrors(['endsAt']);
 });

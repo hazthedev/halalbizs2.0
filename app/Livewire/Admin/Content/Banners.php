@@ -10,6 +10,7 @@ use App\Models\Store;
 use App\Support\ContentLocales;
 use App\Support\DisplayTime;
 use App\Support\HtmlSanitizer;
+use App\Support\ImageShape;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -122,8 +123,8 @@ class Banners extends Component
             'ctaLabel.vi' => ['nullable', 'string', 'max:60'],
             'startsAt' => ['nullable', 'date'],
             'endsAt' => ['nullable', 'date'],
-            'image' => [$this->editingId === null ? 'required' : 'nullable', 'image', 'max:4096'],
-            'imageVi' => ['nullable', 'image', 'max:4096'],
+            'image' => [$this->editingId === null ? 'required' : 'nullable', 'image', 'max:4096', ImageShape::banner()],
+            'imageVi' => ['nullable', 'image', 'max:4096', ImageShape::banner()],
             'video' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm', 'max:30720'],
         ], [
             'video.mimetypes' => __('The video must be an MP4 or WebM file.'),

