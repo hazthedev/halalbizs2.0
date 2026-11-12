@@ -52,8 +52,11 @@
     @endif
 
     @if (! $creating && $editing === null)
-        <div>
+        <div class="flex flex-wrap gap-3">
             <x-ui.button wire:click="startCreate">{{ __('Register a certificate') }}</x-ui.button>
+            @if ($certificates->isEmpty() && config('services.whip.apply_url'))
+                <a href="{{ config('services.whip.apply_url') }}" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper">{{ __('Get certified') }}</a>
+            @endif
         </div>
     @endif
 

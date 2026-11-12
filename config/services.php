@@ -3,6 +3,7 @@
 return [
 
     'whip' => [
+        'apply_url' => env('WHIP_APPLY_URL', 'https://whip.wghtc.com/company_register.php'),
         'renew_url' => env('WHIP_RENEW_URL', 'https://whip.wghtc.com/company_login.php'),
     ],
 
