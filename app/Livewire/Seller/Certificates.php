@@ -4,9 +4,12 @@ namespace App\Livewire\Seller;
 
 use App\Enums\CertificateStatus;
 use App\Livewire\Concerns\CurrentStore;
+use App\Models\Brand;
+use App\Models\Category;
 use App\Models\HalalCertificate;
 use App\Models\HalalCertificateEvent;
 use App\Models\Product;
+use App\Services\ProductWriteService;
 use App\Services\Whip\WhipDirectory;
 use App\Support\DisplayTime;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +82,53 @@ class Certificates extends Component
     public array $whipCertificates = [];
 
     public bool $whipSearched = false;
+
+    public ?int $importCategoryId = null;
+
+    public function importWhipProducts(int $certificateId): void
+    {
+        $this->resetErrorBag('whip');
+        $certificate = $this->certificates()->findOrFail($certificateId);
+        $store = $this->currentStore()->fresh();
+        abort_unless($certificate->source === 'whip' && $store->registration_verified_at !== null, 403);
+        $this->validate(['importCategoryId' => ['required', 'integer']]);
+        if ($problem = ProductWriteService::categoryProblem($this->importCategoryId)) {
+            $this->addError('importCategoryId', $problem);
+
+            return;
+        }
+        $count = DB::transaction(function () use ($certificate, $store) {
+            $store = $store->newQuery()->lockForUpdate()->findOrFail($store->id);
+            $certificate = $this->certificates()->lockForUpdate()->findOrFail($certificate->id);
+            abort_unless($certificate->source === 'whip' && $store->registration_verified_at !== null, 403);
+            [$answer, $whip] = app(WhipDirectory::class)->check($certificate->number, $store->registration_no);
+            if ($answer !== 'verified' || $whip->applicationId !== (int) $certificate->whip_application_id) {
+                throw ValidationException::withMessages(['whip' => __('WHIP could not confirm this certificate for your company. Nothing was imported.')]);
+            }
+            $certificate->takeFromWhip($whip, 'verified')->save();
+            $count = 0;
+            foreach ($whip->products as $row) {
+                if (Product::withTrashed()->where('store_id', $store->id)->where('whip_product_id', $row['id'])->exists()) {
+                    continue;
+                }
+                $draft = app(ProductWriteService::class)->create($store, [
+                    'name' => ['en' => $row['name']], 'description' => ['en' => ''],
+                    'category_id' => $this->importCategoryId, 'sku' => $row['barcode'],
+                ]);
+                $draft->forceFill(['whip_product_id' => $row['id']])->fill([
+                    'brand_id' => filled($row['brand']) ? Brand::where('is_active', true)
+                        ->whereRaw('LOWER(name) = ?', [mb_strtolower(trim($row['brand']))])->orderBy('id')->value('id') : null,
+                    'halal_certificate_id' => $certificate->id,
+                    'halal_cert_number' => $certificate->number, 'halal_cert_expiry' => $certificate->valid_to,
+                ])->save();
+                $count++;
+            }
+            $certificate->bindProducts([...$certificate->products()->pluck('id'), ...($certificate->whip_unmatched_product_ids ?? [])], $whip);
+
+            return $count;
+        });
+        $this->dispatch('toast', message: __(':count product drafts imported. Review each draft, add a price and photo, then publish.', ['count' => $count]));
+    }
 
     public function findWhipCertificates(): void
     {
@@ -313,6 +363,7 @@ class Certificates extends Component
             'certificates' => $this->certificates()->with('products:id,halal_certificate_id')->get(),
             'products' => $this->storeProducts()->orderBy('name')->get(['id', 'name', 'halal_certificate_id']),
             'bodies' => HalalCertificate::BODIES,
+            'importCategories' => Category::active()->whereDoesntHave('children', fn ($q) => $q->active())->orderBy('id')->get(),
         ])->title(__('Halal certificates'));
     }
 }

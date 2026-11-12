@@ -76,8 +76,8 @@ class WhipDirectory
         $profile = $db->table('halal_application_company_profiles')->where('application_id', $row->application_id)->orderBy('id')->first();
         $body = $db->table('certification_bodies')->where('id', $row->certification_body_id)->value('name');
         $products = $db->table('halal_application_products')->where('application_id', $row->application_id)->orderBy('id')
-            ->get(['product_name', 'brand_name', 'barcode'])
-            ->map(fn ($p) => ['name' => (string) $p->product_name, 'brand' => $p->brand_name ?: null, 'barcode' => $p->barcode ?: null])->all();
+            ->get(['id', 'product_name', 'brand_name', 'barcode'])
+            ->map(fn ($p) => ['id' => (int) $p->id, 'name' => (string) $p->product_name, 'brand' => $p->brand_name ?: null, 'barcode' => $p->barcode ?: null])->all();
 
         return new WhipCertificate(
             status: $pick === null ? WhipCertificate::AMBIGUOUS : $states[$pick],
