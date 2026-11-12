@@ -79,6 +79,7 @@
                             ['admin.content.banners', __('Banners'), 'admin.content.banners'],
                             ['admin.content.home-sections', __('Home sections'), 'admin.content.home-sections'],
                             ['admin.content.pages', __('Pages'), 'admin.content.pages'],
+                            ['admin.content.site-info', __('Footer & contact'), 'admin.content.site-info'],
                             ['admin.content.vouchers', __('Vouchers'), 'admin.content.vouchers'],
                             ['admin.content.theme', __('Theme'), 'admin.content.theme'],
                             ['admin.live.index', __('Live shopping'), 'admin.live.*'],

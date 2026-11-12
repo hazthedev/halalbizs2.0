@@ -17,7 +17,7 @@ class HomeSection extends Model
 
     public array $translatable = ['title'];
 
-    protected $fillable = ['type', 'title', 'payload', 'position', 'is_active'];
+    protected $fillable = ['type', 'title', 'payload', 'position', 'is_active', 'show_on'];
 
     protected function casts(): array
     {

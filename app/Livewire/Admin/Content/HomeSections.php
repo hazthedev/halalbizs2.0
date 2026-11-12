@@ -37,6 +37,8 @@ class HomeSections extends Component
 
     public string $limit = '12';
 
+    public string $showOn = 'both';
+
     public static function typeLabel(string $type): string
     {
         return match ($type) {
@@ -87,11 +89,12 @@ class HomeSections extends Component
         $this->title = ContentLocales::read($section, 'title');
         $this->source = (string) ($section->payload['source'] ?? ($section->type === 'product_grid' ? 'top' : 'latest'));
         $this->limit = (string) ($section->payload['limit'] ?? ($section->type === 'category_grid' ? 8 : 12));
+        $this->showOn = $section->show_on ?? 'both';
     }
 
     public function cancel(): void
     {
-        $this->reset(['editingId', 'title', 'source', 'limit']);
+        $this->reset(['editingId', 'title', 'source', 'limit', 'showOn']);
         $this->resetErrorBag();
     }
 
@@ -103,6 +106,7 @@ class HomeSections extends Component
             'title.en' => ['nullable', 'string', 'max:255'],
             'title.ms' => ['nullable', 'string', 'max:255'],
             'title.vi' => ['nullable', 'string', 'max:255'],
+            'showOn' => ['required', 'in:both,web,app'],
         ];
 
         if (in_array($section->type, ['category_grid', 'product_carousel', 'product_grid'], true)) {
@@ -114,6 +118,8 @@ class HomeSections extends Component
         }
 
         $this->validate($rules, attributes: ['title.en' => __('title (English)')]);
+
+        $section->show_on = $this->showOn;
 
         ContentLocales::write($section, 'title', $this->title, englishRequired: false);
 

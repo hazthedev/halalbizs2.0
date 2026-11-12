@@ -8,6 +8,7 @@ use App\Services\CartService;
 use App\Settings\CodSettings;
 use App\Settings\GeneralSettings;
 use App\Settings\MobileAppSettings;
+use App\Settings\SiteInfoSettings;
 use App\Support\MalaysianStates;
 use Illuminate\Http\JsonResponse;
 
@@ -17,7 +18,7 @@ use Illuminate\Http\JsonResponse;
  */
 class ConfigController extends Controller
 {
-    public function __invoke(GeneralSettings $general, CodSettings $cod, CartService $cart, MobileAppSettings $app): JsonResponse
+    public function __invoke(GeneralSettings $general, CodSettings $cod, CartService $cart, MobileAppSettings $app, SiteInfoSettings $info): JsonResponse
     {
         $base = rtrim((string) config('app.url'), '/');
 
@@ -33,6 +34,20 @@ class ConfigController extends Controller
             'maintenance' => [
                 'enabled' => $app->maintenance_enabled,
                 'message' => $app->maintenanceMessage(app()->getLocale()),
+            ],
+            // Admin → Content → Footer & contact. Empty = null.
+            'contact' => [
+                'email' => $info->contact_email ?: null,
+                'phone' => $info->contact_phone ?: null,
+                'whatsapp' => $info->contact_whatsapp ?: null,
+                'address' => $info->contact_address ?: null,
+            ],
+            'social' => [
+                'facebook' => $info->social_facebook ?: null,
+                'instagram' => $info->social_instagram ?: null,
+                'tiktok' => $info->social_tiktok ?: null,
+                'youtube' => $info->social_youtube ?: null,
+                'x' => $info->social_x ?: null,
             ],
             'urls' => [
                 'privacy' => $base.'/page/privacy',

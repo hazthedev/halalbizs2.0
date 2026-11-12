@@ -1,3 +1,20 @@
+@push('meta')
+    @php
+        $seoLocale = app()->getLocale();
+        $shareImage = $page->getFirstMediaUrl('share_image');
+    @endphp
+    <meta name="description" content="{{ $page->seoDescription($seoLocale) }}">
+    <link rel="canonical" href="{{ route('page.show', $page->slug) }}">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:title" content="{{ $page->seoTitle($seoLocale) }}">
+    <meta property="og:description" content="{{ $page->seoDescription($seoLocale) }}">
+    <meta property="og:url" content="{{ route('page.show', $page->slug) }}">
+    @if ($shareImage !== '')
+        <meta property="og:image" content="{{ $shareImage }}">
+        <meta name="twitter:card" content="summary_large_image">
+    @endif
+@endpush
 <div class="mx-auto w-full max-w-3xl px-4 py-12 sm:py-16">
     <x-ui.section-heading as="h1" :title="$page->getTranslation('title', app()->getLocale())" />
 

@@ -55,6 +55,9 @@
                                     @if ($section->draft !== null)
                                         <x-ui.badge variant="neutral" class="ml-1">{{ __('Draft') }}</x-ui.badge>
                                     @endif
+                                    @if (($section->show_on ?? 'both') !== 'both')
+                                        <x-ui.badge variant="neutral" class="ml-1">{{ $section->show_on === 'web' ? __('Web only') : __('App only') }}</x-ui.badge>
+                                    @endif
                                 </p>
                                 <p class="truncate text-[12px] text-ink-soft">
                                     {{ $section->getTranslation('title', 'en', false) ?: __('No heading') }}
@@ -118,6 +121,17 @@
                                         {{ $section->type === 'banner' ? __('Shows every active banner — manage them on the Banners page.') : __('Filled from each visitor\'s own browsing history — nothing to configure.') }}
                                     </p>
                                 @endif
+
+                                <div class="sm:max-w-xs">
+                                    <label for="section-show-on" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Show on') }}</label>
+                                    <select id="section-show-on" wire:model="showOn"
+                                            class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                        <option value="both">{{ __('Web and app') }}</option>
+                                        <option value="web">{{ __('Web only') }}</option>
+                                        <option value="app">{{ __('App only') }}</option>
+                                    </select>
+                                    @error('showOn')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
+                                </div>
 
                                 <div class="flex items-center gap-2">
                                     <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Save section') }}</x-ui.button>
