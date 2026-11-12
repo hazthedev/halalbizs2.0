@@ -20,7 +20,10 @@ const kSearchDebounce = Duration(milliseconds: 300);
 /// instead of a blank screen (Haze 11-11). Online-only; offline shows
 /// "Search needs a connection".
 class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({super.key});
+  const SearchScreen({super.key, this.q});
+
+  /// `/search?q=<text>` (a banner link): prefilled and run on open.
+  final String? q;
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -45,6 +48,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void initState() {
     super.initState();
+    _query.text = widget.q ?? '';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _run();
     });

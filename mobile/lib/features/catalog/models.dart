@@ -310,6 +310,8 @@ class HomeBanner {
   String get title => asStr(json['title']) ?? '';
   String? get image => asStr(json['image']);
   String? get appUrl => asStr(json['app_url']);
+  String? get subtitle => asStr(json['subtitle']);
+  String? get ctaLabel => asStr(json['cta_label']);
 }
 
 /// `GET home` → `flash_sale.products[]`: a product plus its `flash` block.

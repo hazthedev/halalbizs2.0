@@ -49,7 +49,58 @@ class HomeScreen extends ConsumerWidget {
           SoukSkeleton.cards(rows: 4),
         ]),
         error: (e, _) => ErrorPane(error: e, onRetry: () => _refresh(ref), retryLabel: l.retry),
-        data: (f) => f.blocks == null ? _FixedHome(f, onRefresh: () => _refresh(ref)) : _BlocksHome(f),
+        data: (f) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (f.announcement != null) _AnnouncementBar(f.announcement!),
+          if (f.hero != null) _Hero(f.hero!),
+          f.blocks == null ? _FixedHome(f, onRefresh: () => _refresh(ref)) : _BlocksHome(f),
+        ]),
+      ),
+    );
+  }
+}
+
+/// `#RRGGBB` from the admin; anything else falls back to the theme colour.
+Color _hex(dynamic v, Color fallback) {
+  final m = RegExp(r'^#([0-9a-fA-F]{6})$').firstMatch('$v');
+  return m == null ? fallback : Color(0xFF000000 | int.parse(m[1]!, radix: 16));
+}
+
+/// The admin's one-line announcement, edge to edge at the top of Home.
+class _AnnouncementBar extends StatelessWidget {
+  const _AnnouncementBar(this.json);
+
+  final Map<String, dynamic> json;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = asStr(json['text']) ?? '';
+    if (text.isEmpty) return const SizedBox.shrink();
+    return Container(
+      key: const Key('home-announcement'),
+      width: double.infinity,
+      color: _hex(json['bg'], SoukColors.emerald),
+      padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s3, vertical: SoukSpace.s2),
+      margin: const EdgeInsets.only(bottom: SoukSpace.s3),
+      child: Text(text, textAlign: TextAlign.center, style: SoukText.meta.copyWith(color: _hex(json['text_color'], SoukColors.paper))),
+    );
+  }
+}
+
+/// The occasion image under the announcement bar.
+class _Hero extends StatelessWidget {
+  const _Hero(this.json);
+
+  final Map<String, dynamic> json;
+
+  @override
+  Widget build(BuildContext context) {
+    if ((asStr(json['image']) ?? '').isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: SoukSpace.s5),
+      child: Semantics(
+        label: asStr(json['occasion']),
+        image: true,
+        child: AspectRatio(key: const Key('home-hero'), aspectRatio: 2, child: ProductImage(asStr(json['image']))),
       ),
     );
   }
@@ -250,7 +301,10 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   child: GestureDetector(
                     key: Key('home-banner-${b.id}'),
                     onTap: link == null ? null : () => context.push(link),
-                    child: ProductImage(b.image, radius: 0),
+                    child: Stack(fit: StackFit.expand, children: [
+                      ProductImage(b.image, radius: 0),
+                      if (b.subtitle != null || b.ctaLabel != null) _BannerText(b),
+                    ]),
                   ),
                 );
               },
@@ -285,6 +339,37 @@ class _BannerCarouselState extends State<BannerCarousel> {
       ),
     );
   }
+}
+
+/// Subtitle and button text over the banner, on a dark gradient so the picture stays readable.
+class _BannerText extends StatelessWidget {
+  const _BannerText(this.b);
+
+  final HomeBanner b;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [Colors.black.withValues(alpha: .65), Colors.transparent]),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(SoukSpace.s3),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              if (b.subtitle != null)
+                Text(b.subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis, style: SoukText.meta.copyWith(color: SoukColors.onDark)),
+              if (b.ctaLabel != null) ...[
+                const SizedBox(height: SoukSpace.s2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s3, vertical: SoukSpace.s1),
+                  decoration: BoxDecoration(color: SoukColors.paper, borderRadius: BorderRadius.circular(SoukRadius.pill)),
+                  child: Text(b.ctaLabel!, style: SoukText.meta.copyWith(color: SoukColors.emerald)),
+                ),
+              ],
+            ]),
+          ),
+        ),
+      );
 }
 
 /// Live flash sale (web `/flash-sale`): heading + "Ends in hh:mm:ss" pill,
@@ -402,6 +487,35 @@ class _FlashCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// `/flash-sale` (a banner link): the live deals from `GET home`, same cards as the strip.
+class FlashSaleScreen extends ConsumerWidget {
+  const FlashSaleScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final home = ref.watch(homeProvider);
+    final f = home.value;
+    return SoukPage(
+      title: l.flashSale,
+      scrollable: true,
+      fromCache: f?.fromCache ?? false,
+      cachedAt: f?.fetchedAt,
+      body: home.when(
+        skipLoadingOnRefresh: true,
+        loading: () => const SoukSkeleton.cards(rows: 2),
+        error: (e, _) => ErrorPane(error: e, onRetry: () => ref.invalidate(homeProvider), retryLabel: l.retry),
+        data: (f) {
+          final live = f.flashEndsAt != null && f.flashEndsAt!.isAfter(DateTime.now());
+          return !live || f.flashItems.isEmpty
+              ? SoukEmptyState(key: const Key('flash-empty'), title: l.flashSaleEmpty)
+              : ProductGrid([for (final i in f.flashItems) i.product], soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}'));
+        },
       ),
     );
   }

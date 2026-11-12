@@ -3500,41 +3500,53 @@ abstract class AppLocalizations {
   /// **'Legal & about'**
   String get legalAndAbout;
 
-  /// No description provided for @legalAboutUs.
+  /// No description provided for @contactSupport.
   ///
   /// In en, this message translates to:
-  /// **'About us'**
-  String get legalAboutUs;
+  /// **'Contact support'**
+  String get contactSupport;
 
-  /// No description provided for @legalTrustSafety.
+  /// No description provided for @helpEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Trust & safety'**
-  String get legalTrustSafety;
+  /// **'No help articles yet'**
+  String get helpEmpty;
 
-  /// No description provided for @legalFaq.
+  /// No description provided for @pagesEmpty.
   ///
   /// In en, this message translates to:
-  /// **'FAQ'**
-  String get legalFaq;
+  /// **'No pages yet'**
+  String get pagesEmpty;
 
-  /// No description provided for @legalRefundPolicy.
+  /// No description provided for @flashSaleEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Refund policy'**
-  String get legalRefundPolicy;
+  /// **'No flash sale right now'**
+  String get flashSaleEmpty;
 
-  /// No description provided for @legalTerms.
+  /// No description provided for @updateRequiredTitle.
   ///
   /// In en, this message translates to:
-  /// **'Terms & conditions'**
-  String get legalTerms;
+  /// **'Update required'**
+  String get updateRequiredTitle;
 
-  /// No description provided for @legalPrivacy.
+  /// No description provided for @updateRequiredBody.
   ///
   /// In en, this message translates to:
-  /// **'Privacy policy'**
-  String get legalPrivacy;
+  /// **'Please update HalalBizs to keep shopping.'**
+  String get updateRequiredBody;
+
+  /// No description provided for @maintenanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We will be back soon'**
+  String get maintenanceTitle;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
 
   /// No description provided for @helpAndSupport.
   ///
