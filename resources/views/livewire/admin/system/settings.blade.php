@@ -76,6 +76,25 @@
             </form>
         </x-ui.card>
 
+        {{-- ── Mobile app ────────────────────────────────────────────── --}}
+        <x-ui.card class="p-4">
+            <form wire:submit="saveMobileApp" class="flex h-full flex-col gap-4">
+                <h2 class="font-display text-lg font-medium">{{ __('Mobile app') }}</h2>
+
+                <x-ui.input :label="__('Minimum app version')" placeholder="1.0.0" wire:model="minAppVersion" :error="$errors->first('minAppVersion')" :hint="__('Phones on an older version are asked to update before they can continue.')" class="max-w-xs" />
+
+                <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
+                    <input type="checkbox" wire:model="appMaintenanceEnabled" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                    {{ __('Show a maintenance notice in the app') }}
+                </label>
+
+                <x-ui.input :label="__('Maintenance notice (English)')" wire:model="appMaintenanceMessageEn" maxlength="200" :error="$errors->first('appMaintenanceMessageEn')" />
+                <x-ui.input :label="__('Maintenance notice (Malay)')" wire:model="appMaintenanceMessageMs" maxlength="200" :error="$errors->first('appMaintenanceMessageMs')" :hint="__('Left empty, the English notice is shown.')" />
+
+                <x-ui.button class="mt-auto self-start" type="submit" wire:loading.attr="disabled" wire:target="saveMobileApp">{{ __('Save mobile app') }}</x-ui.button>
+            </form>
+        </x-ui.card>
+
         {{-- ── Moderation ────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
             <form wire:submit="saveModeration" class="flex h-full flex-col gap-4">
