@@ -2686,5 +2686,7 @@
     "Enter a full https:// web address, with no username or password in it.": "Masukkan alamat web https:// penuh tanpa nama pengguna atau kata laluan.",
     "Give this link a name — shoppers see it, not the address.": "Namakan pautan ini — pembeli melihat nama tersebut, bukannya alamat.",
     "You have already added this link.": "Anda telah menambah pautan ini.",
-    "Use a YouTube (watch, live or share link), Facebook video, Shopee Live, TikTok Live or Lazada Live link.": "Gunakan pautan YouTube (tonton, langsung atau kongsi), video Facebook, Shopee Live, TikTok Live atau Lazada Live."
+    "Use a YouTube (watch, live or share link), Facebook video, Shopee Live, TikTok Live or Lazada Live link.": "Gunakan pautan YouTube (tonton, langsung atau kongsi), video Facebook, Shopee Live, TikTok Live atau Lazada Live.",
+    "Allow public AI assistants to check halal information": "Benarkan pembantu AI awam menyemak maklumat halal",
+    "Allows public certificate checks and certified product searches. Staff tools still require an admin token. Off by default.": "Membenarkan semakan sijil dan carian produk diperakui oleh orang awam. Alat kakitangan masih memerlukan token pentadbir. Dimatikan secara lalai."
 }
