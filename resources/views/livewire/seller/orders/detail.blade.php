@@ -33,10 +33,10 @@
         </p>
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-3">
+    <div class="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-3">
 
         {{-- Left: items + timeline --}}
-        <div class="space-y-4 lg:col-span-2">
+        <div class="min-w-0 space-y-4 lg:col-span-2">
 
             {{-- Items (snapshots are sacred — never live product data) --}}
             <x-ui.card class="overflow-x-auto">

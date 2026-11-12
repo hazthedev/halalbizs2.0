@@ -319,3 +319,14 @@ test('an all-zero revenue series still draws the chart, it is not "empty"', func
     expect($payload)->not->toBeEmpty()
         ->and(array_sum($payload))->toBe(0);
 });
+
+it('shows seller dashboard headings in Malay', function () {
+    $seller = dashboardSeller();
+    $seller->update(['preferred_locale' => 'ms']);
+
+    $this->actingAs($seller)->get(route('seller.dashboard'))
+        ->assertOk()
+        ->assertSee('Pesanan hari ini')
+        ->assertSee('Hasil mengikut masa')
+        ->assertDontSee('Revenue over time');
+});
