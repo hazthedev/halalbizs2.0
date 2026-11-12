@@ -1,4 +1,18 @@
 {
+  "_dist-Dm1RmkVl.js": {
+    "file": "assets/dist-Dm1RmkVl.js",
+    "name": "dist",
+    "imports": [
+      "_dist-_oGKJgz4.js"
+    ]
+  },
+  "_dist-_oGKJgz4.js": {
+    "file": "assets/dist-_oGKJgz4.js",
+    "name": "dist",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
   "_fonts-C9MNnjVw.css": {
     "file": "assets/fonts-C9MNnjVw.css",
     "src": "_fonts-C9MNnjVw.css"
@@ -127,8 +141,98 @@
     "file": "assets/ibm-plex-mono-vietnamese-500-normal-DZ4AoWbu.woff2",
     "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-500-normal.woff2"
   },
+  "node_modules/@tiptap/extension-bold/dist/index.js": {
+    "file": "assets/dist-Dmpr-mEF.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-bold/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-_oGKJgz4.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-bullet-list/dist/index.js": {
+    "file": "assets/dist-CI57WyF3.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-bullet-list/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-Dm1RmkVl.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-document/dist/index.js": {
+    "file": "assets/dist-Bd23oR2s.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-document/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-_oGKJgz4.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-hard-break/dist/index.js": {
+    "file": "assets/dist-DzLCHoMX.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-hard-break/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-_oGKJgz4.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-italic/dist/index.js": {
+    "file": "assets/dist-Lo6THWUQ.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-italic/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-_oGKJgz4.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-list-item/dist/index.js": {
+    "file": "assets/dist-Dcj28j9K.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-list-item/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-Dm1RmkVl.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-ordered-list/dist/index.js": {
+    "file": "assets/dist-D5pPo-eT.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-ordered-list/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-Dm1RmkVl.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-paragraph/dist/index.js": {
+    "file": "assets/dist-YLG6oYCm.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-paragraph/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-_oGKJgz4.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-text/dist/index.js": {
+    "file": "assets/dist-DHYZTI86.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-text/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-_oGKJgz4.js"
+    ]
+  },
+  "node_modules/@tiptap/extensions/dist/undo-redo/index.js": {
+    "file": "assets/undo-redo-BbCrIi1O.js",
+    "name": "undo-redo",
+    "src": "node_modules/@tiptap/extensions/dist/undo-redo/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-_oGKJgz4.js"
+    ]
+  },
   "node_modules/qrcode/lib/browser.js": {
-    "file": "assets/browser-DgYuDjCy.js",
+    "file": "assets/browser-D0pPqjTZ.js",
     "name": "browser",
     "src": "node_modules/qrcode/lib/browser.js",
     "isDynamicEntry": true,
@@ -173,11 +277,22 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-7t5KQRxr.js",
+    "file": "assets/app-DoL7ztvy.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
+      "_dist-_oGKJgz4.js",
+      "node_modules/@tiptap/extension-document/dist/index.js",
+      "node_modules/@tiptap/extension-paragraph/dist/index.js",
+      "node_modules/@tiptap/extension-text/dist/index.js",
+      "node_modules/@tiptap/extension-bold/dist/index.js",
+      "node_modules/@tiptap/extension-italic/dist/index.js",
+      "node_modules/@tiptap/extension-bullet-list/dist/index.js",
+      "node_modules/@tiptap/extension-ordered-list/dist/index.js",
+      "node_modules/@tiptap/extension-list-item/dist/index.js",
+      "node_modules/@tiptap/extension-hard-break/dist/index.js",
+      "node_modules/@tiptap/extensions/dist/undo-redo/index.js",
       "node_modules/qrcode/lib/browser.js"
     ],
     "css": [

@@ -1,14 +1,20 @@
-import { Editor } from '@tiptap/core';
-import Document from '@tiptap/extension-document';
-import Paragraph from '@tiptap/extension-paragraph';
-import Text from '@tiptap/extension-text';
-import Bold from '@tiptap/extension-bold';
-import Italic from '@tiptap/extension-italic';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import ListItem from '@tiptap/extension-list-item';
-import HardBreak from '@tiptap/extension-hard-break';
-import { UndoRedo } from '@tiptap/extensions/undo-redo';
+// Loaded only when a description editor mounts, so buyer pages do not download Tiptap.
+const loadTiptap = () => Promise.all([
+    import('@tiptap/core'),
+    import('@tiptap/extension-document'),
+    import('@tiptap/extension-paragraph'),
+    import('@tiptap/extension-text'),
+    import('@tiptap/extension-bold'),
+    import('@tiptap/extension-italic'),
+    import('@tiptap/extension-bullet-list'),
+    import('@tiptap/extension-ordered-list'),
+    import('@tiptap/extension-list-item'),
+    import('@tiptap/extension-hard-break'),
+    import('@tiptap/extensions/undo-redo'),
+]).then(([core, ...mods]) => ({
+    Editor: core.Editor,
+    extensions: [...mods.slice(0, -1).map(m => m.default), mods.at(-1).UndoRedo],
+}));
 
 export default function descriptionEditor(content, field, label) {
     // Keep ProseMirror outside Alpine's reactive proxy (transactions require identity).
@@ -16,14 +22,15 @@ export default function descriptionEditor(content, field, label) {
     return {
         content,
         active: {},
-        init() {
+        async init() {
+            const { Editor, extensions } = await loadTiptap();
             const updateToolbar = ({ editor }) => {
                 this.active = Object.fromEntries(['bold', 'italic', 'bulletList', 'orderedList']
                     .map(name => [name, editor.isActive(name)]));
             };
             editor = new Editor({
                 element: this.$refs.editor,
-                extensions: [Document, Paragraph, Text, Bold, Italic, BulletList, OrderedList, ListItem, HardBreak, UndoRedo],
+                extensions,
                 content: this.content || '',
                 editorProps: {
                     attributes: {
@@ -48,7 +55,7 @@ export default function descriptionEditor(content, field, label) {
         },
         toggle(format) {
             const commands = { bold: 'toggleBold', italic: 'toggleItalic', bulletList: 'toggleBulletList', orderedList: 'toggleOrderedList' };
-            editor.chain().focus()[commands[format]]().run();
+            editor?.chain().focus()[commands[format]]().run();
         },
         destroy() { editor?.destroy(); },
     };
