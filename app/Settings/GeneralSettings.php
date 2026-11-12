@@ -18,6 +18,8 @@ class GeneralSettings extends Settings
 
     public bool $purchasing_enabled;
 
+    public bool $mcp_public_enabled = false;
+
     public static function group(): string
     {
         return 'general';

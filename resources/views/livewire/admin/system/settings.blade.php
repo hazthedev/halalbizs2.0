@@ -25,6 +25,15 @@
                     @endunless
                 </div>
 
+                <div>
+                    <label class="inline-flex min-h-11 cursor-pointer items-center gap-3 text-[13px] font-medium text-ink">
+                        <input type="checkbox" wire:model="mcpPublicEnabled"
+                               class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                        {{ __('Allow public AI assistants to check halal information') }}
+                    </label>
+                    <p class="mt-1 text-[13px] text-ink-faint">{{ __('Allows public certificate checks and certified product searches. Staff tools still require an admin token. Off by default.') }}</p>
+                </div>
+
                 <fieldset>
                     <legend class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Display currencies') }}</legend>
                     <div class="flex flex-wrap gap-2">

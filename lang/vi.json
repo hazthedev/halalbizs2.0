@@ -2660,5 +2660,7 @@
     "Commission on your cash-on-delivery orders in :month: :amount.": "Commission on your cash-on-delivery orders in :month: :amount.",
     "Total you owe :app: :amount.": "Total you owe :app: :amount.",
     "Please bank-transfer it and reply with your reference. Stores owing more than the COD limit cannot take cash on delivery until settled.": "Please bank-transfer it and reply with your reference. Stores owing more than the COD limit cannot take cash on delivery until settled.",
-    "COD unavailable: :store cannot take cash on delivery right now.": "COD unavailable: :store cannot take cash on delivery right now."
+    "COD unavailable: :store cannot take cash on delivery right now.": "COD unavailable: :store cannot take cash on delivery right now.",
+    "Allow public AI assistants to check halal information": "Cho phép trợ lý AI công khai kiểm tra thông tin halal",
+    "Allows public certificate checks and certified product searches. Staff tools still require an admin token. Off by default.": "Cho phép công khai tra cứu chứng nhận và tìm sản phẩm được chứng nhận. Công cụ dành cho nhân viên vẫn yêu cầu mã truy cập quản trị viên. Mặc định tắt."
 }

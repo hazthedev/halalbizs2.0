@@ -2660,5 +2660,7 @@
     "Commission on your cash-on-delivery orders in :month: :amount.": "Komisen pesanan bayar-semasa-terima anda pada :month: :amount.",
     "Total you owe :app: :amount.": "Jumlah yang anda hutang kepada :app: :amount.",
     "Please bank-transfer it and reply with your reference. Stores owing more than the COD limit cannot take cash on delivery until settled.": "Sila buat pemindahan bank dan balas dengan rujukan anda. Kedai yang berhutang melebihi had COD tidak boleh menerima bayar-semasa-terima sehingga diselesaikan.",
-    "COD unavailable: :store cannot take cash on delivery right now.": "COD tidak tersedia: :store tidak boleh menerima bayar-semasa-terima buat masa ini."
+    "COD unavailable: :store cannot take cash on delivery right now.": "COD tidak tersedia: :store tidak boleh menerima bayar-semasa-terima buat masa ini.",
+    "Allow public AI assistants to check halal information": "Benarkan pembantu AI awam menyemak maklumat halal",
+    "Allows public certificate checks and certified product searches. Staff tools still require an admin token. Off by default.": "Membenarkan semakan sijil dan carian produk diperakui oleh orang awam. Alat kakitangan masih memerlukan token pentadbir. Dimatikan secara lalai."
 }

@@ -33,6 +33,8 @@ class Settings extends Component
 
     public bool $purchasingEnabled = true;
 
+    public bool $mcpPublicEnabled = false;
+
     // ── Order ──────────────────────────────────────────────────────────
     public string $returnWindowDays = '';
 
@@ -92,6 +94,7 @@ class Settings extends Component
         $this->siteName = $general->site_name;
         $this->displayCurrencies = $general->display_currencies;
         $this->purchasingEnabled = $general->purchasing_enabled;
+        $this->mcpPublicEnabled = $general->mcp_public_enabled;
 
         $order = app(OrderSettings::class);
         $this->returnWindowDays = (string) $order->return_window_days;
@@ -139,6 +142,7 @@ class Settings extends Component
         $settings->site_name = trim($this->siteName);
         $settings->display_currencies = $codes;
         $settings->purchasing_enabled = $this->purchasingEnabled;
+        $settings->mcp_public_enabled = $this->mcpPublicEnabled;
         $settings->save();
 
         $this->displayCurrencies = $codes;
