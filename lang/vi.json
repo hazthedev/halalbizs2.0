@@ -2694,5 +2694,11 @@
     "Pick one from the list. It must be live on the site.": "Chọn một mục trong danh sách. Mục đó phải đang hoạt động trên trang.",
     "Type the words to search for (80 characters at most).": "Nhập từ khóa cần tìm (tối đa 80 ký tự).",
     "A banner cannot open checkout or payment pages.": "Banner không thể mở trang thanh toán.",
-    "Page": "Trang"
+    "Page": "Trang",
+    "Use a wide picture, about 3 times as wide as it is tall and at least 1200 pixels wide (for example 1500 × 500).": "Hãy dùng ảnh ngang, rộng khoảng gấp 3 lần chiều cao và rộng ít nhất 1200 pixel (ví dụ 1500 × 500).",
+    "Use a wide picture at least 1200 pixels wide (for example 1600 × 600).": "Hãy dùng ảnh ngang rộng ít nhất 1200 pixel (ví dụ 1600 × 600).",
+    "JPG or PNG, up to 4 MB. Wide picture, 3 times as wide as tall, at least 1200 pixels wide (e.g. 1500 × 500).": "JPG hoặc PNG, tối đa 4 MB. Ảnh ngang, rộng gấp 3 lần chiều cao, rộng ít nhất 1200 pixel (ví dụ 1500 × 500).",
+    "Heading": "Tiêu đề",
+    "Small heading": "Tiêu đề nhỏ",
+    "Link address (leave empty to remove the link)": "Địa chỉ liên kết (để trống để xóa liên kết)"
 }

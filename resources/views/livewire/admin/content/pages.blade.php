@@ -54,34 +54,15 @@
                     <div class="space-y-4 pt-3">
                         <div x-show="tab === 'en'" class="space-y-4">
                             <x-ui.input :label="__('Title (English)')" wire:model="title.en" :error="$errors->first('title.en')" />
-                            <div>
-                                <label for="body-en" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Body (English)') }}</label>
-                                <textarea id="body-en" wire:model="body.en" rows="12"
-                                          class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('body.en') ? 'border-danger' : 'border-line-strong' }}"></textarea>
-                                @error('body.en')
-                                    <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
-                                @else
-                                    <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('HTML — allowed tags: p, br, h2, h3, ul, ol, li, strong, em, a. Everything else is stripped on save.') }}</p>
-                                @enderror
-                            </div>
+                            <x-ui.rich-editor model="body.en" id="body-en" :label="__('Body (English)')" :error="$errors->first('body.en')" />
                         </div>
                         <div x-show="tab === 'ms'" x-cloak class="space-y-4">
                             <x-ui.input :label="__('Title (Bahasa Melayu)')" wire:model="title.ms" :error="$errors->first('title.ms')" :hint="__('Optional — English is shown when empty.')" />
-                            <div>
-                                <label for="body-ms" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Body (Bahasa Melayu)') }}</label>
-                                <textarea id="body-ms" wire:model="body.ms" rows="12"
-                                          class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
-                                @error('body.ms')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
-                            </div>
+                            <x-ui.rich-editor model="body.ms" id="body-ms" :label="__('Body (Bahasa Melayu)')" :error="$errors->first('body.ms')" />
                         </div>
                         <div x-show="tab === 'vi'" x-cloak class="space-y-4">
                             <x-ui.input :label="__('Title (Vietnamese)')" wire:model="title.vi" :error="$errors->first('title.vi')" :hint="__('Optional — English is shown when empty.')" />
-                            <div>
-                                <label for="body-vi" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Body (Vietnamese)') }}</label>
-                                <textarea id="body-vi" wire:model="body.vi" rows="12"
-                                          class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 font-mono text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"></textarea>
-                                @error('body.vi')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
-                            </div>
+                            <x-ui.rich-editor model="body.vi" id="body-vi" :label="__('Body (Vietnamese)')" :error="$errors->first('body.vi')" />
                         </div>
                     </div>
                 </div>

@@ -2719,5 +2719,11 @@
     "Pick one from the list. It must be live on the site.": "Pilih satu daripada senarai. Ia mesti aktif di laman.",
     "Type the words to search for (80 characters at most).": "Taip perkataan untuk dicari (maksimum 80 aksara).",
     "A banner cannot open checkout or payment pages.": "Sepanduk tidak boleh membuka halaman pembayaran.",
-    "Page": "Halaman"
+    "Page": "Halaman",
+    "Use a wide picture, about 3 times as wide as it is tall and at least 1200 pixels wide (for example 1500 × 500).": "Gunakan gambar lebar, kira-kira 3 kali lebih lebar daripada tingginya dan sekurang-kurangnya 1200 piksel lebar (contohnya 1500 × 500).",
+    "Use a wide picture at least 1200 pixels wide (for example 1600 × 600).": "Gunakan gambar lebar sekurang-kurangnya 1200 piksel lebar (contohnya 1600 × 600).",
+    "JPG or PNG, up to 4 MB. Wide picture, 3 times as wide as tall, at least 1200 pixels wide (e.g. 1500 × 500).": "JPG atau PNG, sehingga 4 MB. Gambar lebar, 3 kali lebih lebar daripada tinggi, sekurang-kurangnya 1200 piksel lebar (cth. 1500 × 500).",
+    "Heading": "Tajuk",
+    "Small heading": "Tajuk kecil",
+    "Link address (leave empty to remove the link)": "Alamat pautan (biarkan kosong untuk membuang pautan)"
 }

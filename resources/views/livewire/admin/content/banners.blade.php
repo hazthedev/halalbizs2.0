@@ -142,7 +142,7 @@
                     @error('image')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                     @else
-                        <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('JPG or PNG, up to 4 MB. Wide images (e.g. 1280×400) look best.') }}</p>
+                        <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('JPG or PNG, up to 4 MB. Wide picture, 3 times as wide as tall, at least 1200 pixels wide (e.g. 1500 × 500).') }}</p>
                     @enderror
                     <div wire:loading wire:target="image" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                     @if ($image)

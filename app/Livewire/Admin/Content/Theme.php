@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Content;
 use App\Models\ThemeAsset;
 use App\Settings\ThemeSettings;
 use App\Support\DisplayTime;
+use App\Support\ImageShape;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -60,7 +61,7 @@ class Theme extends Component
             'announcementTextColor' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'startsAt' => ['nullable', 'date'],
             'endsAt' => ['nullable', 'date'],
-            'heroImage' => ['nullable', 'image', 'max:4096'],
+            'heroImage' => ['nullable', 'image', 'max:4096', ImageShape::hero()],
         ], messages: [
             'announcementBg.regex' => __('Use a 6-digit hex color like #03392B.'),
             'announcementTextColor.regex' => __('Use a 6-digit hex color like #F7F7F4.'),
@@ -78,6 +79,7 @@ class Theme extends Component
         }
 
         $settings = app(ThemeSettings::class);
+        $before = $settings->toArray();
         $settings->occasion = trim($this->occasion);
         $settings->announcement_enabled = $this->announcementEnabled;
         $settings->announcement_text_en = trim($this->announcementTextEn);
@@ -89,6 +91,16 @@ class Theme extends Component
         $settings->starts_at = $starts?->toIso8601String();
         $settings->ends_at = $ends?->toIso8601String();
         $settings->save();
+
+        // Settings are not a model, so the audit entry is written by hand: only what changed.
+        $changed = array_filter($settings->toArray(), fn ($value, $key) => $value !== $before[$key], ARRAY_FILTER_USE_BOTH);
+
+        if ($changed !== []) {
+            activity('theme')
+                ->event('updated')
+                ->withChanges(['old' => array_intersect_key($before, $changed), 'attributes' => $changed])
+                ->log('Theme settings updated');
+        }
 
         if ($this->heroImage !== null) {
             // singleFile collection — replaces the previous hero.

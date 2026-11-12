@@ -1,16 +1,16 @@
 {
-  "_dist-Dm1RmkVl.js": {
-    "file": "assets/dist-Dm1RmkVl.js",
-    "name": "dist",
-    "imports": [
-      "_dist-_oGKJgz4.js"
-    ]
-  },
-  "_dist-_oGKJgz4.js": {
-    "file": "assets/dist-_oGKJgz4.js",
+  "_dist-D6gtD1hk.js": {
+    "file": "assets/dist-D6gtD1hk.js",
     "name": "dist",
     "imports": [
       "resources/js/app.js"
+    ]
+  },
+  "_dist-DNsjGUIZ.js": {
+    "file": "assets/dist-DNsjGUIZ.js",
+    "name": "dist",
+    "imports": [
+      "_dist-D6gtD1hk.js"
     ]
   },
   "_fonts-C9MNnjVw.css": {
@@ -142,97 +142,115 @@
     "src": "node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-vietnamese-500-normal.woff2"
   },
   "node_modules/@tiptap/extension-bold/dist/index.js": {
-    "file": "assets/dist-Dmpr-mEF.js",
+    "file": "assets/dist-h6YT1lHP.js",
     "name": "dist",
     "src": "node_modules/@tiptap/extension-bold/dist/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-_oGKJgz4.js"
+      "_dist-D6gtD1hk.js"
     ]
   },
   "node_modules/@tiptap/extension-bullet-list/dist/index.js": {
-    "file": "assets/dist-CI57WyF3.js",
+    "file": "assets/dist-Yxl_SupP.js",
     "name": "dist",
     "src": "node_modules/@tiptap/extension-bullet-list/dist/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-Dm1RmkVl.js"
+      "_dist-DNsjGUIZ.js"
     ]
   },
   "node_modules/@tiptap/extension-document/dist/index.js": {
-    "file": "assets/dist-Bd23oR2s.js",
+    "file": "assets/dist-Bfl_W-vU.js",
     "name": "dist",
     "src": "node_modules/@tiptap/extension-document/dist/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-_oGKJgz4.js"
+      "_dist-D6gtD1hk.js"
     ]
   },
   "node_modules/@tiptap/extension-hard-break/dist/index.js": {
-    "file": "assets/dist-DzLCHoMX.js",
+    "file": "assets/dist-CfG1j4J6.js",
     "name": "dist",
     "src": "node_modules/@tiptap/extension-hard-break/dist/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-_oGKJgz4.js"
+      "_dist-D6gtD1hk.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-heading/dist/index.js": {
+    "file": "assets/dist-BoJLsuck.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-heading/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-D6gtD1hk.js"
     ]
   },
   "node_modules/@tiptap/extension-italic/dist/index.js": {
-    "file": "assets/dist-Lo6THWUQ.js",
+    "file": "assets/dist-CzS8rl81.js",
     "name": "dist",
     "src": "node_modules/@tiptap/extension-italic/dist/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-_oGKJgz4.js"
+      "_dist-D6gtD1hk.js"
+    ]
+  },
+  "node_modules/@tiptap/extension-link/dist/index.js": {
+    "file": "assets/dist-DGTdT9sn.js",
+    "name": "dist",
+    "src": "node_modules/@tiptap/extension-link/dist/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-D6gtD1hk.js"
     ]
   },
   "node_modules/@tiptap/extension-list-item/dist/index.js": {
-    "file": "assets/dist-Dcj28j9K.js",
+    "file": "assets/dist-C-_SXwUx.js",
     "name": "dist",
     "src": "node_modules/@tiptap/extension-list-item/dist/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-Dm1RmkVl.js"
+      "_dist-DNsjGUIZ.js"
     ]
   },
   "node_modules/@tiptap/extension-ordered-list/dist/index.js": {
-    "file": "assets/dist-D5pPo-eT.js",
+    "file": "assets/dist-CeGSBs-R.js",
     "name": "dist",
     "src": "node_modules/@tiptap/extension-ordered-list/dist/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-Dm1RmkVl.js"
+      "_dist-DNsjGUIZ.js"
     ]
   },
   "node_modules/@tiptap/extension-paragraph/dist/index.js": {
-    "file": "assets/dist-YLG6oYCm.js",
+    "file": "assets/dist-BYuUC32p.js",
     "name": "dist",
     "src": "node_modules/@tiptap/extension-paragraph/dist/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-_oGKJgz4.js"
+      "_dist-D6gtD1hk.js"
     ]
   },
   "node_modules/@tiptap/extension-text/dist/index.js": {
-    "file": "assets/dist-DHYZTI86.js",
+    "file": "assets/dist-BVwqYmmY.js",
     "name": "dist",
     "src": "node_modules/@tiptap/extension-text/dist/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-_oGKJgz4.js"
+      "_dist-D6gtD1hk.js"
     ]
   },
   "node_modules/@tiptap/extensions/dist/undo-redo/index.js": {
-    "file": "assets/undo-redo-BbCrIi1O.js",
+    "file": "assets/undo-redo-BOpq5CMB.js",
     "name": "undo-redo",
     "src": "node_modules/@tiptap/extensions/dist/undo-redo/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_dist-_oGKJgz4.js"
+      "_dist-D6gtD1hk.js"
     ]
   },
   "node_modules/qrcode/lib/browser.js": {
-    "file": "assets/browser-D0pPqjTZ.js",
+    "file": "assets/browser-BODwsR4O.js",
     "name": "browser",
     "src": "node_modules/qrcode/lib/browser.js",
     "isDynamicEntry": true,
@@ -241,7 +259,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-Dt8zdxKR.css",
+    "file": "assets/app-Bnvty2B-.css",
     "name": "app",
     "names": [
       "app.css"
@@ -277,12 +295,12 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DoL7ztvy.js",
+    "file": "assets/app-CZK-BpDg.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
-      "_dist-_oGKJgz4.js",
+      "_dist-D6gtD1hk.js",
       "node_modules/@tiptap/extension-document/dist/index.js",
       "node_modules/@tiptap/extension-paragraph/dist/index.js",
       "node_modules/@tiptap/extension-text/dist/index.js",
@@ -293,6 +311,8 @@
       "node_modules/@tiptap/extension-list-item/dist/index.js",
       "node_modules/@tiptap/extension-hard-break/dist/index.js",
       "node_modules/@tiptap/extensions/dist/undo-redo/index.js",
+      "node_modules/@tiptap/extension-heading/dist/index.js",
+      "node_modules/@tiptap/extension-link/dist/index.js",
       "node_modules/qrcode/lib/browser.js"
     ],
     "css": [

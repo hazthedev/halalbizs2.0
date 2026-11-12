@@ -2,6 +2,10 @@
 
 namespace App\Livewire\Admin\System;
 
+use App\Models\Banner;
+use App\Models\HelpArticle;
+use App\Models\HomeSection;
+use App\Models\Page;
 use App\Models\Payout;
 use App\Models\Product;
 use App\Models\Store;
@@ -26,6 +30,12 @@ class AuditLog extends Component
         'Product' => Product::class,
         'SubOrder' => SubOrder::class,
         'Payout' => Payout::class,
+        // CMS content (LogsContentChanges). Theme settings have no record, so they filter by log name.
+        'Banner' => Banner::class,
+        'Page' => Page::class,
+        'HomeSection' => HomeSection::class,
+        'HelpArticle' => HelpArticle::class,
+        'Theme' => 'theme',
     ];
 
     public string $subjectType = '';
@@ -61,7 +71,9 @@ class AuditLog extends Component
             ->with('causer')
             ->when(
                 $this->subjectType !== '' && isset(self::SUBJECT_TYPES[$this->subjectType]),
-                fn ($query) => $query->where('subject_type', self::SUBJECT_TYPES[$this->subjectType]),
+                fn ($query) => $this->subjectType === 'Theme'
+                    ? $query->where('log_name', 'theme')
+                    : $query->where('subject_type', self::SUBJECT_TYPES[$this->subjectType]),
             )
             ->when($this->isDay($this->dateFrom), fn ($query) => $query->where('created_at', '>=', DisplayTime::dayStart($this->dateFrom)))
             ->when($this->isDay($this->dateTo), fn ($query) => $query->where('created_at', '<=', DisplayTime::dayEnd($this->dateTo)))

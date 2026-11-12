@@ -1,0 +1,1 @@
+import{i as e}from"./dist-D6gtD1hk.js";var t=e.create({name:`text`,group:`inline`,parseMarkdown:e=>({type:`text`,text:e.text||``}),renderMarkdown:e=>e.text||``}),n=t;export{t as Text,n as default};
