@@ -105,7 +105,7 @@
     </div>
 
     {{-- ===== Charts: revenue (emerald, money), status donut, top products ===== --}}
-    <div class="grid gap-4 lg:grid-cols-3">
+    <div class="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-3">
         {{-- CHART 1 — revenue over time (replaces the old zero sparkline). Own
              refresh event so the foundation's single-payload handler updates it. --}}
         <x-ui.card class="p-4 lg:col-span-2">
@@ -117,6 +117,7 @@
                     :payload="$revenuePayload"
                     refresh-event="seller-revenue"
                     :height="260"
+                    :empty-message="__('No orders in this period yet.')"
                     aria-label="{{ __('Revenue over time') }}"
                 />
             </div>
@@ -154,7 +155,7 @@
         </div>
     </x-ui.card>
 
-    <div class="grid gap-4 lg:grid-cols-3">
+    <div class="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-3">
         {{-- ===== Recent orders ===== --}}
         <x-ui.card class="lg:col-span-3">
             <div class="border-b border-line px-4 py-3">

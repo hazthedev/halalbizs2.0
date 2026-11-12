@@ -129,6 +129,9 @@ class Dashboard extends Component
             ->groupBy(fn (SubOrder $subOrder) => $subOrder->created_at->display()->toDateString())
             ->map(fn (Collection $rows) => (int) $rows->sum('total_sen'));
 
+        // A period with cancelled orders still has a meaningful flat zero line.
+        $hasOrders = $store->subOrders()->where('created_at', '>=', $this->periodStart())->exists();
+
         $data = $days->map(fn (string $day) => (int) ($byDay[$day] ?? 0))->values()->all();
 
         return [
@@ -136,7 +139,7 @@ class Dashboard extends Component
             'money' => true,
             'series' => [[
                 'name' => __('Revenue (RM)'),
-                'data' => array_map(fn (int $sen) => intdiv($sen, 100), $data), // whole-ringgit axis; source is integer sen
+                'data' => $hasOrders ? array_map(fn (int $sen) => intdiv($sen, 100), $data) : [], // whole-ringgit axis; source is integer sen
             ]],
             'labels' => $this->dayLabels()->all(),
             'options' => [
