@@ -2,6 +2,10 @@
 
 {{-- Row actions for an item with a pending draft (App\Services\ContentDrafts):
      Preview for everyone on the screen, Publish / Throw away for publishers. --}}
+@if ($id !== null)
+    <a href="{{ route('admin.content.history', ['type' => $type, 'id' => $id]) }}"
+       class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('History') }}</a>
+@endif
 @if ($draft !== null)
     <a href="{{ route('admin.content.preview', ['path' => $previewPath]) }}" target="_blank" rel="noopener"
        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Preview') }}</a>

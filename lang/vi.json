@@ -2712,5 +2712,18 @@
     "Throw away": "Bỏ",
     "Web preview": "Xem trước trên web",
     "Web": "Web",
-    "drafts are shown here. Shoppers do not see this yet.": "bản nháp được hiển thị ở đây. Người mua chưa thấy nội dung này."
+    "drafts are shown here. Shoppers do not see this yet.": "bản nháp được hiển thị ở đây. Người mua chưa thấy nội dung này.",
+    "Restored. It is live now.": "Đã khôi phục. Hiện đang hiển thị.",
+    "Restored as a draft. It goes live when published.": "Đã khôi phục thành bản nháp. Nội dung sẽ hiển thị khi được xuất bản.",
+    "Every publish of this item, newest first. Restore brings a version back as a draft; shoppers see it only after it is published.": "Mọi lần xuất bản của mục này, mới nhất trước. Khôi phục đưa một phiên bản trở lại dưới dạng bản nháp; người mua chỉ thấy sau khi được xuất bản.",
+    "This item has a draft waiting. Restoring replaces that draft.": "Mục này đang có bản nháp chờ. Khôi phục sẽ thay thế bản nháp đó.",
+    "No history yet": "Chưa có lịch sử",
+    "History starts with the first change published after drafts were introduced.": "Lịch sử bắt đầu từ thay đổi đầu tiên được xuất bản sau khi có bản nháp.",
+    "By": "Bởi",
+    "What changed": "Thay đổi gì",
+    "Before drafts were introduced": "Trước khi có bản nháp",
+    "Deleted account": "Tài khoản đã xóa",
+    "Restore as draft": "Khôi phục thành bản nháp",
+    "Put this version live right now, without a draft?": "Đưa phiên bản này lên ngay, không qua bản nháp?",
+    "Restore and publish": "Khôi phục và xuất bản"
 }

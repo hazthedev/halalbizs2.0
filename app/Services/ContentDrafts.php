@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Spatie\MediaLibrary\HasMedia;
 
 /**
  * The ONE place content goes from "written" to "live". An admin screen never
@@ -36,6 +37,9 @@ class ContentDrafts
 
     /** Payload key: live file collections to empty at publish. Keys starting with "_" are not model values. */
     public const CLEAR = '_clear_media';
+
+    /** Picture collections kept with each version. */
+    public const PICTURES = ['image', 'image_vi'];
 
     /** True while a staff member is looking at a preview (set by the PreviewDrafts middleware). */
     public bool $previewing = false;
@@ -77,7 +81,7 @@ class ContentDrafts
 
             // First change to an item that was live before drafts existed: keep what was live, so it can be restored.
             if (! $subject->wasRecentlyCreated && ! $live->versions()->exists()) {
-                $this->record($live, 'published', $liveState, null, published: true);
+                $this->keepPictures($live, $this->record($live, 'published', $liveState, null, published: true));
             }
 
             if ($clearMedia !== []) {
@@ -118,8 +122,43 @@ class ContentDrafts
             }
 
             $draft->update(['status' => 'published', 'published_by' => $by->id, 'published_at' => now()]);
+            $this->keepPictures($live->fresh(), $draft);
 
             $subject->versions()->skip(self::KEEP)->take(PHP_INT_MAX)->get()->each->delete();
+        });
+    }
+
+    /**
+     * Bring an earlier version back as a draft: its values and its pictures.
+     * Live content changes only when that draft is published.
+     */
+    public function restore(ContentVersion $version, User $by): ?ContentVersion
+    {
+        return DB::transaction(function () use ($version, $by) {
+            $subject = $version->subject;
+            $subject->draft()->first()?->delete();
+
+            $changed = [];  // collections whose picture differs from the live one
+            $missing = [];  // collections the version did not have
+
+            foreach ($subject instanceof HasMedia ? self::PICTURES : [] as $collection) {
+                $then = $version->getFirstMedia($collection);
+                $now = $subject->getFirstMedia($collection);
+
+                if ($then === null && $now !== null && $collection !== 'image') {
+                    $missing[] = $collection;
+                } elseif ($then !== null && ($now === null || $now->file_name !== $then->file_name || $now->size !== $then->size)) {
+                    $changed[] = $then;
+                }
+            }
+
+            $draft = $this->stage($subject, $by, $this->values($version->payload), withFiles: $changed !== [], clearMedia: $missing);
+
+            foreach ($changed as $media) {
+                $media->copy($draft, $media->collection_name);
+            }
+
+            return $draft;
         });
     }
 
@@ -190,6 +229,21 @@ class ContentDrafts
         $item = $item === null ? null : $this->preview($item);
 
         return $item?->isActiveNow() ? $item : null;
+    }
+
+    /**
+     * A published version keeps a copy of the item's pictures as they were at
+     * that moment, so a restore can bring them back. Video is not kept (30 MB each).
+     */
+    private function keepPictures(Model $live, ContentVersion $version): void
+    {
+        if (! $live instanceof HasMedia) {
+            return;
+        }
+
+        foreach (self::PICTURES as $collection) {
+            $live->getFirstMedia($collection)?->copy($version, $collection);
+        }
     }
 
     /** A payload without its "_" bookkeeping keys. */

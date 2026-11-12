@@ -55,6 +55,7 @@ Route::middleware('can:cms.manage')->group(function () {
     Route::get('/content/pages', Admin\Content\Pages::class)->name('content.pages');
     Route::get('/content/theme', Admin\Content\Theme::class)->name('content.theme');
     Route::get('/content/preview', Admin\Content\Preview::class)->name('content.preview');
+    Route::get('/content/history', Admin\Content\History::class)->name('content.history');
     Route::get('/live', Admin\Live\Index::class)->name('live.index'); // M2.4
     Route::get('/content/flash-sales', Admin\Content\FlashSales::class)->name('content.flash-sales');
     Route::get('/support/articles', Admin\Support\Articles::class)->name('support.articles');
