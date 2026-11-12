@@ -7,6 +7,7 @@ use App\Http\Api\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\HelpArticle;
 use App\Models\Page;
+use App\Services\ContentDrafts;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -18,7 +19,7 @@ class ContentController extends Controller
 {
     public function pages(): JsonResponse
     {
-        return ApiResponse::ok(Page::active()->orderBy('id')->get()->map(fn (Page $page) => [
+        return ApiResponse::ok(app(ContentDrafts::class)->visible(Page::class)->sortBy('id')->map(fn (Page $page) => [
             'slug' => $page->slug,
             'title' => $page->getTranslation('title', app()->getLocale()),
         ])->all());
@@ -26,7 +27,7 @@ class ContentController extends Controller
 
     public function page(string $slug): JsonResponse
     {
-        $page = Page::active()->where('slug', $slug)->firstOrFail();
+        $page = app(ContentDrafts::class)->find(Page::class, 'slug', $slug) ?? abort(404);
 
         return ApiResponse::ok([
             'slug' => $page->slug,
@@ -40,7 +41,8 @@ class ContentController extends Controller
     {
         $order = array_flip(array_column(HelpCategory::cases(), 'value'));
 
-        return ApiResponse::ok(HelpArticle::active()->orderBy('position')->orderBy('id')->get()
+        return ApiResponse::ok(app(ContentDrafts::class)->visible(HelpArticle::class)
+            ->sortBy(fn (HelpArticle $article) => [$article->position, $article->id])
             ->sortBy(fn (HelpArticle $article) => $order[$article->category->value], SORT_REGULAR, false)
             ->values()
             ->map(fn (HelpArticle $article) => $this->helpRow($article))
@@ -49,7 +51,7 @@ class ContentController extends Controller
 
     public function helpArticle(int $article): JsonResponse
     {
-        $article = HelpArticle::active()->findOrFail($article);
+        $article = app(ContentDrafts::class)->find(HelpArticle::class, 'id', $article) ?? abort(404);
 
         return ApiResponse::ok($this->helpRow($article) + [
             'body' => $article->getTranslation('body', app()->getLocale()),

@@ -193,7 +193,7 @@ test('home section payload saves with the storefront contract keys and home stil
     test()->seed(HomeSectionSeeder::class);
     $section = HomeSection::where('type', 'product_carousel')->sole();
 
-    Livewire::actingAs(contentAdmin())
+    Livewire::actingAs($admin = contentAdmin())
         ->test(HomeSections::class)
         ->call('edit', $section->id)
         ->set('title.en', 'Hot right now')
@@ -202,7 +202,8 @@ test('home section payload saves with the storefront contract keys and home stil
         ->set('source', 'top')
         ->set('limit', '6')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'section', $section->id);
 
     $section->refresh();
 
@@ -224,7 +225,8 @@ test('category grid payload keeps only the limit key', function () {
         ->call('edit', $section->id)
         ->set('limit', '4')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'section', $section->id);
 
     expect($section->refresh()->payload)->toBe(['limit' => 4]);
 
@@ -250,12 +252,14 @@ test('only missing section types can be added, and sections reorder and delete',
         ->call('addSection');
 
     $grid = HomeSection::where('type', 'product_grid')->sole();
-    expect($grid->payload)->toBe(['source' => 'top', 'limit' => 12]);
+    expect($grid->payload)->toBe(['source' => 'top', 'limit' => 12])
+        ->and($grid->is_active)->toBeFalse(); // stored hidden until a publisher publishes it
 
     Livewire::actingAs($admin)
         ->test(HomeSections::class)
         ->call('move', $grid->id, -1)
-        ->call('toggleActive', $grid->id);
+        ->call('toggleActive', $grid->id)
+        ->call('publishAllDrafts');
 
     expect($grid->refresh()->position)->toBe(0)
         ->and($grid->is_active)->toBeFalse();

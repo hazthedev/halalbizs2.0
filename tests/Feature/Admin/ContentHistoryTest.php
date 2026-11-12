@@ -11,6 +11,7 @@ use App\Models\Banner;
 use App\Models\HelpArticle;
 use App\Models\HomeSection;
 use App\Models\Page;
+use App\Models\ThemeAsset;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
@@ -56,7 +57,7 @@ test('banner, home section and help article changes are recorded too', function 
     Activity::query()->delete(); // only what the admin does next
 
     Livewire::actingAs($admin)->test(Banners::class)->call('toggleActive', $banner->id)->call('publishDraft', 'banner', $banner->id);
-    Livewire::actingAs($admin)->test(HomeSections::class)->call('toggleActive', $section->id);
+    Livewire::actingAs($admin)->test(HomeSections::class)->call('toggleActive', $section->id)->call('publishDraft', 'section', $section->id);
     Livewire::actingAs($admin)->test(Articles::class)->call('delete', $article->id);
 
     expect(Activity::where('causer_id', $admin->id)->orderBy('id')->get()->map(fn (Activity $a) => [class_basename($a->subject_type), $a->event])->all())
@@ -72,7 +73,8 @@ test('saving the announcement bar records the settings that changed', function (
         ->set('announcementEnabled', true)
         ->set('announcementTextEn', 'Free shipping this week')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'theme', ThemeAsset::hero()->id);
 
     $entry = Activity::where('log_name', 'theme')->sole();
 

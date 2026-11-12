@@ -1,9 +1,15 @@
 <div class="space-y-4">
 
     <x-ui.section-heading :title="__('Home sections')" as="h1">
-        @if ($missingTypes !== [])
+        @if ($missingTypes !== [] || $sections->contains(fn ($section) => $section->draft !== null))
             <x-slot:actions>
                 <div class="flex items-center gap-2">
+                    @can('cms.publish')
+                        @if ($sections->contains(fn ($section) => $section->draft !== null))
+                            <x-ui.button wire:click="publishAllDrafts">{{ __('Publish all') }}</x-ui.button>
+                        @endif
+                    @endcan
+                    @if ($missingTypes !== [])
                     <label for="add-type" class="sr-only">{{ __('Section type') }}</label>
                     <select id="add-type" wire:model="addType"
                             class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
@@ -13,6 +19,7 @@
                         @endforeach
                     </select>
                     <x-ui.button wire:click="addSection">{{ __('Add section') }}</x-ui.button>
+                    @endif
                 </div>
             </x-slot:actions>
         @endif
@@ -43,7 +50,12 @@
                             </div>
 
                             <div class="min-w-0 flex-1">
-                                <p class="text-[13px] font-medium text-ink">{{ \App\Livewire\Admin\Content\HomeSections::typeLabel($section->type) }}</p>
+                                <p class="text-[13px] font-medium text-ink">
+                                    {{ \App\Livewire\Admin\Content\HomeSections::typeLabel($section->type) }}
+                                    @if ($section->draft !== null)
+                                        <x-ui.badge variant="neutral" class="ml-1">{{ __('Draft') }}</x-ui.badge>
+                                    @endif
+                                </p>
                                 <p class="truncate text-[12px] text-ink-soft">
                                     {{ $section->getTranslation('title', 'en', false) ?: __('No heading') }}
                                     @if ($section->payload)
@@ -61,6 +73,8 @@
                                     <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $section->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                 </span>
                             </button>
+
+                            <x-ui.draft-actions type="section" :id="$section->id" :draft="$section->draft" preview-path="/" />
 
                             <button type="button" wire:click="{{ $editingId === $section->id ? 'cancel' : 'edit('.$section->id.')' }}"
                                     class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">

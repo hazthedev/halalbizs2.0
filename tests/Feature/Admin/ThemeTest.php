@@ -49,7 +49,8 @@ test('admin theme save persists all settings', function () {
         ->set('startsAt', '2026-06-01T00:00')
         ->set('endsAt', '2026-06-30T23:59')
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'theme', ThemeAsset::hero()->id);
 
     $settings = app(ThemeSettings::class)->refresh();
 
@@ -100,7 +101,8 @@ test('admin uploads a hero image', function () {
         ->test(Theme::class)
         ->set('heroImage', UploadedFile::fake()->image('raya-hero.jpg', 1600, 600))
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->call('publishDraft', 'theme', ThemeAsset::hero()->id);
 
     expect(ThemeAsset::hero()->getFirstMedia('image'))->not->toBeNull();
 });
@@ -118,7 +120,8 @@ test('reset to defaults restores stock values and clears the hero image', functi
 
     Livewire::actingAs(themeAdmin())
         ->test(Theme::class)
-        ->call('resetDefaults');
+        ->call('resetDefaults')
+        ->call('publishDraft', 'theme', ThemeAsset::hero()->id);
 
     $settings = app(ThemeSettings::class)->refresh();
 

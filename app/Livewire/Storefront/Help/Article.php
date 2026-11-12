@@ -3,6 +3,7 @@
 namespace App\Livewire\Storefront\Help;
 
 use App\Models\HelpArticle;
+use App\Services\ContentDrafts;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -13,14 +14,13 @@ class Article extends Component
 
     public function mount(HelpArticle $article): void
     {
-        abort_unless($article->is_active, 404);
+        $this->article = app(ContentDrafts::class)->find(HelpArticle::class, 'id', $article->id) ?? abort(404);
+        $article = $this->article;
 
-        $this->article = $article;
-
-        // Count a view once per session, not per refresh.
+        // Count a view once per session, not per refresh; a staff preview is not a view.
         $sessionKey = "help_viewed.{$article->id}";
 
-        if (! session()->has($sessionKey)) {
+        if (! app(ContentDrafts::class)->previewing && ! session()->has($sessionKey)) {
             $article->increment('views');
             session()->put($sessionKey, true);
         }
@@ -28,13 +28,11 @@ class Article extends Component
 
     public function render()
     {
-        $related = HelpArticle::query()->active()
-            ->where('category', $this->article->category)
-            ->whereKeyNot($this->article->id)
-            ->orderBy('position')
-            ->orderBy('id')
+        $related = app(ContentDrafts::class)->visible(HelpArticle::class)
+            ->filter(fn (HelpArticle $other) => $other->category === $this->article->category && $other->id !== $this->article->id)
+            ->sortBy(fn (HelpArticle $other) => [$other->position, $other->id])
             ->take(5)
-            ->get();
+            ->values();
 
         return view('livewire.storefront.help.article', [
             'related' => $related,

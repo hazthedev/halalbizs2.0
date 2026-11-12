@@ -114,7 +114,12 @@
                             <td class="px-3 py-2">
                                 <x-ui.badge variant="neutral">{{ $article->category->label() }}</x-ui.badge>
                             </td>
-                            <td class="px-3 py-2 font-medium text-ink">{{ $article->getTranslation('title', 'en') }}</td>
+                            <td class="px-3 py-2 font-medium text-ink">
+                                {{ $article->getTranslation('title', 'en') }}
+                                @if ($article->draft !== null)
+                                    <x-ui.badge variant="neutral" class="ml-1">{{ __('Draft') }}</x-ui.badge>
+                                @endif
+                            </td>
                             <td class="px-3 py-2 text-right font-mono tabular-nums">{{ $article->position }}</td>
                             <td class="px-3 py-2 text-right font-mono tabular-nums">{{ number_format($article->views) }}</td>
                             <td class="px-3 py-2">
@@ -129,6 +134,7 @@
                             </td>
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
+                                    <x-ui.draft-actions type="article" :id="$article->id" :draft="$article->draft" :preview-path="'/help/article/'.$article->id" />
                                     <button type="button" wire:click="edit({{ $article->id }})"
                                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
                                     <button type="button" wire:click="delete({{ $article->id }})"

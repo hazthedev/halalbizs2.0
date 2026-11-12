@@ -3,7 +3,9 @@
 namespace App\Livewire\Admin\Support;
 
 use App\Enums\HelpCategory;
+use App\Livewire\Concerns\ManagesDrafts;
 use App\Models\HelpArticle;
+use App\Services\ContentDrafts;
 use App\Support\ContentLocales;
 use App\Support\HtmlSanitizer;
 use Illuminate\Validation\Rule;
@@ -18,6 +20,8 @@ use Livewire\Component;
 #[Layout('layouts.admin')]
 class Articles extends Component
 {
+    use ManagesDrafts;
+
     public bool $showForm = false;
 
     #[Locked]
@@ -43,7 +47,8 @@ class Articles extends Component
 
     public function edit(int $articleId): void
     {
-        $article = HelpArticle::findOrFail($articleId);
+        // An open draft is what the editor carries on with.
+        $article = app(ContentDrafts::class)->preview(HelpArticle::findOrFail($articleId));
 
         $this->resetForm();
         $this->editingId = $article->id;
@@ -76,7 +81,7 @@ class Articles extends Component
             'body.en' => __('body (English)'),
         ]);
 
-        $article = $this->editingId !== null ? HelpArticle::findOrFail($this->editingId) : new HelpArticle;
+        $article = $this->editingId !== null ? app(ContentDrafts::class)->preview(HelpArticle::findOrFail($this->editingId)) : new HelpArticle;
 
         $article->category = HelpCategory::from($this->category);
         $article->position = (int) $this->position;
@@ -85,22 +90,25 @@ class Articles extends Component
         ContentLocales::write($article, 'title', $this->title);
         ContentLocales::write($article, 'body', $this->body, transform: $this->sanitize(...));
 
-        $article->save();
+        app(ContentDrafts::class)->stage($article, auth()->user());
 
-        $this->dispatch('toast', message: $this->editingId !== null ? __('Article updated') : __('Article created'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
         $this->resetForm();
     }
 
     public function toggleActive(int $articleId): void
     {
-        $article = HelpArticle::findOrFail($articleId);
-        $article->update(['is_active' => ! $article->is_active]);
+        $article = app(ContentDrafts::class)->preview(HelpArticle::findOrFail($articleId));
+        $article->is_active = ! $article->is_active;
+        app(ContentDrafts::class)->stage($article, auth()->user());
 
-        $this->dispatch('toast', message: $article->is_active ? __('Article published') : __('Article unpublished'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }
 
     public function delete(int $articleId): void
     {
+        $this->authorize('cms.publish');
+
         HelpArticle::findOrFail($articleId)->delete();
 
         if ($this->editingId === $articleId) {
@@ -113,7 +121,10 @@ class Articles extends Component
     public function render()
     {
         return view('livewire.admin.support.articles', [
-            'articles' => HelpArticle::orderBy('category')->orderBy('position')->orderBy('id')->get(),
+            'articles' => HelpArticle::with('draft')->get()
+                ->map(fn (HelpArticle $article) => app(ContentDrafts::class)->preview($article))
+                ->sortBy(fn (HelpArticle $article) => [$article->category->value, $article->position, $article->id])
+                ->values(),
             'categories' => HelpCategory::cases(),
         ])->title(__('Help articles'));
     }

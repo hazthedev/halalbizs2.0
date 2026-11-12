@@ -47,7 +47,7 @@ class HomeLayout
      */
     public function sections(array $recentlyViewedIds = []): BaseCollection
     {
-        return HomeSection::active()->get()
+        return app(ContentDrafts::class)->visible(HomeSection::class)
             ->map(fn (HomeSection $section) => [
                 'section' => $section,
                 'data' => $this->sectionData($section, $recentlyViewedIds),
@@ -65,7 +65,9 @@ class HomeLayout
             return null;
         }
 
-        $url = ThemeAsset::where('key', 'hero')->first()?->getFirstMediaUrl('image', 'card');
+        $asset = ThemeAsset::where('key', 'hero')->first();
+        $drafts = app(ContentDrafts::class);
+        $url = ($drafts->previewing && $asset !== null ? $drafts->preview($asset) : $asset)?->getFirstMediaUrl('image', 'card');
 
         return $url !== null && $url !== '' ? $url : null;
     }
@@ -103,7 +105,7 @@ class HomeLayout
      */
     public function forApp(string $locale): array
     {
-        return Cache::remember(self::cacheKey($locale), self::CACHE_TTL, function () use ($locale) {
+        $build = function () use ($locale) {
             $rows = $this->sections();
             $theme = app(ThemeSettings::class);
             $heroUrl = $this->heroUrl($theme);
@@ -124,9 +126,12 @@ class HomeLayout
                     Category::active()->whereNull('parent_id')->with('media')->orderBy('position')->get()
                 )->resolve(),
                 'flash_sale' => $this->flashSale(),
-                'banners' => $this->banners(Banner::active()->with('media')->get(), $locale),
+                'banners' => $this->banners(app(ContentDrafts::class)->visible(Banner::class, ['media']), $locale),
             ]), true);
-        });
+        };
+
+        // A staff preview is one person's draft: it neither reads nor feeds the shoppers' cache.
+        return app(ContentDrafts::class)->previewing ? $build() : Cache::remember(self::cacheKey($locale), self::CACHE_TTL, $build);
     }
 
     /** Called on every save of home content (AppServiceProvider), so admins see their change at once. */
@@ -146,7 +151,7 @@ class HomeLayout
     private function sectionData(HomeSection $section, array $recentlyViewedIds): Collection
     {
         return match ($section->type) {
-            'banner' => Banner::active()->with('media')->get(),
+            'banner' => app(ContentDrafts::class)->visible(Banner::class, ['media']),
             'category_grid' => Category::active()
                 ->whereNull('parent_id')
                 ->with('media')

@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Content;
 
+use App\Livewire\Concerns\ManagesDrafts;
 use App\Models\ThemeAsset;
+use App\Services\ContentDrafts;
 use App\Settings\ThemeSettings;
 use App\Support\DisplayTime;
 use App\Support\ImageShape;
@@ -21,6 +23,7 @@ use Livewire\WithFileUploads;
 #[Layout('layouts.admin')]
 class Theme extends Component
 {
+    use ManagesDrafts;
     use WithFileUploads;
 
     public string $occasion = '';
@@ -45,9 +48,9 @@ class Theme extends Component
 
     public ?TemporaryUploadedFile $heroImage = null;
 
-    public function mount(ThemeSettings $settings): void
+    public function mount(): void
     {
-        $this->loadFromSettings($settings);
+        $this->loadFromSettings($this->previewedSettings());
     }
 
     public function save(): void
@@ -78,76 +81,73 @@ class Theme extends Component
             ]);
         }
 
-        $settings = app(ThemeSettings::class);
-        $before = $settings->toArray();
-        $settings->occasion = trim($this->occasion);
-        $settings->announcement_enabled = $this->announcementEnabled;
-        $settings->announcement_text_en = trim($this->announcementTextEn);
-        $settings->announcement_text_ms = trim($this->announcementTextMs);
-        $settings->announcement_text_vi = trim($this->announcementTextVi);
-        $settings->announcement_bg = strtoupper($this->announcementBg);
-        $settings->announcement_text_color = strtoupper($this->announcementTextColor);
-        $settings->hero_image_enabled = $this->heroImageEnabled;
-        $settings->starts_at = $starts?->toIso8601String();
-        $settings->ends_at = $ends?->toIso8601String();
-        $settings->save();
-
-        // Settings are not a model, so the audit entry is written by hand: only what changed.
-        $changed = array_filter($settings->toArray(), fn ($value, $key) => $value !== $before[$key], ARRAY_FILTER_USE_BOTH);
-
-        if ($changed !== []) {
-            activity('theme')
-                ->event('updated')
-                ->withChanges(['old' => array_intersect_key($before, $changed), 'attributes' => $changed])
-                ->log('Theme settings updated');
-        }
+        $draft = app(ContentDrafts::class)->stage(ThemeAsset::hero(), auth()->user(), [
+            'occasion' => trim($this->occasion),
+            'announcement_enabled' => $this->announcementEnabled,
+            'announcement_text_en' => trim($this->announcementTextEn),
+            'announcement_text_ms' => trim($this->announcementTextMs),
+            'announcement_text_vi' => trim($this->announcementTextVi),
+            'announcement_bg' => strtoupper($this->announcementBg),
+            'announcement_text_color' => strtoupper($this->announcementTextColor),
+            'hero_image_enabled' => $this->heroImageEnabled,
+            'starts_at' => $starts?->toIso8601String(),
+            'ends_at' => $ends?->toIso8601String(),
+        ], withFiles: $this->heroImage !== null);
 
         if ($this->heroImage !== null) {
-            // singleFile collection — replaces the previous hero.
-            ThemeAsset::hero()
-                ->addMedia($this->heroImage->getRealPath())
+            // singleFile collection — replaces the previous hero draft; the live one stays until publish.
+            $draft->addMedia($this->heroImage->getRealPath())
                 ->usingFileName($this->heroImage->getClientOriginalName())
                 ->toMediaCollection('image');
 
             $this->heroImage = null;
         }
 
-        $this->loadFromSettings($settings);
-        $this->dispatch('toast', message: __('Theme saved'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }
 
     public function removeHeroImage(): void
     {
-        ThemeAsset::hero()->clearMediaCollection('image');
+        app(ContentDrafts::class)->stage(ThemeAsset::hero(), auth()->user(), clearMedia: ['image']);
 
-        $this->dispatch('toast', message: __('Hero image removed'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }
 
     public function resetDefaults(): void
     {
-        $settings = app(ThemeSettings::class);
-
-        foreach (ThemeSettings::defaults() as $key => $value) {
-            $settings->{$key} = $value;
-        }
-
-        $settings->save();
-
-        ThemeAsset::hero()->clearMediaCollection('image');
+        app(ContentDrafts::class)->stage(ThemeAsset::hero(), auth()->user(), ThemeSettings::defaults(), clearMedia: ['image']);
 
         $this->heroImage = null;
-        $this->loadFromSettings($settings);
+        $this->loadFromSettings($this->previewedSettings());
         $this->resetErrorBag();
-        $this->dispatch('toast', message: __('Theme reset to defaults'));
+        $this->dispatch('toast', message: __('Saved as a draft. It goes live when published.'));
     }
 
     public function render()
     {
-        $heroAsset = ThemeAsset::where('key', 'hero')->first();
+        $heroAsset = ThemeAsset::where('key', 'hero')->with('draft')->first();
+        $draft = $heroAsset?->draft;
+
+        if ($heroAsset !== null) {
+            $heroAsset = app(ContentDrafts::class)->preview($heroAsset);
+            app(ThemeSettings::class)->refresh();
+        }
 
         return view('livewire.admin.content.theme', [
             'heroUrl' => $heroAsset?->getFirstMediaUrl('image', 'card') ?: null,
+            'draft' => $draft,
+            'heroId' => $heroAsset?->id,
         ])->title(__('Theme'));
+    }
+
+    /** The form carries on from an open draft; the settings singleton goes back to the live values at once. */
+    private function previewedSettings(): ThemeSettings
+    {
+        app(ContentDrafts::class)->preview(ThemeAsset::hero());
+        $values = clone app(ThemeSettings::class);
+        app(ThemeSettings::class)->refresh();
+
+        return $values;
     }
 
     private function loadFromSettings(ThemeSettings $settings): void
