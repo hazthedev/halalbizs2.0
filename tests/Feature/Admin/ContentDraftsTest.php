@@ -250,3 +250,20 @@ test('a preview still hides a banner outside its dates', function () {
 
     expect($drafts->visible(Banner::class)->pluck('id')->all())->toBe([$now->id]);
 });
+
+test('the migration gives publish rights to everyone who could manage content, and to nobody else', function () {
+    $content = contentEditor();
+    $other = User::factory()->create();
+    $other->givePermissionTo('orders.manage');
+    $migration = require database_path('migrations/2026_11_12_170001_grant_cms_publish_to_content_staff.php');
+
+    $migration->down();
+    expect($content->fresh()->can('cms.publish'))->toBeFalse();
+
+    $migration->up();
+    $migration->up(); // safe to run twice
+
+    expect($content->fresh()->can('cms.publish'))->toBeTrue()
+        ->and($content->fresh()->can('cms.manage'))->toBeTrue()
+        ->and($other->fresh()->can('cms.publish'))->toBeFalse();
+});
