@@ -39,7 +39,7 @@ class ContentDrafts
     public const CLEAR = '_clear_media';
 
     /** Picture collections kept with each version. */
-    public const PICTURES = ['image', 'image_vi', 'share_image'];
+    public const PICTURES = ['image', 'image_vi', 'share_image', 'tile_1', 'tile_2', 'tile_3', 'tile_4'];
 
     /** True while a staff member is looking at a preview (set by the PreviewDrafts middleware). */
     public bool $previewing = false;

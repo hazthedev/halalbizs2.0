@@ -13,6 +13,7 @@ use App\Models\HomeSection;
 use App\Models\Product;
 use App\Models\ProductBoost;
 use App\Models\ScheduledLayout;
+use App\Models\Store;
 use App\Models\ThemeAsset;
 use App\Settings\BoostSettings;
 use App\Settings\ThemeSettings;
@@ -50,7 +51,7 @@ class HomeLayout
     public function sections(array $recentlyViewedIds = [], string $for = 'web'): BaseCollection
     {
         $other = $for === 'web' ? 'app' : 'web';
-        $all = app(ContentDrafts::class)->visible(HomeSection::class)
+        $all = app(ContentDrafts::class)->visible(HomeSection::class, ['media'])
             ->reject(fn (HomeSection $section) => $section->show_on === $other);
 
         $rows = fn (?int $layoutId) => $all
@@ -181,8 +182,14 @@ class HomeLayout
         return 'home-layout:app:'.$locale;
     }
 
+    /** One language of a {en, ms, vi} text, English when that language is empty. */
+    public static function localized(?array $texts, string $locale): string
+    {
+        return (string) (($texts[$locale] ?? '') ?: ($texts['en'] ?? ''));
+    }
+
     /** @param  array<int, int>  $recentlyViewedIds */
-    private function sectionData(HomeSection $section, array $recentlyViewedIds): Collection
+    private function sectionData(HomeSection $section, array $recentlyViewedIds): BaseCollection
     {
         return match ($section->type) {
             'banner' => app(ContentDrafts::class)->visible(Banner::class, ['media']),
@@ -201,8 +208,27 @@ class HomeLayout
                 (int) ($section->payload['limit'] ?? 12),
             ),
             'recently_viewed' => $this->recentlyViewedProducts($recentlyViewedIds),
+            // Hand-picked: the admin's order; anything no longer on sale or approved drops out.
+            'picked_products' => $this->picked(
+                Product::live()->with(['halalCertificate', 'media', 'variants', 'store']),
+                $section->payload['product_ids'] ?? [],
+            ),
+            'picked_stores' => $this->picked(Store::approved()->with('media'), $section->payload['store_ids'] ?? []),
+            'notice' => collect(array_filter([$section->payload['text'] ?? null], fn ($text) => ($text['en'] ?? '') !== '')),
+            'picture_tiles' => collect($section->payload['tiles'] ?? [])
+                ->map(fn (array $tile) => $tile + ['image' => $section->getFirstMediaUrl('tile_'.$tile['slot'], 'tile')])
+                ->filter(fn (array $tile) => $tile['image'] !== '')
+                ->values(),
             default => new Collection,
         };
+    }
+
+    /** @param  array<int, int>  $ids */
+    private function picked(Builder $query, array $ids): BaseCollection
+    {
+        $found = $query->whereIn('id', $ids)->get()->keyBy('id');
+
+        return collect($ids)->map(fn ($id) => $found->get($id))->filter()->values();
     }
 
     /**
@@ -211,7 +237,7 @@ class HomeLayout
      *
      * @return array<string, mixed>
      */
-    private function block(HomeSection $section, Collection $data, string $locale): array
+    private function block(HomeSection $section, BaseCollection $data, string $locale): array
     {
         $block = [
             'id' => $section->id,
@@ -228,6 +254,20 @@ class HomeLayout
                 'source' => $section->payload['source'] ?? ($section->type === 'product_grid' ? 'top' : 'latest'),
                 'products' => ProductResource::collection($data)->resolve(),
             ],
+            'picked_products' => ['products' => ProductResource::collection($data)->resolve()],
+            'picked_stores' => ['stores' => $data->map(fn (Store $store) => [
+                'id' => $store->id,
+                'slug' => $store->slug,
+                'name' => $store->name,
+                'logo' => $store->getFirstMediaUrl('logo', 'thumb') ?: null,
+            ])->all()],
+            'notice' => ['text' => self::localized($data->first(), $locale)],
+            'picture_tiles' => ['tiles' => $data->map(fn (array $tile) => [
+                'image' => $tile['image'],
+                'label' => self::localized($tile['label'] ?? [], $locale) ?: null,
+                'link_url' => $tile['link_url'] ?? null,
+                'app_url' => AppLinks::fromWebUrl($tile['link_url'] ?? null),
+            ])->all()],
             default => [],
         };
     }

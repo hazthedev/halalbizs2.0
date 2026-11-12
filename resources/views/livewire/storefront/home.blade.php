@@ -221,9 +221,69 @@
                 @break
 
             {{-- ===== Product grid (2/3/4/6 cols) ===== --}}
-            @case('product_grid')
+            {{-- ===== Short notice (admin text, escaped) ===== --}}
+            @case('notice')
+                <section class="mx-auto max-w-7xl px-4 pt-8 sm:pt-10" wire:key="section-{{ $section->id }}">
+                    <p role="note" class="rounded-[var(--radius-card)] border border-emerald-tint-edge bg-emerald-tint px-4 py-3 text-center text-[length:var(--text-base)] font-medium text-ink">
+                        {{ \App\Services\HomeLayout::localized($data->first(), app()->getLocale()) }}
+                    </p>
+                </section>
+                @break
+
+            {{-- ===== Picture tiles (2 to 4 admin pictures, each an optional link) ===== --}}
+            @case('picture_tiles')
                 <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16" wire:key="section-{{ $section->id }}">
                     @if ($title)
+                        <x-ui.section-heading :title="$title" />
+                    @endif
+                    <div class="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4 {{ $data->count() >= 4 ? 'lg:grid-cols-4' : ($data->count() === 3 ? 'lg:grid-cols-3' : '') }}">
+                        @foreach ($data as $tile)
+                            @php($label = \App\Services\HomeLayout::localized($tile['label'] ?? [], app()->getLocale()))
+                            <{{ $tile['link_url'] ? 'a' : 'div' }} @if ($tile['link_url']) href="{{ $tile['link_url'] }}" wire:navigate @endif
+                                wire:key="tile-{{ $section->id }}-{{ $tile['slot'] }}"
+                                class="group relative block overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                <img src="{{ $tile['image'] }}" alt="{{ $label }}" loading="lazy" class="aspect-[4/3] w-full object-cover">
+                                @if ($label !== '')
+                                    <span class="block px-3 py-2 text-[length:var(--text-base)] font-medium text-ink">{{ $label }}</span>
+                                @endif
+                            </{{ $tile['link_url'] ? 'a' : 'div' }}>
+                        @endforeach
+                    </div>
+                </section>
+                @break
+
+            {{-- ===== Hand-picked stores ===== --}}
+            @case('picked_stores')
+                <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16" wire:key="section-{{ $section->id }}">
+                    @if ($title)
+                        <x-ui.section-heading :title="$title" />
+                    @endif
+                    <div class="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
+                        @foreach ($data as $store)
+                            <a href="{{ route('store.show', $store) }}" wire:navigate wire:key="store-{{ $section->id }}-{{ $store->id }}"
+                               class="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-3 text-center shadow-soft hb-lift hover:border-brass/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                @if ($store->getFirstMediaUrl('logo', 'thumb') !== '')
+                                    <img src="{{ $store->getFirstMediaUrl('logo', 'thumb') }}" alt="" loading="lazy" class="size-16 rounded-full object-cover">
+                                @else
+                                    <span class="flex size-16 items-center justify-center rounded-full bg-emerald-tint text-ink-soft"><x-ui.star-mark :size="28" stroke-width="1.25" /></span>
+                                @endif
+                                <span class="line-clamp-2 text-[length:var(--text-base)] font-medium text-ink">{{ $store->name }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+                @break
+
+            {{-- Hand-picked products draw exactly like the product grid. --}}
+            @case('picked_products')
+            @case('product_grid')
+                <section class="mx-auto max-w-7xl px-4 pt-12 sm:pt-16" wire:key="section-{{ $section->id }}">
+                    {{-- A hand-picked list is the whole list: no "View all". --}}
+                    @if ($section->type === 'picked_products')
+                        @if ($title)
+                            <x-ui.section-heading :title="$title" />
+                        @endif
+                    @elseif ($title)
                         <x-ui.section-heading :title="$title" :href="route('search')" :link-label="__('View all')" class="motion-reveal"
                                               x-data="{ shown: false }" x-intersect.once="shown = true" x-bind:class="shown && 'revealed'" />
                     @else
