@@ -1,3 +1,4 @@
+import descriptionEditor from './description-editor';
 import Swiper from 'swiper';
 import { Navigation, Pagination, A11y, Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
@@ -78,6 +79,7 @@ function deepMerge(base, extra) {
 }
 
 document.addEventListener('alpine:init', () => {
+    window.Alpine.data('descriptionEditor', descriptionEditor);
     // Livewire's bundled Alpine does NOT ship the intersect plugin — register
     // it ourselves (drives the motion-reveal scroll entrances).
     window.Alpine.plugin(intersect);

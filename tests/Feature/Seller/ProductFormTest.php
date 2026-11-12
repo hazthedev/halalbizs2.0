@@ -416,3 +416,37 @@ test('optional translations are written only when filled and English is always w
         ->and($product->getTranslation('description', 'en'))->toBe('<p>Spicy</p>')
         ->and($product->variants()->firstOrFail()->price_sen)->toBe(750);
 });
+
+it('renders formatted description editors for every product language', function () {
+    $seller = productFormSeller();
+    $html = '<p><strong>x</strong></p>';
+    $product = Product::factory()->create([
+        'store_id' => $seller->store->id,
+        'description' => ['en' => $html, 'ms' => $html, 'vi' => $html],
+    ]);
+
+    $response = $this->actingAs($seller)->get(route('seller.products.edit', $product));
+    $response->assertOk();
+    foreach (['en', 'ms', 'vi'] as $locale) {
+        $response->assertSee('data-description-editor="'.$locale.'"', false)
+            ->assertDontSee('<textarea id="description.'.$locale.'"', false);
+    }
+});
+
+it('preserves untouched formatted descriptions when saving another product field', function () {
+    $seller = productFormSeller();
+    $html = '<p>  <strong>Honey</strong> &amp; tea<br>line 2</p><ul><li>Pure</li></ul>';
+    $descriptions = ['en' => $html, 'ms' => '<p><em>Madu</em></p>', 'vi' => '<p>Mật ong</p>'];
+    $product = Product::factory()->create([
+        'store_id' => $seller->store->id,
+        'category_id' => productFormCategory()->id,
+        'description' => $descriptions,
+    ]);
+
+    Livewire::actingAs($seller)->test(Form::class, ['product' => $product])
+        ->set('name.en', 'Updated honey name')
+        ->call('saveDraft')
+        ->assertHasNoErrors();
+
+    expect($product->fresh()->getTranslations('description'))->toBe($descriptions);
+});
