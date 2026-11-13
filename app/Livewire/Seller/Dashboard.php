@@ -10,12 +10,16 @@ use App\Models\Product;
 use App\Models\StoreLedgerEntry;
 use App\Models\SubOrder;
 use App\Services\SellerDashboardService;
+use App\Services\Whip\WhipDirectory;
 use App\Support\DisplayTime;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Throwable;
 
 /**
  * Seller dashboard (docs/07 §A2) — count-up stat cards, to-do strip, recent
@@ -64,6 +68,32 @@ class Dashboard extends Component
 
     public int $lowStock = 0;
 
+    public array $whipApplications = [];
+
+    public string $whipMessage = '';
+
+    public ?int $followedWhipApplicationId = null;
+
+    public function followWhipApplication(int $id): void
+    {
+        $this->resetErrorBag('whip');
+        try {
+            DB::transaction(function () use ($id) {
+                $store = $this->currentStore()->newQuery()->lockForUpdate()->findOrFail($this->currentStore()->id);
+                abort_unless($store->registration_verified_at !== null && filled($store->registration_no), 403);
+                $applications = app(WhipDirectory::class)->applicationsForCompany($store->registration_no);
+                abort_unless(collect($applications)->contains('id', $id), 403);
+                $store->forceFill(['whip_application_id' => $id])->save();
+            });
+        } catch (QueryException) {
+            $this->addError('whip', __('Unable to follow this application. Please try again later.'));
+
+            return;
+        }
+        $this->refreshWhipApplications();
+        $this->dispatch('toast', message: __('Following this application. Our regular recheck will link its certificate and matching products when certified.'));
+    }
+
     public function mount(SellerDashboardService $dashboard): void
     {
         // Stat cards share their numbers with GET /api/v1/seller/dashboard.
@@ -75,6 +105,28 @@ class Dashboard extends Component
         $this->lowStock = $stats['low_stock'];
 
         $this->dispatchCharts();
+        $this->refreshWhipApplications();
+    }
+
+    public function refreshWhipApplications(): void
+    {
+        $this->whipApplications = [];
+        $this->whipMessage = '';
+        $store = $this->currentStore()->fresh();
+        $this->followedWhipApplicationId = $store->whip_application_id === null ? null : (int) $store->whip_application_id;
+        if ($store->registration_verified_at === null || blank($store->registration_no)) {
+            $this->whipMessage = __('Verify your company SSM number to see your WHIP applications.');
+
+            return;
+        }
+        try {
+            $this->whipApplications = app(WhipDirectory::class)->applicationsForCompany($store->registration_no);
+            if ($this->whipApplications === []) {
+                $this->whipMessage = __('No WHIP applications found for your verified company SSM number.');
+            }
+        } catch (Throwable) {
+            $this->whipMessage = __('WHIP is unavailable. Your application status could not be checked.');
+        }
     }
 
     public function updatedPeriod(): void
