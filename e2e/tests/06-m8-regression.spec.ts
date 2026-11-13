@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync, selectPayment } from '../support';
+import { execSync, selectPayment, clickInView } from '../support';
 
 async function jsClick(locator: Locator) {
     await locator.first().waitFor({ state: 'visible' });
@@ -31,7 +31,7 @@ test.describe('M8 full regression', () => {
         // ===== Buyer: voucher checkout (COD) =====
         await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto(`/p/${slug}`);
-        await page.getByTestId('pdp-add-to-cart').locator('visible=true').first().click();
+        await clickInView(page.getByTestId('pdp-add-to-cart').locator('visible=true').first());
         await expect(page.getByText('Added to cart').first()).toBeVisible();
 
         await page.goto('/checkout');
@@ -41,7 +41,7 @@ test.describe('M8 full regression', () => {
         await page.screenshot({ path: `e2e/screenshots/m8-voucher-checkout-${test.info().project.name}.png`, fullPage: true });
 
         await selectPayment(page, 'cod');
-        await page.getByRole('button', { name: /place order/i }).click();
+        await clickInView(page.getByRole('button', { name: /place order/i }));
         await page.waitForURL('**/checkout/success/**', { timeout: 20000 });
         await logout(page);
 

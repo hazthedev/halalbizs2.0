@@ -31,6 +31,7 @@ test.describe('M2 storefront journey', () => {
             }
         }
 
+        test.info().annotations.push({ type: 'variant-picker', description: variantPdpFound ? 'exercised' : 'not found' });
         if (variantPdpFound) {
             const groups = page.locator('[data-option-group]');
             const groupCount = await groups.count();
@@ -43,7 +44,7 @@ test.describe('M2 storefront journey', () => {
 
             const addBtn = page.getByTestId('pdp-add-to-cart').locator('visible=true').first();
             await expect(addBtn).toBeEnabled();
-            await addBtn.click();
+            await clickInView(addBtn);
             await expect(page.getByText('Added to cart').first()).toBeVisible();
         }
 

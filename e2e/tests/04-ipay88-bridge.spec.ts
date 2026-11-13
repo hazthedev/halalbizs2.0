@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { execSync, selectPayment } from '../support';
+import { execSync, selectPayment, clickInView } from '../support';
 
 test('iPay88 checkout reaches the gateway bridge', async ({ page }) => {
     const slug = execSync('php artisan e2e:cod-fixture', { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
@@ -19,12 +19,12 @@ test('iPay88 checkout reaches the gateway bridge', async ({ page }) => {
     await page.waitForURL('**/');
 
     await page.goto(`/p/${slug}`);
-    await page.getByTestId('pdp-add-to-cart').locator('visible=true').first().click();
+    await clickInView(page.getByTestId('pdp-add-to-cart').locator('visible=true').first());
     await expect(page.getByText('Added to cart').first()).toBeVisible();
 
     await page.goto('/checkout');
     await selectPayment(page, 'ipay88');
-    await page.getByRole('button', { name: /place order/i }).click();
+    await clickInView(page.getByRole('button', { name: /place order/i }));
 
     await page.waitForURL('**/pay/**', { timeout: 20000 });
     await expect(page.getByText('Gateway stub')).toBeVisible({ timeout: 15000 });

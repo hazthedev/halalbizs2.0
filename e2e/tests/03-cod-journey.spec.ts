@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync, selectPayment } from '../support';
+import { execSync, selectPayment, clickInView } from '../support';
 
 // Long Livewire pages intermittently fail Playwright's stability check on
 // real clicks; JS clicks still drive wire:click. Real-click coverage lives
@@ -34,13 +34,13 @@ test.describe('M4 full COD journey', () => {
         await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto(`/p/${slug}`);
         const addBtn = page.getByTestId('pdp-add-to-cart').locator('visible=true').first();
-        await addBtn.click();
+        await clickInView(addBtn);
         await expect(page.getByText('Added to cart').first()).toBeVisible();
 
         await page.goto('/checkout');
         await expect(page.locator('main').getByText('COD Journey Store').first()).toBeVisible();
         await selectPayment(page, 'cod');
-        await page.getByRole('button', { name: /place order/i }).click();
+        await clickInView(page.getByRole('button', { name: /place order/i }));
         await page.waitForURL('**/checkout/success/**', { timeout: 20000 });
         await expect(page.getByText(/order placed/i).first()).toBeVisible();
         const orderNo = (await page.locator('text=/MP\\d{4}[A-Z0-9]{6}/').first().textContent())?.trim();
