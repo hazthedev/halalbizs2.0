@@ -96,8 +96,15 @@
                      products verified that the register refused (2026-08-07). --}}
                 @php
                     $cert = $product->halalCertificate;
-                    $verdict = $product->halalVerdict();
-                    $certBody = $cert?->issuing_body;
+                    $verdict = $product->isLive() ? $product->halalVerdict() : 'unverified';
+                    if ($verdict !== 'verified' || ($cert?->source === 'whip' && (
+                        $cert->whip_answer !== 'verified'
+                        || in_array($product->id, $cert->whip_allowed_product_ids ?? [], true)
+                        || in_array($product->id, $cert->whip_unmatched_product_ids ?? [], true)
+                    ))) {
+                        $cert = null;
+                    }
+                    $certBody = $cert?->issuing_body_name ?: $cert?->issuing_body;
                     $certTone = match ($verdict) {
                         'verified' => ['border-emerald-tint-edge bg-emerald-tint', 'text-emerald', 'm4.5 12.75 6 6 9-13.5'],
                         'lapsed' => ['border-danger/30 bg-danger-tint', 'text-danger', 'M6 18 18 6M6 6l12 12'],
@@ -241,11 +248,11 @@
                      names the SKU, so a shop-wide badge cannot cover it by
                      implication. The scope line is the certificate's own, not
                      marketing copy. --}}
-                @if ($product->halalCertificate?->scope_note)
+                @if ($cert?->scope_note)
                     <div class="mt-6 border-t border-line pt-5">
                         <p class="font-display text-[length:var(--text-h4)] text-ink-head">{{ __('Ingredients & scope') }}</p>
                         <p class="mt-3 max-w-[62ch] text-[length:var(--text-base)] leading-relaxed text-ink-soft">
-                            {{ __('Certified scope: :scope.', ['scope' => $product->halalCertificate->scope_note]) }}
+                            {{ __('Certified scope: :scope.', ['scope' => $cert->scope_note]) }}
                             {{ __('The certificate names this SKU in its annex, so the badge is bound to the item you are buying, not to the shop that sells it.') }}
                         </p>
                     </div>
@@ -254,8 +261,8 @@
                 {{-- Traceability — the reference's key/value table. Only rows the
                      data can actually answer are rendered: an empty row on a
                      compliance surface is worse than no row. --}}
-                @if ($product->halalCertificate || $product->halal_batch_code)
-                    @php $trace = $product->halalCertificate; @endphp
+                @if ($cert || $product->halal_batch_code)
+                    @php $trace = $cert; @endphp
                     {{-- The heading sits outside the <dl> and each row is a direct
                          div child of it: a <p> is not allowed inside <dl>, and
                          dt/dd must be children of the dl or of one div under it.
@@ -270,7 +277,7 @@
                                 __('Batch') => $product->halal_batch_code
                                     ? $product->halal_batch_code.($product->halal_packed_on ? ' · '.__('packed :date', ['date' => $product->halal_packed_on->format('j M Y')]) : '')
                                     : null,
-                                __('Certificate') => $trace ? $trace->issuing_body.' · '.$trace->number : $product->halal_cert_number,
+                                __('Certificate') => $trace ? ($trace->issuing_body_name ?: $trace->issuing_body).' · '.$trace->number : null,
                                 {{-- Reads the same $verdict as the badge above, so this row can
                                      never say "884 days remaining" about a certificate the
                                      badge is calling not-yet-in-force. --}}
