@@ -41,7 +41,7 @@ function hardRuleScan(array $directories, callable $check): array
 
 function hardRuleFunction(array $tokens, int $i, array $names): bool
 {
-    return in_array(strtolower($tokens[$i][0]), $names, true)
+    return in_array(strtolower(ltrim($tokens[$i][0], '\\')), $names, true)
         && ($tokens[$i + 1][0] ?? null) === '('
         && ! in_array(strtolower($tokens[$i - 1][0] ?? ''), ['->', '?->', '::', 'function', 'fn'], true);
 }
@@ -57,7 +57,7 @@ it('keeps debug calls out of app', function () {
 });
 
 it('keeps rate limiter definitions out of routes', function () {
-    $found = hardRuleScan(['routes'], fn ($tokens, $i) => strtolower($tokens[$i][0]) === 'ratelimiter'
+    $found = hardRuleScan(['routes'], fn ($tokens, $i) => (strtolower($tokens[$i][0]) === 'ratelimiter' || str_ends_with(strtolower($tokens[$i][0]), '\\ratelimiter'))
         && ($tokens[$i + 1][0] ?? null) === '::'
         && strtolower($tokens[$i + 2][0] ?? '') === 'for'
         && ($tokens[$i + 3][0] ?? null) === '(');
