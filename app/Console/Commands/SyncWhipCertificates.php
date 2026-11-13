@@ -29,49 +29,67 @@ class SyncWhipCertificates extends Command
 
     public function handle(WhipDirectory $whip): int
     {
-        return DB::transaction(function () use ($whip) {
-            // Same lock order as seller link/import: take local locks BEFORE asking WHIP.
-            $storeIds = HalalCertificate::where('source', 'whip')->pluck('store_id');
-            $stores = Store::query()->where(fn ($q) => $q->whereIn('id', $storeIds)->orWhereNotNull('whip_application_id'))
-                ->orderBy('id')->lockForUpdate()->get();
-            $certificates = HalalCertificate::query()->where('source', 'whip')->with('store')->orderBy('id')->lockForUpdate()->get();
+        // Finish every remote read before taking any local row locks.
+        $stores = Store::whereNotNull('whip_application_id')->orderBy('id')->get();
+        $certificates = HalalCertificate::query()->where('source', 'whip')->orderBy('id')->get();
 
-            try {
-                $answers = $certificates->map(function (HalalCertificate $c) use ($whip) {
-                    $found = $whip->lookup($c->number);
+        try {
+            $answers = $certificates->map(function (HalalCertificate $c) use ($whip) {
+                $found = $whip->lookup($c->number);
 
-                    return [$c, $c->store?->registration_verified_at === null ? 'mismatch' : ($found ? $found->answerFor($c->store->registration_no) : 'not_found'), $found, false];
-                })->keyBy(fn ($row) => strtoupper(trim($row[0]->number)));
+                return [$c, $found, false];
+            })->keyBy(fn ($row) => strtoupper(trim($row[0]->number)));
 
-                foreach ($stores as $store) {
-                    if ($store->whip_application_id === null || $store->registration_verified_at === null) {
+            foreach ($stores as $store) {
+                if ($store->whip_application_id === null || $store->registration_verified_at === null) {
+                    continue;
+                }
+                foreach ($whip->forCompany((string) $store->registration_no) as $found) {
+                    if ($found->applicationId !== (int) $store->whip_application_id || $found->answerFor($store->registration_no) !== 'verified') {
                         continue;
                     }
-                    foreach ($whip->forCompany((string) $store->registration_no) as $found) {
-                        if ($found->applicationId !== (int) $store->whip_application_id || $found->answerFor($store->registration_no) !== 'verified') {
-                            continue;
-                        }
-                        $certificate = HalalCertificate::where('number', $found->certificateNo)->lockForUpdate()->first();
-                        if ($certificate !== null && $certificate->store_id !== $store->id) {
-                            continue;
-                        }
-                        if ($certificate === null && blank($found->companyName)) {
-                            continue;
-                        }
-                        $certificate ??= new HalalCertificate(['store_id' => $store->id, 'number' => $found->certificateNo, 'issuing_body' => 'WHIP']);
-                        $answers->put(strtoupper(trim($found->certificateNo)), [$certificate, 'verified', $found, true]);
+                    $certificate = HalalCertificate::where('number', $found->certificateNo)->first();
+                    if ($certificate !== null && $certificate->store_id !== $store->id) {
+                        continue;
                     }
+                    if ($certificate === null && blank($found->companyName)) {
+                        continue;
+                    }
+                    $certificate ??= new HalalCertificate(['store_id' => $store->id, 'number' => $found->certificateNo, 'issuing_body' => 'WHIP']);
+                    $answers->put(strtoupper(trim($found->certificateNo)), [$certificate, $found, true]);
                 }
-            } catch (Throwable $e) {
-                Log::error('certificates:sync-whip: WHIP unreachable, nothing changed', ['exception' => $e::class]);
-                $this->error('WHIP unreachable; nothing changed.');
-
-                return self::FAILURE;
             }
+        } catch (Throwable $e) {
+            Log::error('certificates:sync-whip: WHIP unreachable, nothing changed', ['exception' => $e::class]);
+            $this->error('WHIP unreachable; nothing changed.');
 
-            $changed = 0;
+            return self::FAILURE;
+        }
 
-            foreach ($answers as [$cert, $answer, $found, $followed]) {
+        $changed = 0;
+
+        foreach ($answers as [$snapshot, $found, $followed]) {
+            $changed += DB::transaction(function () use ($snapshot, $found, $followed) {
+                // Link/import use the same store-then-certificate lock order.
+                $store = Store::whereKey($snapshot->store_id)->lockForUpdate()->first();
+                if ($store === null) {
+                    return 0;
+                }
+                $answer = $store->registration_verified_at === null ? 'mismatch'
+                    : ($found ? $found->answerFor($store->registration_no) : 'not_found');
+                $followed = $followed && $answer === 'verified'
+                    && (int) $store->whip_application_id === $found->applicationId;
+                $cert = HalalCertificate::where('number', $snapshot->number)->lockForUpdate()->first();
+                if ($cert === null) {
+                    if (! $followed || $snapshot->exists || blank($found->companyName)) {
+                        return 0;
+                    }
+                    $cert = new HalalCertificate(['store_id' => $store->id, 'number' => $found->certificateNo, 'issuing_body' => 'WHIP']);
+                } elseif ($cert->store_id !== $store->id
+                    || (! $followed && ($cert->id !== $snapshot->id || $cert->source !== 'whip'))) {
+                    return 0;
+                }
+                $cert->setRelation('store', $store);
                 $before = $cert->whip_answer;
 
                 if ($found !== null && in_array($answer, ['verified', 'expired'], true)) {
@@ -100,21 +118,22 @@ class SyncWhipCertificates extends Command
                 $found !== null && $cert->bindProducts($ids, $found);
 
                 if ($before !== $answer) {
-                    $changed++;
                     HalalCertificateEvent::create([
                         'halal_certificate_id' => $cert->id,
                         'occurred_on' => DisplayTime::today()->toDateString(),
                         'summary' => __('WHIP check: :answer', ['answer' => str_replace('_', ' ', $answer)]),
                     ]);
                 }
-            }
 
-            // Same effects as the daily watch: lapsed terms come off sale.
-            $this->call('certificates:watch-expiry');
+                return (int) ($before !== $answer);
+            });
+        }
 
-            $this->info("WHIP sync: {$answers->count()} checked, {$changed} changed.");
+        // Same effects as the daily watch: lapsed terms come off sale.
+        $this->call('certificates:watch-expiry');
 
-            return self::SUCCESS;
-        });
+        $this->info("WHIP sync: {$answers->count()} checked, {$changed} changed.");
+
+        return self::SUCCESS;
     }
 }

@@ -20,6 +20,7 @@ use App\Settings\ModerationSettings;
 use App\Support\DisplayTime;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Queue\Events\JobQueueing;
 use Illuminate\Support\Facades\Artisan;
@@ -430,6 +431,49 @@ test('two active records with one number are ambiguous, not verified', function 
 
     expect(whipRow())->status->toBe(CertificateStatus::Pending)->whip_answer->toBe('ambiguous');
 });
+
+test('sync reads existing and followed WHIP certificates without opening a local transaction', function () {
+    whipCert();
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    $application = whipCert(['no' => 'WH-200']);
+    $seller->store->forceFill(['whip_application_id' => $application])->save();
+    // RefreshDatabase owns the outer test transaction; sync must not add one during remote reads.
+    $outerLevel = DB::transactionLevel();
+    $levels = [];
+    DB::listen(function (QueryExecuted $query) use (&$levels) {
+        if ($query->connectionName === 'whip') {
+            $levels[] = DB::transactionLevel();
+        }
+    });
+
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+
+    expect($levels)->not->toBeEmpty()
+        ->and(array_values(array_unique($levels)))->toBe([$outerLevel]);
+    expect(whipRow('WH-200')->store_id)->toBe($seller->store->id);
+});
+
+test('sync rechecks the followed store after reading WHIP before creating its certificate', function (array $change) {
+    $application = whipCert();
+    $seller = whipSeller();
+    $seller->store->forceFill(['whip_application_id' => $application])->save();
+    $changed = false;
+    DB::listen(function (QueryExecuted $query) use ($seller, $change, &$changed) {
+        if ($query->connectionName === 'whip' && ! $changed) {
+            $changed = true;
+            $seller->store->forceFill($change)->save();
+        }
+    });
+
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+
+    expect($changed)->toBeTrue()->and(HalalCertificate::count())->toBe(0);
+})->with([
+    'verification removed' => [['registration_verified_at' => null]],
+    'company changed' => [['registration_no' => '999999-X']],
+    'application unfollowed' => [['whip_application_id' => null]],
+]);
 
 test('the sync moves a certificate WHIP now holds as expired to expired and delists its products', function () {
     $app = whipCert();
