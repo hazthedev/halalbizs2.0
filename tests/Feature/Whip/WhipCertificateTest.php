@@ -369,6 +369,17 @@ test('WHIP application tracker remains usable when the directory is unavailable'
         ->assertSee('WHIP is unavailable')->assertSee('Manage my certificates');
 });
 
+test('sellers without certificates can get certified through the configured WHIP apply page', function () {
+    config(['services.whip.apply_url' => 'https://whip.example.test/company_register.php']);
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->assertSee('Get certified')
+        ->assertSeeHtml('href="https://whip.example.test/company_register.php"');
+    Livewire::actingAs($seller)->test(Dashboard::class)->assertSee('Get certified')
+        ->assertSeeHtml('href="https://whip.example.test/company_register.php"');
+    whipCert();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')->assertDontSee('Get certified');
+});
+
 test('a certificate number that WHIP holds as certified and in date, for the same company registration number, is verified from WHIP', function () {
     $app = whipCert();
     whipSubmit(whipSeller());

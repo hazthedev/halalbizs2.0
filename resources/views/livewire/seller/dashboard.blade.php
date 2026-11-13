@@ -23,6 +23,9 @@
         @endforeach
         <p class="text-sm text-ink-soft">{{ __('Follow an application to link its certificate and matching products automatically when WHIP certifies it. Our regular recheck keeps them up to date.') }}</p>
         <a href="{{ route('seller.certificates') }}" wire:navigate class="inline-flex min-h-11 items-center text-sm text-emerald underline">{{ __('Manage my certificates') }}</a>
+        @if (! auth()->user()->store->halalCertificates()->exists() && config('services.whip.apply_url'))
+            <a href="{{ config('services.whip.apply_url') }}" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper">{{ __('Get certified') }}</a>
+        @endif
     </x-ui.card>
 
     {{-- ===== Stat cards (count-up per design §7, reduced-motion renders final) ===== --}}
