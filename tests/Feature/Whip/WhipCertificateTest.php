@@ -4,6 +4,7 @@ use App\Enums\CertificateStatus;
 use App\Enums\ProductStatus;
 use App\Livewire\Admin\Catalog\Certificates as AdminCertificates;
 use App\Livewire\Seller\Certificates;
+use App\Livewire\Seller\Notifications;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\HalalCertificate;
@@ -11,14 +12,21 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\User;
+use App\Notifications\WhipCertificateExpiry;
 use App\Services\ProductWriteService;
 use App\Services\Whip\WhipDirectory;
 use App\Settings\ModerationSettings;
+use App\Support\DisplayTime;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Queue\Events\JobQueueing;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -249,6 +257,85 @@ test('imported drafts stay private until seller publication and lose certificati
     DB::connection('whip')->table('halal_applications')->update(['status' => 'revoked']);
     $this->artisan('certificates:sync-whip')->assertSuccessful();
     expect($product->fresh()->halalVerdict())->not->toBe('verified');
+});
+
+test('WHIP expiry reminders send seller and email notices once at 60 30 and 7 days for each expiry term', function () {
+    Notification::fake();
+    config(['services.whip.renew_url' => 'https://whip.example.test/company_login.php']);
+    $this->travelTo(now()->startOfDay());
+    $expiry = DisplayTime::today()->addDays(60)->toDateString();
+    whipCert(['to' => $expiry]);
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    $certificate = whipRow();
+
+    foreach ([60, 30, 7] as $days) {
+        $this->travelTo(DisplayTime::today()->parse($expiry)->subDays($days)->startOfDay());
+        $certificate->forceFill(['whip_synced_at' => now()])->save();
+        $this->artisan('certificates:remind-whip-expiry')->assertSuccessful();
+        $this->artisan('certificates:remind-whip-expiry')->assertSuccessful();
+        Notification::assertSentTo($seller, WhipCertificateExpiry::class,
+            fn ($notice) => $notice->days === $days && $notice->via($seller) === ['database', 'mail']
+                && $notice->toMail($seller)->actionUrl === 'https://whip.example.test/company_login.php');
+    }
+    Notification::assertSentToTimes($seller, WhipCertificateExpiry::class, 3);
+    $certificate->forceFill(['valid_to' => DisplayTime::today()->addDays(60), 'whip_synced_at' => now()])->save();
+    $this->artisan('certificates:remind-whip-expiry')->assertSuccessful();
+    Notification::assertSentToTimes($seller, WhipCertificateExpiry::class, 4);
+});
+
+test('WHIP reminders skip stale or rejected checks and do not receive the manual certificate nudge', function () {
+    Notification::fake();
+    whipCert(['to' => DisplayTime::today()->addDays(60)->toDateString()]);
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    $certificate = whipRow();
+    $certificate->forceFill(['whip_synced_at' => now()->subHours(25)])->save();
+    $this->artisan('certificates:remind-whip-expiry')->assertSuccessful();
+    $certificate->forceFill(['whip_synced_at' => now(), 'whip_answer' => 'mismatch'])->save();
+    $this->artisan('certificates:remind-whip-expiry')->assertSuccessful();
+    $this->artisan('certificates:watch-expiry')->assertSuccessful();
+    Notification::assertNothingSent();
+});
+
+test('WHIP reminder is visible to its seller and opens the configured renewal page', function () {
+    whipCert();
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    config(['services.whip.renew_url' => 'https://whip.example.test/company_login.php']);
+    $notice = new WhipCertificateExpiry(whipRow(), 60);
+    $notification = $seller->notifications()->create([
+        'id' => (string) Str::uuid(), 'type' => $notice::class, 'data' => $notice->toArray($seller),
+    ]);
+    Livewire::actingAs($seller)->test(Notifications::class)
+        ->assertSee('Certificate WH-100 expires')->call('open', $notification->id)
+        ->assertRedirect('https://whip.example.test/company_login.php');
+    expect($notification->fresh()->read_at)->not->toBeNull();
+});
+
+test('a recovered scheduler catches the current WHIP reminder window without sending obsolete milestones', function () {
+    Notification::fake();
+    whipCert(['to' => DisplayTime::today()->addDays(58)->toDateString()]);
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    $this->artisan('certificates:remind-whip-expiry')->assertSuccessful();
+    $this->artisan('certificates:remind-whip-expiry')->assertSuccessful();
+    Notification::assertSentToTimes($seller, WhipCertificateExpiry::class, 1);
+    Notification::assertSentTo($seller, WhipCertificateExpiry::class, fn ($notice) => $notice->days === 58);
+});
+
+test('a failed WHIP reminder enqueue leaves its milestone available for retry', function () {
+    whipCert(['to' => DisplayTime::today()->addDays(60)->toDateString()]);
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    config(['queue.default' => 'database']);
+    Event::listen(JobQueueing::class, fn () => throw new RuntimeException('Queue unavailable'));
+    expect(fn () => Artisan::call('certificates:remind-whip-expiry'))->toThrow(RuntimeException::class, 'Queue unavailable');
+    expect(whipRow()->whip_reminders)->toBeNull();
+    Event::forget(JobQueueing::class);
+    $this->artisan('certificates:remind-whip-expiry')->assertSuccessful();
+    expect(whipRow()->whip_reminders['sent'])->toBe([60]);
+    $this->assertDatabaseCount('jobs', 2);
 });
 
 test('a certificate number that WHIP holds as certified and in date, for the same company registration number, is verified from WHIP', function () {

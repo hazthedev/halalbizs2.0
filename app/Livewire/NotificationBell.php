@@ -26,7 +26,7 @@ class NotificationBell extends Component
         $url = $notification->data['url'] ?? null;
 
         if (is_string($url) && $url !== '') {
-            $this->redirect($url, navigate: true);
+            $this->redirect($url, navigate: parse_url($url, PHP_URL_HOST) === parse_url(config('app.url'), PHP_URL_HOST));
         }
     }
 
