@@ -196,3 +196,17 @@ test('the screen lists and adds sections for the chosen layout only', function (
     publishDrafts();
     expect($added->fresh()->scheduled_layout_id)->toBe($layout->id)->and($added->fresh()->is_active)->toBeTrue();
 });
+
+test('the layout selector accepts a browser value and switches back to everyday', function () {
+    everydaySection();
+    $layout = ramadanLayout();
+
+    Livewire::actingAs(contentPublisher())->test(HomeSections::class)
+        ->assertSeeHtml('wire:change="chooseLayout($event.target.value === \'\' ? null : $event.target.value)"')
+        ->call('chooseLayout', (string) $layout->id)
+        ->assertSet('layoutId', $layout->id)
+        ->assertSee('Ramadan shelf')->assertDontSee('Everyday shelf')
+        ->call('chooseLayout', null)
+        ->assertSet('layoutId', null)
+        ->assertSee('Everyday shelf')->assertDontSee('Ramadan shelf');
+});

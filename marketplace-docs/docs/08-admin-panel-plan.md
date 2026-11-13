@@ -29,6 +29,7 @@ All sub_orders datagrid (filters: status, store, method, date; search order_no â
 - Platform **vouchers** CRUD (engine M8; form ready M7 behind flag).
 - **Banners**: CRUD, image, schedule, position.
 - **Home sections manager**: orderable list (banner | category_grid | product_carousel{source: latest/top/category/manual ids} | recently_viewed), payload editor per type, enable toggle â€” drives storefront B1.
+- The home-sections Layout selector switches between a scheduled layout and Everyday layout; browser option values are passed directly to the typed Livewire action. `ScheduledLayoutTest` covers the rendered binding and both selections.
 - **CMS pages**: list + editor (language tabs, rich text sanitized), slug-locked system pages.
 
 ## H. Localization
