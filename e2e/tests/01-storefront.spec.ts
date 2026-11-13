@@ -1,3 +1,4 @@
+import { clickInView } from '../support';
 import { test, expect, Page } from '@playwright/test';
 
 test.describe('M2 storefront journey', () => {
@@ -34,8 +35,9 @@ test.describe('M2 storefront journey', () => {
             const groups = page.locator('[data-option-group]');
             const groupCount = await groups.count();
             for (let i = 0; i < groupCount; i++) {
-                await groups.nth(i).locator('button:not([disabled])').first().click();
-                await page.waitForTimeout(300); // Livewire roundtrip
+                const chip = groups.nth(i).locator('button:not([disabled])').first();
+                await clickInView(chip);
+                await expect(chip).toHaveAttribute('aria-pressed', 'true');
             }
             await page.screenshot({ path: `e2e/screenshots/m2-pdp-${test.info().project.name}.png`, fullPage: true });
 

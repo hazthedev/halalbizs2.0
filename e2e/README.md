@@ -1,6 +1,6 @@
 # Local browser journeys
 
-Specs 00–16 run one Chromium worker on desktop (1280×800) and mobile (390×844). CMS coverage includes draft isolation, signed preview, publish, restore, scheduled layouts, all four repeatable section types and web/app visibility. WHIP coverage includes discovery, linking, import, application tracking, renewal reminders, certification links, buyer details and an unverified-SSM refusal.
+Specs 00–16 run one Chromium worker on desktop (1280×800) and mobile (390×844). Long mobile forms use native keyboard activation because Chromium emulation can pan its visual viewport and misplace pointer coordinates; desktop exercises pointer clicks. CMS coverage includes draft isolation, signed preview, publish, restore, scheduled layouts, all four repeatable section types and web/app visibility. WHIP coverage includes discovery, linking, import, application tracking, renewal reminders, certification links, buyer details and an unverified-SSM refusal.
 
 Use a disposable local database or back up `hbiz2_qa` before a run and restore it afterwards. The suite writes orders, catalog fixtures and content. Run-scoped accounts use generated passwords passed only in memory/stdin; traces are off because login requests contain secrets. The existing catalog and settings must be seeded, migrations current and purchasing enabled locally. Setup uses generated test signing data for the iPay88 bridge; Playwright intercepts its sandbox POST.
 

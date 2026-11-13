@@ -1,3 +1,4 @@
+import { clickInView } from '../support';
 import { fileURLToPath } from 'url';
 import { test, expect, Page } from '@playwright/test';
 import { execFileSync } from 'child_process';
@@ -15,7 +16,7 @@ async function login(page: Page, role: string) {
     await page.goto('/login');
     await page.locator('input[type=email]').fill(`${run}-${role}@halalbizs.test`);
     await page.locator('input[type=password]').fill(password);
-    await page.getByRole('button', { name: /log in/i }).click();
+    await clickInView(page.getByRole('button', { name: /log in/i }));
     await page.waitForURL(url => !url.pathname.includes('login'));
 }
 
@@ -31,12 +32,12 @@ test.describe('CMS drafts, history and scheduled sections', () => {
     test('editor previews a draft, publisher publishes and restores history', async ({ page }) => {
         await login(page, 'editor');
         await page.goto('/admin/content/pages');
-        await page.getByRole('button', { name: 'Add page' }).click();
+        await clickInView(page.getByRole('button', { name: 'Add page' }));
         await page.locator('[wire\\:model="slug"]').fill(run);
         await page.locator('[wire\\:model="title.en"]').fill(`First ${run}`);
         await body(page, `First body ${run}`);
         const saveStarted = Date.now();
-        await page.getByRole('button', { name: 'Create page' }).click();
+        await clickInView(page.getByRole('button', { name: 'Create page' }));
         const row = page.locator('tr').filter({ hasText: run });
         await expect(row.getByText('Draft')).toBeVisible();
         test.info().annotations.push({ type: 'timing', description: `CMS draft save ${Date.now() - saveStarted} ms` });
@@ -46,33 +47,33 @@ test.describe('CMS drafts, history and scheduled sections', () => {
         await page.goto('/admin/content/pages');
         const [preview] = await Promise.all([
             page.waitForEvent('popup'),
-            row.getByRole('link', { name: 'Preview', exact: true }).click(),
+            clickInView(row.getByRole('link', { name: 'Preview', exact: true })),
         ]);
         await expect(preview.frameLocator('iframe[data-preview="web"]').getByText(`First body ${run}`)).toBeVisible();
         await preview.close();
 
         await login(page, 'publisher');
         await page.goto('/admin/content/pages');
-        await row.getByRole('button', { name: 'Publish', exact: true }).click();
+        await clickInView(row.getByRole('button', { name: 'Publish', exact: true }));
         await expect(row.getByText('Draft')).toHaveCount(0);
         await page.goto(`/page/${run}`);
         await expect(page.getByText(`First body ${run}`)).toBeVisible();
         await page.goto('/admin/content/pages');
-        await row.getByRole('button', { name: 'Edit', exact: true }).click();
+        await clickInView(row.getByRole('button', { name: 'Edit', exact: true }));
         await page.locator('[wire\\:model="title.en"]').fill(`Second ${run}`);
         await body(page, `Second body ${run}`);
-        await page.getByRole('button', { name: 'Save page' }).click();
-        await row.getByRole('button', { name: 'Publish', exact: true }).click();
+        await clickInView(page.getByRole('button', { name: 'Save page' }));
+        await clickInView(row.getByRole('button', { name: 'Publish', exact: true }));
         await expect(row.getByText('Draft')).toHaveCount(0);
-        await row.getByRole('link', { name: 'History' }).click();
+        await clickInView(row.getByRole('link', { name: 'History' }));
         await expect(page.getByText('Live now')).toBeVisible();
-        await page.getByRole('button', { name: 'Restore as draft' }).first().click();
+        await clickInView(page.getByRole('button', { name: 'Restore as draft' }).first());
         await expect(page.getByText(/This item has a draft waiting/)).toBeVisible();
         await page.goto(`/page/${run}`);
         await expect(page.getByText(`Second body ${run}`)).toBeVisible();
         await page.goto('/admin/content/pages');
         await expect(row.getByText('Draft')).toBeVisible();
-        await row.getByRole('button', { name: 'Publish', exact: true }).click();
+        await clickInView(row.getByRole('button', { name: 'Publish', exact: true }));
         await expect(row.getByText('Draft')).toHaveCount(0);
         await page.goto(`/page/${run}`);
         await expect(page.getByText(`First body ${run}`)).toBeVisible();
@@ -83,11 +84,11 @@ test.describe('CMS drafts, history and scheduled sections', () => {
         page.on('dialog', dialog => dialog.accept());
         await login(page, 'publisher');
         await page.goto('/admin/content/home-sections');
-        await page.getByRole('button', { name: 'New scheduled layout' }).click();
+        await clickInView(page.getByRole('button', { name: 'New scheduled layout' }));
         await page.locator('[wire\\:model="layoutName"]').fill(run);
         await page.locator('[wire\\:model="layoutStarts"]').fill('2035-01-01T10:00');
         await page.locator('[wire\\:model="layoutEnds"]').fill('2035-01-02T10:00');
-        await page.getByRole('button', { name: 'Save layout' }).click();
+        await clickInView(page.getByRole('button', { name: 'Save layout' }));
         await expect(page.locator('#layout-choice')).toContainText(run);
         const layoutId = await page.locator('#layout-choice').inputValue();
         expect(layoutId).not.toBe('');
@@ -97,12 +98,12 @@ test.describe('CMS drafts, history and scheduled sections', () => {
         const sections = page.locator('li[wire\\:key^="section-"]');
         while (await sections.count()) {
             const before = await sections.count();
-            await sections.first().getByRole('button', { name: 'Remove', exact: true }).click();
+            await clickInView(sections.first().getByRole('button', { name: 'Remove', exact: true }));
             await expect(sections).toHaveCount(before - 1);
         }
         const add = async (type: string) => {
             await page.locator('#add-type').selectOption(type);
-            await page.getByRole('button', { name: 'Add section' }).click();
+            await clickInView(page.getByRole('button', { name: 'Add section' }));
             const form = page.locator('li[wire\\:key^="section-"] form[wire\\:submit="save"]');
             await expect(form).toBeVisible();
             return form;
@@ -112,10 +113,10 @@ test.describe('CMS drafts, history and scheduled sections', () => {
             const section = page.locator('li[wire\\:key]').filter({ has: page.locator(`[wire\\:submit="save"]`) });
             expect(key).toBeTruthy();
             const saved = page.locator(`li[wire\\:key="${key}"]`);
-            await form.getByRole('button', { name: 'Save section' }).click();
+            await clickInView(form.getByRole('button', { name: 'Save section' }));
             await expect(form).toHaveCount(0);
             await expect(section).toHaveCount(0);
-            await saved.getByRole('button', { name: 'Publish', exact: true }).click();
+            await clickInView(saved.getByRole('button', { name: 'Publish', exact: true }));
             await expect(saved.getByText('Draft')).toHaveCount(0);
         };
 
@@ -127,13 +128,15 @@ test.describe('CMS drafts, history and scheduled sections', () => {
         form = await add('picked_products');
         await form.locator('[wire\\:model="title.en"]').fill(`Products ${run}`);
         await form.locator('[wire\\:model\\.live\\.debounce\\.300ms="pickSearch"]').fill(`${run} product`);
-        await form.getByRole('button', { name: `Add ${run} product` }).click();
+        await clickInView(form.getByRole('button', { name: `Add ${run} product` }));
+        await expect(form.getByRole('button', { name: `Take off ${run} product` })).toBeVisible();
         await saveAndPublish(form);
 
         form = await add('picked_stores');
         await form.locator('[wire\\:model="title.en"]').fill(`Stores ${run}`);
         await form.locator('[wire\\:model\\.live\\.debounce\\.300ms="pickSearch"]').fill(`${run} store`);
-        await form.getByRole('button', { name: `Add ${run} store` }).click();
+        await clickInView(form.getByRole('button', { name: `Add ${run} store` }));
+        await expect(form.getByRole('button', { name: `Take off ${run} store` })).toBeVisible();
         await form.locator('#section-show-on').selectOption('app');
         await saveAndPublish(form);
 
@@ -153,7 +156,7 @@ test.describe('CMS drafts, history and scheduled sections', () => {
 
         const [preview] = await Promise.all([
             page.waitForEvent('popup'),
-            page.getByRole('link', { name: 'Preview this layout' }).click(),
+            clickInView(page.getByRole('link', { name: 'Preview this layout' })),
         ]);
         const web = preview.frameLocator('iframe[data-preview="web"]');
         await expect(web.getByText(`Notice ${run}`)).toBeVisible();
@@ -171,7 +174,7 @@ test.describe('CMS drafts, history and scheduled sections', () => {
         await page.locator('#layout-choice').selectOption('');
         await expect(page.getByRole('button', { name: 'Change name or dates' })).toHaveCount(0);
         await page.locator('#layout-choice').selectOption(layoutId);
-        await page.getByRole('button', { name: 'Change name or dates' }).click();
+        await clickInView(page.getByRole('button', { name: 'Change name or dates' }));
         const localTime = (offset: number) => {
             const date = new Date(Date.now() + offset);
             const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuala_Lumpur', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(date);
@@ -180,7 +183,7 @@ test.describe('CMS drafts, history and scheduled sections', () => {
         };
         await page.locator('[wire\\:model="layoutStarts"]').fill(localTime(-3_600_000));
         await page.locator('[wire\\:model="layoutEnds"]').fill(localTime(3_600_000));
-        await page.getByRole('button', { name: 'Save layout' }).click();
+        await clickInView(page.getByRole('button', { name: 'Save layout' }));
         await expect(page.getByRole('button', { name: 'Save layout' })).toHaveCount(0);
         await page.goto('/');
         await expect(page.getByText(`Notice ${run}`)).toBeVisible();

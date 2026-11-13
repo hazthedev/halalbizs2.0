@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { execSync } from '../support';
+import { execSync, selectPayment } from '../support';
 
 test('iPay88 checkout reaches the gateway bridge', async ({ page }) => {
     const slug = execSync('php artisan e2e:cod-fixture', { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
@@ -23,7 +23,7 @@ test('iPay88 checkout reaches the gateway bridge', async ({ page }) => {
     await expect(page.getByText('Added to cart').first()).toBeVisible();
 
     await page.goto('/checkout');
-    await page.locator('input[type="radio"][value="ipay88"]').check();
+    await selectPayment(page, 'ipay88');
     await page.getByRole('button', { name: /place order/i }).click();
 
     await page.waitForURL('**/pay/**', { timeout: 20000 });

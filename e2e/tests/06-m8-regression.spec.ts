@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from '../support';
+import { execSync, selectPayment } from '../support';
 
 async function jsClick(locator: Locator) {
     await locator.first().waitFor({ state: 'visible' });
@@ -40,7 +40,7 @@ test.describe('M8 full regression', () => {
         await expect(page.getByText(/-\s?RM 5\.00|−\s?RM 5\.00/).first()).toBeVisible({ timeout: 10000 });
         await page.screenshot({ path: `e2e/screenshots/m8-voucher-checkout-${test.info().project.name}.png`, fullPage: true });
 
-        await page.locator('input[type="radio"][value="cod"]').check();
+        await selectPayment(page, 'cod');
         await page.getByRole('button', { name: /place order/i }).click();
         await page.waitForURL('**/checkout/success/**', { timeout: 20000 });
         await logout(page);
