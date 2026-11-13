@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync, selectPayment, clickInView } from '../support';
 
 test('iPay88 checkout reaches the gateway bridge', async ({ page }) => {
     const slug = execSync('php artisan e2e:cod-fixture', { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
@@ -13,18 +13,18 @@ test('iPay88 checkout reaches the gateway bridge', async ({ page }) => {
     });
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'buyer@halalbizs.test');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="email"]', `${process.env.E2E_BUYER_EMAIL}`);
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 
     await page.goto(`/p/${slug}`);
-    await page.getByTestId('pdp-add-to-cart').locator('visible=true').first().click();
+    await clickInView(page.getByTestId('pdp-add-to-cart').locator('visible=true').first());
     await expect(page.getByText('Added to cart').first()).toBeVisible();
 
     await page.goto('/checkout');
-    await page.locator('input[type="radio"][value="ipay88"]').check();
-    await page.getByRole('button', { name: /place order/i }).click();
+    await selectPayment(page, 'ipay88');
+    await clickInView(page.getByRole('button', { name: /place order/i }));
 
     await page.waitForURL('**/pay/**', { timeout: 20000 });
     await expect(page.getByText('Gateway stub')).toBeVisible({ timeout: 15000 });

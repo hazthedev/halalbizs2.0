@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 function artisan(cmd: string) {
     return execSync(`php artisan ${cmd}`, { cwd: process.cwd() }).toString().trim();
@@ -13,18 +13,18 @@ async function jsClick(locator: Locator) {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 }
 
 async function adminLogin(page: Page) {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@halalbizs.test');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="email"]', `${process.env.E2E_ADMIN_EMAIL}`);
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/two-factor-challenge', { timeout: 15000 });
-    const code = artisan('e2e:otp admin@halalbizs.test').split('\n').pop()!.trim();
+    const code = artisan(`e2e:otp ${process.env.E2E_ADMIN_EMAIL}`).split('\n').pop()!.trim();
     await page.fill('input[name="code"]', code);
     await page.getByRole('button', { name: /verify/i }).click();
     await page.waitForURL((url) => !url.pathname.includes('two-factor-challenge'), { timeout: 15000 });
@@ -33,7 +33,7 @@ async function adminLogin(page: Page) {
 // Seed a completed sale so every dashboard has real spend/revenue/GMV to chart.
 test.beforeAll(() => {
     artisan('e2e:cod-fixture');
-    artisan('e2e:seed-sale buyer@halalbizs.test');
+    artisan(`e2e:seed-sale ${process.env.E2E_BUYER_EMAIL}`);
 });
 
 async function assertChartAndPeriodSwitch(page: Page, name: string) {
@@ -58,14 +58,14 @@ async function assertChartAndPeriodSwitch(page: Page, name: string) {
 
 test.describe('Interactive dashboards', () => {
     test('buyer dashboard renders charts and reacts to the period picker', async ({ page }) => {
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto('/account/dashboard');
         await expect(page.getByText(/total spent/i).first()).toBeVisible();
         await assertChartAndPeriodSwitch(page, 'buyer');
     });
 
     test('seller dashboard renders the revenue chart and reacts to the period picker', async ({ page }) => {
-        await login(page, 'cod-seller@halalbizs.test');
+        await login(page, `${process.env.E2E_SELLER_EMAIL}`);
         await page.goto('/seller');
         await assertChartAndPeriodSwitch(page, 'seller');
     });

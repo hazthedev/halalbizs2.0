@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync, selectPayment, clickInView } from '../support';
 
 async function jsClick(locator: Locator) {
     await locator.first().waitFor({ state: 'visible' });
@@ -9,7 +9,7 @@ async function jsClick(locator: Locator) {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 }
@@ -29,9 +29,9 @@ test.describe('M8 full regression', () => {
         execSync('php artisan e2e:voucher E2ESAVE5', { cwd: process.cwd() });
 
         // ===== Buyer: voucher checkout (COD) =====
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto(`/p/${slug}`);
-        await page.getByTestId('pdp-add-to-cart').locator('visible=true').first().click();
+        await clickInView(page.getByTestId('pdp-add-to-cart').locator('visible=true').first());
         await expect(page.getByText('Added to cart').first()).toBeVisible();
 
         await page.goto('/checkout');
@@ -40,13 +40,13 @@ test.describe('M8 full regression', () => {
         await expect(page.getByText(/-\s?RM 5\.00|−\s?RM 5\.00/).first()).toBeVisible({ timeout: 10000 });
         await page.screenshot({ path: `e2e/screenshots/m8-voucher-checkout-${test.info().project.name}.png`, fullPage: true });
 
-        await page.locator('input[type="radio"][value="cod"]').check();
-        await page.getByRole('button', { name: /place order/i }).click();
+        await selectPayment(page, 'cod');
+        await clickInView(page.getByRole('button', { name: /place order/i }));
         await page.waitForURL('**/checkout/success/**', { timeout: 20000 });
         await logout(page);
 
         // ===== Seller: fulfil =====
-        await login(page, 'cod-seller@halalbizs.test');
+        await login(page, `${process.env.E2E_SELLER_EMAIL}`);
         await page.goto('/seller/orders');
         await jsClick(page.locator('tbody a[href*="/seller/orders/"]'));
         await page.waitForURL('**/seller/orders/**');
@@ -59,13 +59,15 @@ test.describe('M8 full regression', () => {
         await jsClick(page.getByRole('button', { name: /^ship|mark .*shipped|confirm shipment/i }).last());
         await expect(page.getByText(/M8TRACK99999/).first()).toBeVisible({ timeout: 10000 });
         await jsClick(page.getByRole('button', { name: /mark delivered/i }));
+        await expect(page.getByRole('button', { name: /mark delivered/i })).toHaveCount(0);
         await page.waitForTimeout(800);
         await logout(page);
 
         // ===== Buyer: complete + review =====
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto('/account/orders?tab=to-receive');
         await jsClick(page.getByRole('button', { name: /order received/i }));
+        await expect(page.getByRole('button', { name: /order received/i })).toHaveCount(0);
         await expect
             .poll(async () => {
                 await page.goto('/account/orders?tab=completed');
@@ -88,7 +90,7 @@ test.describe('M8 full regression', () => {
         await logout(page);
 
         // ===== Seller: ledger entries on earnings page =====
-        await login(page, 'cod-seller@halalbizs.test');
+        await login(page, `${process.env.E2E_SELLER_EMAIL}`);
         await page.goto('/seller/earnings');
         await expect(page.getByText(/commission/i).first()).toBeVisible();
         // The COD-offset ledger entry is written at completion regardless of
