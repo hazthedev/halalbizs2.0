@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 // Long Livewire pages intermittently fail Playwright's stability check on
 // real clicks; JS clicks still drive wire:click. Real-click coverage lives
@@ -12,7 +12,7 @@ async function jsClick(locator: Locator) {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 }
@@ -31,7 +31,7 @@ test.describe('M4 full COD journey', () => {
         const slug = execSync('php artisan e2e:cod-fixture', { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
 
         // ===== Buyer places a COD order =====
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto(`/p/${slug}`);
         const addBtn = page.getByTestId('pdp-add-to-cart').locator('visible=true').first();
         await addBtn.click();
@@ -53,7 +53,7 @@ test.describe('M4 full COD journey', () => {
         await logout(page);
 
         // ===== Seller confirms, ships, delivers =====
-        await login(page, 'cod-seller@halalbizs.test');
+        await login(page, `${process.env.E2E_SELLER_EMAIL}`);
         await page.goto('/seller/orders');
         await jsClick(page.locator('tbody a[href*="/seller/orders/"]'));
         await page.waitForURL('**/seller/orders/**');
@@ -70,14 +70,16 @@ test.describe('M4 full COD journey', () => {
         await expect(page.getByText(/MYTRACK123456/).first()).toBeVisible({ timeout: 10000 });
 
         await jsClick(page.getByRole('button', { name: /mark delivered/i }));
+        await expect(page.getByRole('button', { name: /mark delivered/i })).toHaveCount(0);
         await expect(page.getByText(/delivered/i).first()).toBeVisible({ timeout: 10000 });
         await logout(page);
 
         // ===== Buyer confirms receipt =====
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto('/account/orders?tab=to-receive');
         await expect(page.locator('main').getByText('COD Journey Store').first()).toBeVisible();
         await jsClick(page.getByRole('button', { name: /order received/i }));
+        await expect(page.getByRole('button', { name: /order received/i })).toHaveCount(0);
         await page.waitForTimeout(800);
 
         await page.goto('/account/orders?tab=completed');

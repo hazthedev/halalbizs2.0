@@ -77,8 +77,8 @@ test.describe('M2 storefront journey', () => {
 
     test('login as demo buyer and view account', async ({ page }) => {
         await page.goto('/login');
-        await page.fill('input[type="email"]', 'buyer@halalbizs.test');
-        await page.fill('input[type="password"]', 'password');
+        await page.fill('input[type="email"]', `${process.env.E2E_BUYER_EMAIL}`);
+        await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
         await page.getByRole('button', { name: /log in/i }).click();
         await page.waitForURL('**/');
 
@@ -88,14 +88,10 @@ test.describe('M2 storefront journey', () => {
         await page.screenshot({ path: `e2e/screenshots/m2-account-${test.info().project.name}.png`, fullPage: true });
     });
 
-    test('mobile header opens the shopping concierge panel', async ({ page }) => {
-        // The floating launcher is desktop-only; mobile reaches the concierge
-        // through the header icon. (Desktop's entry point is exercised by the
-        // visible launcher, so this guards the mobile path specifically.)
-        test.skip(test.info().project.name !== 'mobile', 'mobile-only entry point');
-
+    test('shopping concierge opens from its viewport launcher', async ({ page }) => {
         await page.goto('/');
-        await page.getByRole('button', { name: 'Ask the concierge' }).click();
+        const launcher = test.info().project.name === 'mobile' ? 'Ask the concierge' : 'Open shopping assistant';
+        await page.getByRole('button', { name: launcher, exact: true }).click();
 
         // The panel reveals its composer + brand heading.
         await expect(page.getByPlaceholder(/Ask about products/)).toBeVisible();

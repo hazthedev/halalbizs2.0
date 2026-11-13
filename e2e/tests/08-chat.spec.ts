@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 async function jsClick(locator: Locator) {
     await locator.first().waitFor({ state: 'visible' });
@@ -9,7 +9,7 @@ async function jsClick(locator: Locator) {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 }
@@ -29,7 +29,7 @@ test.describe('Buyer ↔ seller chat', () => {
         const sellerMsg = `Yes ${stamp}, ready to ship.`;
 
         // ===== Buyer opens chat from the PDP =====
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto(`/p/${slug}`);
         await jsClick(page.getByTestId('pdp-chat'));
         await page.waitForURL('**/account/messages**');
@@ -44,7 +44,7 @@ test.describe('Buyer ↔ seller chat', () => {
         await logout(page);
 
         // ===== Seller replies =====
-        await login(page, 'cod-seller@halalbizs.test');
+        await login(page, `${process.env.E2E_SELLER_EMAIL}`);
         await page.goto('/seller/messages');
         // Open the conversation carrying the buyer's message.
         await jsClick(page.locator('button[wire\\:click^="openConversation"]'));
@@ -58,7 +58,7 @@ test.describe('Buyer ↔ seller chat', () => {
         await logout(page);
 
         // ===== Buyer sees the reply =====
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto('/account/messages');
         await jsClick(page.locator('button[wire\\:click^="openConversation"]'));
         await expect(page.locator('.whitespace-pre-line', { hasText: sellerMsg })).toBeVisible({ timeout: 10000 });

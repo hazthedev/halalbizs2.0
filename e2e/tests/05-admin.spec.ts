@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 async function jsClick(locator: Locator) {
     await locator.first().waitFor({ state: 'visible' });
@@ -9,7 +9,7 @@ async function jsClick(locator: Locator) {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL(/\/(two-factor-challenge)?(\?.*)?$/, { timeout: 15000 });
 
@@ -18,7 +18,7 @@ async function login(page: Page, email: string) {
         const code = execSync(`php artisan e2e:otp ${email}`, { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
         await page.fill('input[wire\\:model="code"]', code);
         await page.getByRole('button', { name: /verify|continue|confirm/i }).click();
-        await page.waitForURL('**/');
+        await page.waitForURL('**/admin');
     }
 }
 
@@ -27,11 +27,11 @@ test.describe('M7 admin journeys', () => {
         page.on('dialog', (dialog) => dialog.accept());
 
         const stamp = `${test.info().project.name}${Date.now()}`;
-        const applicantEmail = `admin-e2e-${stamp}@halalbizs.test`;
+        const applicantEmail = `${process.env.E2E_RUN}-applicant-${stamp}@halalbizs.test`;
         const out = execSync(`php artisan e2e:user ${applicantEmail} --pending-store`, { cwd: process.cwd() }).toString();
         const shopName = out.trim().split('\n')[0].trim();
 
-        await login(page, 'admin@halalbizs.test');
+        await login(page, `${process.env.E2E_ADMIN_EMAIL}`);
 
         // --- Dashboard ---
         await page.goto('/admin');
@@ -66,14 +66,16 @@ test.describe('M7 admin journeys', () => {
         const popularRow = page.locator('[wire\\:key]').filter({ hasText: 'Popular now' }).first();
         await expect(popularRow).toBeVisible();
         await jsClick(popularRow.getByRole('switch'));
-        await page.waitForTimeout(800);
+        await jsClick(popularRow.getByRole('button', { name: 'Publish', exact: true }));
+        await expect(popularRow.getByText('Draft')).toHaveCount(0);
 
         await page.goto('/');
         await expect(page.getByText('Popular now')).not.toBeVisible();
 
         await page.goto('/admin/content/home-sections');
-        await jsClick(page.locator('[wire\\:key]').filter({ hasText: 'Popular now' }).first().getByRole('switch'));
-        await page.waitForTimeout(800);
+        await jsClick(popularRow.getByRole('switch'));
+        await jsClick(popularRow.getByRole('button', { name: 'Publish', exact: true }));
+        await expect(popularRow.getByText('Draft')).toHaveCount(0);
         await page.goto('/');
         await expect(page.getByText('Popular now').first()).toBeVisible();
 

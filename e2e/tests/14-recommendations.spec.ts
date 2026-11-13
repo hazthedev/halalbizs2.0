@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 function artisan(cmd: string) {
     return execSync(`php artisan ${cmd}`, { cwd: process.cwd() }).toString().trim();
@@ -8,7 +8,7 @@ function artisan(cmd: string) {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 }
@@ -29,13 +29,13 @@ async function scrollThrough(page: Page) {
 // Give the buyer a real purchase so the recommender has a signal to work from.
 test.beforeAll(() => {
     artisan('e2e:cod-fixture');
-    artisan('e2e:seed-sale buyer@halalbizs.test');
+    artisan(`e2e:seed-sale ${process.env.E2E_BUYER_EMAIL}`);
 });
 
 test.describe('Recommended for you', () => {
     test('the strip renders for a buyer on home, dashboard and PDP', async ({ page }) => {
         const slug = artisan('e2e:cod-fixture').split('\n').pop()!.trim();
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
 
         // Home — the seeded "recommended" section (lazy island; scroll to load).
         await page.goto('/');

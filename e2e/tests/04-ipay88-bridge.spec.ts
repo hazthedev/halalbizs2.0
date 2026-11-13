@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 test('iPay88 checkout reaches the gateway bridge', async ({ page }) => {
     const slug = execSync('php artisan e2e:cod-fixture', { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
@@ -13,8 +13,8 @@ test('iPay88 checkout reaches the gateway bridge', async ({ page }) => {
     });
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'buyer@halalbizs.test');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="email"]', `${process.env.E2E_BUYER_EMAIL}`);
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 
