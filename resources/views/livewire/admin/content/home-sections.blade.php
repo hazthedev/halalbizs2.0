@@ -32,7 +32,7 @@
         <div class="flex flex-wrap items-end gap-3">
             <div class="min-w-56">
                 <label for="layout-choice" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Layout') }}</label>
-                <select id="layout-choice" wire:change="chooseLayout($event.target.value === '' ? null : Number($event.target.value))"
+                <select id="layout-choice" wire:change="chooseLayout($event.target.value === '' ? null : $event.target.value)"
                         class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     <option value="" @selected($layout === null)>{{ __('Everyday layout') }}</option>
                     @foreach ($layouts as $option)
