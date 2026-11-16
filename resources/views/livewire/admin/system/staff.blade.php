@@ -92,7 +92,7 @@
                             </button>
                         @endif
 
-                        <button type="button" wire:click="{{ $editingId === $admin->id ? 'cancelEdit' : 'editPermissions('.$admin->id.')' }}"
+                        <button type="button" wire:click="{{ $editingId === $admin->id ? 'cancelEdit' : 'startEditPermissions('.$admin->id.')' }}"
                                 class="inline-flex min-h-11 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ $editingId === $admin->id ? __('Close') : __('Edit permissions') }}
                         </button>
@@ -118,6 +118,7 @@
                                     </label>
                                 @endforeach
                             </div>
+                            @error('editPermissions')<p role="alert" class="text-[13px] text-danger">{{ $message }}</p>@enderror
                             <div class="flex items-center gap-2">
                                 <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Save permissions') }}</x-ui.button>
                                 <x-ui.button variant="ghost" wire:click="cancelEdit">{{ __('Cancel') }}</x-ui.button>

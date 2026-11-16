@@ -1,56 +1,67 @@
 # Security lead validation — 16 November 2026
 
-Base: `a3a04a5`. Result: **0 CLOSED / 1 FIXED / 6 OPEN**. This is local regression work on the seven existing audit leads, not a new security audit or a claim about live exploitation. Release is PR-only, pending an independent Codex gate and Hermes review.
+PR #222 (`d8e0a2f`) fixed the stale payment callback and retained six OPEN owner questions. Haze answered **“all default”** on 16 November; the rulings are HB-SEC-D1..D6 in the Hermes project decision log. All six protection tests are now active and pass. This is implementation and local regression evidence, not a new security audit or evidence of live exploitation. Independent review and release remain with the Codex gate and Hermes.
 
-## Payment callback change
+## Rulings and regression evidence
 
-A failure callback can load Pending, pause while confirmation settles, then overwrite Success using its stale model. The BackendURL handler now locks and rereads the payment before changing callback metadata or status. It preserves terminal Success. Confirmation dispatch and its gateway requery run after this short transaction. Signatures and successful requery remain required for fulfilment.
+Tests: `tests/Feature/Security/AuditLeadValidationTest.php`. Each lead retains its original fingerprint. Every ruling was unskipped and failed before its implementation. Expanded cases add stale forms, file sessions, registration mismatches, prelinked certificates and allowed controls.
 
-The regression commits a real confirmation job while a correctly signed failure callback is paused at signature verification. It checks terminal Success, successful callback metadata, unchanged paid timestamps, one confirmation history, and one `OrderPaid` event after another success notification. This is a deterministic interleaving on SQLite, not a concurrent MariaDB stress run or proof of provider delivery ordering.
+| Rule | Test fingerprint | RED before fix | GREEN behavior |
+|---|---|---|---|
+| D1 | `payment-expiry-late-success` | Expiry cancelled/restocked; verified late funds left the refund obligation at 0 instead of 20500 sen. | Records the full refund obligation once through `RefundService`; payment remains settled, fulfilment stays cancelled and stock stays restored. No `OrderPaid` event for fully cancelled fulfilment. No gateway refund call. Admin Payments → **Needs portal refund** shows the obligation for manual portal handling. |
+| D2 | `seller-product-form-banned-status` | Draft, review and publish saves cleared Banned, including forms opened before the ban. | Form save locks and rereads the product, then rejects all saves of a banned product. Only admin moderation can lift the ban. EN/MS inline remedy. Six cases. |
+| D3 | `seller-product-form-publish-halal-category` | A new listing and an ungated-to-gated edit became Live without a certificate. | Form applies the final category, checks the bound certificate through `ProductPublishPolicy` inside its transaction, and rejects publication before persistence. Existing enforcement date and 14-day review/renewal grace stay unchanged. No live category flags changed. |
+| D4 | `password-reset-existing-web-sessions` | Two database browser sessions still returned 200 after broker recovery. | Both pre-existing browsers redirect to login after reset, tested with database and file sessions. API token and trusted-device revocation remain. Fresh login and legacy hashless-session controls also pass. |
+| D5 | `staff-save-permissions-unbounded-grant` | A settings-only editor granted another admin `finance.manage`. | A non-superadmin edit requesting any permission outside the editor's direct grants is rejected in full, retaining the target's previous permissions. Held subsets and superadmin grants succeed. **QA9's contrary “legitimately granted” expectation was rewritten to this ruling.** |
+| D6 | `whip-directory-profile-owner-binding` | Discovery hid a mismatched profile, but direct link approved its certificate and import created its product. | Shared local WHIP lookup treats profile/application owner disagreement as mismatch. Registration mismatch also fails verification. Direct link and existing-row import fail closed; manual upload remains Pending for admin review. Matching-owner link/import remains allowed. All WHIP data is fake in tests. |
 
-## Lead evidence
+The original `payment-callback-failure-overwrites-success` regression remains green: an overlapping signed failure cannot undo settlement, replace successful metadata, or repeat `OrderPaid`.
 
-Tests are in `tests/Feature/Security/AuditLeadValidationTest.php`. Each test name starts with the exact lead fingerprint below. RED means the first valid scenario reached and failed its proposed protection assertion; setup failures are described below.
+## Recovery session drivers and rollout
 
-| Lead fingerprint / test-name prefix | Result | First valid result and observed behavior |
-|---|---|---|
-| `payment-callback-failure-overwrites-success` | FIXED | RED: expected Success, got Failed after overlapping settlement. GREEN after the row-lock fix. |
-| `payment-expiry-late-success` | OPEN | RED: expiry cancelled/restocked; a later fake signed success and `00` requery settled funds while the cancelled suborder's `refunded_sen` stayed 0 instead of 20500. |
-| `seller-product-form-banned-status` | OPEN | RED: draft saves changed Banned to Draft with approval on/off; publication changed it to PendingReview or Live. Four cases. |
-| `seller-product-form-publish-halal-category` | OPEN | RED: both a new listing and an ungated-to-gated edit persisted Live without a certificate, with enforcement active and approval disabled. |
-| `password-reset-existing-web-sessions` | OPEN | RED: two independent database browser sessions both returned 200 from `account.orders` after successful broker recovery; proposed result was 302 for both. |
-| `staff-save-permissions-unbounded-grant` | OPEN | RED against the proposed subset policy: another admin gained `finance.manage`; the settings-only editor did not. Existing QA9 calls this grant legitimate, so authorization policy remains unresolved. |
-| `whip-directory-profile-owner-binding` | OPEN | RED in fake data: discovery omitted the mismatched profile, but direct linking approved its certificate and import created its product. Matching-owner discovery/link/import passed as a control. This establishes neither real WHIP data nor company ownership. |
+Database sessions are deleted immediately by `user_id`, using the configured session connection and table. Laravel's password-hash session middleware also rejects a surviving stale session on its next request, including a request that was in flight during deletion.
 
-Initial execution issues: sandbox loader access and an incorrectly sized dummy encryption key preceded the payment assertion; the first expiry fake accidentally returned success before expiry; publication initially hit the subprocess cap for image conversion; the first browser-session fixture used PHP serialization instead of the configured JSON. These were corrected before drawing the above conclusions. Media conversion jobs alone are faked in the new tests.
+File, Redis, Memcached, DynamoDB and cookie sessions cannot be enumerated safely by user through the standard session interface. They instead lose authentication on their next web request when their stored password proof differs from the current password hash. Database and file integrations were exercised; the other backends share that middleware but were not integration-tested here. Array sessions have no persistence across normal requests.
 
-The six OPEN tests retain the proposed protection assertions and have explicit `skip` reasons pending decisions. They are **not green closure evidence**. Their datasets account for ten skipped test cases. After approval, remove the relevant skip and rerun by fingerprint before implementing the agreed fix; do not change assertions to accept the observed gap.
+A web `Login` event seeds password proof for every fresh login, including remembered login and completion of 2FA. Pre-upgrade authenticated sessions without that proof require a fresh login on first access. This deliberately causes a one-time re-login for legacy sessions across drivers; a reset cannot silently bless a legacy session with the new password hash. The remember token rotates on reset as before. No schema or live-row migration is needed.
 
-## Exact questions and recommended defaults
+## WHIP boundary
 
-1. **Late funds — iPay88/provider owner:** Can one reference return non-success at final expiry requery, later settle, deliver a signed success callback and requery `00`, without automatic reversal? **Default:** assume yes until the provider guarantees otherwise. **Haze:** Should verified late funds for cancelled fulfilment create an idempotent full refund/reconciliation obligation while cancellation and restored stock remain? **Default:** yes; do not revive cancelled fulfilment. The test expresses the refund default; the final accounting treatment requires approval.
-2. **Moderator ban — Haze:** Must a moderator ban survive every seller save, including a form opened before the ban? **Default:** yes; reject seller saves/transitions out of Banned and require an admin to lift it.
-3. **Final category — Haze:** May the seller form reject publication based on the final submitted category and certificate inside its transaction? **Default:** yes; use the existing publication policy, enforcement date and 14-day grace. Do not move the rollout date or inspect/change live category flags.
-4. **Recovery sessions — deployment owner/Haze:** Which `SESSION_DRIVER` is deployed (name only), and should recovery revoke every pre-existing authenticated browser session across supported drivers? **Default:** yes; cover database and supported alternative drivers while keeping API-token/trusted-device revocation. The current fixture proves the database case only.
-5. **Permission delegation — Haze:** May a non-superadmin `settings.manage` editor grant another admin permissions the editor does not hold? **Default:** no; apply the invitation subset rule to edits, preserving the superadmin exception. This requires resolving the contrary QA9 expectation first.
-6. **WHIP ownership — WHIP owner:** Can the lowest-ID application profile have another `user_id`, and can its registration belong to a different company from the application/certificate owner? Which enforced schema constraints/write paths guarantee the association for historical and new rows? **Default:** treat disagreement as unverified and require manual review; do not auto-approve/import. No WHIP implementation or screen change is included.
+Only HalalBizs's read adapter and its consumers changed. No external WHIP files, tables, screens or data changed. The canonical company profile's owner must match the application owner, and its normalized registration must match the verified store. WHIP reads for seller link/import/submission and admin verification run before local transactions; the seller's final locked store registration is checked against that snapshot before link/import writes. Sync already reads WHIP before local locks.
 
-These are held under the brief's STOP rule for seller/buyer behavior changes or missing owner/provider facts. Defaults are recommendations, not approval.
+The policy does not claim WHIP guarantees ownership consistency. It assumes disagreement is unverified and offers the existing document upload/manual review path. Likewise, D1 assumes iPay88 can settle late until the provider guarantees otherwise; no real provider calls were made.
+
+## Browser evidence
+
+MCP Playwright, one browser, disposable local SQLite database and fresh `e2e-<timestamp>` accounts only. Desktop 1280×800 and mobile 390×844:
+
+- Seller ban save/publication refusal, stale form after a moderator ban, gated final category refusal, and a successful ungated publication.
+- Admin permission overreach refusal, cancel/reopen, allowed subset save and the superadmin exception.
+- Both changed screens fit mobile without horizontal overflow. Screenshots retained with the session's local evidence.
+
+A real browser click also exposed the existing Staff action/property name collision: `editPermissions` resolved to an array in JavaScript, so the editor never opened. The action is now `startEditPermissions`; a rendered-button regression and real browser clicks cover it. All PHP callers were updated. An initial test-only method invocation could not detect this browser failure.
+
+Observed local timings: seller form cold load 126 ms, successful publish 213 ms, reopen 114 ms; stale-ban refusal 205 ms; admin staff load 389 ms and rejected save 79 ms. Mobile ban refusal 262 ms included screenshot overhead. These are local observations, not production performance claims.
 
 ## Verification
 
-Required command, against a dummy testing environment only:
+Required targeted check, plus both touched admin certificate/alert consumers:
 
 ```sh
-php vendor/bin/pest tests/Feature/Security tests/Feature/Payments tests/Unit/HardRulesTest.php --compact
+vendor/bin/pest tests/Feature/Security tests/Feature/Payments tests/Feature/Seller \
+  tests/Feature/Admin/SystemTest.php tests/Feature/Admin/SuperadminTest.php \
+  tests/Feature/Admin/AdminAlertScopingTest.php tests/Feature/Admin/CertificateReviewTest.php \
+  tests/Feature/Qa/AdminPrivilegeTest.php tests/Feature/Whip tests/Unit/HardRulesTest.php
 ```
 
-Local execution uses an empty allowlisted environment, dummy app key, in-memory SQLite, fake iPay88 responses and a wholly replaced in-memory WHIP connection. OS sandbox rules deny network access and home access outside the worktree/toolchain, deny reading the copied `.env`, and restrict writes to local test scratch. PHP memory is capped at 512 MiB, CPU at 180 seconds, files at 64 MiB each, open files at 256, and process headroom at 32 above the shared user's current process count. No live database, real WHIP/iPay88, browser, deployment, merge, migration of an existing database, package installation, or full-suite run is part of this work.
+**307 passed, 1,221 assertions, zero skips, 20.02 seconds.** Supplemental Returns/Certificates/WHIP/lead/admin-certificate coverage: **141 passed, 632 assertions**. Authentication and API authentication coverage: **116 passed, 657 assertions**. Counts overlap and must not be added.
 
-Required verification: **44 passed, 10 explicitly skipped, 204 assertions** (5.28 seconds). This includes all four `HardRulesTest` cases. The ten skips are the six OPEN leads' datasets; no additional test was skipped in this command.
+Pest uses in-memory SQLite and fake gateway/WHIP boundaries. Race evidence uses deterministic interleavings and row-lock guards, not a concurrent MariaDB stress run. No full suite per the brief. Pint and full configured Larastan level 1 pass; analysis runs in one process at 512 MiB. No new dependencies, migrations, deployments, merges or live writes.
 
-Additional callback callers: **53 passed, 260 assertions** (4.57 seconds) across `CheckoutPageTest`, `CheckoutApiTest`, `AuthorizationMatrixTest`, and `QueueWorkerCoversEveryQueueTest`, excluding only `sweeps every GET route against every persona and writes the matrix`. That pre-existing test tried writing `/Users/Apple/Desktop/Hermes/projects/halalbizs2.0/qa-2026-08-06/AUTHORIZATION-MATRIX.md`; the sandbox blocked the out-of-scope write. The first additional run therefore had 53 pass / 1 sandbox failure; the bounded rerun passed. No outside report was written.
+Local evidence and red/green logs: `/tmp/hb-rules-evidence`; session record: `/Users/Apple/Desktop/Hermes/main/sessions/hb-rules.md`. Setup errors were kept separate from assertion evidence: the additional WHIP fixture initially requested a nonexistent factory, and changing the local test encryption key during one active run caused MAC errors. Stable-configuration reruns passed. The initial admin browser selector timeout was traced to the actual name collision and fixed.
 
-Pint: both changed PHP files pass. Larastan level 1: the entire configured `app/` path passes with no errors, in one process with a 512 MiB limit. `git diff --check` passes. The brief explicitly excludes the full suite.
+One thing better: the staff permission editor now opens from a real click and enforces the same grant boundary as invitations.
 
-One thing improved: a stale signed failure callback can no longer undo terminal settlement or cause a later success to repeat `OrderPaid`.
+## Independent gate correction
+
+HB223-GATE found three publication refusals still using English placeholders in the Malay catalogue and the WHIP import refusal missing from it. All four now have Malay copy. A translator regression checks English fallback and Malay output: four failures before the correction, four passes (12 assertions) afterwards. The required targeted command above then passed **311 tests / 1,233 assertions / zero skips**. No application logic or rulings changed in this correction.

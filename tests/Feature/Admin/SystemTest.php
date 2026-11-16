@@ -155,7 +155,8 @@ test('permission edits sync the direct permission subset', function () {
 
     Livewire::actingAs($admin)
         ->test(Staff::class)
-        ->call('editPermissions', $other->id)
+        ->assertSeeHtml('wire:click="startEditPermissions('.$other->id.')"')
+        ->call('startEditPermissions', $other->id)
         ->set('editPermissions', ['orders.manage', 'finance.manage'])
         ->call('savePermissions')
         ->assertHasNoErrors();

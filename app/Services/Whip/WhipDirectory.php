@@ -35,7 +35,7 @@ class WhipDirectory
             ->orderBy('c.id', 'desc')->pluck('c.certificate_no')->unique();
 
         return $numbers->map(fn ($no) => $this->lookup($no))
-            ->filter(fn ($c) => $c !== null && WhipCertificate::normaliseRegistration($c->registrationNumber) === $registration)
+            ->filter(fn ($c) => $c !== null && $c->status !== 'mismatch' && WhipCertificate::normaliseRegistration($c->registrationNumber) === $registration)
             ->values()->all();
     }
 
@@ -73,7 +73,7 @@ class WhipDirectory
             ->join('halal_applications as a', 'a.id', '=', 'c.application_id')
             ->whereRaw('UPPER(TRIM(c.certificate_no)) = ?', [$no])
             ->whereRaw('c.id = (select max(c2.id) from halal_application_certificates c2 where c2.application_id = c.application_id)')
-            ->get(['c.id', 'c.application_id', 'c.certificate_no', 'c.valid_from', 'c.valid_to', 'c.services_text', 'a.status', 'a.certification_body_id']);
+            ->get(['c.id', 'c.application_id', 'c.certificate_no', 'c.valid_from', 'c.valid_to', 'c.services_text', 'a.status', 'a.certification_body_id', 'a.user_id']);
 
         if ($rows->isEmpty()) {
             return null;
@@ -98,7 +98,8 @@ class WhipDirectory
             ->map(fn ($p) => ['id' => (int) $p->id, 'name' => (string) $p->product_name, 'brand' => $p->brand_name ?: null, 'barcode' => $p->barcode ?: null])->all();
 
         return new WhipCertificate(
-            status: $pick === null ? WhipCertificate::AMBIGUOUS : $states[$pick],
+            status: $profile === null || (int) $profile->user_id !== (int) $row->user_id
+                ? 'mismatch' : ($pick === null ? WhipCertificate::AMBIGUOUS : $states[$pick]),
             certificateNo: trim((string) $row->certificate_no),
             validFrom: $row->valid_from ?: null,
             validTo: $row->valid_to ?: null,

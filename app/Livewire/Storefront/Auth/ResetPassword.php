@@ -5,6 +5,7 @@ namespace App\Livewire\Storefront\Auth;
 use App\Services\DeviceTrust;
 use App\Support\ClientIp;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -71,6 +72,12 @@ class ResetPassword extends Component
                 // A reset means the old password may be compromised — drop every
                 // trusted device so 2FA is required again everywhere, and every
                 // mobile API token for the same reason.
+                if (config('session.driver') === 'database') {
+                    DB::connection(config('session.connection'))
+                        ->table(config('session.table', 'sessions'))
+                        ->where('user_id', $user->getAuthIdentifier())->delete();
+                }
+
                 app(DeviceTrust::class)->forgetAll($user);
                 $user->tokens()->delete();
 

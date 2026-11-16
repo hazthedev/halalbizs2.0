@@ -100,7 +100,7 @@ class Staff extends Component
         );
     }
 
-    public function editPermissions(int $userId): void
+    public function startEditPermissions(int $userId): void
     {
         // No self-service permission grants: a settings.manage-only admin
         // (the least-privileged person who can even reach this screen)
@@ -129,7 +129,7 @@ class Staff extends Component
 
     public function savePermissions(): void
     {
-        // Defense in depth: editPermissions() already refuses to point
+        // Defense in depth: startEditPermissions() already refuses to point
         // editingId at the caller's own id, but never trust that alone.
         if ($this->editingId === auth()->id()) {
             $this->dispatch('toast', message: __('You can\'t change your own permissions.'), type: 'error');
@@ -143,8 +143,18 @@ class Staff extends Component
             'editPermissions.*' => ['string', 'in:'.implode(',', RoleSeeder::ADMIN_PERMISSIONS)],
         ]);
 
+        $requested = array_values(array_intersect($this->editPermissions, RoleSeeder::ADMIN_PERMISSIONS));
+        $editor = auth()->user();
+
+        if (! $editor->is_superadmin
+            && array_diff($requested, $editor->getDirectPermissions()->pluck('name')->all()) !== []) {
+            $this->addError('editPermissions', __('You can only grant permissions you hold yourself.'));
+
+            return;
+        }
+
         $user = User::role('admin')->findOrFail($this->editingId);
-        $user->syncPermissions(array_values(array_intersect($this->editPermissions, RoleSeeder::ADMIN_PERMISSIONS)));
+        $user->syncPermissions($requested);
 
         $this->dispatch('toast', message: __('Permissions updated for :name', ['name' => $user->name]));
         $this->cancelEdit();

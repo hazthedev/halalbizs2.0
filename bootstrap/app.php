@@ -4,6 +4,7 @@ use App\Http\Api\ApiResponse;
 use App\Http\Middleware\ApiLocale;
 use App\Http\Middleware\ApiNotSuspended;
 use App\Http\Middleware\ApiVerified;
+use App\Http\Middleware\AuthenticateBrowserSession;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureSeller;
 use App\Http\Middleware\HandleUrlRedirects;
@@ -43,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            AuthenticateBrowserSession::class,
             SetLocale::class,
             SetDisplayCurrency::class,
             PreviewDrafts::class,
