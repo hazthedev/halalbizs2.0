@@ -330,3 +330,34 @@ it('shows seller dashboard headings in Malay', function () {
         ->assertSee('Hasil mengikut masa')
         ->assertDontSee('Revenue over time');
 });
+
+test('seller can train staff with their company key', function () {
+    $seller = dashboardSeller();
+    $seller->store->update(['registration_no' => ' ab-12 / c ']);
+
+    $this->actingAs($seller)->get(route('seller.dashboard'))
+        ->assertOk()
+        ->assertSee('https://halaledu.weststar-dev.com/signup?company_key=MY%3ASSM%3AAB12%2FC', false)
+        ->assertSee('Train staff');
+});
+
+test('seller can book sertu with their company key', function () {
+    $seller = dashboardSeller();
+    $seller->store->update(['registration_no' => ' ab-12 / c ']);
+
+    $this->actingAs($seller)->get(route('seller.dashboard'))
+        ->assertOk()
+        ->assertSee('https://sertucert.weststar-dev.com/signup?company_key=MY%3ASSM%3AAB12%2FC', false)
+        ->assertSee('Book sertu');
+});
+
+test('seller without a registration number sees no ecosystem links', function () {
+    $seller = dashboardSeller();
+    $seller->store->update(['registration_no' => ' - ']);
+
+    $this->actingAs($seller)->get(route('seller.dashboard'))
+        ->assertOk()
+        ->assertDontSee('Train staff')
+        ->assertDontSee('Book sertu')
+        ->assertDontSee('company_key=');
+});

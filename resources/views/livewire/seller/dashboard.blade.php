@@ -1,5 +1,12 @@
 <div class="space-y-4">
     <x-ui.section-heading as="h1" :title="__('Dashboard')" />
+    @php
+        $registration = \App\Services\Whip\WhipCertificate::normaliseRegistration(auth()->user()->store->registration_no);
+    @endphp
+    @if ($registration !== '')
+        <a href="https://halaledu.weststar-dev.com/signup?company_key={{ rawurlencode('MY:SSM:'.$registration) }}" class="inline-flex min-h-11 items-center text-sm text-emerald underline">{{ __('Train staff') }}</a>
+        <a href="https://sertucert.weststar-dev.com/signup?company_key={{ rawurlencode('MY:SSM:'.$registration) }}" class="inline-flex min-h-11 items-center text-sm text-emerald underline">{{ __('Book sertu') }}</a>
+    @endif
 
     <x-ui.card class="space-y-3 p-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
