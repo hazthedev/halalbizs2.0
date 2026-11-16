@@ -25,11 +25,15 @@ test.describe('M8 full regression', () => {
     test('voucher checkout → fulfil → complete → review → seller ledger', async ({ page }) => {
         page.on('dialog', (dialog) => dialog.accept());
 
+        // Keep this journey below the per-buyer hourly checkout limit across projects.
+        const buyerEmail = `${process.env.E2E_RUN}-voucher-${test.info().project.name}-${Date.now()}@halalbizs.test`;
+        execSync(`php artisan e2e:user ${buyerEmail} --with-address`, { cwd: process.cwd() });
+
         const slug = execSync('php artisan e2e:cod-fixture', { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
         execSync('php artisan e2e:voucher E2ESAVE5', { cwd: process.cwd() });
 
         // ===== Buyer: voucher checkout (COD) =====
-        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
+        await login(page, buyerEmail);
         await page.goto(`/p/${slug}`);
         await clickInView(page.getByTestId('pdp-add-to-cart').locator('visible=true').first());
         await expect(page.getByText('Added to cart').first()).toBeVisible();
@@ -64,7 +68,7 @@ test.describe('M8 full regression', () => {
         await logout(page);
 
         // ===== Buyer: complete + review =====
-        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
+        await login(page, buyerEmail);
         await page.goto('/account/orders?tab=to-receive');
         await jsClick(page.getByRole('button', { name: /order received/i }));
         await expect(page.getByRole('button', { name: /order received/i })).toHaveCount(0);
