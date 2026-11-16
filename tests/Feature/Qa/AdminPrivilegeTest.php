@@ -314,18 +314,18 @@ test('QA8: editingId is #[Locked] so a settings.manage admin cannot retarget the
         ->set('editingId', $attacker->id);
 })->throws(Exception::class);
 
-test('QA9: a settings.manage admin cannot grant themselves finance.manage through savePermissions', function () {
+test('QA9: a settings.manage admin cannot grant finance.manage to another admin through savePermissions', function () {
     $attacker = apAdmin(['settings.manage']);
     $victim = apAdmin();
 
     Livewire::actingAs($attacker)
         ->test(Staff::class)
-        ->call('editPermissions', $victim->id)
+        ->call('startEditPermissions', $victim->id)
         ->set('editPermissions', ['finance.manage', 'settings.manage'])
         ->call('savePermissions');
 
-    // The victim was legitimately granted; the attacker must be unchanged.
-    expect($victim->fresh()->can('finance.manage'))->toBeTrue()
+    // HB-SEC-D5: permission edits obey the invitation subset rule.
+    expect($victim->fresh()->can('finance.manage'))->toBeFalse()
         ->and($attacker->fresh()->can('finance.manage'))->toBeFalse();
 });
 
@@ -343,7 +343,7 @@ test('QA10: a settings.manage admin cannot mint themselves a fully-privileged ac
 
     // The attacker holds settings.manage only. If invite() hands them a working
     // login for an account holding finance.manage, the "no self-service grants"
-    // control in editPermissions()/savePermissions() is bypassable in one step.
+    // control in startEditPermissions()/savePermissions() is bypassable in one step.
     // The plaintext-password panel was deleted outright (2026-08-11); the
     // property_exists check pins that no such credential surface returns.
     expect([

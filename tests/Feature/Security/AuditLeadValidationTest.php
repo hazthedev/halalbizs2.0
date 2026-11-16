@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CertificateStatus;
 use App\Enums\GatewayPaymentStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
@@ -7,12 +8,15 @@ use App\Enums\ProductStatus;
 use App\Enums\SubOrderStatus;
 use App\Events\OrderPaid;
 use App\Jobs\ConfirmIpay88PaymentJob;
+use App\Livewire\Admin\Orders\Payments;
 use App\Livewire\Admin\System\Staff;
 use App\Livewire\Seller\Certificates as SellerCertificates;
 use App\Livewire\Seller\Products\Form as ProductForm;
+use App\Livewire\Storefront\Auth\Login;
 use App\Livewire\Storefront\Auth\ResetPassword;
 use App\Models\Address;
 use App\Models\Category;
+use App\Models\HalalCertificate;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -118,6 +122,7 @@ test('payment-callback-failure-overwrites-success: an overlapping failure cannot
 test('payment-expiry-late-success: verified late funds for cancelled fulfilment create a refund obligation', function () {
     Notification::fake();
     Event::fake([OrderPaid::class]);
+    config(['services.ipay88.refund_url' => 'https://dummy.invalid/refund']);
     $order = auditLeadOrder();
     $payment = $order->payment;
     $subOrder = $order->subOrders->first();
@@ -135,17 +140,30 @@ test('payment-expiry-late-success: verified late funds for cancelled fulfilment 
     expect($payment->fresh()->status)->toBe(GatewayPaymentStatus::Success)
         ->and($subOrder->fresh()->status)->toBe(SubOrderStatus::Cancelled)
         ->and($variant->fresh()->stock)->toBe(5)
-        ->and($subOrder->fresh()->refunded_sen)->toBe($subOrder->total_sen);
-})->skip('OPEN: iPay88 late-settlement guarantee and owner refund policy; see marketplace-docs/security-lead-validation.md.');
+        ->and($subOrder->fresh()->refunded_sen)->toBe($subOrder->total_sen)
+        ->and($payment->fresh()->refunded_sen)->toBe($order->grand_total_sen)
+        ->and($payment->fresh()->gateway_refund_ok)->toBeFalse();
 
-test('seller-product-form-banned-status: seller saves cannot clear a moderator ban', function (string $action, bool $approval) {
+    $this->post(route('payments.ipay88.backend'), auditLeadCallback($payment, '1'))->assertOk();
+    expect($payment->fresh()->refunded_sen)->toBe($order->grand_total_sen)
+        ->and($subOrder->fresh()->refunded_sen)->toBe($subOrder->total_sen);
+    Event::assertNotDispatched(OrderPaid::class);
+    Http::assertSentCount(2); // expiry requery + late-payment requery; no refund call
+
+    $admin = makeAdmin(User::factory()->create());
+    Livewire::actingAs($admin)->test(Payments::class)
+        ->set('needsPortalRefund', true)->assertSee($payment->ref_no)
+        ->assertSee(__('Needs portal refund'));
+});
+
+test('seller-product-form-banned-status: seller saves cannot clear a moderator ban', function (string $action, bool $approval, bool $stale = false) {
     $seller = User::factory()->create();
     $seller->assignRole('seller');
     $store = Store::factory()->approved()->create(['user_id' => $seller->id]);
     $category = Category::factory()->create(['requires_halal_certificate' => false]);
     $product = Product::factory()->create([
         'store_id' => $store->id, 'category_id' => $category->id,
-        'status' => ProductStatus::Banned,
+        'status' => $stale ? ProductStatus::Draft : ProductStatus::Banned,
     ]);
     $settings = app(ModerationSettings::class);
     $settings->require_product_approval = $approval;
@@ -158,7 +176,11 @@ test('seller-product-form-banned-status: seller saves cannot clear a moderator b
     if ($action === 'publish') {
         $page->set('newImages', [UploadedFile::fake()->image('product.jpg')]);
     }
-    $page->call($action);
+    if ($stale) {
+        $product->update(['status' => ProductStatus::Banned]);
+    }
+    $page->call($action)->assertHasErrors(['status'])
+        ->assertSee(__('This product is banned. Ask an admin to lift the ban.'));
 
     expect($product->fresh()->status)->toBe(ProductStatus::Banned);
 })->with([
@@ -166,7 +188,9 @@ test('seller-product-form-banned-status: seller saves cannot clear a moderator b
     'draft without approval' => ['saveDraft', false],
     'review submission' => ['publish', true],
     'direct publication' => ['publish', false],
-])->skip('OPEN: owner must approve preserving bans on seller saves; see marketplace-docs/security-lead-validation.md.');
+    'stale draft' => ['saveDraft', false, true],
+    'stale publication' => ['publish', false, true],
+]);
 
 test('seller-product-form-publish-halal-category: publication checks the submitted gated category', function (bool $existing) {
     config(['halal.gate_enforced_from' => now()->subDay()->toDateString()]);
@@ -190,16 +214,19 @@ test('seller-product-form-publish-halal-category: publication checks the submitt
         ->set('categoryTop', $gated->id)
         ->set('price', '100.00')->set('salePrice', '')->set('stock', '5')
         ->set('newImages', [UploadedFile::fake()->image('product.jpg')])
-        ->call('publish');
+        ->call('publish')->assertHasErrors(['halalGate']);
 
     expect(Product::where('store_id', $store->id)
         ->where('category_id', $gated->id)
         ->where('status', ProductStatus::Live)->exists())->toBeFalse();
-})->with(['new listing' => false, 'changed category' => true])
-    ->skip('OPEN: owner must approve checking the final submitted category; see marketplace-docs/security-lead-validation.md.');
+})->with(['new listing' => false, 'changed category' => true]);
 
-test('password-reset-existing-web-sessions: recovery revokes both existing database browser sessions', function () {
-    config(['session.driver' => 'database']);
+test('password-reset-existing-web-sessions: recovery revokes both existing browser sessions', function (string $driver) {
+    $files = sys_get_temp_dir().'/hb-rules-sessions-'.Str::random(10);
+    if ($driver === 'file') {
+        mkdir($files);
+    }
+    config(['session.driver' => $driver, 'session.files' => $files]);
     $settings = app(SecuritySettings::class);
     $settings->breached_password_check = false;
     $settings->save();
@@ -207,13 +234,18 @@ test('password-reset-existing-web-sessions: recovery revokes both existing datab
     $sessionIds = [Str::random(40), Str::random(40)];
     $loginKey = Auth::guard('web')->getName();
     foreach ($sessionIds as $id) {
-        DB::table('sessions')->insert([
-            'id' => $id, 'user_id' => $user->id, 'last_activity' => time(),
-            'payload' => base64_encode(json_encode([
-                $loginKey => $user->id, 'password_hash_web' => $user->password,
-                '_token' => Str::random(40),
-            ])),
+        $payload = json_encode([
+            $loginKey => $user->id, 'password_hash_web' => $user->password,
+            '_token' => Str::random(40),
         ]);
+        if ($driver === 'database') {
+            DB::table('sessions')->insert([
+                'id' => $id, 'user_id' => $user->id, 'last_activity' => time(),
+                'payload' => base64_encode($payload),
+            ]);
+        } else {
+            file_put_contents($files.'/'.$id, $payload);
+        }
     }
     $newBrowser = function () {
         Auth::forgetGuards();
@@ -240,8 +272,14 @@ test('password-reset-existing-web-sessions: recovery revokes both existing datab
         $newBrowser();
         $statuses[] = $this->withCookie(config('session.cookie'), $id)->get(route('account.orders'))->status();
     }
+    if ($driver === 'file') {
+        foreach (glob($files.'/*') as $file) {
+            unlink($file);
+        }
+        rmdir($files);
+    }
     expect($statuses)->toBe([302, 302]);
-})->skip('OPEN: confirm deployed session driver and approve all-browser revocation; see marketplace-docs/security-lead-validation.md.');
+})->with(['database', 'file']);
 
 test('staff-save-permissions-unbounded-grant: a settings-only editor cannot grant finance to another administrator', function () {
     $editor = User::factory()->create();
@@ -251,15 +289,15 @@ test('staff-save-permissions-unbounded-grant: a settings-only editor cannot gran
     $target->assignRole('admin');
 
     Livewire::actingAs($editor)->test(Staff::class)
-        ->call('editPermissions', $target->id)
+        ->call('startEditPermissions', $target->id)
         ->set('editPermissions', ['finance.manage'])
         ->call('savePermissions');
 
     expect($editor->fresh()->can('finance.manage'))->toBeFalse()
         ->and($target->fresh()->can('finance.manage'))->toBeFalse();
-})->skip('OPEN: delegation policy conflicts with QA9; see marketplace-docs/security-lead-validation.md.');
+});
 
-test('whip-directory-profile-owner-binding: mismatched profile ownership cannot approve a certificate or import products', function () {
+test('whip-directory-profile-owner-binding: mismatched profile ownership cannot approve a certificate or import products', function (string $mismatchKind) {
     // Replace the WHIP connection completely; these tables exist only in memory.
     config(['database.connections.whip' => ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '']]);
     DB::purge('whip');
@@ -284,8 +322,10 @@ test('whip-directory-profile-owner-binding: mismatched profile ownership cannot 
             'valid_from' => now()->subMonth()->toDateString(), 'valid_to' => now()->addYear()->toDateString(),
         ]);
         $fake->table('halal_application_company_profiles')->insert([
-            'id' => $id, 'application_id' => $id, 'user_id' => $profileOwner,
-            'company_name' => 'Dummy Foods', 'registration_number' => 'DUMMY-SSM',
+            'id' => $id, 'application_id' => $id,
+            'user_id' => $mismatchKind === 'owner' ? $profileOwner : 10,
+            'company_name' => 'Dummy Foods',
+            'registration_number' => $id === 2 && $mismatchKind === 'registration' ? 'OTHER-SSM' : 'DUMMY-SSM',
         ]);
         $fake->table('halal_application_products')->insert([
             'id' => $id, 'application_id' => $id, 'product_name' => "Dummy product {$id}",
@@ -297,6 +337,13 @@ test('whip-directory-profile-owner-binding: mismatched profile ownership cannot 
         'user_id' => $seller->id, 'registration_no' => 'DUMMYSSM', 'registration_verified_at' => now(),
     ]);
     $category = Category::factory()->create();
+    $baselineTransactionLevel = DB::connection()->transactionLevel();
+    $whipReadTransactionLevels = [];
+    DB::listen(function ($event) use (&$whipReadTransactionLevels) {
+        if ($event->connectionName === 'whip') {
+            $whipReadTransactionLevels[] = DB::connection()->transactionLevel();
+        }
+    });
     $directory = app(WhipDirectory::class);
     expect(array_map(fn ($c) => $c->certificateNo, $directory->forCompany('DUMMYSSM')))->toBe(['DUMMY-1']);
     expect($directory->check('DUMMY-1', 'DUMMYSSM')[0])->toBe('verified');
@@ -307,13 +354,62 @@ test('whip-directory-profile-owner-binding: mismatched profile ownership cannot 
     $page->set('importCategoryId', $category->id)->call('importWhipProducts', $owned->id)->assertHasNoErrors();
     expect($store->products()->where('whip_product_id', 1)->exists())->toBeTrue();
 
-    $page->call('linkWhipCertificate', 'DUMMY-2');
+    $page->call('linkWhipCertificate', 'DUMMY-2')->assertHasErrors(['whip'])
+        ->assertSee(__('WHIP could not confirm this certificate. Upload it for manual review.'));
     $mismatch = $store->halalCertificates()->where('number', 'DUMMY-2')->first();
-    if ($mismatch !== null) {
-        $page->call('importWhipProducts', $mismatch->id);
-    }
+
     expect([
         'certificate_approved' => $mismatch?->isApproved() ?? false,
         'product_imported' => $store->products()->where('whip_product_id', 2)->exists(),
     ])->toBe(['certificate_approved' => false, 'product_imported' => false]);
-})->skip('OPEN: WHIP owner must establish profile ownership invariants; see marketplace-docs/security-lead-validation.md.');
+
+    // A previously linked local row must not bypass the import recheck.
+    $legacy = new HalalCertificate([
+        'store_id' => $store->id, 'number' => 'DUMMY-2', 'issuing_body' => 'JAKIM',
+        'holder_name' => 'Dummy Foods', 'valid_from' => now()->subMonth(), 'valid_to' => now()->addYear(),
+    ]);
+    $legacy->forceFill(['source' => 'whip', 'whip_application_id' => 2])->save();
+    $page->call('importWhipProducts', $legacy->id)->assertHasErrors(['whip']);
+    expect($store->products()->where('whip_product_id', 2)->exists())->toBeFalse();
+
+    Storage::fake('local');
+    $page->call('edit', $legacy->id)
+        ->set('document', UploadedFile::fake()->create('certificate.pdf', 50, 'application/pdf'))
+        ->call('save')->assertHasNoErrors();
+    expect($legacy->fresh()->status)->toBe(CertificateStatus::Pending)
+        ->and($legacy->fresh()->whip_answer)->toBe('mismatch')
+        ->and(array_unique($whipReadTransactionLevels))->toBe([$baselineTransactionLevel]);
+})->with(['owner', 'registration']);
+
+test('staff permission edits allow held grants and the superadmin exception', function (bool $superadmin) {
+    $editor = User::factory()->create(['is_superadmin' => $superadmin]);
+    $editor->assignRole('admin');
+    $editor->syncPermissions($superadmin ? ['settings.manage'] : ['settings.manage', 'finance.manage']);
+    $target = User::factory()->create();
+    $target->assignRole('admin');
+
+    Livewire::actingAs($editor)->test(Staff::class)
+        ->call('startEditPermissions', $target->id)
+        ->set('editPermissions', ['finance.manage'])->call('savePermissions')->assertHasNoErrors();
+
+    expect($target->fresh()->can('finance.manage'))->toBeTrue();
+})->with([false, true]);
+
+test('legacy browser sessions without password proof require a fresh login', function () {
+    config(['session.driver' => 'database']);
+    $user = User::factory()->create();
+    $id = Str::random(40);
+    DB::table('sessions')->insert([
+        'id' => $id, 'user_id' => $user->id, 'last_activity' => time(),
+        'payload' => base64_encode(json_encode([Auth::guard('web')->getName() => $user->id])),
+    ]);
+    $this->withCookie(config('session.cookie'), $id)->get(route('account.orders'))->assertRedirect(route('login'));
+});
+
+test('fresh browser login stores password proof and reaches the account', function () {
+    $user = User::factory()->create(['password' => 'dummy-current-password']);
+    Livewire::test(Login::class)
+        ->set('email', $user->email)->set('password', 'dummy-current-password')->call('login')->assertHasNoErrors();
+    expect(session()->has('password_hash_web'))->toBeTrue();
+    $this->get(route('account.orders'))->assertOk();
+});

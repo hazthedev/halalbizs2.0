@@ -14,7 +14,7 @@ final readonly class WhipCertificate
     public const AMBIGUOUS = 'ambiguous';
 
     /**
-     * @param  'active'|'expired'|'not_certified'|'ambiguous'  $status
+     * @param  'active'|'expired'|'not_certified'|'ambiguous'|'mismatch'  $status
      * @param  list<array{id?: int, name: string, brand: ?string, barcode: ?string}>  $products
      */
     public function __construct(

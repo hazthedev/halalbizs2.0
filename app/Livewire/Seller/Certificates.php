@@ -97,12 +97,14 @@ class Certificates extends Component
 
             return;
         }
-        $count = DB::transaction(function () use ($certificate, $store) {
+        [$answer, $whip] = app(WhipDirectory::class)->check($certificate->number, $store->registration_no);
+        $count = DB::transaction(function () use ($certificate, $store, $answer, $whip) {
             $store = $store->newQuery()->lockForUpdate()->findOrFail($store->id);
             $certificate = $this->certificates()->lockForUpdate()->findOrFail($certificate->id);
             abort_unless($certificate->source === 'whip' && $store->registration_verified_at !== null, 403);
-            [$answer, $whip] = app(WhipDirectory::class)->check($certificate->number, $store->registration_no);
-            if ($answer !== 'verified' || $whip->applicationId !== (int) $certificate->whip_application_id) {
+            if ($answer !== 'verified' || $whip->answerFor($store->registration_no) !== 'verified'
+                || $whip->certificateNo !== $certificate->number
+                || $whip->applicationId !== (int) $certificate->whip_application_id) {
                 throw ValidationException::withMessages(['whip' => __('WHIP could not confirm this certificate for your company. Nothing was imported.')]);
             }
             $certificate->takeFromWhip($whip, 'verified')->save();
@@ -161,14 +163,15 @@ class Certificates extends Component
     {
         $this->resetErrorBag('whip');
         $store = $this->currentStore()->fresh();
-        DB::transaction(function () use ($store, $number) {
+        abort_unless($store->registration_verified_at !== null && filled($store->registration_no), 403);
+        [$answer, $whip] = app(WhipDirectory::class)->check($number, $store->registration_no);
+        DB::transaction(function () use ($store, $number, $answer, $whip) {
             $store = $store->newQuery()->lockForUpdate()->findOrFail($store->id);
             abort_unless($store->registration_verified_at !== null && filled($store->registration_no), 403);
             $certificate = HalalCertificate::whereRaw('UPPER(TRIM(number)) = ?', [strtoupper(trim($number))])->lockForUpdate()->first();
             abort_if($certificate !== null && $certificate->store_id !== $store->id, 403);
-            [$answer, $whip] = app(WhipDirectory::class)->check($number, $store->registration_no);
-            if ($answer !== 'verified' || blank($whip?->companyName)) {
-                throw ValidationException::withMessages(['whip' => __('WHIP could not confirm a complete, current certificate for your verified SSM number.')]);
+            if ($answer !== 'verified' || $whip->answerFor($store->registration_no) !== 'verified' || blank($whip->companyName)) {
+                throw ValidationException::withMessages(['whip' => __('WHIP could not confirm this certificate. Upload it for manual review.')]);
             }
             $certificate ??= new HalalCertificate(['store_id' => $store->id, 'number' => $whip->certificateNo, 'issuing_body' => 'WHIP']);
             $certificate->takeFromWhip($whip, 'verified')->fill(['scope_note' => $whip->scopeNote]);
@@ -251,7 +254,9 @@ class Certificates extends Component
         $verified = false;
         $parked = collect();
 
-        DB::transaction(function () use ($certificate, $data, &$verified, &$parked) {
+        $store = $this->currentStore();
+        [$answer, $whip] = app(WhipDirectory::class)->check($data['number'], $store->registration_no ?: $this->registrationNo);
+        DB::transaction(function () use ($certificate, $data, $answer, $whip, &$verified, &$parked) {
             $store = $this->currentStore();
 
             // The registration number is self-declared the first time and then
@@ -263,9 +268,10 @@ class Certificates extends Component
                 $store->forceFill(['registration_no' => trim($data['registrationNo'])])->save();
             }
 
-            // WHIP is asked once, here. Verified = certified, in date, and the
+            // Judge the pre-transaction WHIP snapshot against the final store.
+            // Verified = certified, in date, and the
             // same company registration number; anything else is manual review.
-            [$answer, $whip] = app(WhipDirectory::class)->check($data['number'], $store->registration_no);
+            $answer = $whip?->answerFor($store->registration_no) ?? $answer;
             $verified = $answer === 'verified' && $store->registration_verified_at !== null;
 
             $certificate ??= new HalalCertificate;

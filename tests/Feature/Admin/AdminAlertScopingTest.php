@@ -114,7 +114,7 @@ test('an admin cannot grant permissions to their own account', function () {
 
     Livewire::actingAs($admin)
         ->test(Staff::class)
-        ->call('editPermissions', $admin->id)
+        ->call('startEditPermissions', $admin->id)
         ->assertSet('editingId', null); // refused entry into edit mode for self
 
     expect($admin->fresh()->getDirectPermissions()->pluck('name')->all())

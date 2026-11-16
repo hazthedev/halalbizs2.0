@@ -443,19 +443,6 @@ class Form extends Component
             ? ProductStatus::PendingReview
             : ProductStatus::Live;
 
-        // H-6: a product in a category that requires halal certification needs
-        // an approved certificate covering it. Asked BEFORE the save, so the
-        // seller keeps their draft and sees why.
-        if ($status === ProductStatus::Live && $this->productId !== null) {
-            $reason = app(ProductPublishPolicy::class)->blockedReason(Product::findOrFail($this->productId));
-
-            if ($reason !== null) {
-                $this->addError('halalGate', $reason);
-
-                return;
-            }
-        }
-
         $this->save($status, publishing: true);
     }
 
@@ -485,8 +472,14 @@ class Form extends Component
             $store = $this->currentStore();
 
             $product = $this->productId !== null
-                ? Product::query()->where('store_id', $store->id)->findOrFail($this->productId)
+                ? Product::query()->where('store_id', $store->id)->lockForUpdate()->findOrFail($this->productId)
                 : new Product(['store_id' => $store->id]);
+
+            if ($product->status === ProductStatus::Banned) {
+                throw ValidationException::withMessages([
+                    'status' => __('This product is banned. Ask an admin to lift the ban.'),
+                ]);
+            }
 
             $product->fill([
                 'category_id' => $this->selectedCategoryId(),
@@ -501,6 +494,14 @@ class Form extends Component
                 'cod_enabled' => $this->codEnabled,
                 'marketplace_links_always_visible' => $this->marketplaceLinksAlwaysVisible,
             ]);
+
+            if ($status === ProductStatus::Live) {
+                $reason = app(ProductPublishPolicy::class)->blockedReason($product);
+
+                if ($reason !== null) {
+                    throw ValidationException::withMessages(['halalGate' => $reason]);
+                }
+            }
 
             if ($status === ProductStatus::Live && $product->published_at === null) {
                 $product->published_at = now();

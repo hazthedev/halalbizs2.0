@@ -7,8 +7,10 @@ use App\Enums\GatewayPaymentStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\SubOrderStatus;
 use App\Events\OrderPaid;
+use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Ipay88Service;
+use App\Services\RefundService;
 use App\Services\SubOrderStatusService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -62,6 +64,8 @@ class ConfirmIpay88PaymentJob implements ShouldQueue
         // check before either commits — the lock + re-read here makes the
         // second one a clean no-op instead of a duplicate fulfilment.
         $order = DB::transaction(function () use ($requeryResult, $statusService) {
+            // Match expiry's order-before-payment lock order.
+            $order = Order::whereKey($this->payment->order_id)->lockForUpdate()->firstOrFail();
             $payment = Payment::whereKey($this->payment->id)->lockForUpdate()->first();
 
             if ($payment->status === GatewayPaymentStatus::Success) {
@@ -91,7 +95,6 @@ class ConfirmIpay88PaymentJob implements ShouldQueue
                 'paid_at' => now(),
             ]);
 
-            $order = $payment->order;
             $order->update([
                 'payment_status' => PaymentStatus::Paid,
                 'paid_at' => now(),
@@ -101,10 +104,21 @@ class ConfirmIpay88PaymentJob implements ShouldQueue
             foreach ($order->subOrders as $subOrder) {
                 if ($subOrder->status === SubOrderStatus::PendingPayment) {
                     $statusService->transition($subOrder, SubOrderStatus::Confirmed, ActorType::System);
+                } elseif ($subOrder->status === SubOrderStatus::Cancelled) {
+                    // Late funds owe a manual refund; cancellation/restocking stand.
+                    app(RefundService::class)->refund(
+                        $subOrder,
+                        (int) $subOrder->total_sen,
+                        ActorType::System,
+                        null,
+                        markRefunded: false,
+                        attemptGatewayRefund: false,
+                    );
                 }
             }
 
-            return $order;
+            return $order->subOrders()->where('status', '!=', SubOrderStatus::Cancelled)->exists()
+                ? $order : null;
         });
 
         // After commit: trigger e-invoicing (and any other post-payment

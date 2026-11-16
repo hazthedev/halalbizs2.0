@@ -1,4 +1,7 @@
 {
+    "WHIP could not confirm this certificate. Upload it for manual review.": "WHIP tidak dapat mengesahkan sijil ini. Muat naik untuk semakan manual.",
+    "You can only grant permissions you hold yourself.": "Anda hanya boleh memberikan kebenaran yang anda miliki sendiri.",
+    "This product is banned. Ask an admin to lift the ban.": "Produk ini disekat. Minta pentadbir menarik balik sekatan.",
     "\":label\" has order history and can't be removed. Delist the product instead.": "\":label\" mempunyai sejarah pesanan dan tidak boleh dibuang. Nyahsenaraikan produk tersebut.",
     "\":name\" did not pass review and moved back to your drafts. Fix the issue and resubmit.": "\":name\" tidak lulus semakan dan telah dikembalikan ke draf anda. Betulkan isu tersebut dan hantar semula.",
     "\":name\" is not an image file.": "\":name\" bukan fail imej.",

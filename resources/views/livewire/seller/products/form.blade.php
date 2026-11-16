@@ -715,6 +715,9 @@
         {{-- H-6: a blocking failure needs an inline exit next to the control
              that failed, naming the remedy — a corner toast is not an error
              message for something that stops the primary action. --}}
+        @error('status')
+            <p role="alert" class="text-[13px] font-medium text-danger">{{ $message }}</p>
+        @enderror
         @error('halalGate')
             <div class="rounded-[var(--radius-card)] border border-danger/40 bg-danger-tint px-4 py-3">
                 <p class="text-[13px] font-medium text-danger">{{ __('This product cannot go live yet') }}</p>

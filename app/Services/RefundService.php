@@ -41,8 +41,9 @@ class RefundService
         ?int $actorId,
         ?string $reference = null,
         bool $markRefunded = true,
+        bool $attemptGatewayRefund = true,
     ): void {
-        DB::transaction(function () use ($subOrder, $amountSen, $actor, $actorId, $reference, $markRefunded) {
+        DB::transaction(function () use ($subOrder, $amountSen, $actor, $actorId, $reference, $markRefunded, $attemptGatewayRefund) {
             // H1 fix: re-fetch the sub-order under lockForUpdate FIRST, and
             // recompute the cap from THIS locked row. Two concurrent refunds
             // (admin double-click, or a manual refund racing an automated one)
@@ -128,7 +129,7 @@ class RefundService
                 $gatewayOk = null;
 
                 if ($online && $cashSen > 0) {
-                    $gatewayOk = (bool) $this->gateways
+                    $gatewayOk = $attemptGatewayRefund && (bool) $this->gateways
                         ->driver($subOrder->order->payment_method?->value)
                         ?->refund($payment, $cashSen, $reference);
                 }
