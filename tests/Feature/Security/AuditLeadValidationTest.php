@@ -413,3 +413,16 @@ test('fresh browser login stores password proof and reaches the account', functi
     expect(session()->has('password_hash_web'))->toBeTrue();
     $this->get(route('account.orders'))->assertOk();
 });
+
+test('ruled seller refusals have Malay copy and English fallback', function (string $message) {
+    app()->setLocale('en');
+    expect(__($message))->toBe($message);
+
+    app()->setLocale('ms');
+    expect(__($message))->not->toBe($message)->not->toBe('');
+})->with([
+    'missing publication certificate' => 'This category needs a halal certificate. Register yours under Halal certificates, then tick this product.',
+    'expired publication certificate' => 'The halal certificate covering this product has expired. Renew it to keep the listing live.',
+    'publication certificate under review' => 'The halal certificate covering this product is still being checked.',
+    'unverified WHIP import' => 'WHIP could not confirm this certificate for your company. Nothing was imported.',
+]);

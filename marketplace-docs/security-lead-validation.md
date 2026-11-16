@@ -61,3 +61,7 @@ Pest uses in-memory SQLite and fake gateway/WHIP boundaries. Race evidence uses 
 Local evidence and red/green logs: `/tmp/hb-rules-evidence`; session record: `/Users/Apple/Desktop/Hermes/main/sessions/hb-rules.md`. Setup errors were kept separate from assertion evidence: the additional WHIP fixture initially requested a nonexistent factory, and changing the local test encryption key during one active run caused MAC errors. Stable-configuration reruns passed. The initial admin browser selector timeout was traced to the actual name collision and fixed.
 
 One thing better: the staff permission editor now opens from a real click and enforces the same grant boundary as invitations.
+
+## Independent gate correction
+
+HB223-GATE found three publication refusals still using English placeholders in the Malay catalogue and the WHIP import refusal missing from it. All four now have Malay copy. A translator regression checks English fallback and Malay output: four failures before the correction, four passes (12 assertions) afterwards. The required targeted command above then passed **311 tests / 1,233 assertions / zero skips**. No application logic or rulings changed in this correction.
