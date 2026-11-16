@@ -65,6 +65,8 @@ try {
         User::where('email', $email)->firstOrFail()->forceFill([
             'password' => Hash::make($data['password']),
         ])->save();
+    } elseif ($action === 'ecosystem-registration') {
+        User::where('email', $run.'-seller@halalbizs.test')->firstOrFail()->store->update(['registration_no' => ' e2e-123 / a ']);
     } elseif ($action === 'store') {
         $store = User::where('email', $run.'-seller@halalbizs.test')->firstOrFail()->store;
         echo json_encode(['slug' => $store->slug]);

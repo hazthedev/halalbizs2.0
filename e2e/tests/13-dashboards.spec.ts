@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from '../support';
+import { execSync, suiteFixture } from '../support';
 
 function artisan(cmd: string) {
     return execSync(`php artisan ${cmd}`, { cwd: process.cwd() }).toString().trim();
@@ -68,6 +68,14 @@ test.describe('Interactive dashboards', () => {
         await login(page, `${process.env.E2E_SELLER_EMAIL}`);
         await page.goto('/seller');
         await assertChartAndPeriodSwitch(page, 'seller');
+    });
+
+    test('seller dashboard links carry the company key', async ({ page }) => {
+        suiteFixture('ecosystem-registration');
+        await login(page, `${process.env.E2E_SELLER_EMAIL}`);
+        await page.goto('/seller');
+        await expect(page.getByRole('link', { name: 'Train staff' })).toHaveAttribute('href', 'https://halaledu.weststar-dev.com/signup?company_key=MY%3ASSM%3AE2E123%2FA');
+        await expect(page.getByRole('link', { name: 'Book sertu' })).toHaveAttribute('href', 'https://sertucert.weststar-dev.com/signup?company_key=MY%3ASSM%3AE2E123%2FA');
     });
 
     test('admin dashboard renders charts and reacts to the period picker', async ({ page }) => {

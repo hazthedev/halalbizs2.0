@@ -25,3 +25,5 @@ php artisan serve --host=127.0.0.1 --port=8876 --no-reload
 In another terminal with the same environment, run `npm run e2e -- --retries=0 --reporter=line,json`. Set `PLAYWRIGHT_JSON_OUTPUT_FILE` to save pass/total evidence. Stop the server by its PID and restore the local database snapshot after testing; the suite’s dependent order records require that restoration. Remove the disposable WHIP SQLite file.
 
 A dedicated disposable database with automatic snapshot restoration is the better approach for CI. This local run reuses the existing seeded QA database and restores its backup; no new packages or customer feature changes are required.
+
+The seller dashboard links to HalalEdu training and SertuCert booking with the store’s normalized Malaysian SSM registration as the company key. The dashboard journey checks both destinations locally; stores without a registration number do not show the links.
