@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Support\DisplayTime;
+use App\Support\LocalE2eDatabase;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -17,10 +18,8 @@ try {
     require $root.'/vendor/autoload.php';
     $app = require $root.'/bootstrap/app.php';
     $app->make(Kernel::class)->bootstrap();
-    $main = config('database.connections.'.config('database.default'));
     $fake = config('database.connections.whip');
-    if (! in_array($main['host'] ?? '', ['127.0.0.1', 'localhost'], true)
-        || ($main['database'] ?? '') !== 'hbiz2_qa'
+    if (! LocalE2eDatabase::allowsWrites()
         || ($fake['driver'] ?? '') !== 'sqlite'
         || ($fake['database'] ?? '') !== '/tmp/hb-e2e-whip.sqlite'
         || ! is_file($fake['database'])) {

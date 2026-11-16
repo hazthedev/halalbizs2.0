@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
+use App\Support\LocalE2eDatabase;
 use Illuminate\Console\Command;
 
 /**
@@ -24,8 +25,8 @@ class MakeCodFixture extends Command
 
     public function handle(): int
     {
-        if (! app()->environment('local')) {
-            $this->error('Local environment only.');
+        if (! LocalE2eDatabase::allowsWrites()) {
+            $this->error('Local QA database only.');
 
             return self::FAILURE;
         }

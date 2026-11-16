@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Settings\Ipay88Settings;
+use App\Support\LocalE2eDatabase;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Hash;
@@ -11,9 +12,7 @@ try {
     require $root.'/vendor/autoload.php';
     $app = require $root.'/bootstrap/app.php';
     $app->make(Kernel::class)->bootstrap();
-    $db = config('database.connections.'.config('database.default'));
-    if (! app()->environment('local') || ! in_array($db['host'] ?? '', ['127.0.0.1', 'localhost'], true)
-        || ($db['database'] ?? '') !== 'hbiz2_qa' || config('database.connections.whip.driver') !== 'sqlite') {
+    if (! LocalE2eDatabase::allowsWrites() || config('database.connections.whip.driver') !== 'sqlite') {
         throw new RuntimeException('Suite fixtures require the local QA database and fake WHIP.');
     }
 

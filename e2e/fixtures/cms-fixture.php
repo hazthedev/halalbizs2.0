@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ScheduledLayout;
 use App\Models\Store;
 use App\Models\User;
+use App\Support\LocalE2eDatabase;
 use Illuminate\Contracts\Console\Kernel;
 
 try {
@@ -13,8 +14,7 @@ try {
     require $root.'/vendor/autoload.php';
     $app = require $root.'/bootstrap/app.php';
     $app->make(Kernel::class)->bootstrap();
-    $connection = config('database.connections.'.config('database.default'));
-    if (! app()->environment('local') || ! in_array($connection['host'] ?? '', ['127.0.0.1', 'localhost'], true) || ($connection['database'] ?? '') !== 'hbiz2_qa') {
+    if (! LocalE2eDatabase::allowsWrites()) {
         throw new RuntimeException('CMS fixtures require the local QA database.');
     }
     $data = json_decode(stream_get_contents(STDIN), true, flags: JSON_THROW_ON_ERROR);

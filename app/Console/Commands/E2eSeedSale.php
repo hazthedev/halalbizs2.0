@@ -12,6 +12,7 @@ use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\OrderService;
 use App\Services\SubOrderStatusService;
+use App\Support\LocalE2eDatabase;
 use Illuminate\Console\Command;
 
 /**
@@ -31,7 +32,9 @@ class E2eSeedSale extends Command
         SubOrderStatusService $status,
         OrderService $orders,
     ): int {
-        if (! app()->environment('local')) {
+        if (! LocalE2eDatabase::allowsWrites()) {
+            $this->error('Local QA database only.');
+
             return self::FAILURE;
         }
 

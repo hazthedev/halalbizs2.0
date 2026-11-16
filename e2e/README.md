@@ -6,6 +6,8 @@ Use a disposable local database or back up `hbiz2_qa` before a run and restore i
 
 Never use the live site, old preview or real WHIP. These fixtures refuse a nonlocal database. Start the local app and the CLI runner with the same environment:
 
+The COD fixture, sale seeder and PHP browser fixtures require `APP_ENV=local` and a MySQL/MariaDB `hbiz2_qa` database on `127.0.0.1` or `localhost` (or SQLite `:memory:` for Pest). The guard checks effective `DB_URL` overrides and refuses read/write split connections before fixture mutations. WHIP fixtures additionally require the disposable SQLite fake.
+
 ```sh
 export APP_URL=http://halalbizs2.0.test:8876
 export E2E_BASE_URL=$APP_URL
