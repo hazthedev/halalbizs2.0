@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Services\Ipay88Service;
 use App\Settings\Ipay88Settings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 
@@ -239,23 +240,31 @@ class Ipay88Controller extends Controller
             return response('RECEIVEOK');
         }
 
-        // Idempotency: same TransId already recorded as success → ack and stop.
-        if ($payment->status === GatewayPaymentStatus::Success) {
-            return response('RECEIVEOK');
-        }
+        // Serialize callback writes with confirmation: a failure that read
+        // Pending before settlement must never overwrite terminal Success.
+        $confirm = DB::transaction(function () use ($payment, $payload) {
+            $current = Payment::whereKey($payment->id)->lockForUpdate()->firstOrFail();
 
-        $payment->update([
-            'signature_valid' => true,
-            'response_payload' => $payload,
-        ]);
+            if ($current->status === GatewayPaymentStatus::Success) {
+                return false;
+            }
 
-        if (($payload['Status'] ?? null) === '1') {
-            ConfirmIpay88PaymentJob::dispatch($payment, $payload);
-        } else {
-            $payment->update([
-                'status' => GatewayPaymentStatus::Failed,
-                'requery_result' => $payload['ErrDesc'] ?? 'Failed',
+            $success = ($payload['Status'] ?? null) === '1';
+            $current->update([
+                'signature_valid' => true,
+                'response_payload' => $payload,
+                ...($success ? [] : [
+                    'status' => GatewayPaymentStatus::Failed,
+                    'requery_result' => $payload['ErrDesc'] ?? 'Failed',
+                ]),
             ]);
+
+            return $success;
+        });
+
+        if ($confirm) {
+            // Requery stays outside the callback's row lock.
+            ConfirmIpay88PaymentJob::dispatch($payment, $payload);
         }
 
         return response('RECEIVEOK');
