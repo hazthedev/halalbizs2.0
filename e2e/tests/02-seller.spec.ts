@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -17,7 +17,7 @@ function fixturePng(name: string): string {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 }
@@ -25,7 +25,7 @@ async function login(page: Page, email: string) {
 test.describe('M3 seller journey', () => {
     test('apply, approve, create variant product, publish, see on storefront', async ({ page }) => {
         const stamp = `${test.info().project.name}${Date.now()}`;
-        const email = `seller-e2e-${stamp}@halalbizs.test`;
+        const email = `${process.env.E2E_RUN}-seller-${stamp}@halalbizs.test`;
         const shopName = `E2E Shop ${stamp}`;
         const productName = `E2E Keris Lamp ${stamp}`;
 
@@ -59,7 +59,7 @@ test.describe('M3 seller journey', () => {
         // --- Create a variant product ---
         await page.goto('/seller/products/create');
         await page.fill('input[wire\\:model="name.en"]', productName);
-        await page.fill('textarea[wire\\:model="description.en"]', 'A fine handcrafted lamp, tested end to end.');
+        await page.getByRole('textbox', { name: 'Description (English)', exact: true }).fill('A fine handcrafted lamp, tested end to end.');
 
         await page.selectOption('select[wire\\:model\\.live="categoryTop"]', { index: 1 });
         await page.waitForTimeout(500);

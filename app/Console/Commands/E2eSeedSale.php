@@ -12,6 +12,7 @@ use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\OrderService;
 use App\Services\SubOrderStatusService;
+use App\Support\LocalE2eDatabase;
 use Illuminate\Console\Command;
 
 /**
@@ -21,7 +22,7 @@ use Illuminate\Console\Command;
  */
 class E2eSeedSale extends Command
 {
-    protected $signature = 'e2e:seed-sale {email=buyer@halalbizs.test}';
+    protected $signature = 'e2e:seed-sale {email=buyer@halalbizs.test} {--seller=cod-seller@halalbizs.test}';
 
     protected $description = 'Place and complete a COD sale so dashboards have data (local only)';
 
@@ -31,14 +32,16 @@ class E2eSeedSale extends Command
         SubOrderStatusService $status,
         OrderService $orders,
     ): int {
-        if (! app()->environment('local')) {
+        if (! LocalE2eDatabase::allowsWrites()) {
+            $this->error('Local QA database only.');
+
             return self::FAILURE;
         }
 
         $buyer = User::where('email', $this->argument('email'))->firstOrFail();
         $address = $buyer->addresses()->firstOrFail();
 
-        $store = Store::where('name', 'COD Journey Store')->firstOrFail();
+        $store = Store::whereHas('user', fn ($query) => $query->where('email', $this->option('seller')))->firstOrFail();
         $variant = Product::where('store_id', $store->id)->firstOrFail()->variants()->first();
 
         $cart->addItem($buyer, $variant, 1);

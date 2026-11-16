@@ -1,17 +1,17 @@
 import { test, expect, Page } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 async function passwordStep(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/two-factor-challenge', { timeout: 15000 });
 }
 
 test.describe('Two-factor login challenge', () => {
     test('a 2FA user must pass the email-code challenge', async ({ page }) => {
-        const email = `tfa-${test.info().project.name}${Date.now()}@halalbizs.test`;
+        const email = `${process.env.E2E_RUN}-tfa-${test.info().project.name}${Date.now()}@halalbizs.test`;
         execSync(`php artisan e2e:user ${email} --two-factor`, { cwd: process.cwd() });
 
         await passwordStep(page, email);
@@ -35,8 +35,8 @@ test.describe('Two-factor login challenge', () => {
     });
 
     test('the seeded admin passes its 2FA challenge into the panel', async ({ page }) => {
-        await passwordStep(page, 'admin@halalbizs.test');
-        const code = execSync('php artisan e2e:otp admin@halalbizs.test', { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
+        await passwordStep(page, `${process.env.E2E_ADMIN_EMAIL}`);
+        const code = execSync(`php artisan e2e:otp ${process.env.E2E_ADMIN_EMAIL}`, { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
         await page.fill('input[name="code"]', code);
         await page.getByRole('button', { name: /verify/i }).click();
         await page.waitForURL((url) => !url.pathname.includes('two-factor-challenge'), { timeout: 15000 });

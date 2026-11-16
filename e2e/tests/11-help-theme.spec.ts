@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 async function jsClick(locator: Locator) {
     await locator.first().waitFor({ state: 'visible' });
@@ -9,18 +9,18 @@ async function jsClick(locator: Locator) {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 }
 
 async function adminLogin(page: Page) {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@halalbizs.test');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="email"]', `${process.env.E2E_ADMIN_EMAIL}`);
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/two-factor-challenge', { timeout: 15000 });
-    const code = execSync('php artisan e2e:otp admin@halalbizs.test', { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
+    const code = execSync(`php artisan e2e:otp ${process.env.E2E_ADMIN_EMAIL}`, { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
     await page.fill('input[name="code"]', code);
     await page.getByRole('button', { name: /verify/i }).click();
     await page.waitForURL((url) => !url.pathname.includes('two-factor-challenge'), { timeout: 15000 });
@@ -56,7 +56,7 @@ test.describe('Help center, tickets and seasonal theming', () => {
         const subject = `Order help ${stamp}`;
         const adminReply = `We can help with ${stamp}.`;
 
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto('/support');
         const newTicket = page.getByRole('button', { name: /new ticket/i });
         if (await newTicket.count()) await jsClick(newTicket);
@@ -77,7 +77,7 @@ test.describe('Help center, tickets and seasonal theming', () => {
         await logout(page);
 
         // Buyer sees the reply.
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto('/support');
         await jsClick(page.locator('button[wire\\:click^="select"]', { hasText: subject }).first());
         await expect(page.getByText(adminReply).first()).toBeVisible({ timeout: 10000 });
@@ -93,7 +93,8 @@ test.describe('Help center, tickets and seasonal theming', () => {
         await page.locator('input[wire\\:model="announcementTextEn"]').fill(text);
         await page.locator('input[wire\\:model="announcementEnabled"]').check();
         await jsClick(page.getByRole('button', { name: /save theme/i }));
-        await page.waitForTimeout(800);
+        await jsClick(page.getByRole('button', { name: 'Publish', exact: true }));
+        await expect(page.getByRole('button', { name: 'Publish', exact: true })).toHaveCount(0);
 
         await page.goto('/');
         await expect(page.getByText(text).first()).toBeVisible({ timeout: 10000 });
@@ -102,7 +103,8 @@ test.describe('Help center, tickets and seasonal theming', () => {
         await page.goto('/admin/content/theme');
         await page.locator('input[wire\\:model="announcementEnabled"]').uncheck();
         await jsClick(page.getByRole('button', { name: /save theme/i }));
-        await page.waitForTimeout(800);
+        await jsClick(page.getByRole('button', { name: 'Publish', exact: true }));
+        await expect(page.getByRole('button', { name: 'Publish', exact: true })).toHaveCount(0);
 
         await page.goto('/');
         await expect(page.getByText(text)).toHaveCount(0);

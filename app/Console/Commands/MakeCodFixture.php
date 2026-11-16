@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
+use App\Support\LocalE2eDatabase;
 use Illuminate\Console\Command;
 
 /**
@@ -18,26 +19,26 @@ use Illuminate\Console\Command;
  */
 class MakeCodFixture extends Command
 {
-    protected $signature = 'e2e:cod-fixture {--with-video}';
+    protected $signature = 'e2e:cod-fixture {--with-video} {--seller=cod-seller@halalbizs.test} {--buyer=buyer@halalbizs.test}';
 
     protected $description = 'Ensure the COD journey store/product exist and print the product slug';
 
     public function handle(): int
     {
-        if (! app()->environment('local')) {
-            $this->error('Local environment only.');
+        if (! LocalE2eDatabase::allowsWrites()) {
+            $this->error('Local QA database only.');
 
             return self::FAILURE;
         }
 
         $seller = User::firstOrCreate(
-            ['email' => 'cod-seller@halalbizs.test'],
+            ['email' => $this->option('seller')],
             ['name' => 'COD Journey Seller', 'password' => 'password'],
         );
         $seller->forceFill(['email_verified_at' => now()])->save();
         $seller->assignRole('seller');
 
-        $store = Store::withTrashed()->firstOrNew(['user_id' => $seller->id]);
+        $store = Store::withTrashed()->where('user_id', $seller->id)->first() ?? new Store;
         $store->user_id = $seller->id;
         $store->fill([
             'name' => 'COD Journey Store',
@@ -72,7 +73,7 @@ class MakeCodFixture extends Command
             ->each(fn (Order $order) => $order->delete());
 
         // Empty the demo buyer's cart so checkout contains only the fixture item.
-        $buyer = User::where('email', 'buyer@halalbizs.test')->first();
+        $buyer = User::where('email', $this->option('buyer'))->first();
         $buyer?->cart?->items()->delete();
 
         if ($this->option('with-video') && ! $product->hasMedia('videos')) {

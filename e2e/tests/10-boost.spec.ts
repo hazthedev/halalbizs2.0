@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 async function jsClick(locator: Locator) {
     await locator.first().waitFor({ state: 'visible' });
@@ -9,7 +9,7 @@ async function jsClick(locator: Locator) {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 }
@@ -25,9 +25,9 @@ test.describe('Sponsored product boosts', () => {
     test('seller boosts a product from balance; it shows Sponsored on listings', async ({ page }) => {
         page.on('dialog', (dialog) => dialog.accept()); // wire:confirm
         execSync('php artisan e2e:cod-fixture', { cwd: process.cwd() });
-        execSync('php artisan e2e:ledger-credit cod-seller@halalbizs.test 500000', { cwd: process.cwd() });
+        execSync(`php artisan e2e:ledger-credit ${process.env.E2E_SELLER_EMAIL} 500000`, { cwd: process.cwd() });
 
-        await login(page, 'cod-seller@halalbizs.test');
+        await login(page, `${process.env.E2E_SELLER_EMAIL}`);
         await page.goto('/seller/boosts');
 
         await page.selectOption('select#boost-product', { index: 1 });

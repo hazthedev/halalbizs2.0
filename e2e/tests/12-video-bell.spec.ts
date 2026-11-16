@@ -1,5 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
+import { execSync } from '../support';
 
 async function jsClick(locator: Locator) {
     await locator.first().waitFor({ state: 'visible' });
@@ -9,7 +9,7 @@ async function jsClick(locator: Locator) {
 async function login(page: Page, email: string) {
     await page.goto('/login');
     await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="password"]', process.env.E2E_PASSWORD!);
     await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
 }
@@ -34,7 +34,7 @@ test.describe('Product video and notification bell', () => {
         const slug = execSync('php artisan e2e:cod-fixture', { cwd: process.cwd() }).toString().trim().split('\n').pop()!.trim();
         const msg = `Question ${test.info().project.name}${Date.now()}`;
 
-        await login(page, 'buyer@halalbizs.test');
+        await login(page, `${process.env.E2E_BUYER_EMAIL}`);
         await page.goto(`/p/${slug}`);
         await jsClick(page.getByTestId('pdp-chat'));
         await page.waitForURL('**/account/messages**');
@@ -43,7 +43,7 @@ test.describe('Product video and notification bell', () => {
         await expect(page.locator('.whitespace-pre-line', { hasText: msg })).toBeVisible({ timeout: 10000 });
         await logout(page);
 
-        await login(page, 'cod-seller@halalbizs.test');
+        await login(page, `${process.env.E2E_SELLER_EMAIL}`);
         await page.goto('/seller');
         await expect(page.getByTestId('bell-unread-dot')).toBeVisible({ timeout: 10000 });
         await page.screenshot({ path: `e2e/screenshots/bell-${test.info().project.name}.png` });
