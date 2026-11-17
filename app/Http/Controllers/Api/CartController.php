@@ -35,8 +35,9 @@ class CartController extends Controller
         $qty = (int) ($data['qty'] ?? 1);
 
         // Live / holiday / sold-out refusals come from CartService::addItem (422 via
-        // BuyerActionException); only an in-stock variant gets the "only N left" check.
-        if ($variant->stock > 0) {
+        // BuyerActionException); only an in-stock variant of a live product gets the
+        // "only N left" check, so a hidden variant never reveals its stock.
+        if ($variant->stock > 0 && $variant->product?->isLive()) {
             $this->ensureStock($variant, $qty);
         }
 
