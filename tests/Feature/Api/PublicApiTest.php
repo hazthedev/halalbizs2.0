@@ -12,6 +12,7 @@ use App\Models\SubOrder;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -196,4 +197,20 @@ test('search pages 24 at a time like products and bounds the term', function () 
 
 test('search with no term answers an empty page', function () {
     $this->getJson('/api/v1/search')->assertOk()->assertJsonCount(0, 'data');
+});
+
+test('search limits candidate IDs in SQL before loading them into PHP', function () {
+    Product::factory()->create(['name' => ['en' => 'Bounded search']]);
+    DB::enableQueryLog();
+
+    $this->getJson('/api/v1/search?q=bounded')->assertOk();
+
+    // This resource bound is observable at the API's database boundary: slicing
+    // an already-materialised list still loads the entire catalogue into PHP.
+    $candidates = collect(DB::getQueryLog())->pluck('query')
+        ->map(fn ($sql) => str_replace('`', '"', $sql))
+        ->filter(fn ($sql) => str_starts_with($sql, 'select "id" from "products"'));
+    expect($candidates)->toHaveCount(1);
+    expect($candidates->first())->toContain('limit 500');
+    DB::disableQueryLog();
 });

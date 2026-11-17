@@ -198,7 +198,7 @@ class CatalogController extends Controller
         $term = trim((string) ($request->validate(['q' => ['nullable', 'string', 'max:100']])['q'] ?? ''));
         // ponytail: relevance order beyond the first 500 hits is noise; cap the
         // id list so the CASE sort and whereIn stay bounded on a big catalogue.
-        $ids = array_slice(Product::searchKeywordIds($term), 0, 500);
+        $ids = Product::searchKeywordIds($term, 500);
 
         $products = $this->filtered(
             Product::query()->live()->whereIn('products.id', $ids ?: [0])->with(['variants', 'store', 'media', 'halalCertificate']),
