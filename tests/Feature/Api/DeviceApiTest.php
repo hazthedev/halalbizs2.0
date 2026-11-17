@@ -32,3 +32,21 @@ test('POST devices upserts the token and DELETE removes only the owner\'s', func
     $this->withToken($owner)->deleteJson('/api/v1/devices/fcm-abc')->assertOk();
     expect(DeviceToken::where('token', 'fcm-abc')->exists())->toBeFalse();
 });
+
+test('an account keeps at most ten push registrations, newest first', function () {
+    $user = User::factory()->create();
+    $http = test()->withToken($user->createToken('pest-phone')->plainTextToken);
+
+    // Unbounded junk tokens would turn every notification into a long serial
+    // FCM loop on the shared queue worker.
+    foreach (range(1, 12) as $i) {
+        $this->travel(1)->seconds();
+        $http->postJson('/api/v1/devices', ['token' => "fcm-$i", 'platform' => 'android'])->assertCreated();
+    }
+
+    expect($user->deviceTokens()->orderBy('token')->pluck('token')->sort()->values()->all())
+        ->toHaveCount(10)
+        ->not->toContain('fcm-1')
+        ->not->toContain('fcm-2')
+        ->toContain('fcm-12');
+});

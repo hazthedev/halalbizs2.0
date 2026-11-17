@@ -104,7 +104,7 @@ class CatalogApi {
   }
 
   /// Search is online-only (no snapshot): results change with every keystroke.
-  /// The API answers every hit at once today (no paging meta), so "more" never shows.
+  /// The API pages 24 at a time like `products` (paging meta drives "more").
   Future<ProductPage> search(String q, {String? category, ProductFilter filter = const ProductFilter(), int page = 1}) async {
     Map<String, dynamic>? meta;
     final data = await _api.get('search', query: {
@@ -205,8 +205,11 @@ final categoriesProvider =
 final productProvider = FutureProvider.family<CachedResult<Product>, String>(
     (ref, slug) => ref.watch(catalogApiProvider).product(slug));
 
-final storeProvider =
-    FutureProvider.family<CachedResult<Store>, String>((ref, slug) => ref.watch(catalogApiProvider).store(slug));
+/// Re-reads when the signed-in account changes (`is_following` is per viewer).
+final storeProvider = FutureProvider.family<CachedResult<Store>, String>((ref, slug) {
+  ref.watch(profileProvider.select((p) => p?.id));
+  return ref.watch(catalogApiProvider).store(slug);
+});
 
 final productReviewsProvider = FutureProvider.family<PageOf<Review>, String>(
     (ref, slug) => ref.watch(catalogApiProvider).reviews(slug));

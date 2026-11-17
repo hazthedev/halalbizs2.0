@@ -38,7 +38,7 @@ class ShipmentService
             // winner's tracking and then hit transition()'s same-state no-op
             // as if it had shipped. Under the lock the loser sees `shipped`
             // and is refused before writing anything.
-            $locked = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->firstOrFail();
+            $locked = SubOrder::lockForUpdateWithOrder($subOrder)->firstOrFail();
 
             if ($locked->status !== SubOrderStatus::Processing) {
                 throw new InvalidArgumentException(__('This order can no longer be shipped from its current status.'));

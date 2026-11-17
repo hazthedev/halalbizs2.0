@@ -2798,5 +2798,9 @@
     "Label (Vietnamese)": "Nhãn (tiếng Việt)",
     "Train staff": "Đào tạo nhân viên",
     "Book sertu": "Đặt dịch vụ sertu",
-    "Take this tile off": "Gỡ ô này"
+    "Take this tile off": "Gỡ ô này",
+    "Continue": "Tiếp tục",
+    "Continue as :name?": "Tiếp tục với tư cách :name?",
+    "This signs this browser in to HalalBizs as :email. If you did not open this from your own app, close this page.": "Thao tác này đăng nhập trình duyệt này vào HalalBizs bằng :email. Nếu bạn không mở trang này từ ứng dụng của mình, hãy đóng trang.",
+    "Only a shipped order can be marked delivered.": "Chỉ đơn đã gửi đi mới có thể đánh dấu là đã giao."
 }

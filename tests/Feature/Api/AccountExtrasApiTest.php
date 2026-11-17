@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ProductStatus;
+use App\Enums\StoreStatus;
 use App\Models\Conversation;
 use App\Models\Order;
 use App\Models\Product;
@@ -231,4 +232,38 @@ test('conversations open, send and read from both sides; strangers get a 404', f
 
     // The owner cannot open a thread with their own shop.
     apiExtrasAs($asSeller)->postJson('/api/v1/conversations', ['store_id' => $store->id])->assertStatus(422);
+});
+
+/** @return array{0: Conversation, 1: string, 2: string, 3: Store} buyer token, seller token */
+function apiExtrasThread(): array
+{
+    Notification::fake();
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $owner = User::factory()->create();
+    $owner->assignRole('seller');
+    $store = Store::factory()->approved()->create(['user_id' => $owner->id]);
+    $conversation = Conversation::create(['buyer_id' => $buyer->id, 'store_id' => $store->id]);
+    app('auth')->forgetGuards();
+
+    return [$conversation, apiExtrasToken($buyer), apiExtrasToken($owner), $store];
+}
+
+test('a message cannot carry a chip for a product that is not live', function () {
+    [$conversation, $asBuyer, , $store] = apiExtrasThread();
+    $draft = Product::factory()->create(['store_id' => $store->id, 'status' => ProductStatus::Draft]);
+
+    // Probing ids must not return a draft's name, slug and thumb.
+    apiExtrasAs($asBuyer)->postJson("/api/v1/conversations/{$conversation->id}/messages", ['body' => 'Hi', 'product_id' => $draft->id])
+        ->assertCreated()
+        ->assertJsonPath('data.product', null);
+});
+
+test('a suspended store loses its side of the chat, like the web seller area', function () {
+    [$conversation, , $asSeller, $store] = apiExtrasThread();
+    $store->forceFill(['status' => StoreStatus::Suspended])->save();
+
+    apiExtrasAs($asSeller)->getJson('/api/v1/conversations')->assertOk()->assertJsonPath('data', []);
+    apiExtrasAs($asSeller)->getJson("/api/v1/conversations/{$conversation->id}")->assertNotFound();
+    apiExtrasAs($asSeller)->postJson("/api/v1/conversations/{$conversation->id}/messages", ['body' => 'Still here'])->assertNotFound();
 });

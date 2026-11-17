@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -59,8 +58,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         children: [
           Text(context.l10n.storeAbout, style: SoukText.displayH3),
           const SizedBox(height: SoukSpace.s3),
-          // Seller rich text. Core package only: links render as text, never open.
-          HtmlWidget(s.description!, textStyle: SoukText.bodySoft),
+          // Plain text the seller typed, as the web shows it (escaped, line
+          // breaks kept): markup never renders and remote images never load.
+          Text(s.description!, style: SoukText.bodySoft),
         ],
       ),
     ),

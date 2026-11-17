@@ -176,6 +176,7 @@ test('confirm received completes a delivered sub-order and refuses a shipped one
 });
 
 test('a return request with photos goes through ReturnService', function () {
+    Storage::fake('local');
     [$user, $http] = apiOrdersUser();
     $delivered = apiOrdersSubOrder($user, SubOrderStatus::Delivered);
     apiOrdersItem($delivered);
@@ -201,6 +202,14 @@ test('a return request with photos goes through ReturnService', function () {
     expect($delivered->status)->toBe(SubOrderStatus::ReturnRequested)
         ->and($delivered->returnRequest->description)->toBe('Box was crushed')
         ->and($delivered->returnRequest->getMedia('photos'))->toHaveCount(2);
+
+    // Evidence photos sit on the private disk under a server-side name,
+    // never the buyer's own file name (served by ReturnPhotoController).
+    foreach ($delivered->returnRequest->getMedia('photos') as $media) {
+        expect($media->disk)->toBe('local')
+            ->and($media->file_name)->not->toContain('box')
+            ->and($media->file_name)->toMatch('/^return-[A-Za-z0-9]{40}\.jpg$/');
+    }
 
     $http->getJson("/api/v1/orders/{$delivered->id}")
         ->assertJsonPath('data.return_request.status', 'requested')
@@ -312,4 +321,16 @@ test('quick-status is the web dashboard shortcuts and never counts another buyer
 
     app('auth')->forgetGuards();
     $this->withHeader('Authorization', '')->getJson('/api/v1/orders/quick-status')->assertUnauthorized();
+});
+
+test('buyer cancel is Confirmed-only like the web: once the seller packs (processing) it is a 409', function () {
+    [$user, $http] = apiOrdersUser();
+    $processing = apiOrdersSubOrder($user, SubOrderStatus::Processing);
+    apiOrdersItem($processing);
+
+    $http->postJson("/api/v1/orders/{$processing->id}/cancel")
+        ->assertStatus(409)
+        ->assertJsonPath('error.code', 'invalid_transition');
+
+    expect($processing->fresh()->status)->toBe(SubOrderStatus::Processing);
 });

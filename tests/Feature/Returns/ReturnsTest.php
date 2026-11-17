@@ -149,6 +149,7 @@ test('return request is hidden and blocked server-side outside the return window
 test('buyer return request creates the row, transitions the sub-order and notifies the seller', function () {
     Notification::fake();
     Storage::fake('public');
+    Storage::fake('local'); // return photos live on the private disk
     $this->freezeTime();
 
     $subOrder = returnsSubOrder(SubOrderStatus::Delivered);

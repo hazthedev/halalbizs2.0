@@ -57,7 +57,7 @@ class SubOrderStatusService
             // AFTER the first has already committed, so it sees the sub-order
             // already at `$to` and no-ops instead of re-applying — it is not
             // "illegal" (which still throws below), it is "already done".
-            $locked = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->first();
+            $locked = SubOrder::lockForUpdateWithOrder($subOrder)->first();
 
             $from = $locked->status;
 

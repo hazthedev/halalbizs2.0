@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/json.dart';
+import '../../core/auth/session.dart';
 import '../../core/offline/offline.dart';
 import '../catalog/models.dart';
 
@@ -170,7 +171,11 @@ final ordersApiProvider = Provider<OrdersApi>((ref) => OrdersApi(ref.watch(apiCl
 
 final orderBucketsProvider = FutureProvider<List<OrderBucket>>((ref) => ref.watch(ordersApiProvider).buckets());
 
-final orderQuickStatusProvider = FutureProvider<List<OrderBucket>>((ref) => ref.watch(ordersApiProvider).quickStatus());
+/// Re-reads when the signed-in account changes (counts are the buyer's own).
+final orderQuickStatusProvider = FutureProvider<List<OrderBucket>>((ref) {
+  ref.watch(profileProvider.select((p) => p?.id));
+  return ref.watch(ordersApiProvider).quickStatus();
+});
 
 final orderDetailProvider =
     FutureProvider.family<CachedResult<SubOrder>, int>((ref, id) => ref.watch(ordersApiProvider).detail(id));

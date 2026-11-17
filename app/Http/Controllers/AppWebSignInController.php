@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 /**
  * One-time web sign-in for the app (Haze 2026-11-10): the app's "Become a
  * seller" opens the web seller sign-up already signed in. The API issues a
- * 5-minute signed URL for the bearer-token user; this route consumes its
- * nonce once, logs that user into a web session and redirects.
+ * 5-minute signed URL for the bearer-token user; opening it shows
+ * "Continue as <name>", and the confirm POST consumes its nonce once, logs
+ * that user into a web session and redirects.
  */
 class AppWebSignInController extends Controller
 {
@@ -59,12 +61,35 @@ class AppWebSignInController extends Controller
         ];
     }
 
-    public function __invoke(Request $request): RedirectResponse
+    /**
+     * GET: show "Continue as <name>" only. Opening a link signs nobody in, so
+     * a link someone forwards (login CSRF) or a chat preview fetch does
+     * nothing until a person sees whose account it is and confirms.
+     */
+    public function show(Request $request): View
     {
-        $to = self::DESTINATIONS[(string) $request->query('to')] ?? null;
+        [$user] = $this->resolve($request, Cache::get(self::key((string) $request->query('nonce'))));
+
+        return view('app-sign-in', ['user' => $user]);
+    }
+
+    /** POST (CSRF + same signed URL): consume the nonce once and sign in. */
+    public function confirm(Request $request): RedirectResponse
+    {
         // ponytail: pull() is get+forget, not atomic; two requests in the same
         // millisecond could both pass. Use Cache::lock if that ever matters.
-        $userId = Cache::pull(self::key((string) $request->query('nonce')));
+        [$user, $to, $id] = $this->resolve($request, Cache::pull(self::key((string) $request->query('nonce'))));
+
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route($to, $id === null ? [] : [$id]);
+    }
+
+    /** @return array{0: User, 1: string, 2: ?int} */
+    private function resolve(Request $request, mixed $userId): array
+    {
+        $to = self::DESTINATIONS[(string) $request->query('to')] ?? null;
 
         abort_if($to === null || $userId === null || (int) $userId !== (int) $request->query('user'), 403);
 
@@ -74,10 +99,7 @@ class AppWebSignInController extends Controller
         $id = in_array($request->query('to'), self::SUB_ORDER_DESTINATIONS, true) ? (int) $request->query('id') : null;
         abort_if($id !== null && ! self::ownsSubOrder($user, $id), 403);
 
-        Auth::guard('web')->login($user);
-        $request->session()->regenerate();
-
-        return redirect()->route($to, $id === null ? [] : [$id]);
+        return [$user, $to, $id];
     }
 
     private static function key(string $nonce): string

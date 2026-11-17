@@ -6,6 +6,7 @@ use App\Http\Api\ApiResponse;
 use App\Http\Resources\StoreResource;
 use App\Support\MalaysianBanks;
 use App\Support\MalaysianStates;
+use App\Support\UploadName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -82,7 +83,7 @@ class StoreController extends SellerController
         $file = $request->file($collection);
 
         $store->addMedia($file->getRealPath())
-            ->usingFileName($collection.'-'.$file->getClientOriginalName())
+            ->usingFileName(UploadName::safe($file, $collection.'-'))
             ->toMediaCollection($collection);
 
         return ApiResponse::ok(new StoreResource($store->fresh()));

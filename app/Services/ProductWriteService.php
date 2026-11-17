@@ -12,6 +12,7 @@ use App\Models\Store;
 use App\Settings\ModerationSettings;
 use App\Support\ContentLocales;
 use App\Support\HtmlSanitizer;
+use App\Support\UploadName;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -237,7 +238,7 @@ class ProductWriteService
 
             foreach ($files as $file) {
                 $locked->addMedia($file->getRealPath())
-                    ->usingFileName($file->getClientOriginalName())
+                    ->usingFileName(UploadName::safe($file))
                     ->toMediaCollection('images');
             }
         });

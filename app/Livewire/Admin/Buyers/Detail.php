@@ -40,7 +40,7 @@ class Detail extends Component
 
         // Mobile sessions end with the account: the API also refuses a
         // suspended user per request, but a dead token cannot be replayed at all.
-        $this->user->tokens()->delete();
+        $this->user->revokeAppAccess();
 
         activity()
             ->causedBy(auth()->user())

@@ -95,3 +95,19 @@ test('POST seller/store/logo and /banner replace the single-file collections', f
         ->assertJsonPath('data.logo', fn ($url) => is_string($url))
         ->assertJsonPath('data.banner', fn ($url) => is_string($url));
 });
+
+test('a seller upload is stored under the detected image extension, never the client one', function () {
+    Storage::fake('public');
+    $png = UploadedFile::fake()->image('p.png', 200, 200);
+    // A real upload (fakes take the MIME from the name): PNG bytes named x.html.
+    $tmp = tempnam(sys_get_temp_dir(), 'polyglot');
+    copy($png->getRealPath(), $tmp);
+    $polyglot = new UploadedFile($tmp, 'x.html', null, null, true);
+    $seller = sellerApiUser();
+
+    // An image-content polyglot named .html would be served back as text/html
+    // from our own origin by the public disk (UploadName, AL-M2).
+    sellerApiAs($seller)->postJson('/api/v1/seller/store/logo', ['logo' => $polyglot])->assertOk();
+
+    expect($seller->store->fresh()->getFirstMedia('logo')->file_name)->toBe('logo-x.png');
+});

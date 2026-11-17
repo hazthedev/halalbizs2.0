@@ -79,7 +79,7 @@ class ResetPassword extends Component
                 }
 
                 app(DeviceTrust::class)->forgetAll($user);
-                $user->tokens()->delete();
+                $user->revokeAppAccess();
 
                 event(new PasswordReset($user));
             }

@@ -125,7 +125,7 @@ class Profile extends Component
         auth()->user()->update(['password' => $this->password]);
 
         // A new password ends every mobile session; the phone logs in again.
-        auth()->user()->tokens()->delete();
+        auth()->user()->revokeAppAccess();
 
         $this->reset('current_password', 'password', 'password_confirmation');
 

@@ -2827,5 +2827,9 @@
     "Label (Vietnamese)": "Label (Vietnam)",
     "Train staff": "Latih kakitangan",
     "Book sertu": "Tempah sertu",
-    "Take this tile off": "Keluarkan jubin ini"
+    "Take this tile off": "Keluarkan jubin ini",
+    "Continue": "Teruskan",
+    "Continue as :name?": "Teruskan sebagai :name?",
+    "This signs this browser in to HalalBizs as :email. If you did not open this from your own app, close this page.": "Ini akan log masuk pelayar ini ke HalalBizs sebagai :email. Jika anda tidak membukanya dari aplikasi anda sendiri, tutup halaman ini.",
+    "Only a shipped order can be marked delivered.": "Hanya pesanan yang telah dihantar boleh ditanda sebagai diterima."
 }

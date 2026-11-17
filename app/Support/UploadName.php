@@ -21,4 +21,14 @@ final class UploadName
 
         return $prefix.($base !== '' ? $base : 'photo').'.'.$extension;
     }
+
+    /**
+     * Random 40-char name for private evidence (return photos) that is still
+     * served by direct URL from the public disk: the URL is unguessable
+     * instead of {media id}/{client file name}.
+     */
+    public static function unguessable(UploadedFile $file, string $prefix = ''): string
+    {
+        return $prefix.Str::random(40).'.'.($file->guessExtension() ?: 'bin');
+    }
 }

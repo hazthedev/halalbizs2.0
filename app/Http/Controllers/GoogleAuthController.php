@@ -6,9 +6,11 @@ use App\Enums\TwoFactorMethod;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\DeviceGuard;
+use App\Services\DeviceTrust;
 use App\Services\OtpService;
 use App\Settings\SecuritySettings;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -74,6 +76,26 @@ class GoogleAuthController extends Controller
             if ($user->isSuspended()) {
                 return redirect()->route('login')
                     ->with('status', __('Your account has been suspended.'));
+            }
+
+            // Never-verified account: whoever registered it may not own the
+            // email (API register hands out a token first). Google just proved
+            // the owner, so drop every credential the earlier registrant holds.
+            if ($user->email_verified_at === null) {
+                $user->forceFill([
+                    'password' => Str::password(40),
+                    'two_factor_method' => null,
+                    'two_factor_secret' => null,
+                    'two_factor_recovery_codes' => null,
+                ]);
+                $user->revokeAppAccess();
+                app(DeviceTrust::class)->forgetAll($user);
+
+                if (config('session.driver') === 'database') {
+                    DB::connection(config('session.connection'))
+                        ->table(config('session.table', 'sessions'))
+                        ->where('user_id', $user->id)->delete();
+                }
             }
 
             $user->forceFill([

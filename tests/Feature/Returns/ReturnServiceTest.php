@@ -17,7 +17,10 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
-beforeEach(fn () => $this->seed(RoleSeeder::class));
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+    Storage::fake('local'); // return photos live on the private disk
+});
 
 function returnServiceReason(): ReturnReason
 {
@@ -56,7 +59,7 @@ test('request() creates the row, attaches the photos and transitions the sub-ord
         ->and($request->description)->toBe('Handle snapped on first use.')
         ->and($request->respond_by->timestamp)->toBe(now()->addHours(48)->timestamp)
         ->and($request->getMedia('photos'))->toHaveCount(2)
-        ->and($request->getMedia('photos')->first()->file_name)->toBe('return-crack.jpg')
+        ->and($request->getMedia('photos')->first()->file_name)->toMatch('/^return-[A-Za-z0-9]{40}\.jpg$/')
         ->and($subOrder->refresh()->status)->toBe(SubOrderStatus::ReturnRequested);
 
     $history = $subOrder->statusHistories()->get()->last();

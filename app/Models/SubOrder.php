@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CommissionBasis;
 use App\Enums\ShipmentTrackingStatus;
 use App\Enums\SubOrderStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,23 @@ use Spatie\Activitylog\Support\LogOptions;
  */
 class SubOrder extends Model
 {
+    /**
+     * Gate R3 (#225): one lock order everywhere: the parent order row, then
+     * the sub-order, then variants. Locking a sub-order first deadlocked
+     * (InnoDB 1213) against a cancel holding its parent. Returns the locking
+     * query so callers keep first() / firstOrFail().
+     *
+     * @return Builder<self>
+     */
+    public static function lockForUpdateWithOrder(self $subOrder): Builder
+    {
+        // order_id never changes. Reading it again before the parent lock
+        // opens a stale snapshot if another cancellation wins that lock.
+        Order::whereKey($subOrder->order_id)->lockForUpdate()->first();
+
+        return static::whereKey($subOrder->getKey())->lockForUpdate();
+    }
+
     use HasFactory, LogsActivity;
 
     protected $fillable = [

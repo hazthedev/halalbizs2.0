@@ -83,7 +83,7 @@ class SellerReturnService
     /** Both rows locked and re-read; the caller's in-memory copies are never trusted. */
     private function openRequest(SubOrder $subOrder, ReturnStatus $expected): ReturnRequest
     {
-        $locked = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->first();
+        $locked = SubOrder::lockForUpdateWithOrder($subOrder)->first();
         $request = $locked?->returnRequest()->lockForUpdate()->first();
 
         if ($locked?->status !== SubOrderStatus::ReturnRequested || $request?->status !== $expected) {

@@ -317,3 +317,18 @@ test('PATCH moving a live product into a gated category is a 409 halal_blocked a
         ->assertOk()
         ->assertJsonPath('data.name', 'Renamed only');
 });
+
+test('product images are stored under the detected image extension, never the client one', function () {
+    Storage::fake('public');
+    $png = UploadedFile::fake()->image('p.png', 200, 200);
+    // A real upload (fakes take the MIME from the name): PNG bytes named x.html.
+    $tmp = tempnam(sys_get_temp_dir(), 'polyglot');
+    copy($png->getRealPath(), $tmp);
+    $polyglot = new UploadedFile($tmp, 'x.html', null, null, true);
+    $seller = sellerApiUser();
+    $product = Product::factory()->create(['store_id' => $seller->store->id, 'status' => ProductStatus::Draft]);
+
+    sellerApiAs($seller)->postJson("/api/v1/seller/products/{$product->id}/images", ['images' => [$polyglot]])->assertOk();
+
+    expect($product->fresh()->getFirstMedia('images')->file_name)->toBe('x.png');
+});

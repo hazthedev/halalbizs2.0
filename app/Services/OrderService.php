@@ -4,14 +4,19 @@ namespace App\Services;
 
 use App\Enums\ActorType;
 use App\Enums\GatewayPaymentStatus;
+use App\Enums\GroupBuyMemberStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\StockMovementType;
 use App\Enums\SubOrderStatus;
 use App\Events\OrderPaid;
+use App\Models\GroupBuyMember;
 use App\Models\Order;
 use App\Models\SubOrder;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * Fulfilment-side transitions that carry side effects beyond the status
@@ -31,6 +36,12 @@ class OrderService
     public function cancel(SubOrder $subOrder, ActorType $actor, ?int $actorId = null, ?string $reason = null): SubOrder
     {
         return DB::transaction(function () use ($subOrder, $actor, $actorId, $reason) {
+            // Gate R2 (#225): lock the parent order first (payment confirm and
+            // expiry use the same order-before-sub-order order), so sibling
+            // cancels serialise and the last one sees every other sibling's
+            // committed status.
+            Order::whereKey($subOrder->order_id)->lockForUpdate()->first();
+
             return $this->statusService->transition(
                 $subOrder,
                 SubOrderStatus::Cancelled,
@@ -43,6 +54,7 @@ class OrderService
                     }
 
                     $this->restock($cancelled);
+                    $this->releaseEntitlementsIfUnpaid($cancelled);
                     $this->refundCoinsIfFullyCancelled($cancelled);
                     $this->refundIfAlreadyPaid($cancelled, $actor, $actorId, $reason);
                 },
@@ -59,6 +71,7 @@ class OrderService
     public function cancelUnpaid(Order $order, ActorType $actor, ?int $actorId = null, ?string $reason = null): void
     {
         DB::transaction(function () use ($order, $actor, $actorId, $reason) {
+            Order::whereKey($order->id)->lockForUpdate()->first();
             $pending = $order->subOrders()->where('status', SubOrderStatus::PendingPayment)->lockForUpdate()->get();
 
             foreach ($pending as $subOrder) {
@@ -105,6 +118,47 @@ class OrderService
     }
 
     /**
+     * HB-VOUCHER-D1 (Haze 2026-11-17 12:15): an order cancelled or expired
+     * before payment gives back what checkout consumed: the group-buy seat and
+     * the shop voucher of this sub-order, and the platform and shipping
+     * vouchers (order-level rows) once the whole order is cancelled. Same lock
+     * order as checkout (variants, seats, vouchers, then wallet). Each deleted
+     * usage row gives back exactly one use, so a replay gives back nothing.
+     */
+    private function releaseEntitlementsIfUnpaid(SubOrder $subOrder): void
+    {
+        $order = $subOrder->order->fresh();
+
+        if ($order === null || ! in_array($order->payment_status, [PaymentStatus::Pending, PaymentStatus::Failed, PaymentStatus::Expired], true)) {
+            return;
+        }
+
+        GroupBuyMember::where('sub_order_id', $subOrder->id)
+            ->where('status', GroupBuyMemberStatus::Purchased)
+            ->lockForUpdate()
+            ->get()
+            ->each(fn (GroupBuyMember $member) => $member->forceFill(['status' => GroupBuyMemberStatus::Joined, 'sub_order_id' => null])->save());
+
+        $fullyCancelled = ! $order->subOrders()->where('status', '!=', SubOrderStatus::Cancelled)->lockForUpdate()->exists();
+
+        $usages = VoucherUsage::where('order_id', $order->id)
+            ->where(fn ($q) => $q->where('sub_order_id', $subOrder->id)->when($fullyCancelled, fn ($q) => $q->orWhereNull('sub_order_id')))
+            ->get();
+
+        if ($usages->isEmpty()) {
+            return;
+        }
+
+        Voucher::whereIn('id', $usages->pluck('voucher_id')->unique())->orderBy('id')->lockForUpdate()->get();
+
+        foreach ($usages as $usage) {
+            if (VoucherUsage::whereKey($usage->id)->delete() === 1) {
+                Voucher::whereKey($usage->voucher_id)->where('used_count', '>', 0)->decrement('used_count');
+            }
+        }
+    }
+
+    /**
      * When the LAST active sub-order of an unpaid order is cancelled, return any
      * coins the buyer redeemed at checkout (idempotent). Paid orders keep their
      * redemption — coin handling on post-payment refunds is out of M2.1 scope.
@@ -124,6 +178,7 @@ class OrderService
 
         $stillActive = $order->subOrders()
             ->where('status', '!=', SubOrderStatus::Cancelled)
+            ->lockForUpdate() // current read, not the transaction's snapshot (gate R2)
             ->exists();
 
         if (! $stillActive) {
@@ -139,6 +194,13 @@ class OrderService
         $becamePaid = false;
 
         $subOrder = DB::transaction(function () use ($subOrder, $actor, $actorId, &$becamePaid) {
+            // Only shipped → delivered. The FSM also allows return_requested →
+            // delivered, but that edge is the admin side-with-seller path;
+            // taking it here would strand the buyer's open return.
+            if (SubOrder::lockForUpdateWithOrder($subOrder)->first()->status !== SubOrderStatus::Shipped) {
+                throw new InvalidArgumentException(__('Only a shipped order can be marked delivered.'));
+            }
+
             return $this->statusService->transition(
                 $subOrder,
                 SubOrderStatus::Delivered,

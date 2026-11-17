@@ -322,9 +322,11 @@ class Product extends Model implements HasMedia
      * when configured, else the real-column SQL search above (the only path that
      * works on a host without Meilisearch). Empty term → no results.
      *
+     * Pass a limit to bound candidate IDs at the search backend.
+     *
      * @return array<int>
      */
-    public static function searchKeywordIds(?string $term): array
+    public static function searchKeywordIds(?string $term, ?int $limit = null): array
     {
         $term = trim((string) $term);
 
@@ -333,7 +335,7 @@ class Product extends Model implements HasMedia
         }
 
         if (config('scout.driver') === 'meilisearch') {
-            return static::search($term)->keys()->all();
+            return static::search($term)->take($limit)->keys()->all();
         }
 
         // "Relevance" has to mean relevance. This ordered by `sold_count` alone,
@@ -354,6 +356,7 @@ class Product extends Model implements HasMedia
             ->orderByRaw("CASE WHEN LOWER(name) LIKE ? ESCAPE '!' THEN 0 ELSE 1 END", [$like])
             ->orderByDesc('sold_count')
             ->orderByDesc('id')
+            ->when($limit !== null, fn (Builder $query) => $query->limit($limit))
             ->pluck('id')
             ->all();
     }

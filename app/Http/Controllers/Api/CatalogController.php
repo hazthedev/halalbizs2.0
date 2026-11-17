@@ -195,8 +195,10 @@ class CatalogController extends Controller
     public function search(Request $request)
     {
         $filters = $this->filters($request, ['relevance', 'latest', 'top', 'price_asc', 'price_desc']);
-        $term = trim((string) $request->query('q', ''));
-        $ids = Product::searchKeywordIds($term);
+        $term = trim((string) ($request->validate(['q' => ['nullable', 'string', 'max:100']])['q'] ?? ''));
+        // ponytail: relevance order beyond the first 500 hits is noise; cap the
+        // id list so the CASE sort and whereIn stay bounded on a big catalogue.
+        $ids = Product::searchKeywordIds($term, 500);
 
         $products = $this->filtered(
             Product::query()->live()->whereIn('products.id', $ids ?: [0])->with(['variants', 'store', 'media', 'halalCertificate']),
@@ -204,6 +206,6 @@ class CatalogController extends Controller
         );
         $this->sort($products, $filters['sort'] ?? 'relevance', $ids);
 
-        return ProductResource::collection($products->get());
+        return ProductResource::collection($products->paginate(24));
     }
 }
