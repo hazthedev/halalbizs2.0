@@ -210,8 +210,11 @@ final categoriesProvider =
 final productProvider = FutureProvider.family<CachedResult<Product>, String>(
     (ref, slug) => ref.watch(catalogApiProvider).product(slug));
 
-final storeProvider =
-    FutureProvider.family<CachedResult<Store>, String>((ref, slug) => ref.watch(catalogApiProvider).store(slug));
+/// Re-reads when the signed-in account changes (`is_following` is per viewer).
+final storeProvider = FutureProvider.family<CachedResult<Store>, String>((ref, slug) {
+  ref.watch(profileProvider.select((p) => p?.id));
+  return ref.watch(catalogApiProvider).store(slug);
+});
 
 final productReviewsProvider = FutureProvider.family<PageOf<Review>, String>(
     (ref, slug) => ref.watch(catalogApiProvider).reviews(slug));
