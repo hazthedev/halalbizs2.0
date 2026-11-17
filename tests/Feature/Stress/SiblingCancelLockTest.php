@@ -7,9 +7,11 @@ use App\Enums\VoucherType;
 use App\Models\Order;
 use App\Models\Store;
 use App\Models\SubOrder;
+use App\Models\User;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use App\Services\OrderService;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
 
 /*
@@ -22,6 +24,11 @@ use Illuminate\Support\Facades\DB;
  *
  * MySQL only, like LockDisciplineTest: SQLite compiles lockForUpdate() to
  * nothing. A real two-connection run of the interleave is recorded in PR #225.
+ *
+ * Gate R3: the API buyer cancel locked the sub-order and then entered cancel(),
+ * which locks the parent: InnoDB 1213 against a service cancel holding the
+ * parent. One lock order everywhere: parent order, then sub-orders, then
+ * variants (SubOrder::lockForUpdateWithOrder).
  */
 beforeEach(function () {
     expect(DB::connection()->getDriverName())->toBe('mysql');
@@ -59,4 +66,27 @@ test('cancel locks the parent order first and re-reads siblings under a lock', f
     app(OrderService::class)->cancel($b, ActorType::Admin);
     expect($voucher->fresh()->used_count)->toBe(0)
         ->and(VoucherUsage::where('order_id', $order->id)->count())->toBe(0);
+});
+
+test('API buyer cancel takes the parent order lock before the sub-order lock', function () {
+    $this->seed(RoleSeeder::class);
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $order = Order::factory()->create(['user_id' => $buyer->id]);
+    $subOrder = SubOrder::factory()->status(SubOrderStatus::Confirmed)->create(['order_id' => $order->id]);
+
+    $sql = [];
+    DB::listen(function ($query) use (&$sql) {
+        $sql[] = strtolower($query->sql);
+    });
+
+    $this->withToken($buyer->createToken('pest')->plainTextToken)
+        ->postJson("/api/v1/orders/{$subOrder->id}/cancel")
+        ->assertOk();
+
+    $orderLock = collect($sql)->search(fn ($q) => preg_match('/from `orders` .*for update/', $q));
+    $subOrderLock = collect($sql)->search(fn ($q) => preg_match('/from `sub_orders` .*for update/', $q));
+
+    expect($orderLock)->not->toBeFalse()
+        ->and($orderLock)->toBeLessThan($subOrderLock, 'sub-order locked before its parent order: deadlocks against cancel()');
 });

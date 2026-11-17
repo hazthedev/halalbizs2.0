@@ -51,7 +51,7 @@ class RefundService
             // refund/increment — the previous code read the cap before the
             // transaction even opened, so neither refund ever saw the other's
             // write. Every subsequent read below uses this locked instance.
-            $subOrder = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->first();
+            $subOrder = SubOrder::lockForUpdateWithOrder($subOrder->getKey())->first();
 
             $total = (int) $subOrder->total_sen;
 

@@ -197,7 +197,7 @@ class OrderService
             // Only shipped → delivered. The FSM also allows return_requested →
             // delivered, but that edge is the admin side-with-seller path;
             // taking it here would strand the buyer's open return.
-            if (SubOrder::whereKey($subOrder->id)->lockForUpdate()->first()->status !== SubOrderStatus::Shipped) {
+            if (SubOrder::lockForUpdateWithOrder($subOrder->id)->first()->status !== SubOrderStatus::Shipped) {
                 throw new InvalidArgumentException(__('Only a shipped order can be marked delivered.'));
             }
 

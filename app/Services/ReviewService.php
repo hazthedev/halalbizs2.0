@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Exceptions\BuyerActionException;
 use App\Enums\SubOrderStatus;
+use App\Exceptions\BuyerActionException;
 use App\Models\OrderItem;
 use App\Models\Review;
 use App\Models\SubOrder;
@@ -91,7 +91,7 @@ class ReviewService
         DB::transaction(function () use ($subOrder, $buyer, $items, $sellerRating, $sellerComment) {
             // Serialise concurrent submits for the same sub-order; the guards
             // below re-run against what the lock lets us see.
-            $locked = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->firstOrFail();
+            $locked = SubOrder::lockForUpdateWithOrder($subOrder->getKey())->firstOrFail();
 
             if ($this->sellerRated($locked)) {
                 $sellerRating = null;

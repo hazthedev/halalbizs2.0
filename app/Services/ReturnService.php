@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Exceptions\BuyerActionException;
 use App\Enums\ActorType;
 use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
+use App\Exceptions\BuyerActionException;
 use App\Models\ReturnReason;
 use App\Models\ReturnRequest;
 use App\Models\SubOrder;
@@ -68,7 +68,7 @@ class ReturnService
         $note = trim((string) $note);
 
         return DB::transaction(function () use ($subOrder, $buyer, $reason, $note, $photos) {
-            $locked = SubOrder::whereKey($subOrder->getKey())->lockForUpdate()->firstOrFail();
+            $locked = SubOrder::lockForUpdateWithOrder($subOrder->getKey())->firstOrFail();
 
             if (! $this->canRequest($locked)) {
                 throw new BuyerActionException(__('This order is no longer eligible for a return.'));
