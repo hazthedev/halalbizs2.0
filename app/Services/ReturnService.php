@@ -88,7 +88,7 @@ class ReturnService
 
             foreach ($photos as $photo) {
                 $request->addMedia($photo->getRealPath())
-                    ->usingFileName(UploadName::safe($photo, 'return-'))
+                    ->usingFileName(UploadName::unguessable($photo, 'return-'))
                     ->toMediaCollection('photos');
             }
 

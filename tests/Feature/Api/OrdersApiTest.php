@@ -202,6 +202,13 @@ test('a return request with photos goes through ReturnService', function () {
         ->and($delivered->returnRequest->description)->toBe('Box was crushed')
         ->and($delivered->returnRequest->getMedia('photos'))->toHaveCount(2);
 
+    // Evidence photos are served by direct URL: the file name must be
+    // unguessable, never the buyer's own file name.
+    foreach ($delivered->returnRequest->getMedia('photos') as $media) {
+        expect($media->file_name)->not->toContain('box')
+            ->and($media->file_name)->toMatch('/^return-[A-Za-z0-9]{40}\.jpg$/');
+    }
+
     $http->getJson("/api/v1/orders/{$delivered->id}")
         ->assertJsonPath('data.return_request.status', 'requested')
         ->assertJsonPath('data.can.return', false);
