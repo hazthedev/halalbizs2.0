@@ -181,3 +181,19 @@ test('product detail exposes option groups, values and each variant option_value
         ->and($variant['price_sen'])->toBe(7000)
         ->and($variant['regular_price_sen'])->toBe(7740);
 });
+
+test('search pages 24 at a time like products and bounds the term', function () {
+    Product::factory()->count(26)->create(['name' => ['en' => 'Kurma box']]);
+
+    // An unauthenticated search must not load and serialise every match at once.
+    $this->getJson('/api/v1/search?q=kurma')->assertOk()
+        ->assertJsonCount(24, 'data')
+        ->assertJsonPath('meta.total', 26);
+    $this->getJson('/api/v1/search?q=kurma&page=2')->assertJsonCount(2, 'data');
+
+    $this->getJson('/api/v1/search?q='.str_repeat('a', 101))->assertUnprocessable();
+});
+
+test('search with no term answers an empty page', function () {
+    $this->getJson('/api/v1/search')->assertOk()->assertJsonCount(0, 'data');
+});

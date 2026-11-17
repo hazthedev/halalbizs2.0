@@ -104,7 +104,7 @@ class CatalogApi {
   }
 
   /// Search is online-only (no snapshot): results change with every keystroke.
-  /// The API answers every hit at once today (no paging meta), so "more" never shows.
+  /// The API pages 24 at a time like `products` (paging meta drives "more").
   Future<ProductPage> search(String q, {String? category, ProductFilter filter = const ProductFilter(), int page = 1}) async {
     Map<String, dynamic>? meta;
     final data = await _api.get('search', query: {
