@@ -60,9 +60,9 @@
                 <ul class="flex flex-wrap gap-2">
                     @foreach ($resolving->getMedia('photos') as $photo)
                         <li wire:key="resolve-photo-{{ $photo->id }}">
-                            <a href="{{ $photo->getUrl() }}" target="_blank" rel="noopener"
+                            <a href="{{ route('returns.photo', [$resolving, $photo]) }}" target="_blank" rel="noopener"
                                class="block size-16 overflow-hidden rounded-[var(--radius-control)] border border-line bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
-                                <img src="{{ $photo->getUrl() }}" alt="{{ __('Return photo :n', ['n' => $loop->iteration]) }}" class="size-full object-cover" loading="lazy">
+                                <img src="{{ route('returns.photo', [$resolving, $photo]) }}" alt="{{ __('Return photo :n', ['n' => $loop->iteration]) }}" class="size-full object-cover" loading="lazy">
                             </a>
                         </li>
                     @endforeach

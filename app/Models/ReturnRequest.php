@@ -38,7 +38,9 @@ class ReturnRequest extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('photos');
+        // Evidence is private: served only by ReturnPhotoController (buyer,
+        // seller of the sub-order, admin), never by a /storage URL.
+        $this->addMediaCollection('photos')->useDisk('local');
     }
 
     public function subOrder(): BelongsTo

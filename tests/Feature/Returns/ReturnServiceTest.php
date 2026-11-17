@@ -17,7 +17,10 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
-beforeEach(fn () => $this->seed(RoleSeeder::class));
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+    Storage::fake('local'); // return photos live on the private disk
+});
 
 function returnServiceReason(): ReturnReason
 {

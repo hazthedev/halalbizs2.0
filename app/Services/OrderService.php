@@ -4,13 +4,17 @@ namespace App\Services;
 
 use App\Enums\ActorType;
 use App\Enums\GatewayPaymentStatus;
+use App\Enums\GroupBuyMemberStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\StockMovementType;
 use App\Enums\SubOrderStatus;
 use App\Events\OrderPaid;
+use App\Models\GroupBuyMember;
 use App\Models\Order;
 use App\Models\SubOrder;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -44,6 +48,7 @@ class OrderService
                     }
 
                     $this->restock($cancelled);
+                    $this->releaseEntitlementsIfUnpaid($cancelled);
                     $this->refundCoinsIfFullyCancelled($cancelled);
                     $this->refundIfAlreadyPaid($cancelled, $actor, $actorId, $reason);
                 },
@@ -103,6 +108,47 @@ class OrderService
             $reason !== null ? __('Cancelled after payment — :reason', ['reason' => $reason]) : __('Cancelled after payment'),
             markRefunded: false,
         );
+    }
+
+    /**
+     * HB-VOUCHER-D1 (Haze 2026-11-17 12:15): an order cancelled or expired
+     * before payment gives back what checkout consumed: the group-buy seat and
+     * the shop voucher of this sub-order, and the platform and shipping
+     * vouchers (order-level rows) once the whole order is cancelled. Same lock
+     * order as checkout (variants, seats, vouchers, then wallet). Each deleted
+     * usage row gives back exactly one use, so a replay gives back nothing.
+     */
+    private function releaseEntitlementsIfUnpaid(SubOrder $subOrder): void
+    {
+        $order = $subOrder->order->fresh();
+
+        if ($order === null || ! in_array($order->payment_status, [PaymentStatus::Pending, PaymentStatus::Failed, PaymentStatus::Expired], true)) {
+            return;
+        }
+
+        GroupBuyMember::where('sub_order_id', $subOrder->id)
+            ->where('status', GroupBuyMemberStatus::Purchased)
+            ->lockForUpdate()
+            ->get()
+            ->each(fn (GroupBuyMember $member) => $member->forceFill(['status' => GroupBuyMemberStatus::Joined, 'sub_order_id' => null])->save());
+
+        $fullyCancelled = ! $order->subOrders()->where('status', '!=', SubOrderStatus::Cancelled)->exists();
+
+        $usages = VoucherUsage::where('order_id', $order->id)
+            ->where(fn ($q) => $q->where('sub_order_id', $subOrder->id)->when($fullyCancelled, fn ($q) => $q->orWhereNull('sub_order_id')))
+            ->get();
+
+        if ($usages->isEmpty()) {
+            return;
+        }
+
+        Voucher::whereIn('id', $usages->pluck('voucher_id')->unique())->orderBy('id')->lockForUpdate()->get();
+
+        foreach ($usages as $usage) {
+            if (VoucherUsage::whereKey($usage->id)->delete() === 1) {
+                Voucher::whereKey($usage->voucher_id)->where('used_count', '>', 0)->decrement('used_count');
+            }
+        }
     }
 
     /**

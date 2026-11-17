@@ -176,6 +176,7 @@ test('confirm received completes a delivered sub-order and refuses a shipped one
 });
 
 test('a return request with photos goes through ReturnService', function () {
+    Storage::fake('local');
     [$user, $http] = apiOrdersUser();
     $delivered = apiOrdersSubOrder($user, SubOrderStatus::Delivered);
     apiOrdersItem($delivered);
@@ -202,10 +203,11 @@ test('a return request with photos goes through ReturnService', function () {
         ->and($delivered->returnRequest->description)->toBe('Box was crushed')
         ->and($delivered->returnRequest->getMedia('photos'))->toHaveCount(2);
 
-    // Evidence photos are served by direct URL: the file name must be
-    // unguessable, never the buyer's own file name.
+    // Evidence photos sit on the private disk under a server-side name,
+    // never the buyer's own file name (served by ReturnPhotoController).
     foreach ($delivered->returnRequest->getMedia('photos') as $media) {
-        expect($media->file_name)->not->toContain('box')
+        expect($media->disk)->toBe('local')
+            ->and($media->file_name)->not->toContain('box')
             ->and($media->file_name)->toMatch('/^return-[A-Za-z0-9]{40}\.jpg$/');
     }
 

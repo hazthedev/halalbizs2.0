@@ -10,6 +10,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Ipay88Controller;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PreferenceController;
+use App\Http\Controllers\ReturnPhotoController;
 use App\Livewire\Seller\ApplicationStatus;
 use App\Livewire\Seller\Apply;
 use App\Livewire\Storefront;
@@ -143,6 +144,7 @@ Route::get('/r/{code}', [AffiliateReferralController::class, 'refer'])->middlewa
 Route::get('/help', Storefront\Help\Index::class)->name('help.index');
 Route::get('/help/article/{article}', Storefront\Help\Article::class)->name('help.article');
 Route::get('/support', Storefront\Help\Tickets::class)->middleware('auth')->name('help.tickets');
+Route::get('/returns/{returnRequest}/photos/{media}', ReturnPhotoController::class)->middleware('auth')->name('returns.photo');
 
 // ===== Two-factor + social auth (M-FE wave 1) =====
 Route::get('/two-factor-challenge', Storefront\Auth\TwoFactorChallenge::class)->name('two-factor.challenge');
