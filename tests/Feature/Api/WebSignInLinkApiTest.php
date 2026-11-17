@@ -40,7 +40,7 @@ test('the link signs the token user into the web once and lands on seller sign-u
 
     expect($url)->toStartWith(url('/app/sign-in'))->toContain('signature=');
 
-    $this->get($url)->assertRedirect(route('seller.apply'));
+    $this->post($url)->assertRedirect(route('seller.apply'));
     $this->assertAuthenticatedAs($user, 'web');
 
     auth('web')->logout();
@@ -115,7 +115,7 @@ test('every allowlisted destination is a real named route and nothing else is ac
         $url = $this->withToken($token)->postJson('/api/v1/me/web-sign-in-link', ['to' => $to])->assertOk()->json('data.url');
         app('auth')->forgetGuards();
         $this->withoutToken();
-        $this->get($url)->assertRedirect(route($route));
+        $this->post($url)->assertRedirect(route($route));
         auth('web')->logout();
         $this->withToken($token);
     }
@@ -136,7 +136,7 @@ test('an invoice link opens the buyer\'s own sub-order invoice once, and never a
     app('auth')->forgetGuards();
     $this->withoutToken();
 
-    $this->get($url)->assertRedirect(route('account.orders.invoice', $mine));
+    $this->post($url)->assertRedirect(route('account.orders.invoice', $mine));
     $this->assertAuthenticatedAs($owner, 'web');
 
     // Single use.
@@ -150,4 +150,17 @@ test('an invoice link opens the buyer\'s own sub-order invoice once, and never a
     $forged = URL::temporarySignedRoute('app.web-sign-in', now()->addMinutes(5), ['user' => $owner->id, 'nonce' => $nonce, 'to' => 'invoice', 'id' => $theirs->id]);
     $this->get($forged)->assertForbidden();
     $this->assertGuest('web');
+});
+
+test('opening a link only asks "continue as"; a shared link cannot sign a browser in by itself', function () {
+    $user = webLinkBuyer();
+    $url = webLinkFor($user);
+
+    // Login CSRF: a link someone else forwards (or a chat link preview fetches)
+    // must not sign this browser into their account without a visible step.
+    $this->get($url)->assertOk()->assertSee($user->name);
+    $this->assertGuest('web');
+
+    $this->post($url)->assertRedirect(route('seller.apply'));
+    $this->assertAuthenticatedAs($user, 'web');
 });

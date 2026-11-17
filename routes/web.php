@@ -124,7 +124,9 @@ Route::middleware('signed')->prefix('app/pay')->group(function () {
 
 // One-time web sign-in from the app (AppWebSignInController): the signature
 // plus a single-use nonce bound to the user is the auth.
-Route::get('/app/sign-in', AppWebSignInController::class)->middleware('signed')->name('app.web-sign-in');
+// Opening the link only asks "Continue as <name>"; the POST signs in.
+Route::get('/app/sign-in', [AppWebSignInController::class, 'show'])->middleware('signed')->name('app.web-sign-in');
+Route::post('/app/sign-in', [AppWebSignInController::class, 'confirm'])->middleware('signed')->name('app.web-sign-in.confirm');
 
 // Gateway callbacks — CSRF-exempt (bootstrap/app.php), signature-gated instead.
 Route::post('/payments/ipay88/response', [Ipay88Controller::class, 'response'])->name('payments.ipay88.response');
