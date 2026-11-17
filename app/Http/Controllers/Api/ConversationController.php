@@ -90,9 +90,10 @@ class ConversationController extends Controller
 
         $row = $this->owned($request->user(), $conversation);
 
-        // Context chip only ever points at a product of THIS store (Messages::send).
+        // Context chip only ever points at a LIVE product of THIS store, so id
+        // probing cannot read a draft's name and thumb back (as store() does).
         $context = isset($data['product_id'])
-            ? Product::query()->where('store_id', $row->store_id)->find($data['product_id'])
+            ? Product::query()->live()->where('store_id', $row->store_id)->find($data['product_id'])
             : null;
 
         $message = $this->chat->sendMessage($row, $this->sideFor($request->user(), $row), $request->user(), $data['body'], $context);
@@ -102,7 +103,9 @@ class ConversationController extends Controller
 
     private function visibleTo(User $user): Builder
     {
-        $storeId = $user->store?->id;
+        // Only an approved store keeps its side of the chat, like the web seller
+        // area (EnsureSeller); a suspended owner still sees threads they began as a buyer.
+        $storeId = $user->store?->isApproved() ? $user->store->id : null;
 
         return Conversation::query()->where(fn (Builder $query) => $query
             ->where('buyer_id', $user->id)
