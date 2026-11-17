@@ -320,3 +320,15 @@ test('quick-status is the web dashboard shortcuts and never counts another buyer
     app('auth')->forgetGuards();
     $this->withHeader('Authorization', '')->getJson('/api/v1/orders/quick-status')->assertUnauthorized();
 });
+
+test('buyer cancel is Confirmed-only like the web: once the seller packs (processing) it is a 409', function () {
+    [$user, $http] = apiOrdersUser();
+    $processing = apiOrdersSubOrder($user, SubOrderStatus::Processing);
+    apiOrdersItem($processing);
+
+    $http->postJson("/api/v1/orders/{$processing->id}/cancel")
+        ->assertStatus(409)
+        ->assertJsonPath('error.code', 'invalid_transition');
+
+    expect($processing->fresh()->status)->toBe(SubOrderStatus::Processing);
+});

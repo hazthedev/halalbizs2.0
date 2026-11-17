@@ -22,6 +22,7 @@ use App\Services\ReviewService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
@@ -83,7 +84,15 @@ class OrderController extends Controller
             if ($row->status === SubOrderStatus::PendingPayment && $row->order->isAwaitingPayment()) {
                 $orders->cancelUnpaid($row->order, ActorType::Buyer, $request->user()->id, $reason ?? __('Cancelled before payment'));
             } else {
-                $orders->cancel($row, ActorType::Buyer, $request->user()->id, $reason);
+                // Confirmed only, like the web (OrderDetail::canCancel): once the
+                // seller packs, the FSM still allows a cancel, but not the buyer's.
+                DB::transaction(function () use ($row, $orders, $request, $reason) {
+                    if (SubOrder::whereKey($row->id)->lockForUpdate()->first()->status !== SubOrderStatus::Confirmed) {
+                        throw new InvalidTransitionException('Buyer cancel needs a confirmed sub-order.');
+                    }
+
+                    $orders->cancel($row, ActorType::Buyer, $request->user()->id, $reason);
+                });
             }
         } catch (InvalidTransitionException $e) {
             return $this->invalidTransition();
