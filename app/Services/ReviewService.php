@@ -91,7 +91,7 @@ class ReviewService
         DB::transaction(function () use ($subOrder, $buyer, $items, $sellerRating, $sellerComment) {
             // Serialise concurrent submits for the same sub-order; the guards
             // below re-run against what the lock lets us see.
-            $locked = SubOrder::lockForUpdateWithOrder($subOrder->getKey())->firstOrFail();
+            $locked = SubOrder::lockForUpdateWithOrder($subOrder)->firstOrFail();
 
             if ($this->sellerRated($locked)) {
                 $sellerRating = null;

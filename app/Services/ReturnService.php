@@ -68,7 +68,7 @@ class ReturnService
         $note = trim((string) $note);
 
         return DB::transaction(function () use ($subOrder, $buyer, $reason, $note, $photos) {
-            $locked = SubOrder::lockForUpdateWithOrder($subOrder->getKey())->firstOrFail();
+            $locked = SubOrder::lockForUpdateWithOrder($subOrder)->firstOrFail();
 
             if (! $this->canRequest($locked)) {
                 throw new BuyerActionException(__('This order is no longer eligible for a return.'));

@@ -4,6 +4,7 @@ use App\Enums\ActorType;
 use App\Enums\SubOrderStatus;
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
+use App\Http\Controllers\Api\OrderController;
 use App\Models\Order;
 use App\Models\Store;
 use App\Models\SubOrder;
@@ -12,7 +13,9 @@ use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use App\Services\OrderService;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 /*
  * Gate R2 on #225 (2026-11-17): two unpaid sub-orders of one order cancelled at
@@ -89,4 +92,61 @@ test('API buyer cancel takes the parent order lock before the sub-order lock', f
 
     expect($orderLock)->not->toBeFalse()
         ->and($orderLock)->toBeLessThan($subOrderLock, 'sub-order locked before its parent order: deadlocks against cancel()');
+});
+
+test('buyer cancel returns a conflict when a service cancel commits before its parent lock', function () {
+    $default = DB::getDefaultConnection();
+    $connection = config("database.connections.$default");
+    config(['database.connections.cancel_api_race' => $connection, 'database.connections.cancel_service_race' => $connection]);
+    DB::setDefaultConnection('cancel_api_race');
+    $buyer = $order = null;
+
+    try {
+        // Committed fixtures are visible to both independent connections;
+        // the suite's RefreshDatabase transaction stays on the default one.
+        [$buyer, $order, $subOrder] = User::withoutEvents(function () {
+            $buyer = User::factory()->create();
+            $order = Order::factory()->create(['user_id' => $buyer->id]);
+            $store = Store::factory()->approved()->create(['user_id' => $buyer->id, 'slug' => 'cancel-race-'.$buyer->id]);
+            $subOrder = SubOrder::factory()->status(SubOrderStatus::Confirmed)->create(['order_id' => $order->id, 'store_id' => $store->id]);
+
+            return [$buyer, $order, $subOrder];
+        });
+        Event::fake();
+
+        $interleaved = false;
+        DB::connection()->beforeExecuting(function ($sql) use (&$interleaved, $subOrder) {
+            if ($interleaved || ! str_contains(strtolower($sql), 'from `orders`') || ! str_contains(strtolower($sql), 'for update')) {
+                return;
+            }
+
+            $interleaved = true;
+            DB::setDefaultConnection('cancel_service_race');
+            try {
+                app(OrderService::class)->cancel(SubOrder::findOrFail($subOrder->id), ActorType::Admin);
+            } finally {
+                DB::setDefaultConnection('cancel_api_race');
+            }
+        });
+
+        $request = Request::create('/api/v1/orders/'.$subOrder->id.'/cancel', 'POST');
+        app()->instance('request', $request);
+        $request->setUserResolver(fn () => $buyer);
+        $response = app(OrderController::class)->cancel($request, $subOrder->id, app(OrderService::class));
+
+        expect($interleaved)->toBeTrue()
+            ->and($response->getStatusCode())->toBe(409)
+            ->and($subOrder->fresh()->status)->toBe(SubOrderStatus::Cancelled);
+    } finally {
+        // These fixtures were committed outside RefreshDatabase: remove them.
+        if ($order !== null) {
+            DB::connection('cancel_api_race')->table('orders')->where('id', $order->id)->delete();
+        }
+        if ($buyer !== null) {
+            DB::connection('cancel_api_race')->table('users')->where('id', $buyer->id)->delete();
+        }
+        DB::setDefaultConnection($default);
+        DB::purge('cancel_api_race');
+        DB::purge('cancel_service_race');
+    }
 });

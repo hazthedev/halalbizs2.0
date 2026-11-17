@@ -87,7 +87,7 @@ class OrderController extends Controller
                 // Confirmed only, like the web (OrderDetail::canCancel): once the
                 // seller packs, the FSM still allows a cancel, but not the buyer's.
                 DB::transaction(function () use ($row, $orders, $request, $reason) {
-                    if (SubOrder::lockForUpdateWithOrder($row->id)->first()->status !== SubOrderStatus::Confirmed) {
+                    if (SubOrder::lockForUpdateWithOrder($row)->first()->status !== SubOrderStatus::Confirmed) {
                         throw new InvalidTransitionException('Buyer cancel needs a confirmed sub-order.');
                     }
 

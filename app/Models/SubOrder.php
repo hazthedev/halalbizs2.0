@@ -29,11 +29,13 @@ class SubOrder extends Model
      *
      * @return Builder<self>
      */
-    public static function lockForUpdateWithOrder(int $id): Builder
+    public static function lockForUpdateWithOrder(self $subOrder): Builder
     {
-        Order::whereKey(static::whereKey($id)->value('order_id'))->lockForUpdate()->first();
+        // order_id never changes. Reading it again before the parent lock
+        // opens a stale snapshot if another cancellation wins that lock.
+        Order::whereKey($subOrder->order_id)->lockForUpdate()->first();
 
-        return static::whereKey($id)->lockForUpdate();
+        return static::whereKey($subOrder->getKey())->lockForUpdate();
     }
 
     use HasFactory, LogsActivity;
