@@ -63,7 +63,7 @@ class MeController extends Controller
 
         // Every token dies, this one included (it may have been copied). The
         // device that changed the password continues on a fresh token.
-        $user->tokens()->delete();
+        $user->revokeAppAccess();
 
         return ApiResponse::ok(['token' => $user->createToken($device)->plainTextToken]);
     }
