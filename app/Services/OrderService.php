@@ -12,6 +12,7 @@ use App\Events\OrderPaid;
 use App\Models\Order;
 use App\Models\SubOrder;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * Fulfilment-side transitions that carry side effects beyond the status
@@ -139,6 +140,13 @@ class OrderService
         $becamePaid = false;
 
         $subOrder = DB::transaction(function () use ($subOrder, $actor, $actorId, &$becamePaid) {
+            // Only shipped → delivered. The FSM also allows return_requested →
+            // delivered, but that edge is the admin side-with-seller path;
+            // taking it here would strand the buyer's open return.
+            if (SubOrder::whereKey($subOrder->id)->lockForUpdate()->first()->status !== SubOrderStatus::Shipped) {
+                throw new InvalidArgumentException(__('Only a shipped order can be marked delivered.'));
+            }
+
             return $this->statusService->transition(
                 $subOrder,
                 SubOrderStatus::Delivered,

@@ -287,3 +287,18 @@ test('an unsettled sub-order sends the commission the completion ledger will boo
         ->assertJsonPath('data.commission_sen', 321)
         ->assertJsonPath('data.commission_settled', true);
 });
+
+test('delivered on a sub-order with an open return is a 409 and the return stays resolvable', function () {
+    $seller = sellerApiUser();
+    $subOrder = sellerApiSubOrder($seller->store, SubOrderStatus::ReturnRequested);
+    $request = sellerApiReturn($subOrder);
+
+    // The FSM allows return_requested → delivered for the admin side-with-seller
+    // path; a seller must never take it, or the buyer's open return is stuck.
+    sellerApiAs($seller)->postJson("/api/v1/seller/orders/{$subOrder->id}/delivered")
+        ->assertStatus(409)
+        ->assertJsonPath('error.code', 'invalid_transition');
+
+    expect($subOrder->fresh()->status)->toBe(SubOrderStatus::ReturnRequested)
+        ->and($request->fresh()->status)->toBe(ReturnStatus::Requested);
+});
