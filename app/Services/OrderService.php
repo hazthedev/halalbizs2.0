@@ -36,6 +36,12 @@ class OrderService
     public function cancel(SubOrder $subOrder, ActorType $actor, ?int $actorId = null, ?string $reason = null): SubOrder
     {
         return DB::transaction(function () use ($subOrder, $actor, $actorId, $reason) {
+            // Gate R2 (#225): lock the parent order first (payment confirm and
+            // expiry use the same order-before-sub-order order), so sibling
+            // cancels serialise and the last one sees every other sibling's
+            // committed status.
+            Order::whereKey($subOrder->order_id)->lockForUpdate()->first();
+
             return $this->statusService->transition(
                 $subOrder,
                 SubOrderStatus::Cancelled,
@@ -65,6 +71,7 @@ class OrderService
     public function cancelUnpaid(Order $order, ActorType $actor, ?int $actorId = null, ?string $reason = null): void
     {
         DB::transaction(function () use ($order, $actor, $actorId, $reason) {
+            Order::whereKey($order->id)->lockForUpdate()->first();
             $pending = $order->subOrders()->where('status', SubOrderStatus::PendingPayment)->lockForUpdate()->get();
 
             foreach ($pending as $subOrder) {
@@ -132,7 +139,7 @@ class OrderService
             ->get()
             ->each(fn (GroupBuyMember $member) => $member->forceFill(['status' => GroupBuyMemberStatus::Joined, 'sub_order_id' => null])->save());
 
-        $fullyCancelled = ! $order->subOrders()->where('status', '!=', SubOrderStatus::Cancelled)->exists();
+        $fullyCancelled = ! $order->subOrders()->where('status', '!=', SubOrderStatus::Cancelled)->lockForUpdate()->exists();
 
         $usages = VoucherUsage::where('order_id', $order->id)
             ->where(fn ($q) => $q->where('sub_order_id', $subOrder->id)->when($fullyCancelled, fn ($q) => $q->orWhereNull('sub_order_id')))
@@ -171,6 +178,7 @@ class OrderService
 
         $stillActive = $order->subOrders()
             ->where('status', '!=', SubOrderStatus::Cancelled)
+            ->lockForUpdate() // current read, not the transaction's snapshot (gate R2)
             ->exists();
 
         if (! $stillActive) {
