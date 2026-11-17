@@ -253,7 +253,7 @@ void main() {
               'id': 3,
               'name': 'Kedai Madu',
               'slug': 'kedai-madu',
-              'description': '<p>Honey from Pahang.</p><p>Second paragraph of the full story.</p>',
+              'description': 'Honey from Pahang.\n\nSecond paragraph of the full story.',
               'banner': 'https://img.test/banner.jpg',
               'logo': null,
               'rating_avg': 4.5,
@@ -272,6 +272,27 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('store-about-sheet')), findsOneWidget);
       expect(find.textContaining('Second paragraph of the full story.', findRichText: true), findsWidgets);
+    });
+
+    testWidgets('About is the seller\'s plain text like the web: markup shows as typed, nothing loads', (tester) async {
+      usePhone(tester);
+      final api = FakeApi(routes: {
+        'GET categories': (_, _) => [],
+        'GET stores/kedai-madu': (_, _) => {
+              'id': 3,
+              'name': 'Kedai Madu',
+              'slug': 'kedai-madu',
+              'description': 'Honey from Pahang. <img src="https://tracker.test/px.png">',
+            },
+        'GET stores/kedai-madu/products': (_, _) => [],
+      });
+      await Harness(api: api).pump(tester, location: '/s/kedai-madu');
+      await tester.tap(find.byKey(const Key('store-about')));
+      await tester.pumpAndSettle();
+
+      final sheet = find.byKey(const Key('store-about-sheet'));
+      expect(find.descendant(of: sheet, matching: find.byType(Image)), findsNothing);
+      expect(find.descendant(of: sheet, matching: find.textContaining('<img src=')), findsOneWidget);
     });
 
     testWidgets('no banner, no joined date: neither row renders', (tester) async {

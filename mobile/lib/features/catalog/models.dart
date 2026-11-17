@@ -219,7 +219,7 @@ class Store {
   String get slug => asStr(json['slug']) ?? '';
   String get name => asStr(json['name']) ?? slug;
 
-  /// Seller rich-text HTML; render with HtmlWidget, or use [descriptionPlain].
+  /// Seller plain text (a textarea on web and app); render with Text, never as HTML.
   String? get description => asStr(json['description']);
 
   /// [description] as one line of plain text for clamped blurbs.
