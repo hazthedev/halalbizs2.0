@@ -31,13 +31,14 @@ class CartController extends Controller
             'qty' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $variant = ProductVariant::with('product.store')->findOrFail($data['variant_id']);
+        $variant = ProductVariant::with('product.store')
+            ->whereHas('product', fn ($query) => $query->live())
+            ->findOrFail($data['variant_id']);
         $qty = (int) ($data['qty'] ?? 1);
 
-        // Live / holiday / sold-out refusals come from CartService::addItem (422 via
-        // BuyerActionException); only an in-stock variant of a live product gets the
-        // "only N left" check, so a hidden variant never reveals its stock.
-        if ($variant->stock > 0 && $variant->product?->isLive()) {
+        // Hidden variants answer 404 like missing IDs. Holiday / sold-out
+        // refusals still come from CartService::addItem (422).
+        if ($variant->stock > 0) {
             $this->ensureStock($variant, $qty);
         }
 

@@ -97,12 +97,11 @@ test('asking for more than the stock is a 422 with the message', function () {
         ->assertJsonPath('error.code', 'validation_failed')
         ->assertJsonPath('error.message', __('Sorry — this item just sold out.'));
 
-    // Unpublished products are refused by CartService::addItem, same as the web button.
+    // Unpublished variants are hidden by the API lookup, like missing IDs.
     $variant->update(['stock' => 3]);
     $variant->product->update(['status' => ProductStatus::Draft]);
     $http->postJson('/api/v1/cart/items', ['variant_id' => $variant->id])
-        ->assertStatus(422)
-        ->assertJsonPath('error.message', __('This product is not available right now.'));
+        ->assertNotFound();
 });
 
 test('purchasing off is a 409 purchasing_disabled on writes while the cart still reads', function () {
@@ -125,7 +124,7 @@ test('the cart needs a token', function () {
     $this->postJson('/api/v1/cart/items', ['variant_id' => 1])->assertUnauthorized();
 });
 
-test('a hidden product answers "not available" whatever qty is asked, never its stock', function () {
+test('a hidden product answers 404 like a missing variant, never its stock', function () {
     [, $http] = apiCartUser();
     $variant = apiCartProduct(stock: 3)->variants->first();
     $variant->product->update(['status' => ProductStatus::Draft]);
@@ -133,7 +132,7 @@ test('a hidden product answers "not available" whatever qty is asked, never its 
     // Asking for more than the stock must not reveal that the variant exists
     // or how many a draft holds ("Only 3 left in stock.").
     $http->postJson('/api/v1/cart/items', ['variant_id' => $variant->id, 'qty' => 50])
-        ->assertStatus(422)
-        ->assertJsonPath('error.message', __('This product is not available right now.'))
+        ->assertNotFound()
         ->assertJsonMissingPath('error.fields.qty');
+    $http->postJson('/api/v1/cart/items', ['variant_id' => 99999999, 'qty' => 50])->assertNotFound();
 });
