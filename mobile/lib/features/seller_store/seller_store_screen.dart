@@ -101,6 +101,16 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
     _saved = _snapshot();
   }
 
+  Future<void> _backToBuying() async {
+    final l = context.l10n;
+    if (_snapshot() != _saved &&
+        !await showSoukConfirm(context,
+            title: l.unsavedTitle, message: l.unsavedBody, confirmLabel: l.unsavedLeave, danger: true)) {
+      return;
+    }
+    if (mounted) context.go('/home');
+  }
+
   String? _err(String path) => _local[path] ?? fieldError(_remote, path);
 
   Map<String, dynamic>? _validate() {
@@ -201,7 +211,7 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
     return SoukPage(
       unsaved: (isDirty: () => _snapshot() != _saved, watch: Listenable.merge(_controllers)),
       title: l.sellerTabStore,
-      actions: const [SellerBackToBuying()],
+      actions: [SellerBackToBuying(onPressed: _backToBuying)],
       showBack: false,
       scrollable: true,
       onRefresh: _load,
@@ -394,7 +404,7 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
               const SizedBox(height: SoukSpace.s3),
               SoukCard(
                 key: const Key('seller-store-back-to-buying'),
-                onTap: () => context.go('/home'),
+                onTap: _backToBuying,
                 padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s4, vertical: SoukSpace.s3),
                 child: Row(children: [
                   const FaIcon(FontAwesomeIcons.bagShopping, size: 18, color: SoukColors.inkFaint),

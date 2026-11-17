@@ -109,7 +109,7 @@ product page, and the push stub (`core/push/push_service.dart`:
 - Cold start: a slow or failing `GET me` keeps a saved profile signed in;
   only a 401 signs out.
 - Forms (product, store, profile, address): `SoukPage(unsaved: ...)` asks
-  before leaving with edits.
+  before leaving with edits, including both store Back to buying links.
 - A failed pull-to-refresh keeps the loaded page (`skipError: true`; seller
   lists reload behind their rows via `SellerPagedList.refresh`). A seller
   403 still leaves the seller area, including after data has loaded.

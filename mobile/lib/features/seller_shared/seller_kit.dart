@@ -12,7 +12,9 @@ import 'models.dart';
 /// App-bar action on every seller tab root: back to the buyer shell, with
 /// its words (a bare bag icon read as a logo on a real phone).
 class SellerBackToBuying extends StatelessWidget {
-  const SellerBackToBuying({super.key});
+  const SellerBackToBuying({super.key, this.onPressed});
+
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => TextButton.icon(
@@ -23,7 +25,7 @@ class SellerBackToBuying extends StatelessWidget {
         ),
         icon: const FaIcon(FontAwesomeIcons.bagShopping, size: 16),
         label: Text(context.l10n.sellerBackToBuying, style: SoukText.label),
-        onPressed: () => context.go('/home'),
+        onPressed: onPressed ?? () => context.go('/home'),
       );
 }
 
