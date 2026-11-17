@@ -15,6 +15,8 @@ use Illuminate\Validation\Rule;
  */
 class DeviceController extends Controller
 {
+    private const MAX_PER_USER = 10;
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -26,6 +28,13 @@ class DeviceController extends Controller
             ['token' => $data['token']],
             ['user_id' => $request->user()->id, 'platform' => $data['platform'], 'last_seen_at' => now()],
         );
+
+        // At most MAX_PER_USER installs per account, newest kept: unbounded junk
+        // tokens would make every notification a long serial FCM loop.
+        $request->user()->deviceTokens()
+            ->orderByDesc('last_seen_at')->orderByDesc('id')
+            ->skip(self::MAX_PER_USER)->take(PHP_INT_MAX)->pluck('id')
+            ->whenNotEmpty(fn ($stale) => DeviceToken::whereKey($stale)->delete());
 
         return ApiResponse::ok(['id' => $device->id, 'platform' => $device->platform], null, 201);
     }
