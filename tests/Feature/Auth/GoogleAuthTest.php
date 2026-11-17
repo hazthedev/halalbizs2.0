@@ -4,6 +4,7 @@ use App\Models\User;
 use App\Settings\SecuritySettings;
 use App\Support\Totp;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
@@ -139,4 +140,49 @@ test('suspended accounts cannot enter through google', function () {
 
     $this->assertGuest();
     expect($user->fresh()->google_id)->toBeNull();
+});
+
+test('google linking an unverified pre-registered account drops what the earlier registrant holds', function () {
+    enableGoogle();
+
+    // Someone registered the owner's email first (API register gives a token
+    // before the email is proven), then the real owner signs in with Google.
+    $user = User::factory()->unverified()->create([
+        'email' => 'aisha@example.com',
+        'password' => 'squatter-password',
+        'two_factor_method' => 'totp',
+        'two_factor_secret' => (new Totp)->generateSecret(),
+    ]);
+    $user->assignRole('buyer');
+    $user->createToken('mobile');
+    $user->deviceTokens()->create(['token' => 'squatter-fcm', 'platform' => 'android']);
+
+    mockGoogleUser();
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake')
+        ->assertRedirect(route('home'));
+
+    $user->refresh();
+    expect($user->google_id)->toBe('google-123')
+        ->and($user->email_verified_at)->not->toBeNull()
+        ->and($user->tokens()->count())->toBe(0)
+        ->and($user->deviceTokens()->count())->toBe(0)
+        ->and(Hash::check('squatter-password', $user->password))->toBeFalse()
+        ->and($user->hasTwoFactor())->toBeFalse();
+    $this->assertAuthenticatedAs($user);
+});
+
+test('google linking an already verified account keeps its app sign-ins', function () {
+    enableGoogle();
+
+    $user = User::factory()->create(['email' => 'aisha@example.com']);
+    $user->assignRole('buyer');
+    $user->createToken('mobile');
+
+    mockGoogleUser();
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake')
+        ->assertRedirect(route('home'));
+
+    expect($user->tokens()->count())->toBe(1);
 });

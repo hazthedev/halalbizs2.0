@@ -122,6 +122,13 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(DeviceToken::class);
     }
 
+    /** Sign out every app install: API tokens and their push registrations go together. */
+    public function revokeAppAccess(): void
+    {
+        $this->tokens()->delete();
+        $this->deviceTokens()->delete();
+    }
+
     public function isSuspended(): bool
     {
         return $this->status === 'suspended';
