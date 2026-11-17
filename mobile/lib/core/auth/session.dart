@@ -107,7 +107,9 @@ class SessionController extends Notifier<SessionState> {
       await _kvPut(_kProfile, jsonEncode(me));
       state = SignedIn(Profile(me));
     } on ApiException catch (e) {
-      if (e.isOffline) {
+      // Offline, timeout or a server error: the token is still good, so a
+      // saved profile keeps the user signed in. Only a 401 ends the session.
+      if (!e.isAuth) {
         final cached = _decode(await _kvGet(_kProfile));
         if (cached != null) {
           state = SignedIn(Profile(cached), offline: true);

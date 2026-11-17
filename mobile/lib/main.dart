@@ -43,8 +43,9 @@ class HalalBizsApp extends ConsumerWidget {
 }
 
 /// Holds the native splash over the router while the stored session restores
-/// (token → `GET me`, or the cached profile offline), so a guarded tab never
-/// flashes before the redirect lands; removes it the moment the session resolves.
+/// (token → `GET me`, or the cached profile offline) and the version gate reads
+/// config (3 s at most), so neither a guarded tab nor a blank screen flashes;
+/// removes it the moment both resolve.
 class _StartupGate extends ConsumerWidget {
   const _StartupGate({required this.child});
 
@@ -52,7 +53,7 @@ class _StartupGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final loading = ref.watch(sessionProvider.select((s) => s is SessionLoading));
+    final loading = ref.watch(sessionProvider.select((s) => s is SessionLoading)) || !ref.watch(appGateProvider.select((g) => g.hasValue));
     if (loading) return const ColoredBox(color: SoukColors.paper);
     FlutterNativeSplash.remove();
     return VersionGate(child: child);

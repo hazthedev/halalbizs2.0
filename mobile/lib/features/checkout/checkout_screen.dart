@@ -43,6 +43,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _shopCtl = TextEditingController();
   final _shippingCtl = TextEditingController();
   final _coinsCtl = TextEditingController();
+
+  /// Typed coins re-quote after a short pause; Place waits for it (shown total = charged total).
+  Timer? _coinsDebounce;
   final _notes = <int, TextEditingController>{};
 
   CheckoutQuote? _quote;
@@ -70,6 +73,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _shopCtl.dispose();
     _shippingCtl.dispose();
     _coinsCtl.dispose();
+    _coinsDebounce?.cancel();
     for (final c in _notes.values) {
       c.dispose();
     }
@@ -139,6 +143,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         context.go('/verify-email');
         return;
       }
+      // The picked address is gone (deleted on the web): drop it so the
+      // address card offers the picker instead of a Retry that 404s again.
+      if (e.isNotFound && _addressId != null) {
+        _addressId = null;
+        ref.invalidate(addressesProvider);
+        unawaited(_requote());
+        return;
+      }
       _fail(e);
     } catch (e) {
       if (!mounted || seq != _seq) return;
@@ -175,7 +187,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             platformCode: _platformCode,
             shopCode: _shopCode,
             shippingCode: _shippingCode,
-            coins: _useCoins ? _coins : 0,
+            // The coins the shown total was quoted with, never the raw field.
+            coins: _useCoins ? q.coinsRedeemed : 0,
             sellerNotes: {for (final e in _notes.entries) if (e.value.text.trim().isNotEmpty) e.key: e.value.text.trim()},
           );
       if (!mounted) return;
@@ -297,7 +310,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         q.blockReason == null &&
         q.purchasingEnabled &&
         _error == null &&
-        !_quoting;
+        !_quoting &&
+        !(_coinsDebounce?.isActive ?? false);
 
     return SoukPage(
       title: l.checkoutTitle,
@@ -504,9 +518,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             keyboardType: TextInputType.number,
                             textInputAction: TextInputAction.done,
                             help: l.checkoutCoinsWorth(q.coinsRedeemed, formatSen(q.coinRedemptionSen)),
-                            // Typed but not submitted still counts when placing; submit re-quotes.
-                            onChanged: (v) => _coins = (int.tryParse(v) ?? 0).clamp(0, q.coinBalance),
+                            // Typing re-quotes after a pause; Place stays off until it has.
+                            onChanged: (v) {
+                              _coins = (int.tryParse(v) ?? 0).clamp(0, q.coinBalance);
+                              _coinsDebounce?.cancel();
+                              setState(() => _coinsDebounce = Timer(const Duration(milliseconds: 500), () {
+                                    if (mounted) _requote();
+                                  }));
+                            },
                             onSubmitted: (v) {
+                              _coinsDebounce?.cancel();
                               final n = (int.tryParse(v) ?? 0).clamp(0, q.coinBalance);
                               setState(() {
                                 _coins = n;

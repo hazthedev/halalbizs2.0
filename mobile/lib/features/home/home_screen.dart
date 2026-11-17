@@ -46,6 +46,7 @@ class HomeScreen extends ConsumerWidget {
         const PreviewStrip(),
         home.when(
           skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => const Column(children: [
             SoukSkeleton.block(height: SoukSpace.minTap),
             SizedBox(height: SoukSpace.s5),
@@ -614,6 +615,7 @@ class FlashSaleScreen extends ConsumerWidget {
       cachedAt: f?.fetchedAt,
       body: home.when(
         skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => const SoukSkeleton.cards(rows: 2),
         error: (e, _) => ErrorPane(error: e, onRetry: () => ref.invalidate(homeProvider), retryLabel: l.retry),
         data: (f) {
@@ -674,6 +676,7 @@ class _FeaturedScreenState extends ConsumerState<FeaturedScreen> {
       cachedAt: async.value?.fetchedAt,
       body: async.when(
         skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => const SoukSkeleton.cards(rows: 4),
         error: (e, _) => ErrorPane(error: e, onRetry: _refresh, retryLabel: l.retry),
         data: (first) {

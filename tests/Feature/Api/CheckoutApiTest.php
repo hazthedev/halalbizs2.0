@@ -299,6 +299,32 @@ test('in mock mode the signed simulator settles the order exactly like the web s
     $this->post("/app/pay/{$order->order_no}/mock/success")->assertForbidden();
 });
 
+// HB-APP-STATES gap 2: a failed attempt leaves the order payable (pending), so
+// the app needs the attempt's own status to say "did not go through".
+test('the payment status names the latest attempt, so the app can show a failed payment', function () {
+    apiCheckoutRealGateway();
+    [$user, $address, $http] = apiCheckoutBuyer();
+    apiCheckoutCart($user);
+
+    $data = $http->postJson('/api/v1/checkout/place', ['address_id' => $address->id, 'payment_method' => 'ipay88'])->assertCreated()->json('data');
+    $order = Order::where('order_no', $data['order_no'])->firstOrFail();
+
+    $http->getJson("/api/v1/orders/{$order->order_no}/payment")->assertJsonPath('data.attempt_status', 'pending');
+
+    // The BackendURL callback reports the attempt failed (iPay88 Status 0).
+    // A fresh request starts on the web guard; this test process does not
+    // (the token calls above switched it), and #223's session check needs it.
+    app('auth')->shouldUse('web');
+    $this->post('/payments/ipay88/backend', apiCheckoutBackendPayload($order->payment, '0'))->assertOk();
+
+    $status = $http->getJson("/api/v1/orders/{$order->order_no}/payment")
+        ->assertJsonPath('data.status', PaymentStatus::Pending->value)
+        ->assertJsonPath('data.paid', false)
+        ->assertJsonPath('data.attempt_status', GatewayPaymentStatus::Failed->value)
+        ->json('data');
+    expect($status['retry_url'])->toContain('signature=');
+});
+
 test('the signed simulator route is a 404 when a real gateway is configured', function () {
     apiCheckoutRealGateway();
     [$user, $address, $http] = apiCheckoutBuyer();

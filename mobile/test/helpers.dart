@@ -126,6 +126,12 @@ class FakeBrowser extends InAppBrowser {
 
   @override
   Future<void> close() async => closes++;
+
+  /// Links handed to the system (the app store), not the sheet.
+  final external = <String>[];
+
+  @override
+  Future<void> openExternal(String url) async => external.add(url);
 }
 
 /// Pumps the whole app with fakes. Returns the container so tests can read

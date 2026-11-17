@@ -142,16 +142,11 @@ class CatalogApi {
   Future<Question> ask(String slug, String question) async =>
       Question(asMap(await _api.post('products/${Uri.encodeComponent(slug)}/questions', body: {'question': question})));
 
-  /// `GET stores/{slug}` (slice 2). Until it exists the header is built from
-  /// the slug alone (name filled from the first product's `store`).
+  /// `GET stores/{slug}`. A 404 (deleted, suspended or unpublished store) is
+  /// thrown: the store page shows "Page not found", not an empty shop.
   Future<CachedResult<Store>> store(String slug) async {
-    try {
-      final r = await _repo.getJson('stores/${Uri.encodeComponent(slug)}');
-      return CachedResult(Store(asMap(r.data)), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
-    } on ApiException catch (e) {
-      if (!e.isNotFound) rethrow;
-      return CachedResult(Store({'slug': slug}));
-    }
+    final r = await _repo.getJson('stores/${Uri.encodeComponent(slug)}');
+    return CachedResult(Store(asMap(r.data)), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
   }
 
   /// `POST|DELETE stores/{slug}/follow` (signed in): the server's state, idempotent.

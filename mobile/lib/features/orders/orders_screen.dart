@@ -47,6 +47,26 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     _load(reset: true);
   }
 
+  /// The tab stays alive in the shell (indexedStack), so a new order, a
+  /// cancel or a return would never show. Coming back to the tab (TickerMode
+  /// on again) reloads the list and the bucket counts.
+  bool _active = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final active = TickerMode.valuesOf(context).enabled;
+    if (active && !_active) {
+      // Not during build: after this frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.invalidate(orderBucketsProvider);
+        _load(reset: true);
+      });
+    }
+    _active = active;
+  }
+
   @override
   void didUpdateWidget(OrdersScreen old) {
     super.didUpdateWidget(old);
@@ -112,6 +132,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       body: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         buckets.when(
           skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => const SoukSkeleton.block(height: 40),
           error: (_, _) => const SizedBox.shrink(),
           data: (list) => SizedBox(

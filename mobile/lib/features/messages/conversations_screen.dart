@@ -36,6 +36,7 @@ class ConversationsScreen extends ConsumerWidget {
       onRefresh: () => _refresh(ref),
       body: async.when(
         skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => const SoukSkeleton.list(rows: 5),
         error: (e, _) => ErrorPane(error: e, onRetry: () => _refresh(ref), retryLabel: l.retry),
         data: (list) => list.isEmpty

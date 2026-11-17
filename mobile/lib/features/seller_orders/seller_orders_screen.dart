@@ -75,7 +75,8 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen> {
         ),
         const SizedBox(height: SoukSpace.s4),
         SellerPagedList<SellerOrder>(
-          signature: '${_status ?? ''}#$_refresh#$bumped',
+          signature: _status ?? '',
+          refresh: '$_refresh#$bumped',
           fetch: (page) => api.orders(status: _status, page: page),
           itemBuilder: (context, o) => SellerOrderRow(o, onTap: () => context.push('/seller/orders/${o.id}')),
           empty: SoukEmptyState(key: const Key('seller-orders-empty'), title: l.sellerNoOrders, message: l.sellerNoOrdersBody),

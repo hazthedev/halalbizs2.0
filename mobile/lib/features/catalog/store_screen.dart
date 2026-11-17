@@ -5,6 +5,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/api/api_client.dart';
+import '../../core/router.dart' show SoukNotFoundScreen;
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import 'catalog_api.dart';
@@ -67,7 +69,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final s = ref.watch(storeProvider(widget.slug)).value?.data;
+    final store = ref.watch(storeProvider(widget.slug));
+    if (store.error case ApiException(isNotFound: true)) return const SoukNotFoundScreen();
+    final s = store.value?.data;
 
     return ListenableBuilder(
       listenable: _list,

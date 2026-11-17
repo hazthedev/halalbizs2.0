@@ -30,6 +30,9 @@ class PayScreen extends ConsumerStatefulWidget {
 
   static Duration pollEvery = const Duration(seconds: 3);
 
+  /// Polling stops after this long (restarts on app resume); "I have paid" still checks.
+  static Duration pollFor = const Duration(minutes: 10);
+
   @override
   ConsumerState<PayScreen> createState() => _PayScreenState();
 }
@@ -79,7 +82,11 @@ class _PayScreenState extends ConsumerState<PayScreen> with WidgetsBindingObserv
 
   void _startTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(PayScreen.pollEvery, (_) => _poll());
+    var left = PayScreen.pollFor.inMilliseconds ~/ PayScreen.pollEvery.inMilliseconds;
+    _timer = Timer.periodic(PayScreen.pollEvery, (t) {
+      if (--left < 0) return t.cancel();
+      _poll();
+    });
   }
 
   Future<void> _open(String url) => ref.read(inAppBrowserProvider).open(url);
@@ -112,6 +119,10 @@ class _PayScreenState extends ConsumerState<PayScreen> with WidgetsBindingObserv
     final l = context.l10n;
     final s = _state;
     final expired = s?.expired ?? false;
+    final failed = !expired && (s?.attemptFailed ?? false);
+    // Back from the payment page and still not paid: cancelled, failed, or the
+    // gateway is a few seconds behind. The app cannot tell, so it says so.
+    final unconfirmed = !expired && !failed && widget.returned && s != null && !s.paid;
     final retryUrl = s?.retryUrl ?? widget.initialUrl;
 
     return SoukPage(
@@ -133,24 +144,45 @@ class _PayScreenState extends ConsumerState<PayScreen> with WidgetsBindingObserv
                     child: Container(
                       width: 76,
                       height: 76,
-                      decoration: BoxDecoration(color: expired ? SoukColors.dangerTint : SoukColors.emeraldTint, shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: expired || failed ? SoukColors.dangerTint : SoukColors.emeraldTint, shape: BoxShape.circle),
                       alignment: Alignment.center,
-                      child: FaIcon(expired ? FontAwesomeIcons.hourglassEnd : FontAwesomeIcons.arrowUpRightFromSquare,
-                          size: 28, color: expired ? SoukColors.danger : SoukColors.emerald),
+                      child: FaIcon(
+                          expired
+                              ? FontAwesomeIcons.hourglassEnd
+                              : (failed ? FontAwesomeIcons.triangleExclamation : FontAwesomeIcons.arrowUpRightFromSquare),
+                          size: 28,
+                          color: expired || failed ? SoukColors.danger : SoukColors.emerald),
                     ),
                   ),
                   const SizedBox(height: SoukSpace.s5),
-                  Text(expired ? l.checkoutPayExpiredTitle : l.checkoutPayBrowserTitle,
-                      key: Key(expired ? 'pay-expired' : 'pay-waiting'), textAlign: TextAlign.center, style: SoukText.displayH2),
+                  Text(
+                      expired
+                          ? l.checkoutPayExpiredTitle
+                          : failed
+                              ? l.checkoutPayFailedTitle
+                              : unconfirmed
+                                  ? l.checkoutPayUnconfirmedTitle
+                                  : l.checkoutPayBrowserTitle,
+                      key: Key(expired ? 'pay-expired' : (failed ? 'pay-failed' : (unconfirmed ? 'pay-unconfirmed' : 'pay-waiting'))),
+                      textAlign: TextAlign.center,
+                      style: SoukText.displayH2),
                   const SizedBox(height: SoukSpace.s2),
-                  Text(expired ? l.checkoutPayExpiredBody : l.checkoutPayBrowserBody(widget.orderNo),
-                      textAlign: TextAlign.center, style: SoukText.bodySoft),
+                  Text(
+                      expired
+                          ? l.checkoutPayExpiredBody
+                          : failed
+                              ? l.checkoutPayFailedBody
+                              : unconfirmed
+                                  ? l.checkoutPayUnconfirmedBody
+                                  : l.checkoutPayBrowserBody(widget.orderNo),
+                      textAlign: TextAlign.center,
+                      style: SoukText.bodySoft),
                   if (s != null && !expired && s.expiresAt != null) ...[
                     const SizedBox(height: SoukSpace.s2),
                     Text(l.checkoutPayExpiresAt(_hhmm(s.expiresAt!)), textAlign: TextAlign.center, style: SoukText.mono),
                   ],
                   const SizedBox(height: SoukSpace.s6),
-                  if (!expired)
+                  if (!expired && !failed)
                     SoukButton(
                       key: const Key('pay-paid'),
                       label: l.checkoutPayIHavePaid,
@@ -165,9 +197,9 @@ class _PayScreenState extends ConsumerState<PayScreen> with WidgetsBindingObserv
                     const SizedBox(height: SoukSpace.s3),
                     SoukButton(
                       key: const Key('pay-retry'),
-                      label: expired ? l.checkoutPayRetry : l.checkoutPayOpenAgain,
+                      label: expired || failed ? l.checkoutPayRetry : l.checkoutPayOpenAgain,
                       icon: FontAwesomeIcons.arrowUpRightFromSquare,
-                      variant: expired ? SoukButtonVariant.primary : SoukButtonVariant.secondary,
+                      variant: expired || failed ? SoukButtonVariant.primary : SoukButtonVariant.secondary,
                       expand: true,
                       requiresOnline: true,
                       onPressed: () => _open(s?.retryUrl ?? retryUrl),

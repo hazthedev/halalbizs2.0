@@ -38,6 +38,7 @@ class _CmsPage extends ConsumerWidget {
         const PreviewStrip(),
         async.when(
           skipLoadingOnRefresh: true,
+          skipError: true,
           loading: () => const SoukSkeleton.block(height: 160),
           error: (e, _) => ErrorPane(error: e, onRetry: () => ref.invalidate(cmsProvider(path))),
           data: (r) => builder(context, r.data),

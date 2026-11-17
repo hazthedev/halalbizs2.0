@@ -38,6 +38,7 @@ class AddressesScreen extends ConsumerWidget {
       ),
       body: async.when(
         skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => const SoukSkeleton.list(rows: 3),
         error: (e, _) => ErrorPane(error: e, onRetry: () => _refresh(ref), retryLabel: l.retry),
         data: (list) => list.isEmpty
@@ -89,6 +90,16 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
   String? _state;
   bool _default = false;
   bool _loaded = false;
+
+  /// What was loaded, to tell whether leaving loses edits.
+  String _saved = '';
+  String _snapshot() => [for (final c in _c.values) c.text, _state, _default].join('\u0000');
+
+  @override
+  void initState() {
+    super.initState();
+    _saved = _snapshot();
+  }
   bool _busy = false;
   Object? _error;
 
@@ -112,6 +123,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
     _c['city']!.text = a.city;
     _state = a.state;
     _default = a.isDefault;
+    _saved = _snapshot();
   }
 
   Future<void> _save() async {
@@ -178,6 +190,7 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
     String? req(String? v) => v == null || v.trim().isEmpty ? l.fieldRequired : null;
 
     return SoukPage(
+      unsaved: (isDirty: () => _snapshot() != _saved, watch: Listenable.merge(_c.values)),
       title: editing ? l.accountEditAddress : l.accountAddAddress,
       scrollable: true,
       actions: [

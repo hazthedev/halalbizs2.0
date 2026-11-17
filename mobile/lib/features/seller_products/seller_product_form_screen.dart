@@ -82,11 +82,20 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
   String? _blocked;
 
   bool get _isNew => widget.id == null;
+
+  /// What was loaded or saved, to tell whether leaving loses edits.
+  String _saved = '';
+  List<TextEditingController> get _controllers => [
+        ..._name.values, ..._desc.values, _price, _sale, _stock, _sku, _weight, _length, _width, _height,
+        for (final v in _variants) ...[v.price, v.sale, v.stock, v.sku],
+      ];
+  String _snapshot() => [for (final c in _controllers) c.text, _cod, _categoryId].join('\u0000');
   bool get _single => _variants.length <= 1;
 
   @override
   void initState() {
     super.initState();
+    _saved = _snapshot();
     if (!_isNew) _load();
   }
 
@@ -143,6 +152,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
     }
     _variants = p.variants.length > 1 ? p.variants.map(_VariantEdit.new).toList() : const [];
     _blocked = p.blockedReason;
+    _saved = _snapshot();
   }
 
   String? _err(String path) => _local[path] ?? fieldError(_remote, path);
@@ -389,6 +399,7 @@ class _SellerProductFormScreenState extends ConsumerState<SellerProductFormScree
         : (categories == null ? p?.categoryName : _path(categories, _categoryId!));
 
     return SoukPage(
+      unsaved: (isDirty: () => _snapshot() != _saved, watch: Listenable.merge(_controllers)),
       title: _isNew ? l.sellerNewProduct : (p?.name ?? l.sellerEditProduct),
       scrollable: true,
       bottomBar: _loading || _loadError != null ? null : _buttons(l),

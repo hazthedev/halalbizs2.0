@@ -2,6 +2,12 @@
 
 return [
 
+    // Store pages the mobile app's "Update" button opens (config endpoint).
+    'mobile_app' => [
+        'android_url' => env('MOBILE_APP_ANDROID_URL', 'https://play.google.com/store/apps/details?id=com.halalbizs.halalbizs'),
+        'ios_url' => env('MOBILE_APP_IOS_URL'),
+    ],
+
     'whip' => [
         'apply_url' => env('WHIP_APPLY_URL', 'https://whip.wghtc.com/company_register.php'),
         'renew_url' => env('WHIP_RENEW_URL', 'https://whip.wghtc.com/company_login.php'),

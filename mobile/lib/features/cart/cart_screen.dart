@@ -102,6 +102,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ]),
       body: async.when(
         skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => const SoukSkeleton.list(rows: 4),
         error: (e, _) => ErrorPane(error: e, onRetry: _refresh, retryLabel: l.retry),
         data: (cart) {

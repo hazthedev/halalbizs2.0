@@ -194,6 +194,9 @@ class OrderController extends Controller
             'method' => $order->payment_method->value,
             'status' => $order->payment_status->value,
             'paid' => $order->payment_status === PaymentStatus::Paid,
+            // The latest gateway attempt (pending/success/failed/expired): a failed
+            // attempt leaves the order payable, so `status` alone cannot say it failed.
+            'attempt_status' => $order->payment?->status->value,
             'expires_at' => $order->expires_at?->toIso8601String(),
             'retry_url' => CheckoutController::paymentUrl($order),
             'total_sen' => $order->grand_total_sen,

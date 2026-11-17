@@ -94,6 +94,29 @@ product page, and the push stub (`core/push/push_service.dart`:
 `registerDevice` → `POST devices`, `unregister` on sign-out, behind
 `PUSH_ENABLED`).
 
+## Screen states (HB-APP-STATES, 2026-11-17)
+
+- Saves: any error without field messages (500, timeout, 403, 409) shows a
+  snackbar; only a real 422 is left to the fields (`fieldsCovered`).
+- Pay screen: `attempt_status` from `GET orders/{no}/payment` shows
+  "Payment did not go through" when the last iPay88 attempt failed; back from
+  the payment page and still unpaid shows "not confirmed yet"; polling stops
+  after `PayScreen.pollFor` (10 min, restarts on resume).
+- Checkout: typed coins re-quote after 500 ms and Place waits for it; Place
+  sends the coins the shown total was quoted with. A quote 404 on the picked
+  address drops it and shows the address picker.
+- Orders tab reloads when you come back to it (the tab stays alive).
+- Cold start: a slow or failing `GET me` keeps a saved profile signed in;
+  only a 401 signs out.
+- Forms (product, store, profile, address): `SoukPage(unsaved: ...)` asks
+  before leaving with edits.
+- A failed pull-to-refresh keeps the loaded page (`skipError: true`; seller
+  lists reload behind their rows via `SellerPagedList.refresh`).
+- Store or product 404: "Page not found" with a Home button.
+- "Update required" has an Update now button (`urls.store_android` /
+  `urls.store_ios` from `GET config`); the native splash stays up until the
+  version check answers.
+
 ## Stubbed for later slices
 
 - Seller centre tabs (slice 6): placeholders under `/seller/*`.
@@ -101,8 +124,7 @@ product page, and the push stub (`core/push/push_service.dart`:
   Firebase config files exist; `registerDevice` is wired but never called.
 - Review photos (`items[].photos[]`) and the "Become a seller" flow stay on
   the web.
-- `GET home`, `GET stores/{slug}`, `GET stores/{slug}/products`, product
-  filters and `sort` (API slice 2): the app calls them per the plan and falls
-  back to `GET products` where the route is missing.
+- `GET stores/{slug}/products`, product filters and `sort` (API slice 2):
+  the app falls back to `GET products` where the route is missing.
 - Web: `web/sqlite3.wasm` and `web/drift_worker.js` give the drift cache on
   Flutter web; the app also runs without them (cache disabled).

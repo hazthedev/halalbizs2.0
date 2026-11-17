@@ -259,7 +259,9 @@ Future<T?> showSellerSheet<T>(BuildContext context, {required String title, requ
 
 /// "Load more" list over a seller endpoint: first page skeleton, error pane
 /// with retry, empty state, then rows with a trailing Load more button. A
-/// change of [signature] (filters, refresh) restarts from page 1.
+/// change of [signature] (filters) restarts from page 1 on a skeleton; a
+/// change of [refresh] (pull to refresh, a write elsewhere) reloads page 1
+/// behind the rows, so a failed refresh keeps them (with the error alert).
 class SellerPagedList<T> extends StatefulWidget {
   const SellerPagedList({
     super.key,
@@ -267,11 +269,13 @@ class SellerPagedList<T> extends StatefulWidget {
     required this.itemBuilder,
     required this.signature,
     required this.empty,
+    this.refresh = '',
   });
 
   final Future<SellerPage<T>> Function(int page) fetch;
   final Widget Function(BuildContext context, T item) itemBuilder;
   final String signature;
+  final String refresh;
   final Widget empty;
 
   @override
@@ -302,6 +306,8 @@ class _SellerPagedListState<T> extends State<SellerPagedList<T>> {
       _page = 0;
       _lastPage = 1;
       _error = null;
+      _load(1);
+    } else if (old.refresh != widget.refresh) {
       _load(1);
     }
   }

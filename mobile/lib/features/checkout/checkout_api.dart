@@ -118,6 +118,9 @@ class PaymentState {
   String get method => asStr(json['method']) ?? '';
   String get status => asStr(json['status']) ?? '';
   bool get paid => asBool(json['paid']);
+
+  /// The latest gateway attempt failed (the order itself stays payable).
+  bool get attemptFailed => asStr(json['attempt_status']) == 'failed';
   DateTime? get expiresAt => asDate(json['expires_at']);
 
   /// Fresh hand-off URL while the order can still be paid, else null.

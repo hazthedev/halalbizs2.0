@@ -32,6 +32,11 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
   String? _bankName;
   bool _holiday = false;
 
+  /// What was loaded or saved, to tell whether leaving loses edits.
+  String _saved = '';
+  List<TextEditingController> get _controllers => [_description, _flatFee, _freeAbove, _accountName, _accountNumber];
+  String _snapshot() => [for (final c in _controllers) c.text, _state, _bankName, _holiday].join('\u0000');
+
   SellerStore? _store;
   bool _fromCache = false;
   DateTime? _fetchedAt;
@@ -44,6 +49,7 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
   @override
   void initState() {
     super.initState();
+    _saved = _snapshot();
     _load();
   }
 
@@ -92,6 +98,7 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
     _bankName = kMalaysianBanks.contains(s.bankName) ? s.bankName : null;
     _accountName.text = s.bankAccountName ?? '';
     _accountNumber.clear();
+    _saved = _snapshot();
   }
 
   String? _err(String path) => _local[path] ?? fieldError(_remote, path);
@@ -192,6 +199,7 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
     final api = ref.watch(sellerApiProvider);
 
     return SoukPage(
+      unsaved: (isDirty: () => _snapshot() != _saved, watch: Listenable.merge(_controllers)),
       title: l.sellerTabStore,
       actions: const [SellerBackToBuying()],
       showBack: false,
