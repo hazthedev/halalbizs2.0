@@ -381,6 +381,16 @@ class AppLocalizationsMs extends AppLocalizations {
   String get somethingWentWrong => 'Sesuatu telah berlaku.';
 
   @override
+  String get unsavedTitle => 'Buang perubahan?';
+
+  @override
+  String get unsavedBody =>
+      'Perubahan anda di halaman ini belum disimpan. Tinggalkan dan hilangkan perubahan itu?';
+
+  @override
+  String get unsavedLeave => 'Buang';
+
+  @override
   String get store => 'Kedai';
 
   @override
@@ -1196,6 +1206,20 @@ class AppLocalizationsMs extends AppLocalizations {
       'Pesanan ini tidak dibayar dalam masa yang ditetapkan. Tiada caj dikenakan.';
 
   @override
+  String get checkoutPayFailedTitle => 'Pembayaran tidak berjaya';
+
+  @override
+  String get checkoutPayFailedBody =>
+      'Bank atau kad anda menolaknya. Tiada caj dikenakan. Anda boleh cuba lagi.';
+
+  @override
+  String get checkoutPayUnconfirmedTitle => 'Pembayaran belum disahkan';
+
+  @override
+  String get checkoutPayUnconfirmedBody =>
+      'Jika anda membatalkan atau pembayaran tidak berjaya, buka halaman pembayaran semula. Jika anda sudah membayar, ia akan dipaparkan di sini dalam masa seminit.';
+
+  @override
   String get ordersAll => 'Semua';
 
   @override
@@ -1933,6 +1957,9 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get updateRequiredBody =>
       'Sila kemas kini HalalBizs untuk terus membeli-belah.';
+
+  @override
+  String get updateNow => 'Kemas kini sekarang';
 
   @override
   String get maintenanceTitle => 'Kami akan kembali tidak lama lagi';

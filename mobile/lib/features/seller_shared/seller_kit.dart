@@ -12,7 +12,9 @@ import 'models.dart';
 /// App-bar action on every seller tab root: back to the buyer shell, with
 /// its words (a bare bag icon read as a logo on a real phone).
 class SellerBackToBuying extends StatelessWidget {
-  const SellerBackToBuying({super.key});
+  const SellerBackToBuying({super.key, this.onPressed});
+
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => TextButton.icon(
@@ -23,7 +25,7 @@ class SellerBackToBuying extends StatelessWidget {
         ),
         icon: const FaIcon(FontAwesomeIcons.bagShopping, size: 16),
         label: Text(context.l10n.sellerBackToBuying, style: SoukText.label),
-        onPressed: () => context.go('/home'),
+        onPressed: onPressed ?? () => context.go('/home'),
       );
 }
 
@@ -37,6 +39,9 @@ bool sellerGuardBounce(BuildContext context, Object error) {
   context.go('/account');
   return true;
 }
+
+/// Keep loaded rows after a failed refresh, except when seller access was revoked.
+bool keepSellerDataOnError(Object? error) => error is! ApiException || !error.isForbidden;
 
 /// [showApiError] with the seller-guard bounce in front of it.
 void showSellerError(BuildContext context, Object error) {
@@ -259,7 +264,9 @@ Future<T?> showSellerSheet<T>(BuildContext context, {required String title, requ
 
 /// "Load more" list over a seller endpoint: first page skeleton, error pane
 /// with retry, empty state, then rows with a trailing Load more button. A
-/// change of [signature] (filters, refresh) restarts from page 1.
+/// change of [signature] (filters) restarts from page 1 on a skeleton; a
+/// change of [refresh] (pull to refresh, a write elsewhere) reloads page 1
+/// behind the rows, so a failed refresh keeps them (with the error alert).
 class SellerPagedList<T> extends StatefulWidget {
   const SellerPagedList({
     super.key,
@@ -267,11 +274,13 @@ class SellerPagedList<T> extends StatefulWidget {
     required this.itemBuilder,
     required this.signature,
     required this.empty,
+    this.refresh = '',
   });
 
   final Future<SellerPage<T>> Function(int page) fetch;
   final Widget Function(BuildContext context, T item) itemBuilder;
   final String signature;
+  final String refresh;
   final Widget empty;
 
   @override
@@ -302,6 +311,8 @@ class _SellerPagedListState<T> extends State<SellerPagedList<T>> {
       _page = 0;
       _lastPage = 1;
       _error = null;
+      _load(1);
+    } else if (old.refresh != widget.refresh) {
       _load(1);
     }
   }

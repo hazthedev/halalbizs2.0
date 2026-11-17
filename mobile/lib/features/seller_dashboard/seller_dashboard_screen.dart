@@ -41,6 +41,7 @@ class SellerDashboardScreen extends ConsumerWidget {
       cachedAt: async.value?.fetchedAt,
       body: async.when(
         skipLoadingOnRefresh: true,
+        skipError: keepSellerDataOnError(async.error),
         loading: () => const SoukSkeleton.list(rows: 6),
         error: (e, _) => SellerErrorPane(error: e, onRetry: () => _refresh(ref)),
         data: (r) => _Body(r.data),

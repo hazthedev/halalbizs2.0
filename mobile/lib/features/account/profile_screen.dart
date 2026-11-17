@@ -30,6 +30,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _changing = false;
+
+  /// What was loaded or saved, to tell whether leaving loses edits.
+  String _saved = '';
+  List<TextEditingController> get _controllers => [_name, _phone, _current, _password, _confirm];
+  String _snapshot() => [for (final c in _controllers) c.text, _locale].join('\u0000');
   Object? _pwError;
 
   @override
@@ -41,6 +46,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _email = TextEditingController(text: me?.email ?? '');
     // The language the app is in IS the preference (Language page saves both).
     _locale = ref.read(localeProvider).languageCode;
+    _saved = _snapshot();
   }
 
   @override
@@ -65,6 +71,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       await ref.read(sessionProvider.notifier).refreshProfile();
       if (!mounted) return;
       if (_locale != null) ref.read(localeProvider.notifier).set(Locale(_locale!));
+      _saved = _snapshot();
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
         ..showSnackBar(SnackBar(content: Text(l.accountProfileSaved)));
@@ -96,6 +103,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _current.clear();
       _password.clear();
       _confirm.clear();
+      _saved = _snapshot();
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
         ..showSnackBar(SnackBar(content: Text(l.accountPasswordChanged)));
@@ -113,6 +121,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final l = context.l10n;
     final me = ref.watch(profileProvider);
     return SoukPage(
+      unsaved: (isDirty: () => _snapshot() != _saved, watch: Listenable.merge(_controllers)),
       title: l.profile,
       scrollable: true,
       body: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [

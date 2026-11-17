@@ -16,6 +16,13 @@ class InAppBrowser {
     }
   }
 
+  /// Hands [url] to the system (the Play Store / App Store app).
+  Future<void> openExternal(String url) async {
+    try {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } catch (_) {}
+  }
+
   Future<void> close() async {
     try {
       if (await supportsCloseForLaunchMode(LaunchMode.inAppBrowserView)) await closeInAppWebView();

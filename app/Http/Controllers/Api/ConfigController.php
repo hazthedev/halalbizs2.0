@@ -53,6 +53,9 @@ class ConfigController extends Controller
                 'privacy' => $base.'/page/privacy',
                 'terms' => $base.'/page/terms',
                 'seller_apply' => $base.'/seller/apply',
+                // Where "Update required" sends the user; null = no store listing yet.
+                'store_android' => config('services.mobile_app.android_url') ?: null,
+                'store_ios' => config('services.mobile_app.ios_url') ?: null,
             ],
         ]);
     }

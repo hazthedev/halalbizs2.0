@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../l10n/l10n.dart';
 import '../../offline/offline.dart';
 import '../../theme/souk_theme.dart';
+import 'common.dart';
 import 'empty_state.dart';
 
 /// Page scaffold for every screen: slim nav bar (serif title, optional
@@ -31,6 +32,7 @@ class SoukPage extends StatelessWidget {
     this.padding,
     this.titleWidget,
     this.onScrollEnd,
+    this.unsaved,
   });
 
   final String title;
@@ -64,6 +66,9 @@ class SoukPage extends StatelessWidget {
   /// often: the receiver ignores calls while a page is loading.
   final VoidCallback? onScrollEnd;
 
+  /// Forms: asks before leaving with unsaved edits ([SoukUnsavedGuard]).
+  final ({bool Function() isDirty, Listenable watch})? unsaved;
+
   @override
   Widget build(BuildContext context) {
     final router = GoRouter.maybeOf(context);
@@ -92,7 +97,7 @@ class SoukPage extends StatelessWidget {
       content = RefreshIndicator(onRefresh: onRefresh!, color: SoukColors.emerald, child: content);
     }
 
-    return Scaffold(
+    final page = Scaffold(
       backgroundColor: SoukColors.paper,
       appBar: AppBar(
         leading: leading ??
@@ -101,7 +106,11 @@ class SoukPage extends StatelessWidget {
                     key: const Key('souk-back'),
                     tooltip: context.l10n.back,
                     icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-                    onPressed: () => router != null && router.canPop() ? router.pop() : Navigator.of(context).maybePop(),
+                    // maybePop first: it honours a PopScope (unsaved-changes guard).
+                    onPressed: () async {
+                      if (await Navigator.of(context).maybePop()) return;
+                      if (router != null && router.canPop()) router.pop();
+                    },
                   )
                 : (brandMark
                     ? const Padding(
@@ -134,6 +143,8 @@ class SoukPage extends StatelessWidget {
               ),
             ),
     );
+    final u = unsaved;
+    return u == null ? page : SoukUnsavedGuard(isDirty: u.isDirty, watch: u.watch, child: page);
   }
 }
 

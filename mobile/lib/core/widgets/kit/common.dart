@@ -117,3 +117,32 @@ Future<bool> showSoukConfirm(
   );
   return ok ?? false;
 }
+
+/// Asks before leaving a form with unsaved edits (app-bar back, Android back,
+/// iOS swipe). [isDirty] compares the form now with what was loaded or saved;
+/// [watch] (the form's text controllers) re-checks it as the user types.
+class SoukUnsavedGuard extends StatelessWidget {
+  const SoukUnsavedGuard({super.key, required this.isDirty, required this.watch, required this.child});
+
+  final bool Function() isDirty;
+  final Listenable watch;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: watch,
+        child: child,
+        builder: (context, child) => PopScope(
+          canPop: !isDirty(),
+          onPopInvokedWithResult: (didPop, _) async {
+            if (didPop) return;
+            final nav = Navigator.of(context);
+            final l = context.l10n;
+            final leave = await showSoukConfirm(context,
+                title: l.unsavedTitle, message: l.unsavedBody, confirmLabel: l.unsavedLeave, danger: true);
+            if (leave && nav.mounted) nav.pop();
+          },
+          child: child!,
+        ),
+      );
+}

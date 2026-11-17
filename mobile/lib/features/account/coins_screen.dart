@@ -57,6 +57,7 @@ class _CoinsScreenState extends ConsumerState<CoinsScreen> {
       onRefresh: _refresh,
       body: async.when(
         skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => const SoukSkeleton.list(rows: 4),
         error: (e, _) => e is ApiException && e.isNotFound
             ? SoukEmptyState(key: const Key('coins-disabled'), title: l.accountCoinsUnavailable, message: l.accountCoinsUnavailableBody)

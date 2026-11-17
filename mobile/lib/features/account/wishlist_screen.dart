@@ -54,6 +54,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
       onRefresh: _refresh,
       body: async.when(
         skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => const SoukSkeleton.cards(rows: 4),
         error: (e, _) => ErrorPane(error: e, onRetry: _refresh, retryLabel: l.retry),
         data: (items) => items.isEmpty

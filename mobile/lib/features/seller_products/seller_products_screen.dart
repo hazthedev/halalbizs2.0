@@ -106,7 +106,8 @@ class _SellerProductsScreenState extends ConsumerState<SellerProductsScreen> {
         ),
         const SizedBox(height: SoukSpace.s4),
         SellerPagedList<SellerProduct>(
-          signature: '${_status ?? ''}|$_q#$_refresh#$bumped',
+          signature: '${_status ?? ''}|$_q',
+          refresh: '$_refresh#$bumped',
           fetch: (page) => api.products(status: _status, q: _q, page: page),
           itemBuilder: (context, p) => _ProductRow(p, onTap: () => context.push('/seller/products/${p.id}')),
           empty: SoukEmptyState(

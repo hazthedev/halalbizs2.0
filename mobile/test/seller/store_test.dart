@@ -5,6 +5,39 @@ import '../helpers.dart';
 import 'seller_helpers.dart';
 
 void main() {
+  for (final exit in ['seller-back-to-buying', 'seller-store-back-to-buying']) {
+    testWidgets('$exit asks before discarding store edits', (tester) async {
+      usePhone(tester);
+      final api = FakeApi(routes: {
+        ...sellerBaseRoutes(),
+        'GET seller/store': (_, _) => fakeStore(),
+        'GET seller/reviews': (_, _) => [],
+      });
+      final h = Harness(api: api, token: 'tok');
+      await h.pump(tester, location: '/seller/store');
+      await tester.enterText(find.byKey(const Key('seller-store-description')), 'Unsaved shop description');
+      await tester.pump();
+      final button = find.byKey(Key(exit));
+      await tester.ensureVisible(button);
+      await tester.pumpAndSettle();
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(find.text('Discard changes?'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('souk-confirm-cancel')));
+      await tester.pumpAndSettle();
+      expect(h.router.state.uri.path, '/seller/store');
+      expect(find.text('Unsaved shop description'), findsOneWidget);
+      await tester.ensureVisible(button);
+      await tester.pumpAndSettle();
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('souk-confirm-ok')));
+      await tester.pumpAndSettle();
+      expect(h.router.state.uri.path, '/home');
+    });
+  }
+
+
   testWidgets('store form shows the masked bank number and only sends bank when a full number is typed', (tester) async {
     usePhone(tester);
     Object? sent;

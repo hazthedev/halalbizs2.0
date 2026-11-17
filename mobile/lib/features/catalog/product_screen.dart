@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/auth/session.dart';
+import '../../core/router.dart' show SoukNotFoundScreen;
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../account/wishlist_heart.dart';
@@ -128,6 +129,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final async = ref.watch(productProvider(widget.slug));
+    // Deleted or unpublished: a Retry cannot bring it back.
+    if (async.error case ApiException(isNotFound: true)) return const SoukNotFoundScreen();
     final product = async.value?.data;
     final variant = product == null ? null : _selected(product);
     final canBuy = product != null && (variant?.inStock ?? product.inStock);
@@ -186,6 +189,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
             ]),
       body: async.when(
         skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => const Padding(
           padding: EdgeInsets.all(SoukSpace.page),
           child: Column(children: [

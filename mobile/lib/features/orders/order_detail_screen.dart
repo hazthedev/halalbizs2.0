@@ -213,6 +213,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
             ]),
       body: async.when(
         skipLoadingOnRefresh: true,
+        skipError: true,
         loading: () => const SoukSkeleton.list(rows: 5),
         error: (e, _) => ErrorPane(error: e, onRetry: _refresh, retryLabel: l.retry),
         data: (r) => _Detail(r.data),

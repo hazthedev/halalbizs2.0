@@ -10,9 +10,10 @@ import 'package:halalbizs/core/version_gate.dart';
 import '../features/home_test.dart';
 import '../helpers.dart';
 
-Harness harness(Object Function() config, {String installed = '1.2.0', AppDb? db}) => Harness(
+Harness harness(Object Function() config, {String installed = '1.2.0', AppDb? db, FakeBrowser? browser}) => Harness(
       api: FakeApi(routes: {'GET config': (_, _) => config(), 'GET home': (_, _) => fakeHome()}),
       db: db,
+      browser: browser,
       overrides: [installedVersionProvider.overrideWith((ref) => installed)],
     );
 
@@ -31,6 +32,25 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Update required'), findsOneWidget);
     expect(find.byKey(const Key('home-empty')), findsNothing);
+  });
+
+  // HB-APP-STATES gap 10: the gate is not a dead end.
+  testWidgets('Update required has an Update now button that opens the store page from config', (tester) async {
+    usePhone(tester);
+    final browser = FakeBrowser();
+    const store = 'https://play.google.com/store/apps/details?id=com.halalbizs.halalbizs';
+    final h = harness(
+        () => {
+              'min_app_version': '1.4.0',
+              'maintenance': {'enabled': false, 'message': ''},
+              'urls': {'store_android': store, 'store_ios': null},
+            },
+        browser: browser);
+    await h.pump(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('gate-update-store')));
+    await tester.pumpAndSettle();
+    expect(browser.external, [store]);
   });
 
   testWidgets('at or above the minimum lets the user in', (tester) async {

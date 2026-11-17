@@ -376,6 +376,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get somethingWentWrong => 'Something went wrong.';
 
   @override
+  String get unsavedTitle => 'Discard changes?';
+
+  @override
+  String get unsavedBody =>
+      'Your changes on this page are not saved. Leave and lose them?';
+
+  @override
+  String get unsavedLeave => 'Discard';
+
+  @override
   String get store => 'Store';
 
   @override
@@ -1184,6 +1194,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'This order was not paid in time. Nothing was charged.';
 
   @override
+  String get checkoutPayFailedTitle => 'Payment did not go through';
+
+  @override
+  String get checkoutPayFailedBody =>
+      'Your bank or card declined it. Nothing was charged. You can try again.';
+
+  @override
+  String get checkoutPayUnconfirmedTitle => 'Payment not confirmed yet';
+
+  @override
+  String get checkoutPayUnconfirmedBody =>
+      'If you cancelled or it did not go through, open the payment page again. If you paid, it shows here within a minute.';
+
+  @override
   String get ordersAll => 'All';
 
   @override
@@ -1932,6 +1956,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateRequiredBody => 'Please update HalalBizs to keep shopping.';
+
+  @override
+  String get updateNow => 'Update now';
 
   @override
   String get maintenanceTitle => 'We will be back soon';

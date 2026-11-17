@@ -794,6 +794,24 @@ abstract class AppLocalizations {
   /// **'Something went wrong.'**
   String get somethingWentWrong;
 
+  /// No description provided for @unsavedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get unsavedTitle;
+
+  /// No description provided for @unsavedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your changes on this page are not saved. Leave and lose them?'**
+  String get unsavedBody;
+
+  /// No description provided for @unsavedLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get unsavedLeave;
+
   /// No description provided for @store.
   ///
   /// In en, this message translates to:
@@ -2276,6 +2294,30 @@ abstract class AppLocalizations {
   /// **'This order was not paid in time. Nothing was charged.'**
   String get checkoutPayExpiredBody;
 
+  /// No description provided for @checkoutPayFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment did not go through'**
+  String get checkoutPayFailedTitle;
+
+  /// No description provided for @checkoutPayFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your bank or card declined it. Nothing was charged. You can try again.'**
+  String get checkoutPayFailedBody;
+
+  /// No description provided for @checkoutPayUnconfirmedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment not confirmed yet'**
+  String get checkoutPayUnconfirmedTitle;
+
+  /// No description provided for @checkoutPayUnconfirmedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If you cancelled or it did not go through, open the payment page again. If you paid, it shows here within a minute.'**
+  String get checkoutPayUnconfirmedBody;
+
   /// No description provided for @ordersAll.
   ///
   /// In en, this message translates to:
@@ -3553,6 +3595,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please update HalalBizs to keep shopping.'**
   String get updateRequiredBody;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get updateNow;
 
   /// No description provided for @maintenanceTitle.
   ///

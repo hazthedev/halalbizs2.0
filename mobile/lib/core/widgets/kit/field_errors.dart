@@ -13,5 +13,8 @@ String? fieldErrorAt(Object? error, String path) {
 /// True when every key in a 422 lands on one of [paths] (as the field or a
 /// `path.N` child). False means some message has no input to sit under, so
 /// the screen should surface the error as a whole instead of swallowing it.
+/// No field list at all (500, timeout, 403, 409) is never covered.
 bool fieldsCovered(Object? error, Iterable<String> paths) =>
-    error is ApiException && error.fields.keys.every((k) => paths.any((p) => k == p || k.startsWith('$p.')));
+    error is ApiException &&
+    error.fields.isNotEmpty &&
+    error.fields.keys.every((k) => paths.any((p) => k == p || k.startsWith('$p.')));
