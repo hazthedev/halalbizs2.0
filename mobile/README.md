@@ -111,7 +111,8 @@ product page, and the push stub (`core/push/push_service.dart`:
 - Forms (product, store, profile, address): `SoukPage(unsaved: ...)` asks
   before leaving with edits.
 - A failed pull-to-refresh keeps the loaded page (`skipError: true`; seller
-  lists reload behind their rows via `SellerPagedList.refresh`).
+  lists reload behind their rows via `SellerPagedList.refresh`). A seller
+  403 still leaves the seller area, including after data has loaded.
 - Store or product 404: "Page not found" with a Home button.
 - "Update required" has an Update now button (`urls.store_android` /
   `urls.store_ios` from `GET config`); the native splash stays up until the

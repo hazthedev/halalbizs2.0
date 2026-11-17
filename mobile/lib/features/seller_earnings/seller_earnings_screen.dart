@@ -84,7 +84,7 @@ class _SellerEarningsScreenState extends ConsumerState<SellerEarningsScreen> {
       cachedAt: async.value?.fetchedAt,
       body: async.when(
         skipLoadingOnRefresh: true,
-        skipError: true,
+        skipError: keepSellerDataOnError(async.error),
         loading: () => const SoukSkeleton.list(rows: 6),
         error: (e, _) => SellerErrorPane(error: e, onRetry: _refresh),
         data: (r) {

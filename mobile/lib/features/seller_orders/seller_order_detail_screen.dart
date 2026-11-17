@@ -87,7 +87,7 @@ class _SellerOrderDetailScreenState extends ConsumerState<SellerOrderDetailScree
       bottomBar: o == null ? null : _actions(l, o),
       body: async.when(
         skipLoadingOnRefresh: true,
-        skipError: true,
+        skipError: keepSellerDataOnError(async.error),
         loading: () => const SoukSkeleton.list(rows: 6),
         error: (e, _) => SellerErrorPane(error: e, onRetry: _reload),
         data: (r) => _Body(r.data),

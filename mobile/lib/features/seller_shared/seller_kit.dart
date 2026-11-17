@@ -38,6 +38,9 @@ bool sellerGuardBounce(BuildContext context, Object error) {
   return true;
 }
 
+/// Keep loaded rows after a failed refresh, except when seller access was revoked.
+bool keepSellerDataOnError(Object? error) => error is! ApiException || !error.isForbidden;
+
 /// [showApiError] with the seller-guard bounce in front of it.
 void showSellerError(BuildContext context, Object error) {
   if (!sellerGuardBounce(context, error)) showApiError(context, error);
