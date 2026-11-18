@@ -14,7 +14,7 @@
                                     @endforeach
                                 </select>
                             </label>
-                            <button type="button" wire:click="addProduct" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 text-sm font-medium text-ink hover:border-ink">{{ __('Add') }}</button>
+                            <button type="button" wire:click="addProduct" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 text-sm font-medium text-ink hover:border-ink" wire:loading.attr="disabled" wire:target="addProduct"><span wire:loading.inline-flex wire:target="addProduct" role="status"><x-ui.spinner /><span class="sr-only">{{ __('Loading…') }}</span></span> {{ __('Add') }}</button>
                         </div>
 
                         {{-- Rail --}}
@@ -27,7 +27,7 @@
                                             @if ($managing->featured_product_id === $product->id)
                                                 <span class="text-[11px] font-medium uppercase tracking-[0.06em] text-emerald">{{ __('Featured') }}</span>
                                             @else
-                                                <button type="button" wire:click="feature({{ $managing->id }}, {{ $product->id }})" class="text-[13px] font-medium text-ink-soft hover:text-emerald">{{ __('Feature') }}</button>
+                                                <button type="button" wire:click="feature({{ $managing->id }}, {{ $product->id }})" class="text-[13px] font-medium text-ink-soft hover:text-emerald" wire:loading.attr="disabled" wire:target="feature"><span wire:loading.inline-flex wire:target="feature" role="status"><x-ui.spinner /><span class="sr-only">{{ __('Loading…') }}</span></span> {{ __('Feature') }}</button>
                                             @endif
                                             <button type="button" wire:click="removeProduct({{ $managing->id }}, {{ $product->id }})" class="text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Remove') }}</button>
                                         </div>

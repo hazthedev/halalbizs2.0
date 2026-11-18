@@ -24,7 +24,7 @@
                 <input id="ls-when" type="datetime-local" wire:model="scheduledFor" class="mt-1 block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-canvas px-3 text-sm">
             </div>
             <div class="flex gap-2 sm:col-span-2">
-                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white hover:bg-emerald-deep">{{ __('Create') }}</button>
+                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white hover:bg-emerald-deep" wire:loading.attr="disabled" wire:target="save"><span wire:loading.inline-flex wire:target="save" role="status"><x-ui.spinner /><span class="sr-only">{{ __('Loading…') }}</span></span> {{ __('Create') }}</button>
                 <x-ui.button variant="secondary" :href="route('seller.live.index')">{{ __('Cancel') }}</x-ui.button>
             </div>
         </form>
