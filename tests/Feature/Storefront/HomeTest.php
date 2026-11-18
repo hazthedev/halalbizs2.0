@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Storefront\Home;
+use App\Models\Banner;
 use App\Models\Category;
 use App\Models\HomeSection;
 use App\Models\Product;
@@ -41,16 +42,17 @@ it('shows recently viewed products once ids are hydrated from localStorage', fun
 
     $product = Product::factory()->create(['name' => ['en' => 'Halal Beef Jerky', 'ms' => 'Dendeng Daging Halal']]);
 
-    Livewire::test(Home::class)
+    $page = Livewire::test(Home::class)
         ->assertDontSee('Halal Beef Jerky')
-        ->call('loadRecentlyViewed', [$product->id])
-        ->assertSee('Recently viewed')
-        ->assertSee('Halal Beef Jerky');
+        ->call('loadRecentlyViewed', [$product->id]);
+
+    expect($page->effects['returns'][0])->toContain('Recently viewed', 'Halal Beef Jerky');
+    expect($page->effects)->not->toHaveKey('html');
 });
 
 it('puts the banner right under the header when it is the first section (Haze 2026-11-11)', function () {
     HomeSection::create(['type' => 'banner', 'title' => ['en' => 'Promos'], 'position' => 0, 'is_active' => true]);
-    \App\Models\Banner::create(['title' => ['en' => 'Sale'], 'position' => 0, 'is_active' => true]);
+    Banner::create(['title' => ['en' => 'Sale'], 'position' => 0, 'is_active' => true]);
 
     $this->get('/')->assertOk()
         ->assertSee('<section class="w-full" aria-label="Promotions"', false)
@@ -60,7 +62,7 @@ it('puts the banner right under the header when it is the first section (Haze 20
 it('keeps the banner top gap when another section sits above it', function () {
     HomeSection::create(['type' => 'recently_viewed', 'title' => ['en' => 'Recently viewed'], 'position' => 0, 'is_active' => true]);
     HomeSection::create(['type' => 'banner', 'title' => ['en' => 'Promos'], 'position' => 1, 'is_active' => true]);
-    \App\Models\Banner::create(['title' => ['en' => 'Sale'], 'position' => 0, 'is_active' => true]);
+    Banner::create(['title' => ['en' => 'Sale'], 'position' => 0, 'is_active' => true]);
 
     $this->get('/')->assertOk()
         ->assertSee('<section class="w-full pt-6 sm:pt-8" aria-label="Promotions"', false);

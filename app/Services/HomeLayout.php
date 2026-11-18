@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\FlashSale;
 use App\Models\FlashSaleItem;
 use App\Models\HomeSection;
+use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductBoost;
 use App\Models\ScheduledLayout;
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 /**
  * The ONE reader of the admin's home layout (Admin → Content → Home sections,
@@ -49,6 +51,22 @@ class HomeLayout
      * @return BaseCollection<int, array{section: HomeSection, data: Collection}>
      */
     public function sections(array $recentlyViewedIds = [], string $for = 'web'): BaseCollection
+    {
+        if ($for !== 'web' || app(ContentDrafts::class)->previewing) {
+            return $this->uncachedSections($recentlyViewedIds, $for);
+        }
+
+        $ttl = max(1, min(self::CACHE_TTL, ScheduledLayout::secondsToNextSwitch() ?? self::CACHE_TTL));
+        $rows = Cache::remember('home-layout:web:'.app()->getLocale(), $ttl,
+            fn () => $this->uncachedSections([], 'web'));
+
+        // Personal history is attached only after reading the public cache.
+        return $rows->map(fn (array $row) => $row['section']->type === 'recently_viewed'
+            ? ['section' => $row['section'], 'data' => $this->recentlyViewedProducts($recentlyViewedIds)]
+            : $row);
+    }
+
+    private function uncachedSections(array $recentlyViewedIds, string $for): BaseCollection
     {
         $other = $for === 'web' ? 'app' : 'web';
         $all = app(ContentDrafts::class)->visible(HomeSection::class, ['media'])
@@ -172,9 +190,24 @@ class HomeLayout
     /** Called on every save of home content (AppServiceProvider), so admins see their change at once. */
     public static function flush(): void
     {
+        Cache::forget('storefront:category-tree');
+        Cache::forever('storefront:sponsored-version', (string) Str::uuid());
         foreach (ContentLocales::ALL as $locale) {
             Cache::forget(self::cacheKey($locale));
+            Cache::forget('home-layout:web:'.$locale);
+            Cache::forget('storefront:footer:'.$locale);
         }
+    }
+
+    public function footer(): array
+    {
+        $build = fn () => [
+            'categories' => Category::active()->whereNull('parent_id')->orderBy('position')->get(),
+            'pages' => app(ContentDrafts::class)->visible(Page::class)->where('show_in_footer', true)->sortBy('id'),
+        ];
+
+        return app(ContentDrafts::class)->previewing ? $build()
+            : Cache::remember('storefront:footer:'.app()->getLocale(), self::CACHE_TTL, $build);
     }
 
     private static function cacheKey(string $locale): string
@@ -346,7 +379,7 @@ class HomeLayout
      * @param  array<int, int>  $ids
      * @return Collection<int, Product>
      */
-    private function recentlyViewedProducts(array $ids): Collection
+    public function recentlyViewedProducts(array $ids): Collection
     {
         if ($ids === []) {
             return new Collection;

@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
 use App\Services\WishlistService;
+use Livewire\Attributes\Renderless;
 
 /**
  * Shared cart + wishlist actions for any Livewire component that renders
@@ -16,6 +17,7 @@ use App\Services\WishlistService;
  */
 trait InteractsWithCart
 {
+    #[Renderless]
     public function addToCart(int $variantId, int $qty = 1): bool
     {
         if (! app(CartService::class)->purchasingEnabled()) {
@@ -46,12 +48,13 @@ trait InteractsWithCart
         return true;
     }
 
-    public function toggleWishlist(int $productId): void
+    #[Renderless]
+    public function toggleWishlist(int $productId): ?bool
     {
         if (! auth()->check()) {
             $this->redirectRoute('login', navigate: true);
 
-            return;
+            return null;
         }
 
         $product = Product::find($productId);
@@ -59,13 +62,15 @@ trait InteractsWithCart
         if ($product === null) {
             $this->dispatch('toast', message: __('This product is not available right now.'), type: 'error');
 
-            return;
+            return null;
         }
 
         $saved = app(WishlistService::class)->toggle(auth()->user(), $product);
 
         $this->dispatch('toast', message: $saved ? __('Saved to wishlist') : __('Removed from wishlist'));
-        $this->dispatch('wishlist-updated');
+        $this->dispatch('wishlist-updated', productId: $productId, saved: $saved);
+
+        return $saved;
     }
 
     /** Product ids in the current user's wishlist — for heart states. */

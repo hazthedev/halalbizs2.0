@@ -46,11 +46,18 @@
         @auth
             <button
                 type="button"
-                wire:click="toggleWishlist({{ $product->id }})"
-                class="absolute right-2 top-2 z-20 flex size-9 items-center justify-center rounded-[var(--radius-pill)] border border-line bg-surface/90 hb-press [--press:0.9] {{ $wishlisted ? 'text-danger' : 'text-ink-faint hover:text-ink' }}"
+                x-data="{ saved: @js($wishlisted), busy: false }"
+                x-on:wishlist-updated.window="if ($event.detail.productId === {{ $product->id }}) saved = $event.detail.saved"
+                x-on:click="if (busy) return; saved = !saved; busy = true; try { const result = await $wire.toggleWishlist({{ $product->id }}); if (result === null) saved = !saved; else saved = result; } catch { saved = !saved; } finally { busy = false; }"
+                x-bind:disabled="busy" x-bind:aria-busy="busy"
+                x-bind:aria-pressed="saved"
+                x-bind:aria-label="saved ? @js(__('Remove from wishlist')) : @js(__('Add to wishlist'))"
+                x-bind:class="saved ? 'text-danger' : 'text-ink-faint hover:text-ink'"
+                class="absolute right-2 top-2 z-20 flex size-9 items-center justify-center rounded-[var(--radius-pill)] border border-line bg-surface/90 hb-press [--press:0.9]"
                 aria-label="{{ $wishlisted ? __('Remove from wishlist') : __('Add to wishlist') }}"
             >
-                <svg class="size-4" viewBox="0 0 24 24" fill="{{ $wishlisted ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                <svg class="size-4" viewBox="0 0 24 24" fill="{{ $wishlisted ? 'currentColor' : 'none' }}" x-bind:fill="saved ? 'currentColor' : 'none'" x-show="!busy" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                <svg x-show="busy" x-cloak class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity=".25"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="2"/></svg>
             </button>
         @endauth
 
@@ -115,13 +122,14 @@
                      reverts silently at 1.2s. --}}
                 <button
                     type="button"
-                    x-data="{ added: false, flash() { this.added = true; clearTimeout(this._t); this._t = setTimeout(() => this.added = false, 1200); } }"
-                    x-on:click="$store.cart.bump(); flash()"
-                    wire:click="addToCart({{ $defaultVariant->id }})"
+                    x-data="{ added: false, busy: false, flash() { this.added = true; clearTimeout(this._t); this._t = setTimeout(() => this.added = false, 1200); } }"
+                    x-on:click="if (busy) return; busy = true; $store.cart.bump(); try { if (await $wire.addToCart({{ $defaultVariant->id }})) flash(); } finally { busy = false; }"
+                    x-bind:disabled="busy" x-bind:aria-busy="busy"
                     class="relative z-20 ml-auto inline-grid shrink-0 place-items-center rounded-[var(--radius-pill)] border border-line-strong px-3 py-1 text-[length:var(--text-xs)] text-emerald hb-press hover:border-emerald hover:bg-emerald-tint"
                     aria-label="{{ __('Add to cart') }}"
                 >
-                    <span class="col-start-1 row-start-1 transition-opacity duration-(--dur-micro)" x-bind:style="added && { opacity: 0 }">{{ __('Add') }}</span>
+                    <span x-show="!busy" class="col-start-1 row-start-1 transition-opacity duration-(--dur-micro)" x-bind:style="added && { opacity: 0 }">{{ __('Add') }}</span>
+                    <svg x-show="busy" x-cloak class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity=".25"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="2"/></svg>
                     <span class="col-start-1 row-start-1 font-medium opacity-0 transition-opacity duration-(--dur-micro)" x-bind:style="added && { opacity: 1 }" aria-hidden="true">&check;</span>
                 </button>
             @endif

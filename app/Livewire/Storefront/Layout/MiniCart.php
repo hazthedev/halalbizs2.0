@@ -10,6 +10,21 @@ use Livewire\Component;
 
 class MiniCart extends Component
 {
+    public bool $loaded = false;
+
+    public function loadCart(): void
+    {
+        $this->loaded = true;
+    }
+
+    #[On('cart-updated')]
+    public function refreshCart(): void
+    {
+        if (! $this->loaded) {
+            $this->skipRender();
+        }
+    }
+
     public function updateQty(int $variantId, int $qty): void
     {
         $variant = ProductVariant::find($variantId);
@@ -59,10 +74,9 @@ class MiniCart extends Component
         $this->dispatch('cart-updated', count: app(CartService::class)->itemCount(auth()->user()));
     }
 
-    #[On('cart-updated')]
     public function render()
     {
-        $groups = app(CartService::class)->groupedByStore(auth()->user());
+        $groups = $this->loaded ? app(CartService::class)->groupedByStore(auth()->user()) : collect();
 
         $subtotalSen = $groups->flatten(1)->sum(
             fn ($line) => $line->variant->effectivePriceSen() * $line->qty
