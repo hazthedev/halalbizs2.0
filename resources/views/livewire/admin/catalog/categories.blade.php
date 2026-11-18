@@ -3,8 +3,7 @@
     {{-- Header --}}
     <x-ui.section-heading :title="__('Categories')" as="h1">
         <x-slot:actions>
-            <x-ui.button wire:click="startCreate">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            <x-ui.button icon="plus" wire:click="startCreate">
                 {{ __('Add root category') }}
             </x-ui.button>
         </x-slot:actions>
@@ -20,7 +19,7 @@
 
         @if ($roots->isEmpty())
             <x-ui.empty-state :title="__('No categories yet')" :message="__('Build the catalog tree — three levels deep at most.')">
-                <x-ui.button wire:click="startCreate">{{ __('Add root category') }}</x-ui.button>
+                <x-ui.button icon="plus" wire:click="startCreate">{{ __('Add root category') }}</x-ui.button>
             </x-ui.empty-state>
         @else
             <div class="divide-y divide-line">

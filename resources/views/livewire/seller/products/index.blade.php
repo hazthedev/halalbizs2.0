@@ -4,8 +4,7 @@
     <x-ui.section-heading as="h1" class="flex-wrap" :title="__('Products')">
         <x-slot:actions>
             <x-ui.button :href="route('seller.products.import')" variant="ghost">{{ __('Bulk import') }}</x-ui.button>
-            <x-ui.button :href="route('seller.products.create')">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            <x-ui.button icon="plus" :href="route('seller.products.create')">
                 {{ __('Add product') }}
             </x-ui.button>
         </x-slot:actions>
@@ -76,7 +75,7 @@
                 <x-ui.empty-state :title="__('No products match')" :message="__('Try removing a filter or searching for something else.')" />
             @else
                 <x-ui.empty-state :title="__('Nothing on the shelves yet')" :message="__('Your products appear here once you add them.')">
-                    <x-ui.button :href="route('seller.products.create')">{{ __('Add your first product') }}</x-ui.button>
+                    <x-ui.button icon="plus" :href="route('seller.products.create')">{{ __('Add your first product') }}</x-ui.button>
                 </x-ui.empty-state>
             @endif
         @else

@@ -20,7 +20,8 @@
             @error('endsAt')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
         </div>
         <div class="sm:col-span-4">
-            <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white">
+            <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white">
+                <x-ui.icon.plus />
                 {{ __('Create flash sale') }}
             </button>
         </div>

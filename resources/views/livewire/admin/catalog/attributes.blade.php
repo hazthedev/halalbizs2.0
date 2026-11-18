@@ -13,7 +13,7 @@
                 <input type="checkbox" wire:model="isFilterable" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Filterable') }}
             </label>
-            <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="create">{{ __('Add attribute') }}</x-ui.button>
+            <x-ui.button icon="plus" type="submit" wire:loading.attr="disabled" wire:target="create">{{ __('Add attribute') }}</x-ui.button>
         </form>
     </x-ui.card>
 

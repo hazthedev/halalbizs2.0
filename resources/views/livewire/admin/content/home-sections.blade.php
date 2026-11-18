@@ -18,7 +18,7 @@
                             <option value="{{ $type }}">{{ \App\Livewire\Admin\Content\HomeSections::typeLabel($type) }}</option>
                         @endforeach
                     </select>
-                    <x-ui.button wire:click="addSection">{{ __('Add section') }}</x-ui.button>
+                    <x-ui.button icon="plus" wire:click="addSection">{{ __('Add section') }}</x-ui.button>
                     @endif
                 </div>
             </x-slot:actions>
@@ -54,7 +54,7 @@
                             wire:confirm="{{ __('Delete this layout and its sections? The everyday layout is not touched.') }}"
                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete layout') }}</button>
                 @endif
-                <x-ui.button variant="ghost" wire:click="newLayout" class="ml-auto">{{ __('New scheduled layout') }}</x-ui.button>
+                <x-ui.button icon="plus" variant="ghost" wire:click="newLayout" class="ml-auto">{{ __('New scheduled layout') }}</x-ui.button>
             @endcan
         </div>
 

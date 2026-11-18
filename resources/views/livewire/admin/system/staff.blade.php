@@ -3,8 +3,7 @@
     <x-ui.section-heading :title="__('Staff & roles')" as="h1">
         @unless ($showInvite)
             <x-slot:actions>
-                <x-ui.button wire:click="startInvite">
-                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                <x-ui.button icon="plus" wire:click="startInvite">
                     {{ __('Invite admin') }}
                 </x-ui.button>
             </x-slot:actions>

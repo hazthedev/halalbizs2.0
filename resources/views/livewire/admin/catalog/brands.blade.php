@@ -7,7 +7,7 @@
     <x-ui.card class="p-4">
         <form wire:submit="create" class="flex flex-wrap items-end gap-3">
             <x-ui.input class="min-w-64 flex-1" :label="__('Brand name')" wire:model="newName" :error="$errors->first('newName')" />
-            <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="create">{{ __('Add brand') }}</x-ui.button>
+            <x-ui.button icon="plus" type="submit" wire:loading.attr="disabled" wire:target="create">{{ __('Add brand') }}</x-ui.button>
         </form>
     </x-ui.card>
 

@@ -2,7 +2,7 @@
     <div class="space-y-4">
         @unless ($showForm)
             <div class="flex justify-end">
-                <x-ui.button type="button" wire:click="create">{{ __('Add address') }}</x-ui.button>
+                <x-ui.button icon="plus" type="button" wire:click="create">{{ __('Add address') }}</x-ui.button>
             </div>
         @endunless
 
