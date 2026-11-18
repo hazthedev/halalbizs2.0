@@ -20,13 +20,13 @@
                             <p class="text-[13px] font-medium text-ink">{{ $locale['name'] }} <span class="font-mono text-[12px] text-ink-faint">{{ $locale['code'] }}</span></p>
                             <p class="text-[12px] text-ink-soft">{{ __('Buyers can switch to :language when enabled.', ['language' => $locale['name']]) }}</p>
                         </div>
-                        <button type="button" role="switch" aria-checked="{{ $locale['enabled'] ? 'true' : 'false' }}"
+                        <x-ui.button variant="plain" type="button" role="switch" aria-checked="{{ $locale['enabled'] ? 'true' : 'false' }}"
                                 wire:click="toggleLocale('{{ $locale['code'] }}')" aria-label="{{ __('Toggle :language', ['language' => $locale['name']]) }}"
                                 class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $locale['enabled'] ? 'bg-emerald' : 'bg-line-strong' }}">
                                 <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $locale['enabled'] ? 'translate-x-6' : 'translate-x-1' }}"></span>
                             </span>
-                        </button>
+                        </x-ui.button>
                     </li>
                 @endforeach
                 <li class="flex items-center gap-3 px-4 py-2">
@@ -60,16 +60,16 @@
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="currency-{{ $currency->id }}">
                             <td class="px-3 py-2">
                                 <div class="flex items-center gap-0.5">
-                                    <button type="button" wire:click="moveCurrency({{ $currency->id }}, -1)" @disabled($loop->first)
+                                    <x-ui.button variant="plain" type="button" wire:click="moveCurrency({{ $currency->id }}, -1)" :disabled="$loop->first"
                                             aria-label="{{ __('Move :code up', ['code' => $currency->code]) }}"
                                             class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                    </button>
-                                    <button type="button" wire:click="moveCurrency({{ $currency->id }}, 1)" @disabled($loop->last)
+                                    </x-ui.button>
+                                    <x-ui.button variant="plain" type="button" wire:click="moveCurrency({{ $currency->id }}, 1)" :disabled="$loop->last"
                                             aria-label="{{ __('Move :code down', ['code' => $currency->code]) }}"
                                             class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                    </button>
+                                    </x-ui.button>
                                 </div>
                             </td>
                             <td class="px-3 py-2 font-mono font-medium">
@@ -81,14 +81,14 @@
                             <td class="px-3 py-2">{{ $currency->name }}</td>
                             <td class="px-3 py-2">{{ $currency->symbol }}</td>
                             <td class="px-3 py-2">
-                                <button type="button" role="switch" aria-checked="{{ $currency->is_active ? 'true' : 'false' }}"
-                                        wire:click="toggleCurrency({{ $currency->id }})" @disabled($currency->is_base)
+                                <x-ui.button variant="plain" type="button" role="switch" aria-checked="{{ $currency->is_active ? 'true' : 'false' }}"
+                                        wire:click="toggleCurrency({{ $currency->id }})" :disabled="$currency->is_base"
                                         aria-label="{{ __('Toggle :code', ['code' => $currency->code]) }}"
                                         class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
                                     <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $currency->is_active ? 'bg-emerald' : 'bg-line-strong' }}">
                                         <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $currency->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                     </span>
-                                </button>
+                                </x-ui.button>
                             </td>
                         </tr>
                     @endforeach
@@ -157,17 +157,17 @@
                                                class="block min-h-11 w-20 rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-right font-mono text-[13px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('marginInput.'.$code) ? 'border-danger' : 'border-line-strong' }}">
                                         @error('marginInput.'.$code)<p class="mt-1 max-w-32 text-[12px] text-danger">{{ $message }}</p>@enderror
                                     </div>
-                                    <button type="button" wire:click="updateRate('{{ $code }}')" wire:loading.attr="disabled"
+                                    <x-ui.button variant="plain" type="button" wire:click="updateRate('{{ $code }}')" wire:loading.attr="disabled"
                                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ __('Save rate') }}
-                                    </button>
+                                    </x-ui.button>
                                 </div>
                             </td>
                             <td class="px-3 py-2 text-right">
-                                <button type="button" wire:click="toggleHistory('{{ $code }}')"
+                                <x-ui.button variant="plain" type="button" wire:click="toggleHistory('{{ $code }}')"
                                         class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     {{ $historyFor === $code ? __('Hide') : __('History') }}
-                                </button>
+                                </x-ui.button>
                             </td>
                         </tr>
                         @if ($historyFor === $code)

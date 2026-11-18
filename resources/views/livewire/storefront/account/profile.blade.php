@@ -1,3 +1,4 @@
+<div x-data="{ showDeleteModal: $wire.entangle('showDeleteModal') }">
 <x-account-shell active="profile" :title="__('Profile')">
     <div class="space-y-6">
         {{-- Account details --}}
@@ -387,18 +388,17 @@
                         <p class="text-sm font-medium text-danger">{{ __('Delete account') }}</p>
                         <p class="mt-0.5 max-w-md text-[13px] text-ink-soft">{{ __('Your name, email and phone are anonymized and you are signed out. Order records are kept — we are legally required to retain financial records.') }}</p>
                     </div>
-                    <x-ui.button variant="danger" wire:click="$set('showDeleteModal', true)">{{ __('Delete my account') }}</x-ui.button>
+                    <x-ui.button variant="danger" x-on:click="showDeleteModal = true">{{ __('Delete my account') }}</x-ui.button>
                 </div>
             </div>
         </x-ui.card>
     </div>
 
     {{-- Delete-account confirm modal --}}
-    @if ($showDeleteModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        <div x-cloak x-show="showDeleteModal" x-trap.inert.noscroll="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
              role="dialog" aria-modal="true" aria-labelledby="delete-account-title"
-             x-data x-on:keydown.escape.window="$wire.set('showDeleteModal', false)">
-            <div class="absolute inset-0 bg-emerald-night/50" wire:click="$set('showDeleteModal', false)" aria-hidden="true"></div>
+             x-on:keydown.escape.window="showDeleteModal = false">
+            <div class="absolute inset-0 bg-emerald-night/50" x-on:click="showDeleteModal = false" aria-hidden="true"></div>
 
             {{-- shadow allowed: overlay surface --}}
             <x-ui.card class="relative w-full max-w-md p-6 shadow-pop">
@@ -426,7 +426,7 @@
                 </div>
 
                 <div class="mt-5 flex justify-end gap-2">
-                    <x-ui.button variant="ghost" wire:click="$set('showDeleteModal', false)">{{ __('Cancel') }}</x-ui.button>
+                    <x-ui.button variant="ghost" x-on:click="showDeleteModal = false">{{ __('Cancel') }}</x-ui.button>
                     <x-ui.button variant="danger-fill" wire:click="deleteAccount" wire:loading.attr="disabled" wire:target="deleteAccount"
                                  wire:confirm="{{ __('Last check — delete this account for good?') }}">
                         {{ __('Delete account') }}
@@ -434,5 +434,5 @@
                 </div>
             </x-ui.card>
         </div>
-    @endif
 </x-account-shell>
+</div>

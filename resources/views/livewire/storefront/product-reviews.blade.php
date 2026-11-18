@@ -36,13 +36,13 @@
         @php($reviewFilters = ['all' => __('All'), 'photos' => __('With photos'), '5' => '5 ★', '4' => '4 ★', '3' => '3 ★', '2' => '2 ★', '1' => '1 ★'])
         <div class="mt-6 flex flex-wrap gap-2" role="group" aria-label="{{ __('Filter reviews') }}">
             @foreach ($reviewFilters as $key => $label)
-                <button type="button"
+                <x-ui.button variant="plain" type="button"
                         wire:key="review-filter-{{ $key }}"
                         wire:click="setReviewFilter('{{ $key }}')"
                         aria-pressed="{{ $reviewFilter === $key ? 'true' : 'false' }}"
                         class="min-h-11 rounded-full border px-4 text-[13px] font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald {{ $reviewFilter === $key ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink hover:border-ink' }}">
                     {{ $label }}
-                </button>
+                </x-ui.button>
             @endforeach
         </div>
 
@@ -90,10 +90,10 @@
                         </div>
                     @endif
                     <div class="mt-2.5">
-                        <button type="button" wire:click="markHelpful({{ $review->id }})"
+                        <x-ui.button variant="plain" type="button" wire:click="markHelpful({{ $review->id }})"
                                 class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium {{ in_array($review->id, $votedReviewIds) ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink-soft hover:text-ink' }}">
                             {{ __('Helpful') }}@if ($review->helpful_count > 0)<span class="tnum"> · {{ $review->helpful_count }}</span>@endif
-                        </button>
+                        </x-ui.button>
                     </div>
                     @if ($review->seller_reply)
                         <div class="ml-4 mt-3 max-w-prose rounded-[var(--radius-control)] border-l-2 border-line-strong bg-paper px-3.5 py-2.5">

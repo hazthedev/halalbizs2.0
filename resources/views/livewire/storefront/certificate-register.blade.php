@@ -22,10 +22,10 @@
         <input id="cert-number" type="text" wire:model="number"
                placeholder="{{ __('e.g. MY-JKM-2140-118') }}"
                class="h-12 min-w-0 flex-1 rounded-[var(--radius-pill)] border border-line bg-surface px-5 font-mono text-[length:var(--text-base)] text-ink placeholder:text-ink-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald sm:max-w-2xl">
-        <button type="submit"
-                class="h-12 shrink-0 rounded-[var(--radius-pill)] bg-emerald px-8 text-[length:var(--text-base)] font-medium text-white transition-colors duration-(--dur-micro) hover:bg-emerald-deep">
+        <x-ui.button variant="plain" type="submit"
+                class="h-12 shrink-0 rounded-[var(--radius-pill)] bg-emerald px-8 text-[length:var(--text-base)] font-medium text-white transition-colors duration-(--dur-micro) hover:bg-emerald-deep" target="verify">
             {{ __('Verify') }}
-        </button>
+        </x-ui.button>
     </form>
 
     @if ($searched && ! $certificate)

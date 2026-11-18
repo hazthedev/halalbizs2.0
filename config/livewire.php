@@ -7,6 +7,8 @@
  */
 return [
 
+    'navigate' => ['show_progress_bar' => true],
+
     'temporary_file_upload' => [
         // Raised from Livewire's 12MB default so product/banner videos
         // (≤30MB, validated per-field with mimetypes+max:30720) can upload.

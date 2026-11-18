@@ -71,10 +71,10 @@
                             <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">{{ $review->created_at->diffForHumans() }}</td>
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end">
-                                    <button type="button" wire:click="startModeration({{ $review->id }})"
+                                    <x-ui.button variant="plain" type="button" wire:click="startModeration({{ $review->id }})"
                                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium focus-visible:ring-2 focus-visible:ring-emerald {{ $review->is_hidden ? 'text-emerald hover:text-emerald-deep' : 'text-danger hover:bg-danger-tint' }}">
                                         {{ $review->is_hidden ? __('Unhide') : __('Hide') }}
-                                    </button>
+                                    </x-ui.button>
                                 </div>
                             </td>
                         </tr>
@@ -112,17 +112,17 @@
                         </p>
                     </div>
                     <div class="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
-                        <button type="button" wire:click="cancelModeration"
+                        <x-ui.button variant="plain" type="button" wire:click="cancelModeration"
                                 class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Cancel') }}
-                        </button>
+                        </x-ui.button>
                         @if ($moderating->is_hidden)
-                            <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Unhide review') }}</x-ui.button>
+                            <x-ui.button type="submit" wire:loading.attr="disabled" target="confirmModeration">{{ __('Unhide review') }}</x-ui.button>
                         @else
-                            <button type="submit" wire:loading.attr="disabled"
-                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-danger px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50">
+                            <x-ui.button variant="plain" type="submit" wire:loading.attr="disabled"
+                                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-danger px-4 py-2.5 text-sm font-medium text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-50" target="confirmModeration">
                                 {{ __('Hide review') }}
-                            </button>
+                            </x-ui.button>
                         @endif
                     </div>
                 </form>

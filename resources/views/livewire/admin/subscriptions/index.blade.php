@@ -5,13 +5,13 @@
 
     <nav class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Subscription status') }}">
         @foreach (SubscriptionStatus::cases() as $statusCase)
-            <button type="button" wire:click="$set('tab', '{{ $statusCase->value }}')" wire:key="tab-{{ $statusCase->value }}"
+            <x-ui.button variant="plain" type="button" wire:click="$set('tab', '{{ $statusCase->value }}')" wire:key="tab-{{ $statusCase->value }}"
                     class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm {{ $tab === $statusCase->value ? 'border-ink font-medium text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}">
                 {{ $statusCase->label() }}
                 @if ($counts[$statusCase->value] > 0)
                     <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium tnum text-emerald">{{ $counts[$statusCase->value] }}</span>
                 @endif
-            </button>
+            </x-ui.button>
         @endforeach
     </nav>
 

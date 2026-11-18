@@ -1,4 +1,4 @@
-<div>
+<div x-data="{ showWithdraw: $wire.entangle('showWithdraw') }">
     <x-account-shell active="affiliate" :title="__('Creator program')">
         @if ($affiliate === null)
             {{-- Enrolment --}}
@@ -22,10 +22,10 @@
                         </p>
                     </div>
                 </div>
-                <button type="button" wire:click="enroll" wire:loading.attr="disabled" wire:target="enroll"
+                <x-ui.button variant="plain" type="button" wire:click="enroll" wire:loading.attr="disabled" wire:target="enroll"
                         class="mt-5 inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
                     {{ __('Join the creator program') }}
-                </button>
+                </x-ui.button>
             </div>
         @else
             {{-- Stats --}}
@@ -96,17 +96,17 @@
                         <p class="mt-1 text-[13px] text-ink-soft">{{ __('Minimum :min. Paid to your bank within a few business days.', ['min' => \App\Support\Money::format($minPayoutSen)]) }}</p>
                     </div>
                     @if ($availableSen >= $minPayoutSen)
-                        <button type="button" wire:click="$toggle('showWithdraw')"
+                        <x-ui.button variant="plain" type="button" x-on:click="showWithdraw = ! showWithdraw" x-bind:aria-expanded="showWithdraw"
                                 class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
-                            {{ $showWithdraw ? __('Close') : __('Request withdrawal') }}
-                        </button>
+                            <span x-show="! showWithdraw">{{ __('Request withdrawal') }}</span><span x-cloak x-show="showWithdraw">{{ __('Close') }}</span>
+                        </x-ui.button>
                     @else
                         <span class="text-[13px] text-ink-faint">{{ __(':amount available', ['amount' => \App\Support\Money::format($availableSen)]) }}</span>
                     @endif
                 </div>
 
-                @if ($showWithdraw)
-                    <form wire:submit="requestPayout" class="mt-4 grid gap-3 sm:grid-cols-2">
+                @if ($availableSen >= $minPayoutSen)
+                    <form x-cloak x-show="showWithdraw" wire:submit="requestPayout" class="mt-4 grid gap-3 sm:grid-cols-2">
                         <div>
                             <label for="wd-amount" class="text-[13px] font-medium">{{ __('Amount (RM)') }}</label>
                             <input id="wd-amount" type="text" wire:model="withdrawAmount" inputmode="decimal" placeholder="0.00"
@@ -120,7 +120,7 @@
                             @error('bankDetails') <p class="mt-1 text-[13px] text-danger">{{ $message }}</p> @enderror
                         </div>
                         <div class="sm:col-span-2">
-                            <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white hover:bg-emerald-deep">{{ __('Submit request') }}</button>
+                            <x-ui.button variant="plain" type="submit" class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white hover:bg-emerald-deep" target="requestPayout">{{ __('Submit request') }}</x-ui.button>
                         </div>
                     </form>
                 @endif

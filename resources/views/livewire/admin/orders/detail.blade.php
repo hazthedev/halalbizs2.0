@@ -119,11 +119,11 @@
                         @error('cancelReason')
                             <p class="text-[13px] text-danger">{{ $message }}</p>
                         @enderror
-                        <button type="button" wire:click="forceCancel" wire:loading.attr="disabled"
+                        <x-ui.button variant="plain" type="button" wire:click="forceCancel" wire:loading.attr="disabled"
                                 wire:confirm="{{ __('Force-cancel this sub-order? Items return to stock and the buyer is notified — this cannot be undone.') }}"
                                 class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-medium text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                             {{ __('Force cancel') }}
-                        </button>
+                        </x-ui.button>
                     </div>
                 @endif
 
@@ -137,11 +137,11 @@
                             <p class="text-[13px] text-danger">{{ $message }}</p>
                         @enderror
                         <p class="text-[12px] text-ink-soft">{{ __('Process the refund in the iPay88 merchant portal first, then record its reference here.') }}</p>
-                        <button type="button" wire:click="markRefunded" wire:loading.attr="disabled"
+                        <x-ui.button variant="plain" type="button" wire:click="markRefunded" wire:loading.attr="disabled"
                                 wire:confirm="{{ __('Mark this sub-order refunded? The order payment status flips to refunded — this cannot be undone.') }}"
                                 class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-medium text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                             {{ __('Mark refunded') }}
-                        </button>
+                        </x-ui.button>
                     </div>
                 @endif
 

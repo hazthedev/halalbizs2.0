@@ -1,4 +1,4 @@
-<div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12">
+<div class="mx-auto w-full max-w-7xl px-4 py-8 lg:py-12" x-data="{ changingAddress: $wire.entangle('changingAddress'), voucherPanelOpen: $wire.entangle('voucherPanelOpen') }">
     <x-ui.section-heading as="h1" :title="__('Checkout')" />
 
     {{-- Progress rail, ported from the reference. This checkout is one page, so
@@ -35,10 +35,9 @@
                 <div class="flex items-center justify-between gap-3">
                     <h2 class="text-sm font-medium">{{ __('Delivery address') }}</h2>
                     @if ($addresses->isNotEmpty())
-                        <button type="button" wire:click="$toggle('changingAddress')"
-                                wire:loading.attr="disabled" wire:target="changingAddress"
+                        <button type="button" x-on:click="changingAddress = ! changingAddress"
                                 class="-my-1 flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-sm font-medium text-emerald hover:text-emerald-deep">
-                            {{ $changingAddress ? __('Close') : __('Change') }}
+                            <span x-text="changingAddress ? @js(__('Close')) : @js(__('Change'))">{{ $changingAddress ? __('Close') : __('Change') }}</span>
                         </button>
                     @endif
                 </div>
@@ -66,8 +65,8 @@
                     </p>
                 @endif
 
-                @if ($changingAddress && $addresses->isNotEmpty())
-                    <fieldset class="mt-3 border-t border-line pt-3">
+                @if ($addresses->isNotEmpty())
+                    <fieldset x-cloak x-show="changingAddress" class="mt-3 border-t border-line pt-3" id="checkout-address">
                         <legend class="sr-only">{{ __('Choose a delivery address') }}</legend>
                         <ul class="space-y-2">
                             @foreach ($addresses as $option)
@@ -193,10 +192,9 @@
             <x-ui.card class="p-4">
                 <div class="flex items-center justify-between gap-3">
                     <h2 class="text-sm font-medium">{{ __('Vouchers') }}</h2>
-                    <button type="button" wire:click="$toggle('voucherPanelOpen')"
-                            wire:loading.attr="disabled" wire:target="voucherPanelOpen"
+                    <button type="button" x-on:click="voucherPanelOpen = ! voucherPanelOpen"
                             class="-my-1 flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-sm font-medium text-emerald hover:text-emerald-deep">
-                        {{ $voucherPanelOpen ? __('Close') : __('Select voucher') }}
+                        <span x-text="voucherPanelOpen ? @js(__('Close')) : @js(__('Select voucher'))">{{ $voucherPanelOpen ? __('Close') : __('Select voucher') }}</span>
                     </button>
                 </div>
 
@@ -261,8 +259,7 @@
                 @endif
 
                 {{-- Picker panel: available vouchers per scope, best-savings hint --}}
-                @if ($voucherPanelOpen)
-                    <div class="mt-3 space-y-4 border-t border-line pt-3">
+                <div x-cloak x-show="voucherPanelOpen" class="mt-3 space-y-4 border-t border-line pt-3">
                         <div>
                             <h3 class="text-[13px] font-medium text-ink-soft">{{ __('Platform vouchers') }}</h3>
                             @if ($platformVoucherOptions->isEmpty())
@@ -302,7 +299,6 @@
                             @endif
                         </div>
                     </div>
-                @endif
 
                 {{-- Manual code entry stays as the fallback --}}
                 <form wire:submit="applyVoucher" class="mt-3 flex gap-2">

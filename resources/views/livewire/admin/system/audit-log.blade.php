@@ -26,10 +26,10 @@
                        class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             </div>
             @if ($subjectType !== '' || $dateFrom !== '' || $dateTo !== '')
-                <button type="button" wire:click="clearFilters"
+                <x-ui.button variant="plain" type="button" wire:click="clearFilters"
                         class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Clear filters') }}
-                </button>
+                </x-ui.button>
             @endif
         </div>
     </x-ui.card>

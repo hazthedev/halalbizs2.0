@@ -15,11 +15,11 @@
 
     @if ($selected)
         {{-- ===== Thread view ===== --}}
-        <button type="button" wire:click="backToList"
+        <x-ui.button variant="plain" type="button" wire:click="backToList"
                 class="inline-flex min-h-11 items-center gap-1.5 text-[13px] font-medium text-ink-soft transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
             {{ __('Back to queue') }}
-        </button>
+        </x-ui.button>
 
         <x-ui.card class="p-4">
             <div class="flex flex-wrap items-start justify-between gap-3">
@@ -65,7 +65,7 @@
                             @error('replyBody')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
-                            <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Send reply') }}</x-ui.button>
+                            <x-ui.button type="submit" wire:loading.attr="disabled" target="reply">{{ __('Send reply') }}</x-ui.button>
                             <x-ui.button variant="ghost" wire:click="togglePriority({{ $selected->id }})">
                                 {{ $selected->priority === TicketPriority::Urgent ? __('Mark normal') : __('Mark urgent') }}
                             </x-ui.button>
@@ -88,12 +88,12 @@
         {{-- ===== Queue tabs ===== --}}
         <div class="flex gap-1 overflow-x-auto border-b border-line" role="tablist">
             @foreach (TicketStatus::cases() as $status)
-                <button type="button" role="tab" wire:click="setTab('{{ $status->value }}')"
+                <x-ui.button variant="plain" type="button" role="tab" wire:click="setTab('{{ $status->value }}')"
                         aria-selected="{{ $tab === $status->value ? 'true' : 'false' }}"
                         class="flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $status->value ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink' }}">
                     {{ $status->label() }}
                     <span class="rounded-full bg-emerald-tint px-2 py-0.5 text-[11px] font-medium text-emerald">{{ $counts[$status->value] }}</span>
-                </button>
+                </x-ui.button>
             @endforeach
         </div>
 
@@ -118,10 +118,10 @@
                             <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="ticket-{{ $ticket->id }}">
                                 <td class="px-3 py-2 font-mono text-[12px]">{{ $ticket->id }}</td>
                                 <td class="px-3 py-2">
-                                    <button type="button" wire:click="select({{ $ticket->id }})"
+                                    <x-ui.button variant="plain" type="button" wire:click="select({{ $ticket->id }})"
                                             class="inline-flex min-h-11 items-center text-left font-medium text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ $ticket->subject }}
-                                    </button>
+                                    </x-ui.button>
                                 </td>
                                 <td class="px-3 py-2 text-ink-soft">{{ $ticket->user->name }}</td>
                                 <td class="px-3 py-2">
@@ -135,17 +135,17 @@
                                 <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">{{ $ticket->updated_at->diffForHumans() }}</td>
                                 <td class="px-3 py-2">
                                     <div class="flex items-center justify-end gap-1">
-                                        <button type="button" wire:click="togglePriority({{ $ticket->id }})"
+                                        <x-ui.button variant="plain" type="button" wire:click="togglePriority({{ $ticket->id }})"
                                                 class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                             {{ $ticket->priority === TicketPriority::Urgent ? __('Normal') : __('Urgent') }}
-                                        </button>
+                                        </x-ui.button>
                                         @if ($ticket->isClosed())
-                                            <button type="button" wire:click="reopen({{ $ticket->id }})"
-                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Reopen') }}</button>
+                                            <x-ui.button variant="plain" type="button" wire:click="reopen({{ $ticket->id }})"
+                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Reopen') }}</x-ui.button>
                                         @else
-                                            <button type="button" wire:click="close({{ $ticket->id }})"
+                                            <x-ui.button variant="plain" type="button" wire:click="close({{ $ticket->id }})"
                                                     wire:confirm="{{ __('Close this ticket? The buyer can no longer reply.') }}"
-                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Close') }}</button>
+                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Close') }}</x-ui.button>
                                         @endif
                                     </div>
                                 </td>

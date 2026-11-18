@@ -48,25 +48,24 @@
                 <p class="-mt-1 text-[12px] text-ink-faint">{{ __('Skip the code next time you log in from this browser. Don\'t use this on a shared computer.') }}</p>
             @endunless
 
-            <x-ui.button type="submit" class="w-full" wire:loading.attr="disabled">
-                <svg wire:loading wire:target="verify" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/></svg>
+            <x-ui.button type="submit" class="w-full" wire:loading.attr="disabled" target="verify">
                 {{ __('Verify and log in') }}
             </x-ui.button>
         </form>
 
         <div class="mt-5 space-y-2 border-t border-line pt-4 text-center">
             @if ($method === \App\Enums\TwoFactorMethod::Email)
-                <button type="button" wire:click="resend" wire:loading.attr="disabled"
+                <x-ui.button variant="plain" type="button" wire:click="resend" wire:loading.attr="disabled"
                         class="min-h-11 text-[13px] font-medium text-emerald hover:text-emerald-deep">
                     {{ __('Email me a new code') }}
-                </button>
+                </x-ui.button>
             @endif
 
             @if ($method === \App\Enums\TwoFactorMethod::Totp)
-                <button type="button" wire:click="toggleRecovery"
+                <x-ui.button variant="plain" type="button" wire:click="toggleRecovery"
                         class="block w-full min-h-11 text-[13px] font-medium text-emerald hover:text-emerald-deep">
                     {{ $useRecoveryCode ? __('Use my authenticator app instead') : __('Use a recovery code instead') }}
-                </button>
+                </x-ui.button>
             @endif
 
             <a href="{{ route('login') }}" wire:navigate class="block min-h-11 pt-2.5 text-[13px] text-ink-soft hover:text-ink">

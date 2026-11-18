@@ -35,12 +35,12 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
                                     @unless ($loop->first)
-                                        <button type="button" wire:click="restore({{ $version->id }})"
-                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:bg-emerald-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Restore as draft') }}</button>
+                                        <x-ui.button variant="plain" type="button" wire:click="restore({{ $version->id }})"
+                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:bg-emerald-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Restore as draft') }}</x-ui.button>
                                         @if (auth()->user()->is_superadmin)
-                                            <button type="button" wire:click="restore({{ $version->id }}, true)"
+                                            <x-ui.button variant="plain" type="button" wire:click="restore({{ $version->id }}, true)"
                                                     wire:confirm="{{ __('Put this version live right now, without a draft?') }}"
-                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Restore and publish') }}</button>
+                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Restore and publish') }}</x-ui.button>
                                         @endif
                                     @endunless
                                 </div>

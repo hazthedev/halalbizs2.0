@@ -115,12 +115,12 @@
                             <td class="px-3 py-2">
                                 <div class="flex justify-end">
                                     @if ($boost->status === \App\Enums\BoostStatus::Active)
-                                        <button type="button"
+                                        <x-ui.button variant="plain" type="button"
                                                 wire:click="cancel({{ $boost->id }})"
                                                 wire:confirm="{{ __('Cancel this boost? It stops appearing immediately and the remaining days are not refunded.') }}"
                                                 class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                             {{ __('Cancel') }}
-                                        </button>
+                                        </x-ui.button>
                                     @endif
                                 </div>
                             </td>

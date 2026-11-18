@@ -6,7 +6,7 @@
     {{-- Lifecycle tabs — the queue (disputed + escalated) is the work surface --}}
     <nav class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Return request status') }}">
         @foreach ($tabLabels as $key => $label)
-            <button
+            <x-ui.button variant="plain"
                 type="button"
                 wire:click="$set('tab', '{{ $key }}')"
                 wire:key="tab-{{ $key }}"
@@ -17,7 +17,7 @@
                 @if ($counts[$key] > 0)
                     <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-emerald">{{ $counts[$key] }}</span>
                 @endif
-            </button>
+            </x-ui.button>
         @endforeach
     </nav>
 
@@ -85,22 +85,22 @@
             </div>
 
             <div class="flex flex-wrap gap-2">
-                <button type="button" wire:click="refundBuyer" wire:loading.attr="disabled"
+                <x-ui.button variant="plain" type="button" wire:click="refundBuyer" wire:loading.attr="disabled"
                         wire:confirm="{{ __('Refund the buyer? This closes the return and adjusts the seller ledger — it cannot be undone.') }}"
                         class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                     {{ __('Refund buyer') }}
-                </button>
+                </x-ui.button>
                 @if ($resolving->subOrder->status === \App\Enums\SubOrderStatus::ReturnRequested)
-                    <button type="button" wire:click="sideWithSeller({{ $resolving->id }})" wire:loading.attr="disabled"
+                    <x-ui.button variant="plain" type="button" wire:click="sideWithSeller({{ $resolving->id }})" wire:loading.attr="disabled"
                             wire:confirm="{{ __('Side with the seller? The return is rejected and the order goes back to its previous status.') }}"
                             class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-medium text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                         {{ __('Side with seller') }}
-                    </button>
+                    </x-ui.button>
                 @endif
-                <button type="button" wire:click="closeResolve"
+                <x-ui.button variant="plain" type="button" wire:click="closeResolve"
                         class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] px-4 text-sm font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Close') }}
-                </button>
+                </x-ui.button>
             </div>
         </x-ui.card>
     @endif
@@ -145,10 +145,10 @@
                             <td class="px-3 py-2">
                                 <div class="flex justify-end">
                                     @if (in_array($request->status, [\App\Enums\ReturnStatus::Accepted, \App\Enums\ReturnStatus::Disputed, \App\Enums\ReturnStatus::Escalated], true))
-                                        <button type="button" wire:click="openResolve({{ $request->id }})"
+                                        <x-ui.button variant="plain" type="button" wire:click="openResolve({{ $request->id }})"
                                                 class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                                             {{ __('Resolve') }}
-                                        </button>
+                                        </x-ui.button>
                                     @else
                                         <span class="inline-flex min-h-11 items-center text-ink-faint">—</span>
                                     @endif

@@ -49,15 +49,15 @@
 
     {{-- Bulk actions --}}
     <x-ui.table.bulk-bar :selected="$selected">
-            <button type="button" wire:click="bulkDelist"
-                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper">
+            <x-ui.button variant="plain" type="button" wire:click="bulkDelist"
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper" wire:loading.attr="disabled" wire:target="bulkDelist">
                 {{ __('Delist selected') }}
-            </button>
-            <button type="button" wire:click="bulkDelete"
+            </x-ui.button>
+            <x-ui.button variant="plain" type="button" wire:click="bulkDelete"
                     wire:confirm="{{ __('Delete the selected drafts? Only drafts are deleted — this cannot be undone.') }}"
-                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint">
+                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint" wire:loading.attr="disabled" wire:target="bulkDelete">
                 {{ __('Delete drafts') }}
-            </button>
+            </x-ui.button>
     </x-ui.table.bulk-bar>
 
     <p class="text-[13px] text-ink-soft lg:hidden">{{ __('Scroll sideways to see prices, status and actions.') }}</p>
@@ -141,11 +141,11 @@
                                     @if ($product->status === \App\Enums\ProductStatus::Live)
                                         <a href="{{ route('seller.boosts', ['product' => $product->id]) }}" wire:navigate
                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Boost') }}</a>
-                                        <button type="button" wire:click="delist({{ $product->id }})"
-                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delist') }}</button>
+                                        <x-ui.button variant="plain" type="button" wire:click="delist({{ $product->id }})"
+                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald" wire:loading.attr="disabled" wire:target="delist">{{ __('Delist') }}</x-ui.button>
                                     @elseif ($product->status === \App\Enums\ProductStatus::Delisted)
-                                        <button type="button" wire:click="relist({{ $product->id }})"
-                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Relist') }}</button>
+                                        <x-ui.button variant="plain" type="button" wire:click="relist({{ $product->id }})"
+                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald" wire:loading.attr="disabled" wire:target="relist">{{ __('Relist') }}</x-ui.button>
                                     @endif
                                 </div>
                             </td>

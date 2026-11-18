@@ -42,7 +42,7 @@
             <ul class="max-h-96 divide-y divide-line overflow-y-auto">
                 @foreach ($notifications as $notification)
                     <li wire:key="bell-{{ $notification->id }}">
-                        <button type="button"
+                        <x-ui.button variant="plain" type="button"
                                 wire:click="open('{{ $notification->id }}')"
                                 class="flex w-full items-start gap-2.5 px-4 py-3 text-left transition-colors duration-150 hover:bg-paper">
                             <span class="mt-1.5 size-2 shrink-0 rounded-full {{ $notification->read_at ? 'bg-transparent' : 'bg-emerald' }}" aria-hidden="true"></span>
@@ -55,7 +55,7 @@
                             @unless ($notification->read_at)
                                 <span class="sr-only">{{ __('Unread') }}</span>
                             @endunless
-                        </button>
+                        </x-ui.button>
                     </li>
                 @endforeach
             </ul>

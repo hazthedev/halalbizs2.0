@@ -20,7 +20,7 @@
                     @endif
                     <input type="file" id="logo" wire:model="logo" accept=".jpg,.jpeg,.png,.webp"
                            class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-paper">
-                    <div wire:loading wire:target="logo" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                    <div wire:loading wire:target="logo" class="mt-1.5 text-[13px] text-ink-soft"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
                     @error('logo')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                     @else
@@ -35,7 +35,7 @@
                     @endif
                     <input type="file" id="banner" wire:model="banner" accept=".jpg,.jpeg,.png,.webp"
                            class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-paper">
-                    <div wire:loading wire:target="banner" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                    <div wire:loading wire:target="banner" class="mt-1.5 text-[13px] text-ink-soft"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
                     @error('banner')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                     @else

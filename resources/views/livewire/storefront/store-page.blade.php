@@ -120,11 +120,11 @@
 
                 @if ($products->count() < $total)
                     <div class="mt-6 text-center">
-                        <button type="button" wire:click="loadMore"
+                        <x-ui.button variant="plain" type="button" wire:click="loadMore"
                                 class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-6 text-sm font-medium text-ink transition-colors duration-150 hover:bg-paper">
                             <span wire:loading.remove wire:target="loadMore">{{ __('Load more') }}</span>
                             <span wire:loading wire:target="loadMore">{{ __('Loading…') }}</span>
-                        </button>
+                        </x-ui.button>
                     </div>
                 @endif
             @else

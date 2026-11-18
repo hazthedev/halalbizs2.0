@@ -48,11 +48,11 @@
 
             @can('cms.publish')
                 @if ($layout !== null)
-                    <button type="button" wire:click="editLayout"
-                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Change name or dates') }}</button>
-                    <button type="button" wire:click="deleteLayout({{ $layout->id }})"
+                    <x-ui.button variant="plain" type="button" wire:click="editLayout"
+                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Change name or dates') }}</x-ui.button>
+                    <x-ui.button variant="plain" type="button" wire:click="deleteLayout({{ $layout->id }})"
                             wire:confirm="{{ __('Delete this layout and its sections? The everyday layout is not touched.') }}"
-                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete layout') }}</button>
+                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete layout') }}</x-ui.button>
                 @endif
                 <x-ui.button icon="plus" variant="ghost" wire:click="newLayout" class="ml-auto">{{ __('New scheduled layout') }}</x-ui.button>
             @endcan
@@ -101,16 +101,16 @@
                         <div class="flex flex-wrap items-center gap-2 px-3 py-2">
                             {{-- Reorder --}}
                             <div class="flex items-center gap-0.5">
-                                <button type="button" wire:click="move({{ $section->id }}, -1)" @disabled($loop->first)
+                                <x-ui.button variant="plain" type="button" wire:click="move({{ $section->id }}, -1)" :disabled="$loop->first"
                                         aria-label="{{ __('Move up') }}"
                                         class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                </button>
-                                <button type="button" wire:click="move({{ $section->id }}, 1)" @disabled($loop->last)
+                                </x-ui.button>
+                                <x-ui.button variant="plain" type="button" wire:click="move({{ $section->id }}, 1)" :disabled="$loop->last"
                                         aria-label="{{ __('Move down') }}"
                                         class="inline-flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                </button>
+                                </x-ui.button>
                             </div>
 
                             <div class="min-w-0 flex-1">
@@ -132,26 +132,26 @@
                             </div>
 
                             {{-- Active toggle --}}
-                            <button type="button" role="switch" aria-checked="{{ $section->is_active ? 'true' : 'false' }}"
+                            <x-ui.button variant="plain" type="button" role="switch" aria-checked="{{ $section->is_active ? 'true' : 'false' }}"
                                     wire:click="toggleActive({{ $section->id }})"
                                     aria-label="{{ __('Toggle :type', ['type' => \App\Livewire\Admin\Content\HomeSections::typeLabel($section->type)]) }}"
                                     class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 <span class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 {{ $section->is_active ? 'bg-emerald' : 'bg-line-strong' }}">
                                     <span class="inline-block size-4 rounded-full bg-white transition-transform duration-150 {{ $section->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                 </span>
-                            </button>
+                            </x-ui.button>
 
                             <x-ui.draft-actions type="section" :id="$section->id" :draft="$section->draft" :preview-path="$layout === null ? '/' : '/?layout='.$layout->id" />
 
-                            <button type="button" wire:click="{{ $editingId === $section->id ? 'cancel' : 'edit('.$section->id.')' }}"
+                            <x-ui.button variant="plain" type="button" wire:click="{{ $editingId === $section->id ? 'cancel' : 'edit('.$section->id.')' }}"
                                     class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ $editingId === $section->id ? __('Close') : __('Edit') }}
-                            </button>
-                            <button type="button" wire:click="delete({{ $section->id }})"
+                            </x-ui.button>
+                            <x-ui.button variant="plain" type="button" wire:click="delete({{ $section->id }})"
                                     wire:confirm="{{ __('Remove this section from the home page?') }}"
                                     class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ __('Remove') }}
-                            </button>
+                            </x-ui.button>
                         </div>
 
                         {{-- Inline editor --}}
@@ -197,8 +197,8 @@
                                                     @foreach ($pickedItems as $item)
                                                         <li wire:key="picked-{{ $item->id }}" class="flex items-center gap-2 px-3">
                                                             <span class="min-w-0 flex-1 truncate text-[13px] text-ink">{{ $item->name }}</span>
-                                                            <button type="button" wire:click="unpick({{ $item->id }})" aria-label="{{ __('Take off :name', ['name' => $item->name]) }}"
-                                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Take off') }}</button>
+                                                            <x-ui.button variant="plain" type="button" wire:click="unpick({{ $item->id }})" aria-label="{{ __('Take off :name', ['name' => $item->name]) }}"
+                                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Take off') }}</x-ui.button>
                                                         </li>
                                                     @endforeach
                                                 </ul>
@@ -211,8 +211,8 @@
                                                     @foreach ($pickResults as $item)
                                                         <li wire:key="result-{{ $item->id }}" class="flex items-center gap-2 px-3">
                                                             <span class="min-w-0 flex-1 truncate text-[13px] text-ink">{{ $item->name }}</span>
-                                                            <button type="button" wire:click="pick({{ $item->id }})" aria-label="{{ __('Add :name', ['name' => $item->name]) }}"
-                                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-emerald hover:bg-emerald-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Add') }}</button>
+                                                            <x-ui.button variant="plain" type="button" wire:click="pick({{ $item->id }})" aria-label="{{ __('Add :name', ['name' => $item->name]) }}"
+                                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-emerald hover:bg-emerald-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Add') }}</x-ui.button>
                                                         </li>
                                                     @endforeach
                                                 </ul>
@@ -238,7 +238,7 @@
                                                     <label for="tile-image-{{ $slot }}" class="sr-only">{{ __('Picture for tile :n', ['n' => $slot]) }}</label>
                                                     <input id="tile-image-{{ $slot }}" type="file" wire:model="tileImages.{{ $slot }}" accept="image/*"
                                                            class="block w-full text-[13px] text-ink file:mr-3 file:min-h-11 file:rounded-[var(--radius-control)] file:border-0 file:bg-paper file:px-3 file:text-[13px] file:font-medium">
-                                                    <div wire:loading wire:target="tileImages.{{ $slot }}" class="mt-1 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                                                    <div wire:loading wire:target="tileImages.{{ $slot }}" class="mt-1 text-[13px] text-ink-soft"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
                                                     @error('tileImages.'.$slot)<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
                                                 </div>
                                                 <x-ui.input :label="__('Label (English)')" wire:model="tileLabels.{{ $slot }}.en" maxlength="40" :error="$errors->first('tileLabels.'.$slot.'.en')" />
@@ -246,8 +246,8 @@
                                                 <x-ui.input :label="__('Label (Vietnamese)')" wire:model="tileLabels.{{ $slot }}.vi" maxlength="40" :error="$errors->first('tileLabels.'.$slot.'.vi')" />
                                                 <x-ui.input :label="__('Link')" wire:model="tileLinks.{{ $slot }}" placeholder="/c/dates" :error="$errors->first('tileLinks.'.$slot)" />
                                                 @if ($current !== '' || (isset($tileImages[$slot]) && $tileImages[$slot]))
-                                                    <button type="button" wire:click="removeTile({{ $slot }})"
-                                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Take this tile off') }}</button>
+                                                    <x-ui.button variant="plain" type="button" wire:click="removeTile({{ $slot }})"
+                                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Take this tile off') }}</x-ui.button>
                                                 @endif
                                             </fieldset>
                                         @endforeach
@@ -270,7 +270,7 @@
                                 </div>
 
                                 <div class="flex items-center gap-2">
-                                    <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Save section') }}</x-ui.button>
+                                    <x-ui.button type="submit" wire:loading.attr="disabled" target="save">{{ __('Save section') }}</x-ui.button>
                                     <x-ui.button variant="ghost" wire:click="cancel">{{ __('Cancel') }}</x-ui.button>
                                 </div>
                             </form>

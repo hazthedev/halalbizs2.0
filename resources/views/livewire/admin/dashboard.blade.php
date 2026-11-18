@@ -5,13 +5,13 @@
         <x-slot:actions>
             <div class="inline-flex rounded-[var(--radius-control)] border border-line bg-surface p-0.5 shadow-soft" role="group" aria-label="{{ __('Stats period') }}">
             @foreach ($this->periods() as $key => $label)
-                <button type="button"
+                <x-ui.button variant="plain" type="button"
                         wire:click="setPeriod('{{ $key }}')"
                         wire:key="period-{{ $key }}"
                         aria-pressed="{{ $period === $key ? 'true' : 'false' }}"
                         class="min-h-10 rounded-md px-3 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $period === $key ? 'bg-emerald-night text-on-dark' : 'text-ink-soft hover:text-ink' }}">
                     {{ $label }}
-                </button>
+                </x-ui.button>
             @endforeach
             </div>
         </x-slot:actions>

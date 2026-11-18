@@ -40,19 +40,19 @@
                        placeholder="{{ __('Notes (optional, saved with the decision)') }}"
                        aria-label="{{ __('Notes for :type', ['type' => $document->typeLabel()]) }}"
                        class="min-h-11 w-full flex-1 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald sm:w-auto">
-                <button type="button"
+                <x-ui.button variant="plain" type="button"
                         wire:click="verifyDocument({{ $document->id }})"
                         wire:loading.attr="disabled"
                         class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Verify') }}
-                </button>
-                <button type="button"
+                </x-ui.button>
+                <x-ui.button variant="plain" type="button"
                         wire:click="rejectDocument({{ $document->id }})"
                         wire:confirm="{{ __('Reject this document? The applicant will need to provide it again.') }}"
                         wire:loading.attr="disabled"
                         class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Reject') }}
-                </button>
+                </x-ui.button>
             </div>
         </div>
     @empty

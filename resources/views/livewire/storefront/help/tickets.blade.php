@@ -10,11 +10,11 @@
 
     @if ($selected)
         {{-- ===== Thread view ===== --}}
-        <button type="button" wire:click="backToList"
+        <x-ui.button variant="plain" type="button" wire:click="backToList"
                 class="inline-flex min-h-11 items-center gap-1.5 text-[13px] font-medium text-ink-soft transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
             {{ __('All tickets') }}
-        </button>
+        </x-ui.button>
 
         <div class="mt-4 flex flex-wrap items-start justify-between gap-3">
             <x-ui.section-heading as="h1" :title="$selected->subject">
@@ -54,7 +54,7 @@
                     @error('replyBody')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Send reply') }}</x-ui.button>
+                    <x-ui.button type="submit" wire:loading.attr="disabled" target="reply">{{ __('Send reply') }}</x-ui.button>
                     <x-ui.button variant="ghost" wire:click="close"
                                  wire:confirm="{{ __('Close this ticket? You can still read it, but not reply.') }}">
                         {{ __('Close ticket') }}
@@ -86,7 +86,7 @@
                 @enderror
             </div>
             <div class="flex items-center gap-2">
-                <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Create ticket') }}</x-ui.button>
+                <x-ui.button type="submit" wire:loading.attr="disabled" target="create">{{ __('Create ticket') }}</x-ui.button>
                 <x-ui.button variant="ghost" wire:click="cancelForm">{{ __('Cancel') }}</x-ui.button>
             </div>
         </form>
@@ -109,7 +109,7 @@
             <ul class="mt-6 divide-y divide-line rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
                 @foreach ($tickets as $ticket)
                     <li wire:key="ticket-{{ $ticket->id }}">
-                        <button type="button" wire:click="select({{ $ticket->id }})"
+                        <x-ui.button variant="plain" type="button" wire:click="select({{ $ticket->id }})"
                                 class="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             <span class="min-w-0">
                                 <span class="block truncate text-sm font-medium text-ink">{{ $ticket->subject }}</span>
@@ -120,7 +120,7 @@
                                 </span>
                             </span>
                             <x-ui.badge :variant="$statusVariant($ticket->status)">{{ $ticket->status->label() }}</x-ui.badge>
-                        </button>
+                        </x-ui.button>
                     </li>
                 @endforeach
             </ul>

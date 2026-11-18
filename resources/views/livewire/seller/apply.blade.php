@@ -145,7 +145,7 @@
                         required
                         class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-paper"
                     >
-                    <div wire:loading wire:target="ssmFile" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                    <div wire:loading wire:target="ssmFile" class="mt-1.5 text-[13px] text-ink-soft"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
                     @error('ssmFile')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                     @enderror
@@ -161,7 +161,7 @@
                         required
                         class="block w-full text-sm text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-paper"
                     >
-                    <div wire:loading wire:target="icFile" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                    <div wire:loading wire:target="icFile" class="mt-1.5 text-[13px] text-ink-soft"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
                     @error('icFile')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                     @enderror
@@ -184,7 +184,6 @@
             </div>
 
             <x-ui.button type="submit" class="mt-4 w-full" wire:loading.attr="disabled" wire:target="submit, ssmFile, icFile">
-                <svg wire:loading wire:target="submit" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/></svg>
                 {{ __('Submit application') }}
             </x-ui.button>
         </x-ui.card>

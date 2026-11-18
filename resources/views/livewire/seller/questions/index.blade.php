@@ -40,15 +40,15 @@
                     </div>
                 @else
                     <div class="mt-3 flex flex-wrap gap-2">
-                        <button type="button" wire:click="startAnswer({{ $question->id }})"
+                        <x-ui.button variant="plain" type="button" wire:click="startAnswer({{ $question->id }})"
                                 class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ $question->isAnswered() ? __('Edit answer') : __('Answer') }}
-                        </button>
-                        <button type="button" wire:click="hide({{ $question->id }})"
+                        </x-ui.button>
+                        <x-ui.button variant="plain" type="button" wire:click="hide({{ $question->id }})"
                                 wire:confirm="{{ __('Hide this question from the product page?') }}"
                                 class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Hide') }}
-                        </button>
+                        </x-ui.button>
                     </div>
                 @endif
             </x-ui.card>

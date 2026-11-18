@@ -20,10 +20,10 @@
                                     <span class="text-[13px] text-ink-soft">{{ __('with :n people', ['n' => $deal->target_size]) }}</span>
                                 </p>
                             </div>
-                            <button type="button" wire:click="start({{ $deal->id }})" wire:loading.attr="disabled" wire:target="start"
+                            <x-ui.button variant="plain" type="button" wire:click="start({{ $deal->id }})" wire:loading.attr="disabled" wire:target="start"
                                     class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
                                 {{ __('Start a group') }}
-                            </button>
+                            </x-ui.button>
                         </div>
 
                         @if ($teams->isNotEmpty())

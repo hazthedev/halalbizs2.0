@@ -117,7 +117,7 @@
                     <label for="return-photos" class="mt-3 block text-[13px] font-medium text-ink">{{ __('Photos (up to :max, optional)', ['max' => \App\Models\ReturnRequest::MAX_PHOTOS]) }}</label>
                     <input id="return-photos" type="file" wire:model="returnPhotos" multiple accept="image/*"
                            class="mt-2 block w-full max-w-sm text-[13px] text-ink-soft file:mr-3 file:rounded-[var(--radius-control)] file:border file:border-line-strong file:bg-surface file:px-3 file:py-2 file:text-[13px] file:font-medium file:text-ink">
-                    <div wire:loading wire:target="returnPhotos" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                    <div wire:loading wire:target="returnPhotos" class="mt-1.5 text-[13px] text-ink-soft"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
                     @if (count($returnPhotos) > 0)
                         <p class="mt-1.5 text-[13px] text-ink-soft">{{ trans_choice('{1}:count photo attached|[2,*]:count photos attached', count($returnPhotos), ['count' => count($returnPhotos)]) }}</p>
                     @endif
