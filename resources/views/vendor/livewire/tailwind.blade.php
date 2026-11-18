@@ -88,7 +88,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                                     <span wire:key="paginator-{{ $paginator->getPageName() }}-page{{ $page }}">
                                         @if ($page == $paginator->currentPage())
                                             <span aria-current="page">
-                                                <span class="inline-flex min-h-11 min-w-11 items-center justify-center border border-line bg-surface px-3 text-sm font-medium leading-5 cursor-default border-emerald bg-emerald text-white -ml-px">{{ $page }}</span>
+                                                <span class="inline-flex min-h-11 min-w-11 items-center justify-center border border-emerald bg-emerald px-3 text-sm font-medium leading-5 cursor-default text-white -ml-px">{{ $page }}</span>
                                             </span>
                                         @else
                                             <button type="button" wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="inline-flex min-h-11 min-w-11 items-center justify-center border border-line bg-surface px-3 text-sm font-medium leading-5 text-ink hover:bg-paper hover:border-line-strong focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-emerald transition-colors duration-150 -ml-px" aria-label="{{ __('Go to page :page', ['page' => $page]) }}">
