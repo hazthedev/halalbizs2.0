@@ -218,6 +218,10 @@ class Payouts extends Component
         return view('livewire.admin.finance.payouts', [
             'payouts' => $payouts,
             'counts' => $this->counts(),
+            // Header "select all" works in the browser, so it needs the ids up front.
+            'approvedIds' => $this->tab === PayoutStatus::Approved->value
+                ? Payout::query()->where('status', PayoutStatus::Approved)->pluck('id')->map(fn (int $id) => (string) $id)->all()
+                : [],
         ])->title(__('Payouts'));
     }
 

@@ -61,35 +61,32 @@ class Dashboard extends Component
 
     public function render()
     {
+        // One query for both order totals (paid spend + orders placed).
+        $orderTotals = Order::query()
+            ->where('user_id', auth()->id())
+            ->toBase()
+            ->selectRaw('count(*) as placed, coalesce(sum(case when payment_status = ? then grand_total_sen else 0 end), 0) as spent', [PaymentStatus::Paid->value])
+            ->first();
+        $ordersPlaced = (int) $orderTotals->placed;
+
+        // One grouped query feeds both the donut and the quick-status shortcuts.
+        $statusCounts = $this->statusCounts();
+
         return view('livewire.storefront.account.dashboard', [
-            'totalSpentSen' => $this->totalSpentSen(),
-            'ordersPlaced' => $this->ordersPlaced(),
+            'totalSpentSen' => (int) $orderTotals->spent,
+            'ordersPlaced' => $ordersPlaced,
             'itemsBought' => $this->itemsBought(),
             'reviewsWritten' => $this->reviewsWritten(),
             'wishlistSaved' => $this->wishlistSaved(),
             'spendChart' => $this->spendChart(),
-            'statusChart' => $this->statusChart(),
-            'quickStatus' => $this->quickStatus(),
+            'statusChart' => $this->statusChart($statusCounts),
+            'quickStatus' => $this->quickStatus($statusCounts),
             'recentOrders' => $this->recentOrders(),
-            'hasOrders' => $this->ordersPlaced() > 0,
+            'hasOrders' => $ordersPlaced > 0,
         ])->title(__('Overview'));
     }
 
     // ── Stat totals (all scoped to the authenticated buyer) ─────────────
-
-    /** Σ grand_total of the buyer's PAID orders (their honest lifetime spend). */
-    private function totalSpentSen(): int
-    {
-        return (int) Order::query()
-            ->where('user_id', auth()->id())
-            ->where('payment_status', PaymentStatus::Paid)
-            ->sum('grand_total_sen');
-    }
-
-    private function ordersPlaced(): int
-    {
-        return Order::query()->where('user_id', auth()->id())->count();
-    }
 
     /** Σ qty across every order item in the buyer's sub-orders. */
     private function itemsBought(): int
@@ -134,6 +131,14 @@ class Dashboard extends Component
      */
     private function spendChart(): array
     {
+        return $this->spend ??= $this->buildSpendChart();
+    }
+
+    /** @var array<string, mixed>|null built once per request (dispatch + render share it) */
+    private ?array $spend = null;
+
+    private function buildSpendChart(): array
+    {
         $months = collect(range($this->monthsInPeriod() - 1, 0))
             ->map(fn (int $back) => DisplayTime::now()->startOfMonth()->subMonths($back));
 
@@ -142,9 +147,11 @@ class Dashboard extends Component
             ->where('payment_status', PaymentStatus::Paid)
             ->whereNotNull('paid_at')
             ->where('paid_at', '>=', $this->periodStart())
-            ->get(['paid_at', 'grand_total_sen'])
-            ->groupBy(fn (Order $order) => $order->paid_at->display()->format('Y-m'))
-            ->map(fn ($orders) => (int) $orders->sum('grand_total_sen'));
+            ->toBase()
+            ->selectRaw("DATE_FORMAT(".DisplayTime::dayBucketSql('paid_at').", '%Y-%m') as month, SUM(grand_total_sen) as total")
+            ->groupBy('month')
+            ->pluck('total', 'month')
+            ->map(fn ($total) => (int) $total);
 
         $labels = $months->map(fn (Carbon $month) => $month->format('M Y'))->values()->all();
 
@@ -185,10 +192,8 @@ class Dashboard extends Component
      *
      * @return array{type: string, series: list<int>, labels: list<string>, options: array<string, mixed>, total: int}
      */
-    private function statusChart(): array
+    private function statusChart(Collection $counts): array
     {
-        $counts = $this->statusCounts();
-
         $series = [];
         $labels = [];
         $colors = [];
@@ -246,11 +251,11 @@ class Dashboard extends Component
     // ── Quick-status shortcuts (mirror the Orders tab groupings) ────────
 
     /** @return list<array{key: string, label: string, count: int, url: string}> */
-    private function quickStatus(): array
+    private function quickStatus(Collection $counts): array
     {
         return array_map(
             fn (array $row) => $row + ['url' => route('account.orders', ['tab' => $row['key']])],
-            self::quickStatusFor(auth()->id()),
+            self::quickStatusFrom($counts),
         );
     }
 
@@ -262,13 +267,20 @@ class Dashboard extends Component
      */
     public static function quickStatusFor(int $userId): array
     {
-        $counts = SubOrder::query()
+        return self::quickStatusFrom(SubOrder::query()
             ->whereHas('order', fn (Builder $query) => $query->where('user_id', $userId))
             ->toBase()
             ->selectRaw('status, count(*) as total')
             ->groupBy('status')
-            ->pluck('total', 'status');
+            ->pluck('total', 'status'));
+    }
 
+    /**
+     * @param  Collection<string, int>  $counts  sub-order count per status value
+     * @return list<array{key: string, label: string, count: int}>
+     */
+    private static function quickStatusFrom(Collection $counts): array
+    {
         $sum = fn (SubOrderStatus ...$statuses) => collect($statuses)
             ->sum(fn (SubOrderStatus $status) => (int) ($counts[$status->value] ?? 0));
 

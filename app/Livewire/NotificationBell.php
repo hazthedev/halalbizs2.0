@@ -13,6 +13,30 @@ class NotificationBell extends Component
 {
     public string $context = 'storefront'; // storefront | seller | admin
 
+    /** Fingerprint of what the last render showed; the poll tick compares against it. */
+    public string $seen = '';
+
+    /**
+     * wire:poll target. One aggregate query; the component only re-renders
+     * when a notification arrived or changed read state since the last render.
+     */
+    public function tick(): void
+    {
+        if ($this->fingerprint() === $this->seen) {
+            $this->skipRender();
+        }
+    }
+
+    private function fingerprint(): string
+    {
+        $row = auth()->user()->notifications()->reorder()
+            ->toBase()
+            ->selectRaw('count(*) as total, coalesce(sum(read_at is null), 0) as unread, max(created_at) as newest')
+            ->first();
+
+        return $row->total.'|'.$row->unread.'|'.$row->newest;
+    }
+
     public function open(string $notificationId): void
     {
         $notification = auth()->user()->notifications()->where('id', $notificationId)->first();
@@ -33,10 +57,11 @@ class NotificationBell extends Component
     public function render()
     {
         $user = auth()->user();
+        $this->seen = $this->fingerprint();
 
         return view('livewire.notification-bell', [
             'notifications' => $user->notifications()->latest()->limit(10)->get(),
-            'unreadCount' => $user->unreadNotifications()->count(),
+            'unreadCount' => (int) explode('|', $this->seen)[1],
             'viewAllUrl' => match ($this->context) {
                 'seller' => route('seller.notifications'),
                 'admin' => route('admin.notifications'),

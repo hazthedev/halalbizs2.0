@@ -1,6 +1,8 @@
 @php use App\Enums\PayoutStatus; @endphp
 
-<div class="space-y-4">
+{{-- Selection lives in the browser (entangled, sent with the next action):
+     ticking a row or the header box makes no server trip. --}}
+<div class="space-y-4" x-data="{ selected: $wire.entangle('selected') }">
 
     {{-- Header --}}
     <x-ui.section-heading :title="__('Payouts')" :subtitle="__('Seller payout queue — approve requests, export the bank CSV, then mark them paid with the bank reference. Requests start arriving with M8.')" as="h1" />
@@ -26,12 +28,15 @@
     {{-- Batch bar (approved tab) --}}
     @if ($tab === PayoutStatus::Approved->value && $payouts->isNotEmpty())
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <p class="text-[13px] text-ink-soft">
+            <p class="text-[13px] text-ink-soft"
+               x-text="selected.length === 0 ? @js(trans_choice('{0}No payouts selected|{1}:count payout selected|[2,*]:count payouts selected', 0, ['count' => 0]))
+                       : selected.length === 1 ? @js(trans_choice('{0}No payouts selected|{1}:count payout selected|[2,*]:count payouts selected', 1, ['count' => 1]))
+                       : @js(trans_choice('{0}No payouts selected|{1}:count payout selected|[2,*]:count payouts selected', 2, ['count' => '__N__'])).replace('__N__', selected.length)">
                 {{ trans_choice('{0}No payouts selected|{1}:count payout selected|[2,*]:count payouts selected', count($selected), ['count' => count($selected)]) }}
             </p>
             {{-- Plain action — file download, the CSV streams from the server --}}
             <x-ui.button variant="plain" type="button" wire:click="exportBankCsv" wire:loading.attr="disabled"
-                    :disabled="count($selected) === 0"
+                    x-bind:disabled="selected.length === 0" :disabled="count($selected) === 0"
                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
                 {{ __('Export bank CSV') }}
@@ -56,7 +61,10 @@
                     <tr class="border-b border-line text-left text-ink-soft">
                         @if ($tab === PayoutStatus::Approved->value)
                             <th scope="col" class="w-10 px-3 py-2.5">
-                                <input type="checkbox" wire:model.live="selectAll"
+                                <input type="checkbox"
+                                       data-ids="{{ json_encode($approvedIds) }}"
+                                       x-bind:checked="selected.length > 0 && selected.length === JSON.parse($el.dataset.ids).length"
+                                       x-on:change="selected = $event.target.checked ? JSON.parse($el.dataset.ids) : []"
                                        aria-label="{{ __('Select all approved payouts') }}"
                                        class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                             </th>
@@ -82,7 +90,7 @@
                         <tr class="border-b border-line hover:bg-paper {{ ($rejectingId === $payout->id || $payingId === $payout->id) ? '' : 'last:border-b-0' }}" wire:key="payout-{{ $payout->id }}">
                             @if ($tab === PayoutStatus::Approved->value)
                                 <td class="px-3 py-2">
-                                    <input type="checkbox" wire:model.live="selected" value="{{ $payout->id }}"
+                                    <input type="checkbox" x-model="selected" value="{{ $payout->id }}"
                                            aria-label="{{ __('Select :no', ['no' => $payout->payout_no]) }}"
                                            class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                                 </td>

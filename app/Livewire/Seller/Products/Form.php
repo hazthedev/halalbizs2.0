@@ -8,7 +8,6 @@ use App\Enums\TaxClass;
 use App\Livewire\Concerns\CurrentStore;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
-use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductOption;
@@ -17,6 +16,7 @@ use App\Services\ListingCopyService;
 use App\Services\MarketplaceLinkResolver;
 use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
+use App\Support\CatalogOptions;
 use App\Support\ContentLocales;
 use App\Support\DisplayTime;
 use App\Support\HtmlSanitizer;
@@ -452,10 +452,11 @@ class Form extends Component
 
         return view('livewire.seller.products.form', [
             'editing' => $editing,
-            'topCategories' => Category::query()->active()->whereNull('parent_id')->orderBy('position')->get(),
-            'childCategories' => $this->categoryTop ? Category::query()->active()->where('parent_id', $this->categoryTop)->orderBy('position')->get() : collect(),
-            'leafCategories' => $this->categoryChild ? Category::query()->active()->where('parent_id', $this->categoryChild)->orderBy('position')->get() : collect(),
-            'brands' => Brand::query()->where('is_active', true)->orderBy('name')->get(),
+            // Pick-lists come from one cached read of plain arrays (CatalogOptions).
+            'topCategories' => CatalogOptions::childrenOf(null),
+            'childCategories' => $this->categoryTop ? CatalogOptions::childrenOf($this->categoryTop) : [],
+            'leafCategories' => $this->categoryChild ? CatalogOptions::childrenOf($this->categoryChild) : [],
+            'brands' => CatalogOptions::brands(),
             'conditions' => ProductCondition::cases(),
             'existingMedia' => $this->loadedProduct()?->media()->where('collection_name', 'images')->orderBy('order_column')->get() ?? collect(),
             'existingVideo' => $this->loadedProduct()?->getFirstMedia('videos'),
@@ -1114,11 +1115,15 @@ class Form extends Component
             return collect();
         }
 
-        return Category::find($categoryId)?->attributes()
+        // The view asks twice per render; read once per request.
+        return $this->attributesFor[$categoryId] ??= Category::find($categoryId)?->attributes()
             ->where('is_filterable', true)
             ->with(['values' => fn ($values) => $values->orderBy('position')])
             ->get() ?? collect();
     }
+
+    /** @var array<int, Collection<int, Attribute>> */
+    private array $attributesFor = [];
 
     /**
      * RinggitInput::toSen() strips every non-[0-9.] character, so "-50.00"

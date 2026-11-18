@@ -53,7 +53,7 @@ class Pages extends Component
     public function render()
     {
         return view('livewire.admin.content.pages', [
-            'pages' => Page::with('draft')->orderBy('slug')->get()->each(fn (Page $page) => app(ContentDrafts::class)->preview($page)),
+            'pages' => Page::with('draft.media')->orderBy('slug')->get()->each(fn (Page $page) => app(ContentDrafts::class)->preview($page)),
         ])->title(__('Pages'));
     }
 }

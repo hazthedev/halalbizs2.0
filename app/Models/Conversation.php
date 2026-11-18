@@ -36,6 +36,18 @@ class Conversation extends Model
         return $this->belongsTo(Store::class);
     }
 
+    /** A thread opens on its latest messages only; older history is not loaded. */
+    public const THREAD_WINDOW = 100;
+
+    /** The latest THREAD_WINDOW messages, oldest first, with the context product. */
+    public function loadThreadWindow(): static
+    {
+        $this->load(['messages' => fn ($query) => $query->reorder()->latest('id')->limit(self::THREAD_WINDOW)->with('product.media')]);
+        $this->setRelation('messages', $this->messages->reverse()->values());
+
+        return $this;
+    }
+
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class)->orderBy('created_at')->orderBy('id');

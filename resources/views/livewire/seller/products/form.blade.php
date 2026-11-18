@@ -160,26 +160,26 @@
                             class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         <option value="">{{ __('Choose…') }}</option>
                         @foreach ($topCategories as $top)
-                            <option value="{{ $top->id }}">{{ $top->getTranslation('name', app()->getLocale()) }}</option>
+                            <option value="{{ $top['id'] }}">{{ $top['name'] }}</option>
                         @endforeach
                     </select>
 
-                    @if ($childCategories->isNotEmpty())
+                    @if ($childCategories !== [])
                         <select wire:model.live="categoryChild" aria-label="{{ __('Sub-category') }}"
                                 class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             <option value="">{{ __('Choose…') }}</option>
                             @foreach ($childCategories as $child)
-                                <option value="{{ $child->id }}">{{ $child->getTranslation('name', app()->getLocale()) }}</option>
+                                <option value="{{ $child['id'] }}">{{ $child['name'] }}</option>
                             @endforeach
                         </select>
                     @endif
 
-                    @if ($leafCategories->isNotEmpty())
+                    @if ($leafCategories !== [])
                         <select wire:model.live="categoryLeaf" aria-label="{{ __('Final category') }}"
                                 class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             <option value="">{{ __('Choose…') }}</option>
                             @foreach ($leafCategories as $leaf)
-                                <option value="{{ $leaf->id }}">{{ $leaf->getTranslation('name', app()->getLocale()) }}</option>
+                                <option value="{{ $leaf['id'] }}">{{ $leaf['name'] }}</option>
                             @endforeach
                         </select>
                     @endif
@@ -194,18 +194,20 @@
                             class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         <option value="">{{ __('No brand') }}</option>
                         @foreach ($brands as $brand)
-                            <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                            <option value="{{ $brand['id'] }}">{{ $brand['name'] }}</option>
                         @endforeach
                     </select>
                     @error('brandId')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
 
-                <fieldset>
+                {{-- Draft-only choice: Alpine owns the highlight, the value rides along with the next save/request. --}}
+                <fieldset x-data="{ condition: $wire.entangle('condition') }">
                     <legend class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Condition') }}</legend>
                     <div class="flex gap-2">
                         @foreach ($conditions as $conditionCase)
-                            <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-control)] border px-4 py-2 text-sm font-medium {{ $condition === $conditionCase->value ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink' }}">
-                                <input type="radio" wire:model.live="condition" value="{{ $conditionCase->value }}" class="sr-only">
+                            <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-control)] border px-4 py-2 text-sm font-medium"
+                                   x-bind:class="condition === '{{ $conditionCase->value }}' ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink'">
+                                <input type="radio" x-model="condition" value="{{ $conditionCase->value }}" class="sr-only">
                                 {{ $conditionCase->label() }}
                             </label>
                         @endforeach
@@ -225,7 +227,7 @@
                 </fieldset>
 
                 @if ($this->availableAttributes()->isNotEmpty())
-                    <fieldset class="mt-4">
+                    <fieldset class="mt-4" x-data="{ ids: $wire.entangle('attributeValueIds') }">
                         <legend class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Attributes') }}</legend>
                         <p class="mb-2 text-[12px] text-ink-faint">{{ __('Tagging values helps buyers filter to your product.') }}</p>
                         <div class="space-y-3">
@@ -234,8 +236,9 @@
                                     <p class="text-[12px] font-medium text-ink-soft">{{ $facetAttribute->getTranslation('name', app()->getLocale()) }}</p>
                                     <div class="mt-1 flex flex-wrap gap-1.5">
                                         @foreach ($facetAttribute->values as $facetValue)
-                                            <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-[var(--radius-control)] border px-3 py-1.5 text-[13px] {{ in_array($facetValue->id, $attributeValueIds) ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink' }}">
-                                                <input type="checkbox" wire:model.live="attributeValueIds" value="{{ $facetValue->id }}" class="sr-only">
+                                            <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-[var(--radius-control)] border px-3 py-1.5 text-[13px]"
+                                                   x-bind:class="ids.some((id) => id == {{ $facetValue->id }}) ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink'">
+                                                <input type="checkbox" x-model="ids" value="{{ $facetValue->id }}" class="sr-only">
                                                 {{ $facetValue->getTranslation('value', app()->getLocale()) }}
                                             </label>
                                         @endforeach

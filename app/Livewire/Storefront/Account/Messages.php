@@ -3,6 +3,7 @@
 namespace App\Livewire\Storefront\Account;
 
 use App\Models\Conversation;
+use App\Models\Message;
 use App\Models\Product;
 use App\Models\Store;
 use App\Services\ChatService;
@@ -23,6 +24,9 @@ class Messages extends Component
     public ?int $conversationId = null;
 
     public string $body = '';
+
+    /** Newest message id the last render showed (poll tick compares against it). */
+    public int $seen = 0;
 
     /** Product attached to the next sent message ("asking about this item"). */
     public ?int $contextProductId = null;
@@ -103,13 +107,30 @@ class Messages extends Component
         unset($this->activeConversation);
     }
 
-    /** wire:poll target — pulls new messages and marks them read while open. */
+    /**
+     * wire:poll target — pulls new messages and marks them read while open.
+     * $seen is the newest message id the last render showed; when nothing newer
+     * exists the tick is one cheap query and the component does not re-render.
+     */
     public function refreshThread(ChatService $chat): void
     {
+        if ($this->newestMessageId() <= $this->seen) {
+            $this->skipRender();
+
+            return;
+        }
+
         if ($this->activeConversation !== null) {
             $chat->markRead($this->activeConversation, 'buyer');
             unset($this->activeConversation);
         }
+    }
+
+    private function newestMessageId(): int
+    {
+        return (int) Message::query()
+            ->whereIn('conversation_id', Conversation::query()->where('buyer_id', auth()->id())->select('id'))
+            ->max('id');
     }
 
     #[Computed]
@@ -133,12 +154,16 @@ class Messages extends Component
 
         return Conversation::query()
             ->where('buyer_id', auth()->id())
-            ->with(['store.media', 'messages.product.media'])
-            ->find($this->conversationId);
+            ->with('store.media')
+            ->find($this->conversationId)
+            ?->loadThreadWindow();
     }
 
     public function render()
     {
+        // Inbox already loaded by the view: no extra query.
+        $this->seen = (int) $this->conversations->max(fn (Conversation $c) => $c->latestMessage?->id);
+
         return view('livewire.storefront.account.messages', [
             'contextProduct' => $this->scopedContextProduct(),
         ])->title(__('Messages'));
