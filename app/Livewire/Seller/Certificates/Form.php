@@ -1,0 +1,255 @@
+<?php
+
+namespace App\Livewire\Seller\Certificates;
+
+use App\Enums\CertificateStatus;
+use App\Livewire\Concerns\CurrentStore;
+use App\Models\HalalCertificate;
+use App\Models\HalalCertificateEvent;
+use App\Models\Product;
+use App\Services\Whip\WhipDirectory;
+use App\Support\DisplayTime;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
+use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
+
+/**
+ * The seller's halal certificates — the write path audit H-6 found missing.
+ *
+ * Until this screen existed, halal_certificates was populated by two demo
+ * seeders and nothing else, so at a real cutover the entire trust layer of the
+ * marketplace was empty with no way to fill it.
+ *
+ * ⚠ INCOMPLETE UNTIL THE PUBLISH-GATE CHANGE LANDS. Renewing sends the record
+ * back to Pending, so halalVerdict() reads 'pending' and the badge drops for
+ * the length of our review. That makes the 90-day renewal nudge self-defeating
+ * — renew early, lose the badge early. The fix is the submitted_at grace that
+ * ships with the gate config; it belongs there because that is where the same
+ * "our review latency must not cost a seller anything" rule already lives.
+ *
+ * A RENEWAL IS AN EDIT TO THE SAME ROW, not a new record. The number carries a
+ * unique index because a printed certificate number is unique in the real
+ * world, and /certificate-register looks a certificate up BY that number — so
+ * one row per number, with halal_certificate_events as its history. Re-submitting
+ * new validity dates sends the same row back to Pending.
+ */
+#[Layout('layouts.seller')]
+class Form extends Component
+{
+    use CurrentStore, WithFileUploads;
+
+    /** The certificate being renewed; null when registering a new one. */
+    #[Locked]
+    public ?int $editing = null;
+
+    public bool $creating = false;
+
+    public string $number = '';
+
+    public string $issuingBody = '';
+
+    public string $holderName = '';
+
+    public string $scheme = '';
+
+    public string $scopeNote = '';
+
+    public string $validFrom = '';
+
+    public string $validTo = '';
+
+    public string $facility = '';
+
+    public bool $dedicatedFacility = false;
+
+    public bool $exportPaperwork = false;
+
+    /** Company registration (SSM) number: how WHIP ties a certificate to this seller. */
+    public string $registrationNo = '';
+
+    public ?TemporaryUploadedFile $document = null;
+
+    /** SKU binding: product ids covered by the certificate open in $editing. */
+    public array $covered = [];
+
+    public function mount(?HalalCertificate $certificate = null): void
+    {
+        $this->registrationNo = (string) $this->currentStore()->registration_no;
+
+        if ($certificate === null || ! $certificate->exists) {
+            $this->creating = true;
+
+            return;
+        }
+
+        // Scoped through the store's own relation: a foreign id 404s, never loads.
+        $certificate = $this->certificates()->findOrFail($certificate->id);
+
+        $this->editing = $certificate->id;
+        $this->number = $certificate->number;
+        $this->issuingBody = $certificate->issuing_body;
+        $this->holderName = $certificate->holder_name;
+        $this->scheme = (string) $certificate->scheme;
+        $this->scopeNote = (string) $certificate->scope_note;
+        $this->validFrom = $certificate->valid_from->toDateString();
+        $this->validTo = $certificate->valid_to->toDateString();
+        $this->facility = (string) $certificate->facility;
+        $this->dedicatedFacility = $certificate->dedicated_facility;
+        $this->exportPaperwork = $certificate->export_paperwork;
+        $this->covered = $certificate->products()->pluck('products.id')->all();
+    }
+
+    public function save(): void
+    {
+        $certificate = $this->editing === null ? null : $this->certificates()->findOrFail($this->editing);
+
+        $data = $this->validate([
+            // Unique across the marketplace, ignoring this row on a renewal. A
+            // printed number IS globally unique, so a collision means either a
+            // typo or someone else's certificate — say which, don't 500.
+            'number' => ['required', 'string', 'max:60', Rule::unique('halal_certificates', 'number')->ignore($certificate?->id)],
+            'issuingBody' => ['required', Rule::in(array_keys(HalalCertificate::BODIES))],
+            'holderName' => ['required', 'string', 'max:150'],
+            'registrationNo' => ['nullable', 'string', 'max:40'],
+            'scheme' => ['nullable', 'string', 'max:60'],
+            'scopeNote' => ['nullable', 'string', 'max:255'],
+            'validFrom' => ['required', 'date'],
+            'validTo' => ['required', 'date', 'after:validFrom'],
+            'facility' => ['nullable', 'string', 'max:150'],
+            'dedicatedFacility' => ['boolean'],
+            'exportPaperwork' => ['boolean'],
+            // Required on a first submission, optional on a renewal that is only
+            // correcting a typo — the previous scan stays attached.
+            'document' => [$certificate?->getFirstMedia('document') === null ? 'required' : 'nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:4096'],
+            'covered' => ['array'],
+            'covered.*' => ['integer'],
+        ], [
+            'number.unique' => __('That certificate number is already registered. If it is yours, it is on this page already; if not, contact support.'),
+            'validTo.after' => __('The expiry date must come after the issue date.'),
+        ]);
+
+        // A term longer than five years is a typo, not a certificate: JAKIM
+        // issues 1, 2 or 3 years, and 5 only to long-standing holders.
+        if (now()->parse($data['validFrom'])->diffInYears(now()->parse($data['validTo'])) > 5) {
+            $this->addError('validTo', __('That is more than a five-year term — check the dates on the certificate.'));
+
+            return;
+        }
+
+        $verified = false;
+        $parked = collect();
+
+        $store = $this->currentStore();
+        [$answer, $whip] = app(WhipDirectory::class)->check($data['number'], $store->registration_no ?: $this->registrationNo);
+        DB::transaction(function () use ($certificate, $data, $answer, $whip, &$verified, &$parked) {
+            $store = $this->currentStore();
+
+            // The registration number is self-declared the first time and then
+            // locked to the store. It is still only a claim until an admin
+            // confirms it against the SSM document (registration_verified_at):
+            // otherwise a seller could type another company's number and its
+            // WHIP certificate number and be approved at once.
+            if (blank($store->registration_no) && filled($data['registrationNo'])) {
+                $store->forceFill(['registration_no' => trim($data['registrationNo'])])->save();
+            }
+
+            // Judge the pre-transaction WHIP snapshot against the final store.
+            // Verified = certified, in date, and the
+            // same company registration number; anything else is manual review.
+            $answer = $whip?->answerFor($store->registration_no) ?? $answer;
+            $verified = $answer === 'verified' && $store->registration_verified_at !== null;
+
+            $certificate ??= new HalalCertificate;
+            $certificate->fill([
+                'number' => $data['number'],
+                'issuing_body' => $data['issuingBody'],
+                'issuing_body_name' => HalalCertificate::BODIES[$data['issuingBody']]['name'],
+                'holder_name' => $data['holderName'],
+                'scheme' => $data['scheme'] ?: null,
+                'scope_note' => $data['scopeNote'] ?: null,
+                'valid_from' => $data['validFrom'],
+                'valid_to' => $data['validTo'],
+                'facility' => $data['facility'] ?: null,
+                'dedicated_facility' => $data['dedicatedFacility'],
+                'export_paperwork' => $data['exportPaperwork'],
+            ]);
+
+            // store_id and the review fields are guarded, never filled: the
+            // seller must not be able to submit a certificate already approved,
+            // or one belonging to another store.
+            $certificate->store_id = $store->id;
+            $certificate->forceFill([
+                'status' => CertificateStatus::Pending,
+                'submitted_at' => now(),
+                'reviewed_at' => null,
+                'reviewed_by' => null,
+                'review_note' => null,
+                // A renewal moves valid_to forward, so the previous nudge is
+                // spent. Clearing it here means the seller is warned again
+                // against the NEW date rather than being silently skipped.
+                'renewal_notified_at' => null,
+                'source' => 'manual',
+                'whip_application_id' => null,
+                'whip_synced_at' => null,
+                'whip_answer' => $answer,
+            ]);
+
+            if ($verified) {
+                $certificate->takeFromWhip($whip, $answer)->forceFill([
+                    'status' => CertificateStatus::Approved,
+                    'reviewed_at' => now(),
+                ]);
+            }
+
+            $certificate->save();
+
+            if ($this->document !== null) {
+                $certificate->addMedia($this->document->getRealPath())
+                    ->usingFileName('certificate-'.$certificate->number.'.'.$this->document->getClientOriginalExtension())
+                    ->toMediaCollection('document');
+            }
+
+            // Only on a WHIP-verified row does WHIP decide which ticked products badge.
+            $parked = $certificate->bindProducts($data['covered'], $verified ? $whip : null);
+
+            HalalCertificateEvent::create([
+                'halal_certificate_id' => $certificate->id,
+                'occurred_on' => DisplayTime::today()->toDateString(),
+                'summary' => $verified
+                    ? __('Verified with WHIP')
+                    : ($certificate->wasRecentlyCreated
+                        ? __('Submitted for review')
+                        : __('Renewal submitted for review')),
+            ]);
+        });
+
+        $this->dispatch('toast', message: $verified
+            ? __('Verified with WHIP. Your halal badge is live.')
+            : __('Sent for review. Your products stay on sale while we check it.'));
+        $parked->isNotEmpty() && $this->dispatch('toast', message: __('Not on your WHIP certificate, waiting for admin: :names', ['names' => $parked->implode(', ')]));
+
+        $this->redirectRoute('seller.certificates', navigate: true);
+    }
+
+    private function certificates()
+    {
+        return $this->currentStore()->halalCertificates();
+    }
+
+    private function storeProducts()
+    {
+        return Product::query()->where('store_id', $this->currentStore()->id);
+    }
+
+    public function render()
+    {
+        return view('livewire.seller.certificates.form', [
+            'products' => $this->storeProducts()->orderBy('name')->get(['id', 'name', 'halal_certificate_id']),
+            'bodies' => HalalCertificate::BODIES,
+        ])->title($this->editing !== null ? __('Renew or correct this certificate') : __('Register a certificate'));
+    }
+}

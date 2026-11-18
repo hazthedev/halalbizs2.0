@@ -2802,5 +2802,22 @@
     "Continue": "Tiếp tục",
     "Continue as :name?": "Tiếp tục với tư cách :name?",
     "This signs this browser in to HalalBizs as :email. If you did not open this from your own app, close this page.": "Thao tác này đăng nhập trình duyệt này vào HalalBizs bằng :email. Nếu bạn không mở trang này từ ứng dụng của mình, hãy đóng trang.",
-    "Only a shipped order can be marked delivered.": "Chỉ đơn đã gửi đi mới có thể đánh dấu là đã giao."
+    "Only a shipped order can be marked delivered.": "Chỉ đơn đã gửi đi mới có thể đánh dấu là đã giao.",
+    "All issuing bodies": "Tất cả cơ quan cấp",
+    "All sources": "Tất cả nguồn",
+    "Adjust the filters or clear them to see every certificate.": "Điều chỉnh hoặc xóa bộ lọc để xem mọi chứng chỉ.",
+    "Expires from": "Hết hạn từ",
+    "Expires to": "Hết hạn đến",
+    "Expiring soon": "Sắp hết hạn",
+    "Manual": "Thủ công",
+    "No certificates match": "Không có chứng chỉ phù hợp",
+    "Number": "Số",
+    "Search certificates": "Tìm chứng chỉ",
+    "Search number or issuing body": "Tìm theo số hoặc cơ quan cấp",
+    "Search number or store": "Tìm theo số hoặc cửa hàng",
+    "Search product or store": "Tìm sản phẩm hoặc cửa hàng",
+    "Submitted from": "Gửi từ",
+    "Submitted to": "Gửi đến",
+    "Valid": "Hiệu lực",
+    "WHIP": "WHIP"
 }

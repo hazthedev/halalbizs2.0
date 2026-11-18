@@ -150,3 +150,38 @@ test('the queue shows the oldest submission first', function () {
 
     expect($ids)->toBe([$older->id, $newer->id]);
 });
+
+test('certificate table sorts safely, combines filters and search, and pages', function () {
+    $admin = certAdmin();
+    $old = submittedCert(['number' => 'MY-OLD-1-100', 'valid_to' => now()->addMonths(10)]);
+    $new = submittedCert(['number' => 'MY-NEW-2-100', 'valid_to' => now()->addMonths(2), 'issuing_body' => 'JAIS']);
+    $old->forceFill(['submitted_at' => now()->subDays(3)])->save();
+
+    $table = Livewire::actingAs($admin)->test(Certificates::class)
+        ->assertSee('Showing 1 to 2 of 2')
+        ->assertSeeInOrder(['MY-OLD-1-100', 'MY-NEW-2-100'])
+        ->call('sortBy', 'valid_to')->assertSeeInOrder(['MY-NEW-2-100', 'MY-OLD-1-100'])
+        ->assertSeeHtml('aria-sort="ascending"')
+        ->call('sortBy', 'valid_to')->assertSeeInOrder(['MY-OLD-1-100', 'MY-NEW-2-100'])
+        ->assertSeeHtml('aria-sort="descending"')
+        ->call('sortBy', 'store')->call('sortBy', 'unknown')->assertSet('sort', 'store')
+        ->set('sort', 'unknown')->set('direction', 'invalid')->assertSee('MY-OLD-1-100')
+        ->set('search', 'MY-NEW')->set('body', 'JAIS')->assertSee('MY-NEW-2-100')->assertDontSee('MY-OLD-1-100')
+        ->assertSee('Showing 1 to 1 of 1')
+        ->set('search', $old->store->name)->assertSee('MY-OLD-1-100')->assertDontSee('MY-NEW-2-100')
+        ->set('search', '')->set('body', '')->set('store', (string) $old->store_id)->assertSee('MY-OLD-1-100')->assertDontSee('MY-NEW-2-100');
+
+    $table->set('store', '')->set('filter', 'approved')->assertSee('Showing 0 to 0 of 0');
+});
+
+test('certificate table pages and resets the page when a filter changes', function () {
+    $admin = certAdmin();
+    foreach (range(1, 16) as $i) {
+        submittedCert();
+    }
+
+    Livewire::actingAs($admin)->test(Certificates::class)->assertSee('Showing 1 to 15 of 16')
+        ->call('gotoPage', 2)->assertSee('Showing 16 to 16 of 16')
+        ->set('filter', 'all')->assertSee('Showing 1 to 15 of 16')
+        ->set('perPage', 50)->assertSee('Showing 1 to 16 of 16');
+});

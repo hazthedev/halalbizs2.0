@@ -373,7 +373,7 @@ test('whip-directory-profile-owner-binding: mismatched profile ownership cannot 
     expect($store->products()->where('whip_product_id', 2)->exists())->toBeFalse();
 
     Storage::fake('local');
-    $page->call('edit', $legacy->id)
+    Livewire::actingAs($seller)->test(\App\Livewire\Seller\Certificates\Form::class, ['certificate' => $legacy])
         ->set('document', UploadedFile::fake()->create('certificate.pdf', 50, 'application/pdf'))
         ->call('save')->assertHasNoErrors();
     expect($legacy->fresh()->status)->toBe(CertificateStatus::Pending)

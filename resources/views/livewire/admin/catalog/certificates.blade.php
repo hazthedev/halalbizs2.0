@@ -26,45 +26,90 @@
             @endforeach
         </div>
     </div>
+    @php $fieldClass = 'block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald'; @endphp
+    <x-ui.card class="p-3">
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+            <div class="min-w-0 lg:col-span-2">
+                <label for="acert-search" class="sr-only">{{ __('Search certificates') }}</label>
+                <input id="acert-search" type="search" wire:model.live.debounce.300ms="search" placeholder="{{ __('Search number or store') }}" class="{{ $fieldClass }} font-mono placeholder:font-sans placeholder:text-ink-faint">
+            </div>
+            <div>
+                <label for="acert-body" class="sr-only">{{ __('Issuing body') }}</label>
+                <select id="acert-body" wire:model.live="body" class="{{ $fieldClass }}">
+                    <option value="">{{ __('All issuing bodies') }}</option>
+                    @foreach ($bodies as $code => $meta)
+                        <option value="{{ $code }}">{{ $code }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="acert-store" class="sr-only">{{ __('Store') }}</label>
+                <select id="acert-store" wire:model.live="store" class="{{ $fieldClass }}">
+                    <option value="">{{ __('All stores') }}</option>
+                    @foreach ($stores as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <label class="inline-flex min-h-11 items-center gap-2 text-[13px] text-ink">
+                <input type="checkbox" wire:model.live="expiring" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                {{ __('Expiring soon') }}
+            </label>
+            <div class="flex min-w-0 items-center gap-2">
+                <label for="acert-from" class="sr-only">{{ __('Submitted from') }}</label>
+                <input id="acert-from" type="date" wire:model.live="dateFrom" class="{{ $fieldClass }} min-w-0">
+                <span class="text-[13px] text-ink-faint" aria-hidden="true">–</span>
+                <label for="acert-to" class="sr-only">{{ __('Submitted to') }}</label>
+                <input id="acert-to" type="date" wire:model.live="dateTo" class="{{ $fieldClass }} min-w-0">
+            </div>
+        </div>
+        @if ($search !== '' || $body !== '' || $store !== '' || $expiring || $dateFrom !== '' || $dateTo !== '')
+            <button type="button" wire:click="resetFilters" class="mt-2 inline-flex min-h-11 items-center text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Clear filters') }}</button>
+        @endif
+    </x-ui.card>
 
-    @if ($certificates->isEmpty())
-        <x-ui.card class="p-6">
+    <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, filter, body, store, expiring, dateFrom, dateTo, resetFilters, sortBy, perPage" />
+        <div wire:loading.remove wire:target="search, filter, body, store, expiring, dateFrom, dateTo, resetFilters, sortBy, perPage">
+        @if ($certificates->isEmpty())
             <x-ui.empty-state
                 :title="__('Nothing here')"
                 :message="__('Certificates submitted by sellers land in this queue, oldest first.')"
             />
-        </x-ui.card>
-    @else
-        <div class="space-y-3">
-            @foreach ($certificates as $certificate)
-                <x-ui.card class="p-4" wire:key="admin-cert-{{ $certificate->id }}">
-                    <div class="flex flex-wrap items-start justify-between gap-3">
-                        <div class="min-w-0">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <p class="font-mono text-sm font-medium">{{ $certificate->number }}</p>
-                                <x-ui.badge :variant="$certificate->status->variant()">{{ $certificate->status->label() }}</x-ui.badge>
-                            </div>
-                            <p class="mt-1 text-[13px] text-ink-soft">
-                                {{ $certificate->store?->name }} ·
-                                {{ $certificate->issuing_body }} ·
-                                {{ $certificate->valid_from->format('d M Y') }} – {{ $certificate->valid_to->format('d M Y') }} ·
-                                {{ trans_choice('{0} no products|{1} 1 product|[2,*] :count products', $certificate->products->count(), ['count' => $certificate->products->count()]) }}
-                            </p>
-                            @if ($certificate->submitted_at)
-                                <p class="mt-0.5 text-[11px] text-ink-faint">
-                                    {{ __('Submitted :when', ['when' => $certificate->submitted_at->diffForHumans()]) }}
-                                </p>
-                            @endif
-                        </div>
-
-                        <x-ui.button variant="ghost" wire:click="review({{ $certificate->id }})">
-                            {{ $reviewing === $certificate->id ? __('Close') : __('Review') }}
-                        </x-ui.button>
-                    </div>
-
-                    {{-- ── Review panel ──────────────────────────────────── --}}
-                    @if ($reviewing === $certificate->id)
-                        <div class="mt-4 border-t border-line pt-4">
+        @else
+            <table class="w-full min-w-[900px] text-[13px]">
+                <thead class="sticky top-0 z-10 bg-surface">
+                    <tr class="border-b border-line text-left text-ink-soft">
+                        <x-ui.table.sortable field="number" :sort="$sort" :direction="$direction">{{ __('Number') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
+                        <x-ui.table.sortable field="store" :sort="$sort" :direction="$direction">{{ __('Store') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Issuing body') }}</th>
+                        <x-ui.table.sortable field="valid_to" :sort="$sort" :direction="$direction">{{ __('Valid') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Products') }}</th>
+                        <x-ui.table.sortable field="submitted" :sort="$sort" :direction="$direction">{{ __('Submitted') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                    </tr>
+                </thead>
+                @foreach ($certificates as $certificate)
+                    <tbody wire:key="admin-cert-{{ $certificate->id }}">
+                        <tr class="border-b border-line hover:bg-paper">
+                            <td class="px-3 py-2 font-mono font-medium">{{ $certificate->number }}</td>
+                            <td class="px-3 py-2"><x-ui.badge :variant="$certificate->status->variant()">{{ $certificate->status->label() }}</x-ui.badge></td>
+                            <td class="px-3 py-2">{{ $certificate->store?->name }}</td>
+                            <td class="px-3 py-2">{{ $certificate->issuing_body }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $certificate->valid_from->format('d M Y') }} – {{ $certificate->valid_to->format('d M Y') }}</td>
+                            <td class="px-3 py-2 text-right tabular-nums">{{ $certificate->products_count }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $certificate->submitted_at?->diffForHumans() ?? '—' }}</td>
+                            <td class="px-3 py-2 text-right">
+                                <x-ui.button variant="ghost" wire:click="review({{ $certificate->id }})">
+                                    {{ $reviewing === $certificate->id ? __('Close') : __('Review') }}
+                                </x-ui.button>
+                            </td>
+                        </tr>
+                        @if ($reviewing === $certificate->id)
+                            <tr class="border-b border-line bg-paper/50">
+                                <td colspan="8" class="px-4 pb-4">
+<div class="mt-4 border-t border-line pt-4">
                             @if ($certificate->whipNote())
                                 <p class="mb-3 text-[13px] font-medium text-ink">{{ $certificate->whipNote() }}</p>
                             @endif
@@ -136,11 +181,15 @@
                                 </p>
                             @endif
                         </div>
-                    @endif
-                </x-ui.card>
-            @endforeach
+                                </td>
+                            </tr>
+                        @endif
+                    </tbody>
+                @endforeach
+            </table>
+        @endif
         </div>
+    </x-ui.card>
 
-        <div>{{ $certificates->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$certificates" />
 </div>

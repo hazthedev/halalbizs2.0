@@ -11,9 +11,11 @@ use App\Services\Whip\WhipDirectory;
 use App\Support\DisplayTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use App\Livewire\Concerns\WithTable;
+use App\Models\Store;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 /**
  * The halal certificate review queue (audit H-6).
@@ -26,7 +28,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Certificates extends Component
 {
-    use WithPagination;
+    use WithTable;
 
     public const PER_PAGE = 15;
 
@@ -36,11 +38,52 @@ class Certificates extends Component
     public string $rejectionReason = '';
 
     /** pending | approved | rejected | all */
+    #[Url(except: 'pending')]
     public string $filter = 'pending';
+
+    #[Url(except: '')]
+    public string $body = '';
+
+    #[Url(except: '')]
+    public string $store = '';
+
+    #[Url(except: false)]
+    public bool $expiring = false;
+
+    #[Url(except: '')]
+    public string $dateFrom = '';
+
+    #[Url(except: '')]
+    public string $dateTo = '';
+
+    protected function tableFilters(): array
+    {
+        return ['filter', 'body', 'store', 'expiring', 'dateFrom', 'dateTo'];
+    }
+
+    protected function tableSorts(): array
+    {
+        return [
+            'submitted' => 'submitted_at',
+            'number' => 'number',
+            'valid_to' => 'valid_to',
+            'store' => Store::query()->select('name')->whereColumn('stores.id', 'halal_certificates.store_id'),
+        ];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['submitted_at' => 'asc'];
+    }
 
     public function updatedFilter(): void
     {
         $this->reviewing = null;
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset('search', 'body', 'store', 'expiring', 'dateFrom', 'dateTo');
         $this->resetPage();
     }
 
@@ -179,15 +222,44 @@ class Certificates extends Component
             ->when($this->filter !== 'all', fn (Builder $q) => $q->where('status', $this->filter));
     }
 
+    private function results()
+    {
+        $query = $this->certificates()
+            ->with(['store', 'media'])
+            ->withCount('products')
+            ->when(array_key_exists($this->body, HalalCertificate::BODIES), fn ($q) => $q->where('issuing_body', $this->body))
+            ->when(ctype_digit($this->store), fn ($q) => $q->where('store_id', (int) $this->store))
+            ->when($this->expiring, fn ($q) => $q->where('status', CertificateStatus::Approved)
+                ->whereBetween('valid_to', [DisplayTime::today()->toDateString(), DisplayTime::today()->addDays(HalalCertificate::RENEWAL_WINDOW_DAYS)->toDateString()]))
+            ->when($this->validDate($this->dateFrom), fn ($q, $d) => $q->where('submitted_at', '>=', DisplayTime::dayStart($d)))
+            ->when($this->validDate($this->dateTo), fn ($q, $d) => $q->where('submitted_at', '<=', DisplayTime::dayEnd($d)))
+            ->when(trim($this->search) !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('number', 'like', '%'.trim($this->search).'%')
+                ->orWhereHas('store', fn ($s) => $s->where('name', 'like', '%'.trim($this->search).'%'))));
+
+        // Today's order stays until a header is clicked: oldest submission first, unsubmitted last.
+        if (! array_key_exists($this->sort, $this->tableSorts())) {
+            $query->orderByRaw('submitted_at IS NULL');
+        }
+
+        return $this->sortTable($query)->paginate($this->tablePageSize());
+    }
+
+    /** Date inputs arrive as Y-m-d from the browser; ignore anything else. */
+    private function validDate(string $value): ?string
+    {
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+
+        return $date && $date->format('Y-m-d') === $value ? $value : null;
+    }
+
     public function render()
     {
         return view('livewire.admin.catalog.certificates', [
-            'certificates' => $this->certificates()
-                ->with(['store', 'products:id,halal_certificate_id', 'media'])
-                // Oldest submission first: a review queue is a queue.
-                ->orderByRaw('submitted_at IS NULL, submitted_at ASC')
-                ->paginate(self::PER_PAGE),
+            'certificates' => $this->results(),
             'pendingCount' => HalalCertificate::query()->awaitingReview()->count(),
+            'stores' => Store::query()->whereHas('halalCertificates')->orderBy('name')->pluck('name', 'id'),
+            'bodies' => HalalCertificate::BODIES,
         ])->title(__('Halal certificates'));
     }
 }

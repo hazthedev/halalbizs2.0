@@ -13,6 +13,8 @@ Route::get('/products/import', Seller\Products\BulkImport::class)->name('product
 Route::get('/products/{product}/edit', Seller\Products\Form::class)->name('products.edit');
 
 Route::get('/certificates', Seller\Certificates::class)->name('certificates');
+Route::get('/certificates/create', Seller\Certificates\Form::class)->name('certificates.create');
+Route::get('/certificates/{certificate}/edit', Seller\Certificates\Form::class)->name('certificates.edit');
 
 Route::get('/orders', Seller\Orders\Index::class)->name('orders.index');
 Route::get('/orders/{subOrder}', Seller\Orders\Detail::class)->name('orders.show');
