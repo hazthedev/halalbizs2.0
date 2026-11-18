@@ -23,6 +23,8 @@ Route prefix `/seller`, guard `EnsureSeller` (role + store `approved`). Same des
 ## B. M4/M6 — Orders & fulfilment
 Tabs: New (confirmed — act fast indicator showing hours since paid) · To Ship (processing) · Shipped · Delivered · Completed · Cancelled · Returns (M8). Detail: items, buyer note, address (print packing slip PDF), timeline. Actions: **Confirm & pack** (confirmed→processing) · **Arrange shipment** modal (courier select from settings list + tracking_no, mono input) → shipped · cancel (pre-ship, reason) → restock via service. All transitions through SubOrderStatusService. New paid order → database+mail notification with sound-free badge bump (`wire:poll.30s` on counts).
 
+Shipping with a listed courier gives the buyer a link to its official tracking page. J&T, Ninja Van and GDEX receive the tracking number in the link; Pos Laju, DHL eCommerce and City-Link require the buyer to enter it on the courier page. Other couriers have no link. Existing orders are not backfilled.
+
 ## C. M8 — Finance, vouchers, reviews (built in `docs/09`, surfaced here)
 Earnings: balance cards (pending=escrow note removed — available / paid out), ledger table (mono amounts, type chips), **Request payout** (≥ RM50 min, settings), payout history. Vouchers: shop-scope CRUD per 09 §B. Reviews: list + one reply per review.
 

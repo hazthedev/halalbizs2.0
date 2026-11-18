@@ -151,6 +151,46 @@ test('GET seller/couriers lists the fixed courier names', function () {
         ->assertJsonCount(6, 'data');
 });
 
+test('shipping with J&T gives the buyer the official tracking page', function () {
+    Queue::fake();
+    $seller = sellerApiUser();
+    $subOrder = sellerApiSubOrder($seller->store, SubOrderStatus::Processing);
+
+    app(ShipmentService::class)->ship($subOrder, 'J&T Express', null, 'JT0001234567', $seller->id);
+
+    expect($subOrder->fresh()->tracking_url)->toBe('https://www.jtexpress.my/tracking/JT0001234567');
+});
+
+test('shipping links to the selected courier and encodes tracking numbers', function ($courier, $url) {
+    Queue::fake();
+    $seller = sellerApiUser();
+    $subOrder = sellerApiSubOrder($seller->store, SubOrderStatus::Processing);
+
+    app(ShipmentService::class)->ship($subOrder, $courier, null, ' AB/12 &3 ', $seller->id);
+
+    expect($subOrder->fresh()->tracking_url)->toBe($url);
+})->with([
+    ['J&T Express', 'https://www.jtexpress.my/tracking/AB%2F12%20%263'],
+    ['Pos Laju', 'https://www.pos.com.my/send/track-trace'],
+    ['DHL eCommerce', 'https://ecommerceportal.dhl.com/track/'],
+    ['Ninja Van', 'https://www.ninjavan.co/en-my/tracking?id=AB%2F12%20%263'],
+    ['City-Link', 'https://www.citylinkexpress.com/track-your-shipment/'],
+    ['GDEX', 'https://esvr5.gdexpress.com/WebsiteEtracking/Home/Etracking?id=GDEX&input=AB%2F12%20%263'],
+    ['other', null],
+    ['unknown', null],
+]);
+
+test('shipping preserves an existing tracking URL', function () {
+    Queue::fake();
+    $seller = sellerApiUser();
+    $subOrder = sellerApiSubOrder($seller->store, SubOrderStatus::Processing);
+    $subOrder->forceFill(['tracking_url' => 'https://example.test/existing'])->save();
+
+    app(ShipmentService::class)->ship($subOrder, 'J&T Express', null, 'JT0001234567', $seller->id);
+
+    expect($subOrder->fresh()->tracking_url)->toBe('https://example.test/existing');
+});
+
 test('ship validates, writes tracking, transitions to shipped and queues AfterShip registration', function () {
     Queue::fake();
     Http::fake();

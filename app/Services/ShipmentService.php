@@ -20,6 +20,15 @@ class ShipmentService
     /** Hardcoded v1 courier list — moves to shop settings in M6. */
     public const COURIERS = ['J&T Express', 'Pos Laju', 'DHL eCommerce', 'Ninja Van', 'City-Link', 'GDEX'];
 
+    private const TRACKING_URLS = [
+        'J&T Express' => 'https://www.jtexpress.my/tracking/%s',
+        'Pos Laju' => 'https://www.pos.com.my/send/track-trace',
+        'DHL eCommerce' => 'https://ecommerceportal.dhl.com/track/',
+        'Ninja Van' => 'https://www.ninjavan.co/en-my/tracking?id=%s',
+        'City-Link' => 'https://www.citylinkexpress.com/track-your-shipment/',
+        'GDEX' => 'https://esvr5.gdexpress.com/WebsiteEtracking/Home/Etracking?id=GDEX&input=%s',
+    ];
+
     public function __construct(
         private SubOrderStatusService $statusService,
         private EasyParcelService $easyParcel,
@@ -51,6 +60,9 @@ class ShipmentService
             $locked->forceFill([
                 'tracking_courier' => $courier === 'other' ? trim((string) $courierOther) : $courier,
                 'tracking_no' => trim($trackingNo),
+                'tracking_url' => $locked->tracking_url ?? (isset(self::TRACKING_URLS[$courier])
+                    ? sprintf(self::TRACKING_URLS[$courier], rawurlencode(trim($trackingNo)))
+                    : null),
             ])->save();
 
             return $this->statusService->transition($locked, SubOrderStatus::Shipped, ActorType::Seller, $actorId);
