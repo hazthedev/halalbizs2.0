@@ -74,8 +74,8 @@
     {{-- Table per design §6 — hairline rows, 13px, mono ids, right-aligned tabular numbers --}}
     <x-ui.card class="overflow-x-auto">
         {{-- Row skeletons while search/filters refresh the grid (design §6) --}}
-        <x-ui.table-skeleton wire:loading wire:target="search, status, store, method, dateFrom, dateTo, resetFilters" />
-        <div wire:loading.remove wire:target="search, status, store, method, dateFrom, dateTo, resetFilters">
+        <x-ui.table-skeleton wire:loading wire:target="search, status, store, method, dateFrom, dateTo, resetFilters, sortBy, perPage" />
+        <div wire:loading.remove wire:target="search, status, store, method, dateFrom, dateTo, resetFilters, sortBy, perPage">
         @if ($subOrders->isEmpty())
             <x-ui.empty-state :title="__('No sub-orders match')" :message="__('Adjust the filters or clear them to see every order on the marketplace.')" />
         @else
@@ -86,9 +86,9 @@
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Order') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Placed') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Total') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
+                        <x-ui.table.sortable field="placed" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Placed') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="total" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Total') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
                 <tbody>
@@ -115,7 +115,5 @@
         </div>
     </x-ui.card>
 
-    @if ($subOrders->hasPages())
-        <div>{{ $subOrders->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$subOrders" />
 </div>

@@ -13,7 +13,10 @@ use App\Support\RinggitInput;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
+use App\Livewire\Concerns\WithTable;
+use App\Enums\PaymentMethod;
+use App\Support\DisplayTime;
+use App\Support\JsonSearch;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -24,7 +27,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 #[Layout('layouts.seller')]
 class Index extends Component
 {
-    use CurrentStore, ManagesShipment, WithPagination;
+    use CurrentStore, ManagesShipment, WithTable;
 
     public const PER_PAGE = 15;
 
@@ -33,6 +36,42 @@ class Index extends Component
 
     #[Url(except: 'new')]
     public string $tab = 'new';
+
+    #[Url(except: '')]
+    public string $method = '';
+
+    #[Url(except: '')]
+    public string $dateFrom = '';
+
+    #[Url(except: '')]
+    public string $dateTo = '';
+
+    protected function tableFilters(): array
+    {
+        return ['tab', 'method', 'dateFrom', 'dateTo'];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['placed' => 'created_at', 'total' => 'total_sen'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['created_at' => 'desc'];
+    }
+
+    public function bulkConfirmAndPack(): void
+    {
+        $ids = SubOrder::query()->where('store_id', $this->currentStore()->id)
+            ->where('status', SubOrderStatus::Confirmed)->whereIn('id', $this->selected)->pluck('id');
+
+        foreach ($ids as $id) {
+            $this->confirmAndPack($id);
+        }
+
+        $this->clearSelection();
+    }
 
     /** @return array<string, SubOrderStatus> tab key → status */
     public static function tabs(): array
@@ -111,18 +150,9 @@ class Index extends Component
 
     public function render()
     {
-        $subOrders = SubOrder::query()
-            ->where('store_id', $this->currentStore()->id)
-            ->where('status', self::tabs()[$this->tab])
-            ->with('order.user')
-            ->when($this->tab === 'returns', fn ($query) => $query->with('returnRequest'))
-            ->withCount('items')
-            ->latest('created_at')
-            ->latest('id')
-            ->paginate(self::PER_PAGE);
-
         return view('livewire.seller.orders.index', [
-            'subOrders' => $subOrders,
+            'subOrders' => $this->results(),
+            'methods' => PaymentMethod::cases(),
             'counts' => $this->counts(),
             'tabLabels' => [
                 'new' => __('New'),
@@ -136,6 +166,34 @@ class Index extends Component
             'couriers' => self::COURIERS,
             'actFastHours' => self::ACT_FAST_HOURS,
         ])->title(__('Orders'));
+    }
+
+    private function results()
+    {
+        $query = SubOrder::query()
+            ->where('store_id', $this->currentStore()->id)
+            ->where('status', self::tabs()[$this->tab] ?? SubOrderStatus::Confirmed)
+            ->with('order.user')
+            ->when($this->tab === 'returns', fn ($query) => $query->with('returnRequest'))
+            ->withCount('items')
+            ->when(PaymentMethod::tryFrom($this->method), fn ($query, $method) => $query->whereHas('order', fn ($q) => $q->where('payment_method', $method)))
+            ->when($this->validDate($this->dateFrom), fn ($query, $date) => $query->where('created_at', '>=', DisplayTime::dayStart($date)))
+            ->when($this->validDate($this->dateTo), fn ($query, $date) => $query->where('created_at', '<=', DisplayTime::dayEnd($date)))
+            ->when(trim($this->search) !== '', function ($query) {
+                $like = JsonSearch::pattern(trim($this->search));
+                $query->where(fn ($q) => $q->where('sub_order_no', 'like', $like)
+                    ->orWhereHas('order', fn ($q) => $q->where('order_no', 'like', $like)
+                        ->orWhereHas('user', fn ($q) => $q->where('name', 'like', $like))));
+            });
+
+        return $this->sortTable($query)->paginate($this->tablePageSize());
+    }
+
+    private function validDate(string $value): ?string
+    {
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+
+        return $date && $date->format('Y-m-d') === $value ? $value : null;
     }
 
     /** @return array<string, int> tab key → count (store-scoped, one query) */

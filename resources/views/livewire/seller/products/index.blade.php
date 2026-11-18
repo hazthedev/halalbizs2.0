@@ -48,9 +48,7 @@
     </x-ui.card>
 
     {{-- Bulk actions --}}
-    @if (count($selected) > 0)
-        <div class="flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-2 shadow-soft">
-            <span class="text-[13px] font-medium text-ink">{{ trans_choice('{1}:count selected|[2,*]:count selected', count($selected), ['count' => count($selected)]) }}</span>
+    <x-ui.table.bulk-bar :selected="$selected">
             <button type="button" wire:click="bulkDelist"
                     class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper">
                 {{ __('Delist selected') }}
@@ -60,8 +58,7 @@
                     class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint">
                 {{ __('Delete drafts') }}
             </button>
-        </div>
-    @endif
+    </x-ui.table.bulk-bar>
 
     <p class="text-[13px] text-ink-soft lg:hidden">{{ __('Scroll sideways to see prices, status and actions.') }}</p>
 
@@ -86,13 +83,13 @@
                             <input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}"
                                    class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                         </th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Product') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Variants') }}</th>
+                        <x-ui.table.sortable field="product" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Product') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="variants" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Variants') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Price') }}</th>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Stock') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Sold') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Updated') }}</th>
+                        <x-ui.table.sortable field="sold" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Sold') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="updated" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Updated') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -160,7 +157,5 @@
         </div>
     </x-ui.card>
 
-    @if ($products->hasPages())
-        <div>{{ $products->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$products" />
 </div>

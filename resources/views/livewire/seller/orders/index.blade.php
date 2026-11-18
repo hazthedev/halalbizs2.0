@@ -25,11 +25,29 @@
         @endforeach
     </nav>
 
+    <x-ui.card class="p-3">
+        <div class="flex flex-wrap items-center gap-2">
+            <input type="search" wire:model.live.debounce.300ms="search" aria-label="{{ __('table.search_orders') }}" placeholder="{{ __('table.search_orders') }}" class="min-h-11 min-w-48 flex-1 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink placeholder:text-ink-soft focus-visible:ring-2 focus-visible:ring-emerald">
+            <select wire:model.live="method" aria-label="{{ __('Payment method') }}" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                <option value="">{{ __('All methods') }}</option>
+                @foreach ($methods as $methodCase)
+                    <option value="{{ $methodCase->value }}">{{ $methodCase->label() }}</option>
+                @endforeach
+            </select>
+            <label class="text-[13px] text-ink-soft">{{ __('From date') }} <input type="date" wire:model.live="dateFrom" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-ink focus-visible:ring-2 focus-visible:ring-emerald"></label>
+            <label class="text-[13px] text-ink-soft">{{ __('To date') }} <input type="date" wire:model.live="dateTo" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-ink focus-visible:ring-2 focus-visible:ring-emerald"></label>
+        </div>
+    </x-ui.card>
+
+    <x-ui.table.bulk-bar :selected="$selected">
+        <x-ui.button wire:click="bulkConfirmAndPack" wire:loading.attr="disabled">{{ __('table.pack_selected') }}</x-ui.button>
+    </x-ui.table.bulk-bar>
+
     {{-- Table per design §6 — hairline rows, 13px, mono ids/amounts, sticky header --}}
     <x-ui.card class="overflow-x-auto">
         {{-- Row skeletons while the tab switches (targeted: the 30s poll must not flash them) --}}
-        <x-ui.table-skeleton wire:loading wire:target="tab" />
-        <div wire:loading.remove wire:target="tab">
+        <x-ui.table-skeleton wire:loading wire:target="tab, search, method, dateFrom, dateTo, sortBy, perPage" />
+        <div wire:loading.remove wire:target="tab, search, method, dateFrom, dateTo, sortBy, perPage">
         @if ($subOrders->isEmpty())
             @php
                 [$emptyTitle, $emptyBody] = match ($tab) {
@@ -47,11 +65,14 @@
             <table class="w-full min-w-[760px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
+                        @if ($tab === 'new')
+                            <th scope="col" class="w-10 px-3 py-2.5"><input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald"></th>
+                        @endif
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Sub-order') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Placed') }}</th>
+                        <x-ui.table.sortable field="placed" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Placed') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Items') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Total') }}</th>
+                        <x-ui.table.sortable field="total" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Total') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
                         @if ($tab === 'new')
                             <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Waiting') }}</th>
@@ -79,6 +100,9 @@
                             };
                         @endphp
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="sub-order-{{ $subOrder->id }}">
+                            @if ($tab === 'new')
+                                <td class="px-3 py-2"><input type="checkbox" wire:model.live="selected" value="{{ $subOrder->id }}" aria-label="{{ __('Select :name', ['name' => $subOrder->sub_order_no]) }}" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald"></td>
+                            @endif
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <a href="{{ route('seller.orders.show', $subOrder) }}" wire:navigate
                                    class="inline-flex min-h-11 items-center font-mono font-medium text-ink underline-offset-2 hover:text-emerald hover:underline focus-visible:ring-2 focus-visible:ring-emerald">
@@ -140,9 +164,7 @@
         </div>
     </x-ui.card>
 
-    @if ($subOrders->hasPages())
-        <div>{{ $subOrders->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$subOrders" />
 
     @include('livewire.seller.orders.partials.ship-modal')
 </div>
