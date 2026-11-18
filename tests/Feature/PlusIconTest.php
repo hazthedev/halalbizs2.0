@@ -19,7 +19,9 @@ it('shows a plus before each create action', function (string $role, string $com
     $dom = new DOMDocument;
     @$dom->loadHTML('<?xml encoding="utf-8" ?>'.$html);
     $xpath = new DOMXPath($dom);
-    $actions = $xpath->query('//button[normalize-space(.) = '."'".$label."'".'] | //a[normalize-space(.) = '."'".$label."'".']');
+    // Buttons carry a hidden "Loading…" status before the label (HB-LOADING), so match on the label ending the text.
+    $endsWith = 'substring(normalize-space(.), string-length(normalize-space(.)) - '.mb_strlen($label).' + 1) = '."'".$label."'";
+    $actions = $xpath->query('//button['.$endsWith.'] | //a['.$endsWith.']');
     expect($actions->length)->toBe($count);
     foreach ($actions as $action) {
         $icons = $xpath->query('.//*[local-name()="svg"]/*[local-name()="path" and @d="M12 4.5v15m7.5-7.5h-15"]', $action);
