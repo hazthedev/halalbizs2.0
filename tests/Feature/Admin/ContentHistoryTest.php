@@ -38,8 +38,8 @@ test('editing a page records who changed it, with the old and new text', functio
         ->set('title.en', 'About HalalBizs')
         ->set('body.en', '<p>New</p>')
         ->call('save')
-        ->assertHasNoErrors()
-        ->call('publishDraft', 'page', $page->id);
+        ->assertHasNoErrors();
+    publishDrafts();
 
     $entry = Activity::where('subject_type', Page::class)->where('event', 'updated')->sole();
 

@@ -49,8 +49,8 @@ test('admin creates a banner with image, schedule, and translations', function (
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
         ->set('imageVi', UploadedFile::fake()->image('banner-vi.jpg', 1200, 400))
         ->call('save')
-        ->assertHasNoErrors()
-        ->call('publishDraft', 'banner', Banner::sole()->id); // a save is a draft; the banner counts once published
+        ->assertHasNoErrors();
+    publishDrafts(); // a save is a draft; the banner counts once published
 
     $banner = Banner::sole();
 
@@ -77,8 +77,8 @@ test('a banner video saves and renders as an autoplaying slide on the home page'
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
         ->set('video', UploadedFile::fake()->create('promo.mp4', 2048, 'video/mp4'))
         ->call('save')
-        ->assertHasNoErrors()
-        ->call('publishDraft', 'banner', Banner::sole()->id);
+        ->assertHasNoErrors();
+    publishDrafts();
 
     $banner = Banner::sole();
 
@@ -141,8 +141,8 @@ test('banner image is required on create but not on edit', function () {
         ->test(BannersForm::class, ['banner' => $banner->id])
         ->set('title.en', 'Existing — renamed')
         ->call('save')
-        ->assertHasNoErrors()
-        ->call('publishDraft', 'banner', $banner->id);
+        ->assertHasNoErrors();
+    publishDrafts();
 
     expect($banner->refresh()->getTranslation('title', 'en'))->toBe('Existing — renamed');
 });
@@ -280,8 +280,8 @@ test('system page slug is locked and the page cannot be deleted', function () {
         ->set('title.en', 'Terms & Conditions v2')
         ->set('body.en', '<p>Updated terms.</p>')
         ->call('save')
-        ->assertHasNoErrors()
-        ->call('delete', $terms->id);
+        ->assertHasNoErrors();
+    Livewire::actingAs(contentAdmin())->test(Pages::class)->call('delete', $terms->id);
     publishDrafts();
 
     $terms->refresh();

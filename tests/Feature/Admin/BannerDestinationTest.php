@@ -47,8 +47,8 @@ test('a picked product becomes the banner link on web and app', function () {
 
     expect($form->instance()->destinationMatches())->toBe([$product->slug => 'Ajwa Dates 500g']);
 
-    $form->call('chooseDestination', $product->slug)->call('save')->assertHasNoErrors()
-        ->call('publishDraft', 'banner', Banner::first()->id);
+    $form->call('chooseDestination', $product->slug)->call('save')->assertHasNoErrors();
+    publishDrafts();
 
     expect(Banner::first()->link_url)->toBe('/p/'.$product->slug)
         ->and(savedAppUrl())->toBe('/p/'.$product->slug);
@@ -67,8 +67,8 @@ test('a product that is not live or does not exist is refused', function () {
 test('store, category and page destinations save their own links', function (string $type, Closure $make, string $prefix) {
     $slug = $make();
 
-    bannerForm()->set('destination', $type)->set('destinationSlug', $slug)->call('save')->assertHasNoErrors()
-        ->call('publishDraft', 'banner', Banner::first()->id);
+    bannerForm()->set('destination', $type)->set('destinationSlug', $slug)->call('save')->assertHasNoErrors();
+    publishDrafts();
 
     expect(Banner::first()->link_url)->toBe($prefix.$slug)
         ->and(savedAppUrl())->toBe($prefix.$slug);
@@ -79,8 +79,8 @@ test('store, category and page destinations save their own links', function (str
 ]);
 
 test('flash sale, help and search destinations need no record', function (string $type, string $query, string $link) {
-    bannerForm()->set('destination', $type)->set('destinationQuery', $query)->call('save')->assertHasNoErrors()
-        ->call('publishDraft', 'banner', Banner::first()->id);
+    bannerForm()->set('destination', $type)->set('destinationQuery', $query)->call('save')->assertHasNoErrors();
+    publishDrafts();
 
     expect(Banner::first()->link_url)->toBe($link)
         ->and(savedAppUrl())->toBe($link);

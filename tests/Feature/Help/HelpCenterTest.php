@@ -236,8 +236,8 @@ test('clearing the ms translation removes it and en remains the fallback', funct
         ->set('title.ms', '')
         ->set('body.ms', '')
         ->call('save')
-        ->assertHasNoErrors()
-        ->call('publishDraft', 'article', $article->id);
+        ->assertHasNoErrors();
+    publishDrafts();
 
     $article->refresh();
     expect($article->getTranslations('title'))->not->toHaveKey('ms')
