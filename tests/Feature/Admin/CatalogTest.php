@@ -411,3 +411,33 @@ test('non-admins get 403 on every catalog page and guests are sent to login', fu
 
     $this->get(route('admin.catalog.categories'))->assertRedirect(route('admin.login'));
 });
+
+test('moderation table sorts safely, combines search with filters, shows the count and bulk-approves', function () {
+    Notification::fake();
+    $admin = catalogAdmin();
+    $a = catalogPendingProduct();
+    $b = catalogPendingProduct();
+    $a->setTranslation('name', 'en', 'Alpha Dates')->save();
+    $b->setTranslation('name', 'en', 'Beta Honey')->save();
+    $a->forceFill(['updated_at' => now()->subDay()])->saveQuietly();
+    $a->variants()->update(['price_sen' => 9000]);
+    $b->variants()->update(['price_sen' => 1000]);
+
+    $table = Livewire::actingAs($admin)->test(ModerationComponent::class)
+        ->assertSee('Showing 1 to 2 of 2')
+        ->assertSeeInOrder(['Alpha Dates', 'Beta Honey'])
+        ->call('sortBy', 'price')->assertSeeInOrder(['Beta Honey', 'Alpha Dates'])
+        ->assertSeeHtml('aria-sort="ascending"')
+        ->call('sortBy', 'price')->assertSeeInOrder(['Alpha Dates', 'Beta Honey'])
+        ->assertSeeHtml('aria-sort="descending"')
+        ->call('sortBy', 'unknown')->assertSet('sort', 'price')
+        ->set('sort', 'unknown')->set('direction', 'invalid')->assertSee('Alpha Dates')
+        ->set('search', 'honey')->set('store', (string) $b->store_id)
+        ->assertSee('Beta Honey')->assertDontSee('Alpha Dates')->assertSee('Showing 1 to 1 of 1')
+        ->set('store', (string) $a->store_id)->assertSee('Showing 0 to 0 of 0');
+
+    $table->set('search', '')->set('store', '')->set('selectPage', true)->assertCount('selected', 2)
+        ->call('bulkApprove')->assertSet('selected', []);
+
+    expect($a->fresh()->status)->toBe(ProductStatus::Live)->and($b->fresh()->status)->toBe(ProductStatus::Live);
+});

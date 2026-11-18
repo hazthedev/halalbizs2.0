@@ -2,6 +2,7 @@
 
 use App\Enums\CertificateStatus;
 use App\Livewire\Seller\Certificates;
+use App\Livewire\Seller\Certificates\Form;
 use App\Models\HalalCertificate;
 use App\Models\Product;
 use App\Models\Store;
@@ -41,7 +42,7 @@ function certForm(Testable $component): Testable
 test('a seller can register a certificate, and it arrives awaiting review', function () {
     $seller = certSeller();
 
-    certForm(Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate'))
+    certForm(Livewire::actingAs($seller)->test(Form::class))
         ->call('save')
         ->assertHasNoErrors();
 
@@ -58,7 +59,7 @@ test('a seller can register a certificate, and it arrives awaiting review', func
 test('the uploaded scan goes to the private disk, not the public one', function () {
     $seller = certSeller();
 
-    certForm(Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate'))->call('save');
+    certForm(Livewire::actingAs($seller)->test(Form::class))->call('save');
 
     // Spatie's default disk is the WEB-SERVED public one — no config/media-library.php
     // is published and MEDIA_DISK is unset — so this is the assertion that
@@ -71,7 +72,7 @@ test('a certificate covers only the products the seller ticks', function () {
     $mine = Product::factory()->create(['store_id' => $seller->store->id]);
     $alsoMine = Product::factory()->create(['store_id' => $seller->store->id]);
 
-    certForm(Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate'))
+    certForm(Livewire::actingAs($seller)->test(Form::class))
         ->set('covered', [$mine->id])
         ->call('save');
 
@@ -88,7 +89,7 @@ test('a seller cannot bind another store SKU by posting its id', function () {
     $seller = certSeller();
     $stranger = Product::factory()->create(['store_id' => Store::factory()->approved()->create()->id]);
 
-    certForm(Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate'))
+    certForm(Livewire::actingAs($seller)->test(Form::class))
         ->set('covered', [$stranger->id])
         ->call('save');
 
@@ -113,13 +114,12 @@ test('the model refuses a certificate belonging to another store', function () {
 test('a renewal edits the same record rather than making a second one', function () {
     $seller = certSeller();
 
-    certForm(Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate'))->call('save');
+    certForm(Livewire::actingAs($seller)->test(Form::class))->call('save');
 
     $certificate = HalalCertificate::first();
     $certificate->forceFill(['status' => CertificateStatus::Approved])->save();
 
-    Livewire::actingAs($seller)->test(Certificates::class)
-        ->call('edit', $certificate->id)
+    Livewire::actingAs($seller)->test(Form::class, ['certificate' => $certificate])
         ->set('validTo', now()->addYears(2)->toDateString())
         ->call('save')
         ->assertHasNoErrors();
@@ -140,7 +140,7 @@ test('a number already registered to someone else is a clear error, not a 500', 
         'holder_name' => 'First Claimant', 'valid_from' => now()->subYear(), 'valid_to' => now()->addYear(),
     ]);
 
-    certForm(Livewire::actingAs(certSeller())->test(Certificates::class)->call('startCreate'))
+    certForm(Livewire::actingAs(certSeller())->test(Form::class))
         ->call('save')
         ->assertHasErrors(['number']);
 });
@@ -148,7 +148,7 @@ test('a number already registered to someone else is a clear error, not a 500', 
 test('a term longer than five years is rejected as a typo', function () {
     $seller = certSeller();
 
-    certForm(Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate'))
+    certForm(Livewire::actingAs($seller)->test(Form::class))
         ->set('validTo', now()->addYears(9)->toDateString())
         ->call('save')
         ->assertHasErrors(['validTo']);
@@ -164,11 +164,71 @@ test('a seller cannot see or edit another store certificate', function () {
         'holder_name' => 'Not Yours', 'valid_from' => now()->subYear(), 'valid_to' => now()->addYear(),
     ]);
 
-    $component = Livewire::actingAs($seller)->test(Certificates::class)
+    Livewire::actingAs($seller)->test(Certificates::class)
         ->assertDontSee('MY-JKM-7777-777');
 
-    // Scoped through the store's own relation, so a posted id from another
+    // Scoped through the store's own relation, so an id from another
     // store finds nothing rather than loading it.
-    expect(fn () => $component->call('edit', $theirs->id))
+    expect(fn () => Livewire::actingAs($seller)->test(Form::class, ['certificate' => $theirs]))
         ->toThrow(ModelNotFoundException::class);
+});
+
+function tableCert(User $seller, string $number, array $attrs = []): HalalCertificate
+{
+    return HalalCertificate::create(array_merge([
+        'store_id' => $seller->store->id, 'number' => $number, 'issuing_body' => 'JAKIM', 'issuing_body_name' => 'JAKIM',
+        'holder_name' => 'Holder', 'valid_from' => now()->subMonth(), 'valid_to' => now()->addYear(),
+    ], $attrs));
+}
+
+test('seller certificate table sorts safely, combines filters and search, and shows the count', function () {
+    $seller = certSeller();
+    $a = tableCert($seller, 'MY-AAA-1-100', ['valid_to' => now()->addMonths(10)]);
+    $b = tableCert($seller, 'MY-BBB-2-100', ['valid_to' => now()->addMonths(2), 'issuing_body' => 'JAIS']);
+    $b->forceFill(['status' => CertificateStatus::Approved])->save();
+    Product::factory()->create(['store_id' => $seller->store->id, 'halal_certificate_id' => $b->id]);
+    $theirs = HalalCertificate::create([
+        'store_id' => Store::factory()->approved()->create()->id, 'number' => 'MY-ZZZ-9-100', 'issuing_body' => 'JAKIM',
+        'issuing_body_name' => 'JAKIM', 'holder_name' => 'X', 'valid_from' => now()->subMonth(), 'valid_to' => now()->addYear(),
+    ]);
+
+    Livewire::actingAs($seller)->test(Certificates::class)
+        ->assertSee('Showing 1 to 2 of 2')->assertDontSee($theirs->number)
+        ->assertSeeInOrder(['MY-BBB-2-100', 'MY-AAA-1-100'])
+        ->call('sortBy', 'number')->assertSeeInOrder(['MY-AAA-1-100', 'MY-BBB-2-100'])
+        ->assertSeeHtml('aria-sort="ascending"')
+        ->call('sortBy', 'number')->assertSeeInOrder(['MY-BBB-2-100', 'MY-AAA-1-100'])
+        ->assertSeeHtml('aria-sort="descending"')
+        ->call('sortBy', 'unknown')->assertSet('sort', 'number')
+        ->set('sort', 'unknown')->set('direction', 'invalid')->assertSee('MY-AAA-1-100')
+        ->set('status', 'approved')->set('body', 'JAIS')->assertSee('MY-BBB-2-100')->assertDontSee('MY-AAA-1-100')
+        ->assertSee('Showing 1 to 1 of 1')
+        ->set('status', '')->set('body', '')->set('search', 'AAA')->assertSee('MY-AAA-1-100')->assertDontSee('MY-BBB-2-100')
+        ->set('search', '')->set('expiring', true)->assertSee('MY-BBB-2-100')->assertDontSee('MY-AAA-1-100');
+});
+
+test('seller certificate table pages', function () {
+    $seller = certSeller();
+    foreach (range(1, 16) as $i) {
+        tableCert($seller, 'MY-PAGE-'.$i.'-100');
+    }
+
+    Livewire::actingAs($seller)->test(Certificates::class)->assertSee('Showing 1 to 15 of 16')
+        ->call('gotoPage', 2)->assertSee('Showing 16 to 16 of 16')
+        ->set('perPage', 50)->assertSee('Showing 1 to 16 of 16');
+});
+
+test('certificate create and edit open on their own pages', function () {
+    $seller = certSeller();
+    $cert = tableCert($seller, 'MY-OWN-1-100');
+    $other = HalalCertificate::create([
+        'store_id' => Store::factory()->approved()->create()->id, 'number' => 'MY-OTH-1-100', 'issuing_body' => 'JAKIM',
+        'issuing_body_name' => 'JAKIM', 'holder_name' => 'X', 'valid_from' => now()->subMonth(), 'valid_to' => now()->addYear(),
+    ]);
+
+    $this->actingAs($seller)->get(route('seller.certificates.create'))->assertOk()->assertSee('Send for review');
+    $this->actingAs($seller)->get(route('seller.certificates.edit', $cert))->assertOk()->assertSee('MY-OWN-1-100');
+    $this->actingAs($seller)->get(route('seller.certificates.edit', $other))->assertNotFound();
+
+    certForm(Livewire::actingAs($seller)->test(Form::class))->call('save')->assertRedirect(route('seller.certificates'));
 });

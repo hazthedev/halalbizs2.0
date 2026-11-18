@@ -9,30 +9,64 @@
         </div>
     @endunless
 
-    {{-- Bulk actions --}}
-    @if (count($selected) > 0)
-        <div class="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-2 shadow-soft">
-            <span class="text-[13px] font-medium text-ink">{{ trans_choice('{1}:count selected|[2,*]:count selected', count($selected), ['count' => count($selected)]) }}</span>
-            <x-ui.button wire:click="bulkApprove" wire:loading.attr="disabled">{{ __('Approve selected') }}</x-ui.button>
-            <button type="button" wire:click="startBulkReject"
-                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
-                {{ __('Reject selected') }}
-            </button>
-            <button type="button" wire:click="bulkBan"
-                    wire:confirm="{{ __('Ban the selected products? They disappear from the storefront and the sellers are notified.') }}"
-                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
-                {{ __('Ban selected') }}
-            </button>
+    {{-- Filters --}}
+    @php $fieldClass = 'block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald'; @endphp
+    <x-ui.card class="p-3">
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+            <div class="min-w-0 lg:col-span-2">
+                <label for="mod-search" class="sr-only">{{ __('Search products') }}</label>
+                <input id="mod-search" type="search" wire:model.live.debounce.300ms="search" placeholder="{{ __('Search product or store') }}" class="{{ $fieldClass }} placeholder:text-ink-faint">
+            </div>
+            <div>
+                <label for="mod-store" class="sr-only">{{ __('Store') }}</label>
+                <select id="mod-store" wire:model.live="store" class="{{ $fieldClass }}">
+                    <option value="">{{ __('All stores') }}</option>
+                    @foreach ($stores as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="mod-category" class="sr-only">{{ __('Category') }}</label>
+                <select id="mod-category" wire:model.live="category" class="{{ $fieldClass }}">
+                    <option value="">{{ __('All categories') }}</option>
+                    @foreach ($categories as $categoryRow)
+                        <option value="{{ $categoryRow->id }}">{{ $categoryRow->getTranslation('name', 'en') }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex min-w-0 items-center gap-2 lg:col-span-2">
+                <label for="mod-from" class="sr-only">{{ __('Submitted from') }}</label>
+                <input id="mod-from" type="date" wire:model.live="dateFrom" class="{{ $fieldClass }} min-w-0">
+                <span class="text-[13px] text-ink-faint" aria-hidden="true">–</span>
+                <label for="mod-to" class="sr-only">{{ __('Submitted to') }}</label>
+                <input id="mod-to" type="date" wire:model.live="dateTo" class="{{ $fieldClass }} min-w-0">
+            </div>
         </div>
-    @endif
+        @if ($search !== '' || $store !== '' || $category !== '' || $dateFrom !== '' || $dateTo !== '')
+            <button type="button" wire:click="resetFilters" class="mt-2 inline-flex min-h-11 items-center text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Clear filters') }}</button>
+        @endif
+    </x-ui.card>
+
+    {{-- Bulk actions --}}
+    <x-ui.table.bulk-bar :selected="$selected">
+        <x-ui.button wire:click="bulkApprove">{{ __('Approve selected') }}</x-ui.button>
+        <x-ui.button variant="secondary" wire:click="startBulkReject">{{ __('Reject selected') }}</x-ui.button>
+        <x-ui.button variant="danger" wire:click="bulkBan"
+                wire:confirm="{{ __('Ban the selected products? They disappear from the storefront and the sellers are notified.') }}">
+            {{ __('Ban selected') }}
+        </x-ui.button>
+    </x-ui.table.bulk-bar>
 
     {{-- Pending queue --}}
     <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, store, category, dateFrom, dateTo, resetFilters, sortBy, perPage" />
+        <div wire:loading.remove wire:target="search, store, category, dateFrom, dateTo, resetFilters, sortBy, perPage">
         @if ($pending->isEmpty())
             <x-ui.empty-state :title="__('Queue clear')" :message="__('Products waiting for review appear here the moment sellers submit them.')" />
         @else
             <table class="w-full min-w-[880px] text-[13px]">
-                <thead>
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <th scope="col" class="w-10 px-3 py-2.5">
                             <input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}"
@@ -41,9 +75,9 @@
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Product') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Category') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Price') }}</th>
+                        <x-ui.table.sortable field="price" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Price') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Submitted') }}</th>
+                        <x-ui.table.sortable field="submitted" :sort="$sort" :direction="$direction">{{ __('Submitted') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -85,11 +119,10 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
 
-    @if ($pending->hasPages())
-        <div>{{ $pending->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$pending" />
 
     {{-- Banned reference list --}}
     <div class="space-y-2 pt-2">

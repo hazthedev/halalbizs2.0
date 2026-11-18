@@ -17,5 +17,5 @@ it('renders a scoped double-click guard on each money form', function (string $v
     ['admin/coins/index', 'adjust'],
     ['admin/content/flash-sales', 'createSale'],
     ['admin/content/flash-sales', 'addItem'],
-    ['seller/live-sessions', 'save'],
+    ['seller/live-sessions/form', 'save'],
 ]);

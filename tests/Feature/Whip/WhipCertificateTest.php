@@ -4,6 +4,7 @@ use App\Enums\CertificateStatus;
 use App\Enums\ProductStatus;
 use App\Livewire\Admin\Catalog\Certificates as AdminCertificates;
 use App\Livewire\Seller\Certificates;
+use App\Livewire\Seller\Certificates\Form as CertificateForm;
 use App\Livewire\Seller\Dashboard;
 use App\Livewire\Seller\Notifications;
 use App\Models\Brand;
@@ -111,7 +112,7 @@ function whipSeller(?string $reg = '202001000123', bool $confirmed = true): User
 
 function whipSubmit(User $seller, string $number = 'WH-100'): void
 {
-    Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate')
+    Livewire::actingAs($seller)->test(CertificateForm::class)
         ->set('number', $number)->set('issuingBody', 'JAKIM')->set('holderName', 'Typed Name')
         ->set('validFrom', now()->subMonth()->toDateString())->set('validTo', now()->addYear()->toDateString())
         ->set('document', UploadedFile::fake()->create('c.pdf', 50, 'application/pdf'))
@@ -603,7 +604,7 @@ function whipTicked(): array
     $byName = whipProduct($seller->store, 'SOS  cili!');
     $stranger = whipProduct($seller->store, 'Ayam Goreng');
 
-    Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate')
+    Livewire::actingAs($seller)->test(CertificateForm::class)
         ->set('number', 'WH-100')->set('issuingBody', 'JAKIM')->set('holderName', 'Typed Name')
         ->set('validFrom', now()->subMonth()->toDateString())->set('validTo', now()->addYear()->toDateString())
         ->set('document', UploadedFile::fake()->create('c.pdf', 50, 'application/pdf'))
@@ -661,7 +662,7 @@ test('the sync unbinds a product WHIP dropped', function () {
 test('a manual certificate binds every ticked product, unchanged', function () {
     $seller = whipSeller();
     $p = whipProduct($seller->store, 'Ayam Goreng');
-    Livewire::actingAs($seller)->test(Certificates::class)->call('startCreate')
+    Livewire::actingAs($seller)->test(CertificateForm::class)
         ->set('number', 'MAN-1')->set('issuingBody', 'JAKIM')->set('holderName', 'X')
         ->set('validFrom', now()->subMonth()->toDateString())->set('validTo', now()->addYear()->toDateString())
         ->set('document', UploadedFile::fake()->create('c.pdf', 50, 'application/pdf'))

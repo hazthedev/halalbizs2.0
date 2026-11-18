@@ -2831,5 +2831,22 @@
     "Continue": "Teruskan",
     "Continue as :name?": "Teruskan sebagai :name?",
     "This signs this browser in to HalalBizs as :email. If you did not open this from your own app, close this page.": "Ini akan log masuk pelayar ini ke HalalBizs sebagai :email. Jika anda tidak membukanya dari aplikasi anda sendiri, tutup halaman ini.",
-    "Only a shipped order can be marked delivered.": "Hanya pesanan yang telah dihantar boleh ditanda sebagai diterima."
+    "Only a shipped order can be marked delivered.": "Hanya pesanan yang telah dihantar boleh ditanda sebagai diterima.",
+    "All issuing bodies": "Semua badan pengeluar",
+    "All sources": "Semua sumber",
+    "Adjust the filters or clear them to see every certificate.": "Ubah suai penapis atau kosongkannya untuk melihat setiap sijil.",
+    "Expires from": "Tamat dari",
+    "Expires to": "Tamat hingga",
+    "Expiring soon": "Hampir tamat",
+    "Manual": "Manual",
+    "No certificates match": "Tiada sijil sepadan",
+    "Number": "Nombor",
+    "Search certificates": "Cari sijil",
+    "Search number or issuing body": "Cari nombor atau badan pengeluar",
+    "Search number or store": "Cari nombor atau kedai",
+    "Search product or store": "Cari produk atau kedai",
+    "Submitted from": "Dihantar dari",
+    "Submitted to": "Dihantar hingga",
+    "Valid": "Sah",
+    "WHIP": "WHIP"
 }

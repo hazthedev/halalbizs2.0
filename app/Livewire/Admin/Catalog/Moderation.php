@@ -9,9 +9,15 @@ use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use App\Livewire\Concerns\WithTable;
+use App\Models\Category;
+use App\Models\ProductVariant;
+use App\Models\Store;
+use App\Support\DisplayTime;
+use App\Support\JsonSearch;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 /**
  * Moderation queue (docs/08 §D) — pending_review products with per-row and
@@ -21,16 +27,48 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Moderation extends Component
 {
-    use WithPagination;
+    use WithTable;
 
     public const PER_PAGE = 20;
 
     public const BANNED_LIMIT = 50;
 
-    /** @var array<int, string> selected pending product ids */
-    public array $selected = [];
+    #[Url(except: '')]
+    public string $store = '';
 
-    public bool $selectPage = false;
+    #[Url(except: '')]
+    public string $category = '';
+
+    #[Url(except: '')]
+    public string $dateFrom = '';
+
+    #[Url(except: '')]
+    public string $dateTo = '';
+
+    protected function tableFilters(): array
+    {
+        return ['store', 'category', 'dateFrom', 'dateTo'];
+    }
+
+    protected function tableSorts(): array
+    {
+        return [
+            'submitted' => 'updated_at',
+            // ponytail: list price, not the live sale price; sale windows are PHP-side only.
+            'price' => ProductVariant::query()->selectRaw('MIN(price_sen)')->whereColumn('product_variants.product_id', 'products.id'),
+        ];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['updated_at' => 'asc'];
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset('search', 'store', 'category', 'dateFrom', 'dateTo');
+        $this->resetPage();
+    }
 
     // ── Reject modal ───────────────────────────────────────────────────
     public bool $rejectOpen = false;
@@ -39,18 +77,6 @@ class Moderation extends Component
     public array $rejectIds = [];
 
     public string $rejectReason = '';
-
-    public function updatedSelectPage(bool $value): void
-    {
-        $this->selected = $value
-            ? $this->pendingQuery()->paginate(self::PER_PAGE)->pluck('id')->map(fn (int $id) => (string) $id)->all()
-            : [];
-    }
-
-    public function updatedPaginators(): void
-    {
-        $this->clearSelection();
-    }
 
     // ── Approve ────────────────────────────────────────────────────────
 
@@ -137,7 +163,9 @@ class Moderation extends Component
     {
         return view('livewire.admin.catalog.moderation', [
             'requireApproval' => app(ModerationSettings::class)->require_product_approval,
-            'pending' => $this->pendingQuery()->paginate(self::PER_PAGE),
+            'pending' => $this->results(),
+            'stores' => Store::query()->whereHas('products', fn ($q) => $q->where('status', ProductStatus::PendingReview))->orderBy('name')->pluck('name', 'id'),
+            'categories' => Category::query()->whereHas('products', fn ($q) => $q->where('status', ProductStatus::PendingReview))->orderBy('id')->get(),
             'banned' => Product::query()
                 ->where('status', ProductStatus::Banned)
                 ->with(['store', 'category', 'media', 'variants'])
@@ -147,13 +175,30 @@ class Moderation extends Component
         ])->title(__('Moderation'));
     }
 
-    private function pendingQuery(): Builder
+    private function results()
     {
-        return Product::query()
+        $term = trim($this->search);
+
+        $query = Product::query()
             ->where('status', ProductStatus::PendingReview)
             ->with(['store', 'category', 'media', 'variants'])
-            ->oldest('updated_at')
-            ->oldest('id');
+            ->when(ctype_digit($this->store), fn (Builder $q) => $q->where('store_id', (int) $this->store))
+            ->when(ctype_digit($this->category), fn (Builder $q) => $q->where('category_id', (int) $this->category))
+            ->when($this->validDate($this->dateFrom), fn (Builder $q, $d) => $q->where('updated_at', '>=', DisplayTime::dayStart($d)))
+            ->when($this->validDate($this->dateTo), fn (Builder $q, $d) => $q->where('updated_at', '<=', DisplayTime::dayEnd($d)))
+            ->when($term !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
+                ->whereRaw(JsonSearch::clause('name'), [JsonSearch::pattern($term)])
+                ->orWhereHas('store', fn (Builder $s) => $s->where('name', 'like', '%'.$term.'%'))));
+
+        return $this->sortTable($query)->paginate($this->tablePageSize());
+    }
+
+    /** Date inputs arrive as Y-m-d from the browser; ignore anything else. */
+    private function validDate(string $value): ?string
+    {
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+
+        return $date && $date->format('Y-m-d') === $value ? $value : null;
     }
 
     /**
@@ -214,11 +259,5 @@ class Moderation extends Component
         $this->rejectReason = '';
         $this->rejectOpen = true;
         $this->resetErrorBag();
-    }
-
-    private function clearSelection(): void
-    {
-        $this->selected = [];
-        $this->selectPage = false;
     }
 }
