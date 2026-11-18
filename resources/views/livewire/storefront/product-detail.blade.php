@@ -9,7 +9,30 @@
 @endphp
 
 <div class="pb-28 lg:pb-0"
-     x-data="{ justAdded: false }"
+     x-data="{
+        justAdded: false, busy: false, qty: @js($qty), curId: @js($variant?->id), sel: {}, vs: @js($variantData), nOpts: @js($product->variants->count() > 1 ? $product->options->count() : 0),
+        get cur() { return this.vs.find(v => v.id === this.curId) ?? null },
+        get canBuy() { return @js($purchasingEnabled) && this.cur !== null && this.cur.stock > 0 },
+        avail(o, v) { const want = Object.values({ ...this.sel, [o]: v }); return this.vs.some(x => x.stock > 0 && want.every(i => x.ids.includes(i))) },
+        pick(o, v) {
+            if (this.sel[o] === v) delete this.sel[o]; else this.sel[o] = v;
+            if (Object.keys(this.sel).length < this.nOpts) { this.curId = this.vs.length === 1 ? this.vs[0].id : null; return }
+            const want = Object.values(this.sel).sort().join();
+            this.curId = this.vs.find(x => [...x.ids].sort().join() === want)?.id ?? null;
+            if (this.cur !== null && this.cur.stock > 0) this.qty = Math.min(this.qty, this.cur.stock);
+            this.qty = Math.max(1, this.qty);
+        },
+        async send(method) {
+            if (this.busy || ! this.canBuy) return;
+            this.busy = method; $store.cart.bump();
+            try { await $wire[method](this.cur.id, this.qty) } finally { this.busy = false }
+        },
+        async notify() {
+            if (this.busy || this.cur === null) return;
+            this.busy = 'notify';
+            try { if (await $wire.notifyWhenAvailable(this.cur.id)) this.cur.subscribed = true } finally { this.busy = false }
+        },
+     }"
      x-init="window.recentlyViewed?.push({{ $product->id }})"
      {{-- The corner toast is easy to miss; confirm on the control itself so a
           shopper is never left pressing Add to cart twice and buying two jars. --}}
@@ -22,7 +45,7 @@
         <div class="grid items-start gap-8 lg:grid-cols-[55fr_45fr] lg:gap-12">
 
             {{-- ===== Gallery ===== --}}
-            <div wire:key="gallery-{{ $variant?->id ?? 'base' }}" x-data="{ activeImage: @js($mainImage), showVideo: false }">
+            <div x-data="{ activeImage: @js($mainImage), showVideo: false }" x-init="$watch('cur?.image', image => { if (image) activeImage = image })">
                 <div class="aspect-square overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper">
                     @if ($video)
                         <video x-show="showVideo" x-cloak controls preload="none"
@@ -34,6 +57,7 @@
                     @if ($mainImage)
                         <img @if ($video) x-show="! showVideo" @endif x-bind:src="activeImage" src="{{ $mainImage }}"
                              alt="{{ $name }}{{ $variant?->options_label ? ' — '.$variant->options_label : '' }}"
+                             x-bind:alt="@js($name) + (cur?.label ? ' — ' + cur.label : '')"
                              class="size-full object-contain">
                     @elseif (! $video)
                         <div class="flex size-full items-center justify-center text-sm text-ink-faint">{{ __('No image yet') }}</div>
@@ -144,49 +168,41 @@
                     </div>
                 @endif
 
-                {{-- Price block --}}
+                {{-- Price block (variant picked in the browser; server text is the first paint) --}}
                 <div class="mt-4 rounded-[var(--radius-card)] bg-paper px-4 py-3">
-                    @if ($variant !== null)
+                    <div x-show="cur !== null" @if ($variant === null) x-cloak @endif>
                         <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                            <span class="font-mono text-[28px] font-medium text-ink-head tnum">@price($variant->effectivePriceSen())</span>
-                            @if ($variant->isOnSale())
-                                <span class="font-mono text-[length:var(--text-md)] text-ink-faint line-through tnum">@price($variant->price_sen)</span>
-                                <x-ui.badge variant="sale">-{{ $variant->discountPercent() }}%</x-ui.badge>
-                            @endif
+                            <span class="font-mono text-[28px] font-medium text-ink-head tnum" x-text="cur?.price">@if ($variant !== null)@price($variant->effectivePriceSen())@endif</span>
+                            <span x-show="cur?.was" @if (! $variant?->isOnSale()) x-cloak @endif class="font-mono text-[length:var(--text-md)] text-ink-faint line-through tnum" x-text="cur?.was">@if ($variant?->isOnSale())@price($variant->price_sen)@endif</span>
+                            <span x-show="cur?.pct" @if (! $variant?->isOnSale()) x-cloak @endif><x-ui.badge variant="sale">-<span x-text="cur?.pct">{{ $variant?->discountPercent() }}</span>%</x-ui.badge></span>
                         </div>
-                        @if ($variant->isOnSale() && $variant->sale_ends_at !== null && $variant->sale_ends_at->isFuture() && now()->diffInHours($variant->sale_ends_at) < 48)
-                            @php $minutesLeft = (int) now()->diffInMinutes($variant->sale_ends_at); @endphp
-                            <p class="mt-1 text-[13px] font-medium text-emerald">
-                                {{ __('Sale ends in :time', ['time' => intdiv($minutesLeft, 60).'h '.($minutesLeft % 60).'m']) }}
-                            </p>
-                        @endif
-                    @else
+                        <p x-show="cur?.sale" x-cloak class="mt-1 text-[13px] font-medium text-emerald" x-text="cur?.sale"></p>
+                    </div>
+                    <div x-show="cur === null" @if ($variant !== null) x-cloak @endif>
                         @php
                             $minSen = $product->minPriceSen();
                             $maxSen = $product->maxPriceSen();
                         @endphp
                         <span class="font-mono text-[28px] font-medium text-ink-head tnum">@price($minSen)@if ($maxSen > $minSen) <span aria-hidden="true">–</span> @price($maxSen)@endif</span>
-                    @endif
+                    </div>
                 </div>
 
                 {{-- Variant picker (skipped entirely for single-variant products) --}}
                 @if ($product->variants->count() > 1 && $product->options->isNotEmpty())
                     <div class="mt-5 space-y-4">
                         @foreach ($product->options as $option)
-                            <fieldset wire:key="option-{{ $option->id }}" data-option-group>
+                            <fieldset data-option-group>
                                 <legend class="text-[13px] font-medium text-ink">{{ $option->name }}</legend>
                                 <div class="mt-2 flex flex-wrap gap-2">
                                     @foreach ($option->values as $value)
-                                        @php
-                                            $selected = ($selectedValues[$option->id] ?? null) === $value->id;
-                                            $available = $availability[$option->id][$value->id] ?? false;
-                                        @endphp
+                                        @php $available = $availability[$option->id][$value->id] ?? false; @endphp
                                         <button type="button"
-                                                wire:key="chip-{{ $value->id }}"
-                                                wire:click="selectValue({{ $option->id }}, {{ $value->id }})"
-                                                @disabled(! $available)
-                                                aria-pressed="{{ $selected ? 'true' : 'false' }}"
-                                                class="inline-flex min-h-11 min-w-14 items-center justify-center rounded-[var(--radius-control)] border px-4 text-sm font-medium hb-press disabled:cursor-not-allowed disabled:opacity-40 {{ $selected ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong bg-surface text-ink hover:border-ink' }}">
+                                                data-value-id="{{ $value->id }}" @disabled(! $available)
+                                                x-on:click="pick({{ $option->id }}, {{ $value->id }})"
+                                                x-bind:disabled="! avail({{ $option->id }}, {{ $value->id }})"
+                                                x-bind:aria-pressed="sel[{{ $option->id }}] === {{ $value->id }}" aria-pressed="false"
+                                                x-bind:class="{ 'border-emerald bg-emerald-tint text-emerald': sel[{{ $option->id }}] === {{ $value->id }}, 'border-line-strong bg-surface text-ink hover:border-ink': sel[{{ $option->id }}] !== {{ $value->id }} }"
+                                                class="inline-flex min-h-11 min-w-14 items-center justify-center rounded-[var(--radius-control)] border px-4 text-sm font-medium hb-press disabled:cursor-not-allowed disabled:opacity-40 border-line-strong bg-surface text-ink hover:border-ink">
                                             {{ $value->value }}
                                         </button>
                                     @endforeach
@@ -204,33 +220,28 @@
                     @if ($purchasingEnabled)
                     <span class="text-[13px] font-medium text-ink">{{ __('Quantity') }}</span>
                     <div class="inline-flex items-center rounded-full border border-line-strong">
-                        <button type="button" wire:click="decrementQty"
+                        <button type="button" x-on:click="qty = Math.max(1, qty - 1)"
                                 @disabled($variant === null || $qty <= 1)
+                                x-bind:disabled="cur === null || qty <= 1"
                                 class="flex size-11 items-center justify-center rounded-l-full text-ink-soft hb-press [--press:0.9] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="{{ __('Decrease quantity') }}">−</button>
-                        <span class="min-w-8 text-center font-mono text-sm font-medium tnum">{{ $qty }}</span>
-                        <button type="button" wire:click="incrementQty"
+                        <span class="min-w-8 text-center font-mono text-sm font-medium tnum" x-text="qty">{{ $qty }}</span>
+                        <button type="button" x-on:click="qty = Math.min(qty + 1, Math.max(1, cur?.stock ?? 1))"
                                 @disabled($variant === null || $qty >= $variant->stock)
+                                x-bind:disabled="cur === null || qty >= cur.stock"
                                 class="flex size-11 items-center justify-center rounded-r-full text-ink-soft hb-press [--press:0.9] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="{{ __('Increase quantity') }}">+</button>
                     </div>
                     @endif
-                    @if ($variant !== null && $variant->stock > 0 && $variant->stock < 10)
-                        <span class="text-[13px] font-medium text-warn">{{ __('Only :count left', ['count' => $variant->stock]) }}</span>
-                    @elseif ($variant !== null && $variant->stock < 1)
-                        <div class="flex flex-wrap items-center gap-2">
-                            <x-ui.badge variant="out-of-stock">{{ __('Out of stock') }}</x-ui.badge>
-                            @if (in_array($variant->id, $subscribedVariantIds, true))
-                                <span class="text-[13px] font-medium text-emerald">{{ __("We'll email you when it's back.") }}</span>
-                            @else
-                                <button type="button" wire:click="notifyWhenAvailable({{ $variant->id }})"
-                                        wire:loading.attr="disabled" wire:target="notifyWhenAvailable"
-                                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                                    {{ __('Notify me when available') }}
-                                </button>
-                            @endif
-                        </div>
-                    @endif
+                    <span x-show="cur && cur.stock > 0 && cur.stock < 10" x-cloak class="text-[13px] font-medium text-warn" x-text="@js(__('Only :count left', ['count' => '__N__'])).replace('__N__', cur?.stock)"></span>
+                    <div x-show="cur && cur.stock < 1" x-cloak class="flex flex-wrap items-center gap-2">
+                        <x-ui.badge variant="out-of-stock">{{ __('Out of stock') }}</x-ui.badge>
+                        <span x-show="cur?.subscribed" class="text-[13px] font-medium text-emerald">{{ __("We'll email you when it's back.") }}</span>
+                        <button type="button" x-show="! cur?.subscribed" x-on:click="notify()" x-bind:disabled="busy === 'notify'"
+                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald disabled:opacity-50">
+                            {{ __('Notify me when available') }}
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Shipping row --}}
@@ -327,23 +338,22 @@
                 <div class="mt-6 hidden gap-3 lg:flex">
                     <button type="button"
                             data-testid="pdp-add-to-cart"
-                            x-on:click="$store.cart.bump()"
-                            wire:click="addToCart({{ $variant?->id ?? 0 }}, {{ $qty }})"
-                            wire:loading.attr="disabled" wire:target="addToCart, buyNow"
-                            @disabled(! $canBuy)
+                            x-on:click="send('addToCart')"
+                            @disabled(! $canBuy) x-bind:disabled="! canBuy || busy !== false"
                             class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-medium text-ink transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-paper active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
-                        <span x-show="!justAdded">{{ __('Add to cart') }}</span>
+                        <span x-show="!justAdded && busy !== 'addToCart'">{{ __('Add to cart') }}</span>
+                        <svg x-show="busy === 'addToCart'" x-cloak class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity=".25"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="2"/></svg>
                         <span x-show="justAdded" x-cloak class="inline-flex items-center gap-1.5">
                             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                             {{ __('Added') }}
                         </span>
                     </button>
                     <button type="button"
-                            wire:click="buyNow"
-                            wire:loading.attr="disabled" wire:target="addToCart, buyNow"
-                            @disabled(! $canBuy)
+                            x-on:click="send('buyNow')"
+                            @disabled(! $canBuy) x-bind:disabled="! canBuy || busy !== false"
                             class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-emerald-deep active:scale-[0.98] active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
-                        {{ __('Buy now') }}
+                        <span x-show="busy !== 'buyNow'">{{ __('Buy now') }}</span>
+                        <svg x-show="busy === 'buyNow'" x-cloak class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity=".25"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="2"/></svg>
                     </button>
                 </div>
                 @else
@@ -542,23 +552,22 @@
             @if ($purchasingEnabled)
             <button type="button"
                     data-testid="pdp-add-to-cart"
-                    x-on:click="$store.cart.bump()"
-                    wire:click="addToCart({{ $variant?->id ?? 0 }}, {{ $qty }})"
-                    wire:loading.attr="disabled" wire:target="addToCart, buyNow"
-                    @disabled(! $canBuy)
+                    x-on:click="send('addToCart')"
+                    @disabled(! $canBuy) x-bind:disabled="! canBuy || busy !== false"
                     class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] border border-paper px-3 text-sm font-medium text-on-dark transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-paper/10 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
-                <span x-show="!justAdded">{{ __('Add to cart') }}</span>
+                <span x-show="!justAdded && busy !== 'addToCart'">{{ __('Add to cart') }}</span>
+                        <svg x-show="busy === 'addToCart'" x-cloak class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity=".25"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="2"/></svg>
                 <span x-show="justAdded" x-cloak class="inline-flex items-center gap-1.5">
                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                     {{ __('Added') }}
                 </span>
             </button>
             <button type="button"
-                    wire:click="buyNow"
-                    wire:loading.attr="disabled" wire:target="addToCart, buyNow"
-                    @disabled(! $canBuy)
+                    x-on:click="send('buyNow')"
+                    @disabled(! $canBuy) x-bind:disabled="! canBuy || busy !== false"
                     class="inline-flex min-h-11 flex-1 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-3 text-sm font-medium text-white transition-[color,background-color,transform] duration-150 ease-out-soft hover:bg-emerald-deep active:scale-[0.98] active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50">
-                {{ __('Buy now') }}
+                <span x-show="busy !== 'buyNow'">{{ __('Buy now') }}</span>
+                        <svg x-show="busy === 'buyNow'" x-cloak class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" opacity=".25"/><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="2"/></svg>
             </button>
             @else
                 @if ($store !== null)
