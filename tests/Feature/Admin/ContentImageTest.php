@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Admin\Content\Banners;
+use App\Livewire\Admin\Content\Banners\Form as BannersForm;
 use App\Livewire\Admin\Content\Theme;
 use App\Models\Banner;
 use App\Models\HomeSection;
@@ -25,8 +25,7 @@ function imageAdmin(): User
 }
 
 test('a banner picture must be wide (about 3 to 1) and at least 1200 pixels across', function (int $width, int $height, bool $accepted) {
-    $form = Livewire::actingAs(imageAdmin())->test(Banners::class)
-        ->call('create')
+    $form = Livewire::actingAs(imageAdmin())->test(BannersForm::class)
         ->set('title.en', 'Raya Sale')
         ->set('image', UploadedFile::fake()->image('banner.jpg', $width, $height))
         ->call('save');
@@ -43,8 +42,7 @@ test('a banner picture must be wide (about 3 to 1) and at least 1200 pixels acro
 ]);
 
 test('the Vietnamese banner picture follows the same shape rule', function () {
-    Livewire::actingAs(imageAdmin())->test(Banners::class)
-        ->call('create')
+    Livewire::actingAs(imageAdmin())->test(BannersForm::class)
         ->set('title.en', 'Raya Sale')
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1500, 500))
         ->set('imageVi', UploadedFile::fake()->image('banner-vi.jpg', 500, 500))
@@ -67,8 +65,7 @@ test('the occasion hero picture must be wide and at least 1200 pixels across', f
 });
 
 test('a saved banner gets a small fast copy and the home page offers it to phones', function () {
-    Livewire::actingAs(imageAdmin())->test(Banners::class)
-        ->call('create')
+    Livewire::actingAs(imageAdmin())->test(BannersForm::class)
         ->set('title.en', 'Raya Sale')
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1800, 600))
         ->call('save')

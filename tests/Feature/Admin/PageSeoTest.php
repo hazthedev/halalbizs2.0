@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Admin\Content\Pages;
+use App\Livewire\Admin\Content\Pages\Form as PagesForm;
 use App\Models\Page;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
@@ -20,8 +20,7 @@ test('a page gets its own search title, description and share picture once publi
     Storage::fake('public');
     $page = seoPage();
 
-    Livewire::actingAs(contentPublisher())->test(Pages::class)
-        ->call('edit', $page->id)
+    Livewire::actingAs(contentPublisher())->test(PagesForm::class, ['page' => $page->id])
         ->set('seoTitle.en', 'Shipping across Malaysia')
         ->set('seoDescription.en', 'How fast we ship and what it costs.')
         ->set('seoDescription.ms', 'Berapa cepat kami menghantar.')
@@ -60,8 +59,7 @@ test('a page without search fields falls back to its title and the start of its 
 test('search fields are length-checked and the share picture must be a wide enough picture', function () {
     $page = seoPage();
 
-    Livewire::actingAs(contentPublisher())->test(Pages::class)
-        ->call('edit', $page->id)
+    Livewire::actingAs(contentPublisher())->test(PagesForm::class, ['page' => $page->id])
         ->set('seoTitle.en', str_repeat('a', 71))
         ->set('seoDescription.en', str_repeat('b', 201))
         ->set('shareImage', UploadedFile::fake()->image('small.jpg', 300, 200))
@@ -74,7 +72,7 @@ test('the share picture can be removed again, as a draft', function () {
     $page = seoPage();
     $page->addMedia(UploadedFile::fake()->image('share.jpg', 1200, 630))->toMediaCollection('share_image');
 
-    Livewire::actingAs(contentPublisher())->test(Pages::class)->call('edit', $page->id)->call('removeShareImage');
+    Livewire::actingAs(contentPublisher())->test(PagesForm::class, ['page' => $page->id])->call('removeShareImage');
 
     expect($page->fresh()->getMedia('share_image'))->toHaveCount(1);
 
@@ -87,8 +85,7 @@ it('links a ticked custom page in the website footer once published, and never a
     $admin = contentPublisher();
     $page = Page::create(['slug' => 'careers', 'title' => ['en' => 'Careers at HalalBizs'], 'body' => ['en' => '<p>Join us.</p>'], 'is_active' => true]);
 
-    Livewire::actingAs($admin)->test(Pages::class)
-        ->call('edit', $page->id)
+    Livewire::actingAs($admin)->test(PagesForm::class, ['page' => $page->id])
         ->set('showInFooter', true)
         ->call('save');
 
@@ -101,8 +98,7 @@ it('links a ticked custom page in the website footer once published, and never a
 
     // A system page keeps its fixed footer place; the tick is ignored.
     $about = Page::where('slug', 'about')->first() ?? Page::create(['slug' => 'about', 'title' => ['en' => 'About'], 'body' => ['en' => '<p>x</p>'], 'is_active' => true]);
-    Livewire::actingAs($admin)->test(Pages::class)
-        ->call('edit', $about->id)
+    Livewire::actingAs($admin)->test(PagesForm::class, ['page' => $about->id])
         ->set('showInFooter', true)
         ->call('save');
     publishDrafts();

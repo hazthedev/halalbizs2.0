@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Support\Articles;
+use App\Livewire\Admin\Support\Articles\Form as ArticlesForm;
 use App\Models\HelpArticle;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
@@ -33,8 +34,7 @@ function liveArticle(): HelpArticle
 test('an article edit is a draft; web and API help keep the live words', function () {
     $article = liveArticle();
 
-    Livewire::actingAs(draftEditor())->test(Articles::class)
-        ->call('edit', $article->id)->set('title.en', 'New title')->set('body.en', '<p>New words</p>')->call('save')->assertHasNoErrors();
+    Livewire::actingAs(draftEditor())->test(ArticlesForm::class, ['article' => $article->id])->set('title.en', 'New title')->set('body.en', '<p>New words</p>')->call('save')->assertHasNoErrors();
 
     expect($article->fresh()->getTranslation('title', 'en'))->toBe('Old title')->and($article->fresh()->draft)->not->toBeNull();
 
@@ -48,8 +48,8 @@ test('?preview=1 shows drafted articles to the editor only and does not count a 
     $article = liveArticle();
     $editor = draftEditor();
 
-    Livewire::actingAs($editor)->test(Articles::class)->call('edit', $article->id)->set('title.en', 'New title')->set('body.en', '<p>New words</p>')->call('save');
-    Livewire::actingAs($editor)->test(Articles::class)->set('isActive', true)->call('create')->set('title.en', 'Brand new')->set('body.en', '<p>x</p>')->call('save');
+    Livewire::actingAs($editor)->test(ArticlesForm::class, ['article' => $article->id])->set('title.en', 'New title')->set('body.en', '<p>New words</p>')->call('save');
+    Livewire::actingAs($editor)->test(ArticlesForm::class)->set('isActive', true)->set('title.en', 'Brand new')->set('body.en', '<p>x</p>')->call('save');
 
     $this->actingAs($editor)->get('/help?preview=1')->assertSee('New title')->assertSee('Brand new');
     $this->actingAs($editor)->get("/help/article/{$article->id}?preview=1")->assertSee('New words');
@@ -66,7 +66,7 @@ test('a publisher publishes; the new article goes live, delete needs publish rig
     $article = liveArticle();
     $editor = draftEditor();
 
-    Livewire::actingAs($editor)->test(Articles::class)->call('edit', $article->id)->set('title.en', 'New title')->call('save');
+    Livewire::actingAs($editor)->test(ArticlesForm::class, ['article' => $article->id])->set('title.en', 'New title')->call('save');
     Livewire::actingAs($editor)->test(Articles::class)->call('toggleActive', $article->id);
     Livewire::actingAs($editor)->test(Articles::class)->call('delete', $article->id)->assertForbidden();
 

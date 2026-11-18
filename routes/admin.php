@@ -51,8 +51,12 @@ Route::middleware('can:finance.manage')->group(function () {
 
 Route::middleware('can:cms.manage')->group(function () {
     Route::get('/content/banners', Admin\Content\Banners::class)->name('content.banners');
+    Route::get('/content/banners/create', Admin\Content\Banners\Form::class)->name('content.banners.create');
+    Route::get('/content/banners/{banner}/edit', Admin\Content\Banners\Form::class)->name('content.banners.edit');
     Route::get('/content/home-sections', Admin\Content\HomeSections::class)->name('content.home-sections');
     Route::get('/content/pages', Admin\Content\Pages::class)->name('content.pages');
+    Route::get('/content/pages/create', Admin\Content\Pages\Form::class)->name('content.pages.create');
+    Route::get('/content/pages/{page}/edit', Admin\Content\Pages\Form::class)->name('content.pages.edit');
     Route::get('/content/site-info', Admin\Content\SiteInfo::class)->name('content.site-info');
     Route::get('/content/theme', Admin\Content\Theme::class)->name('content.theme');
     Route::get('/content/preview', Admin\Content\Preview::class)->name('content.preview');
@@ -60,6 +64,8 @@ Route::middleware('can:cms.manage')->group(function () {
     Route::get('/live', Admin\Live\Index::class)->name('live.index'); // M2.4
     Route::get('/content/flash-sales', Admin\Content\FlashSales::class)->name('content.flash-sales');
     Route::get('/support/articles', Admin\Support\Articles::class)->name('support.articles');
+    Route::get('/support/articles/create', Admin\Support\Articles\Form::class)->name('support.articles.create');
+    Route::get('/support/articles/{article}/edit', Admin\Support\Articles\Form::class)->name('support.articles.edit');
     Route::get('/support/tickets', Admin\Support\Tickets::class)->name('support.tickets');
 });
 
@@ -67,6 +73,8 @@ Route::get('/notifications', Admin\Notifications::class)->name('notifications');
 
 Route::middleware('can:vouchers.manage')->group(function () {
     Route::get('/content/vouchers', Admin\Content\Vouchers::class)->name('content.vouchers');
+    Route::get('/content/vouchers/create', Admin\Content\Vouchers\Form::class)->name('content.vouchers.create');
+    Route::get('/content/vouchers/{voucher}/edit', Admin\Content\Vouchers\Form::class)->name('content.vouchers.edit');
 });
 
 Route::middleware('can:localization.manage')->group(function () {

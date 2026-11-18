@@ -3,9 +3,12 @@
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
 use App\Livewire\Admin\Content\Banners;
+use App\Livewire\Admin\Content\Banners\Form as BannersForm;
 use App\Livewire\Admin\Content\HomeSections;
 use App\Livewire\Admin\Content\Pages;
+use App\Livewire\Admin\Content\Pages\Form as PagesForm;
 use App\Livewire\Admin\Content\Vouchers;
+use App\Livewire\Admin\Content\Vouchers\Form as VouchersForm;
 use App\Livewire\Storefront\Home;
 use App\Models\Banner;
 use App\Models\HomeSection;
@@ -35,8 +38,7 @@ test('admin creates a banner with image, schedule, and translations', function (
     Storage::fake('public');
 
     Livewire::actingAs(contentAdmin())
-        ->test(Banners::class)
-        ->call('create')
+        ->test(BannersForm::class)
         ->set('title.en', 'Raya Sale')
         ->set('title.ms', 'Jualan Raya')
         ->set('title.vi', 'Khuyến mãi Raya')
@@ -70,8 +72,7 @@ test('a banner video saves and renders as an autoplaying slide on the home page'
     Storage::fake('public');
 
     Livewire::actingAs(contentAdmin())
-        ->test(Banners::class)
-        ->call('create')
+        ->test(BannersForm::class)
         ->set('title.en', 'Moving Raya')
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
         ->set('video', UploadedFile::fake()->create('promo.mp4', 2048, 'video/mp4'))
@@ -114,8 +115,7 @@ test('a banner video must be MP4 or WebM', function () {
     Storage::fake('public');
 
     Livewire::actingAs(contentAdmin())
-        ->test(Banners::class)
-        ->call('create')
+        ->test(BannersForm::class)
         ->set('title.en', 'Bad Video Banner')
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400))
         ->set('video', UploadedFile::fake()->create('clip.avi', 1024, 'video/x-msvideo'))
@@ -130,8 +130,7 @@ test('banner image is required on create but not on edit', function () {
     $admin = contentAdmin();
 
     Livewire::actingAs($admin)
-        ->test(Banners::class)
-        ->call('create')
+        ->test(BannersForm::class)
         ->set('title.en', 'No image')
         ->call('save')
         ->assertHasErrors(['image' => 'required']);
@@ -139,8 +138,7 @@ test('banner image is required on create but not on edit', function () {
     $banner = Banner::create(['title' => ['en' => 'Existing'], 'position' => 0]);
 
     Livewire::actingAs($admin)
-        ->test(Banners::class)
-        ->call('edit', $banner->id)
+        ->test(BannersForm::class, ['banner' => $banner->id])
         ->set('title.en', 'Existing — renamed')
         ->call('save')
         ->assertHasNoErrors()
@@ -153,8 +151,7 @@ test('banner schedule must end after it starts', function () {
     Storage::fake('public');
 
     Livewire::actingAs(contentAdmin())
-        ->test(Banners::class)
-        ->call('create')
+        ->test(BannersForm::class)
         ->set('title.en', 'Backwards window')
         ->set('startsAt', '2026-06-30T00:00')
         ->set('endsAt', '2026-06-01T00:00')
@@ -278,8 +275,7 @@ test('system page slug is locked and the page cannot be deleted', function () {
     $terms = Page::where('slug', 'terms')->sole();
 
     Livewire::actingAs(contentAdmin())
-        ->test(Pages::class)
-        ->call('edit', $terms->id)
+        ->test(PagesForm::class, ['page' => $terms->id])
         ->set('slug', 'hijacked-slug')
         ->set('title.en', 'Terms & Conditions v2')
         ->set('body.en', '<p>Updated terms.</p>')
@@ -313,8 +309,7 @@ test('terms and privacy cannot be deactivated but other system pages can', funct
 
 test('page body is sanitized to the allowed tag list on save', function () {
     Livewire::actingAs(contentAdmin())
-        ->test(Pages::class)
-        ->call('create')
+        ->test(PagesForm::class)
         ->set('slug', 'shipping-guide')
         ->set('title.en', 'Shipping guide')
         ->set('body.en', '<script>alert(1)</script><p>Ships in <strong>2 days</strong>.</p><iframe src="x"></iframe><h2>Zones</h2>')
@@ -334,8 +329,7 @@ test('page body is sanitized to the allowed tag list on save', function () {
 
 test('platform voucher is created with RM-to-sen conversion and uppercase code', function () {
     Livewire::actingAs(contentAdmin())
-        ->test(Vouchers::class)
-        ->call('create')
+        ->test(VouchersForm::class)
         ->set('code', 'merdeka5')
         ->set('type', 'fixed')
         ->set('value', '5.00')
@@ -361,8 +355,7 @@ test('platform voucher is created with RM-to-sen conversion and uppercase code',
 
 test('percent voucher stores percent and the RM cap in sen', function () {
     Livewire::actingAs(contentAdmin())
-        ->test(Vouchers::class)
-        ->call('create')
+        ->test(VouchersForm::class)
         ->set('code', 'JIMAT10')
         ->set('type', 'percent')
         ->set('percent', '10')
@@ -395,8 +388,7 @@ test('platform voucher codes must be unique among platform vouchers', function (
     ]);
 
     Livewire::actingAs($admin)
-        ->test(Vouchers::class)
-        ->call('create')
+        ->test(VouchersForm::class)
         ->set('code', 'twice')
         ->set('type', 'fixed')
         ->set('value', '1.00')

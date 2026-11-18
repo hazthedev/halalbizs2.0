@@ -1,7 +1,7 @@
 <?php
 
 use App\Enums\StoreStatus;
-use App\Livewire\Admin\Content\Banners;
+use App\Livewire\Admin\Content\Banners\Form as BannersForm;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Page;
@@ -18,7 +18,7 @@ use Livewire\Livewire;
 // CMS item 3: an admin picks where a banner goes from a list; every choice
 // opens on the web AND in the app.
 
-function bannerForm(): Testable
+function bannerForm(?Banner $banner = null): Testable
 {
     test()->seed(RoleSeeder::class);
     Storage::fake('public');
@@ -27,8 +27,7 @@ function bannerForm(): Testable
     makeAdmin($admin);
 
     return Livewire::actingAs($admin)
-        ->test(Banners::class)
-        ->call('create')
+        ->test(BannersForm::class, ['banner' => $banner])
         ->set('title.en', 'Raya Sale')
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400));
 }
@@ -116,8 +115,7 @@ test('editing reads the saved link back into the picker', function (string $link
     Category::factory()->create(['slug' => 'snacks', 'is_active' => true]);
     $banner = Banner::create(['title' => ['en' => 'B'], 'link_url' => $link, 'position' => 1, 'is_active' => true]);
 
-    bannerForm()
-        ->call('edit', $banner->id)
+    bannerForm($banner)
         ->assertSet('destination', $type)
         ->assertSet('destinationSlug', $slug)
         ->assertSet('destinationQuery', $query)
@@ -134,7 +132,7 @@ test('editing reads the saved link back into the picker', function (string $link
 test('a banner with no link opens the picker on No link', function () {
     $banner = Banner::create(['title' => ['en' => 'B'], 'link_url' => null, 'position' => 1, 'is_active' => true]);
 
-    bannerForm()->call('edit', $banner->id)->assertSet('destination', 'none');
+    bannerForm($banner)->assertSet('destination', 'none');
 });
 
 test('AppLinks opens every banner destination in the app', function (?string $web, ?string $app) {

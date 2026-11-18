@@ -66,3 +66,12 @@ a deliberate choice, not a platform limitation: the host does carry Node
 - `docs/` — audits, feature gap analysis, and roadmap.
 - `marketplace-docs/docs/` — the full functional specs; start at
   `00-overview.md`.
+
+### Admin form pages
+
+Platform vouchers, banners, pages and help articles have separate `/create` and
+`/{record}/edit` pages under their existing list paths and permission gates.
+Save and Cancel return to the list. Content saves still stage drafts; publish,
+discard, delete, toggles and ordering stay on the list. All fields, uploads,
+translations, sanitization and voucher payloads keep their existing behavior.
+Coverage: `FormPagesTest` and `FormPagePayloadTest`, plus the existing content suites.

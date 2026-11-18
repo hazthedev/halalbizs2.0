@@ -4,6 +4,7 @@ use App\Enums\HelpCategory;
 use App\Livewire\Admin\Content\Banners;
 use App\Livewire\Admin\Content\HomeSections;
 use App\Livewire\Admin\Content\Pages;
+use App\Livewire\Admin\Content\Pages\Form as PagesForm;
 use App\Livewire\Admin\Content\Theme;
 use App\Livewire\Admin\Support\Articles;
 use App\Livewire\Admin\System\AuditLog;
@@ -33,8 +34,7 @@ test('editing a page records who changed it, with the old and new text', functio
     $admin = historyAdmin();
     $page = Page::create(['slug' => 'about', 'title' => ['en' => 'About us'], 'body' => ['en' => '<p>Old</p>'], 'is_active' => true]);
 
-    Livewire::actingAs($admin)->test(Pages::class)
-        ->call('edit', $page->id)
+    Livewire::actingAs($admin)->test(PagesForm::class, ['page' => $page->id])
         ->set('title.en', 'About HalalBizs')
         ->set('body.en', '<p>New</p>')
         ->call('save')
