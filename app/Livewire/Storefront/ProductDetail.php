@@ -11,6 +11,7 @@ use App\Settings\CodSettings;
 use App\Settings\GeneralSettings;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Renderless;
 use Livewire\Component;
 
 #[Layout('layouts.storefront')]
@@ -50,10 +51,13 @@ class ProductDetail extends Component
     private function recordView(Product $product): void
     {
         if (auth()->check() && $product->isLive()) {
-            ProductView::updateOrCreate(
-                ['user_id' => auth()->id(), 'product_id' => $product->id],
+            $userId = auth()->id();
+
+            // After the response: the buyer never waits on the write.
+            defer(fn () => ProductView::updateOrCreate(
+                ['user_id' => $userId, 'product_id' => $product->id],
                 ['viewed_at' => now()],
-            );
+            ));
         }
     }
 
@@ -84,13 +88,14 @@ class ProductDetail extends Component
         $this->qty = max(1, $this->qty - 1);
     }
 
-    /** Register a one-shot back-in-stock alert for an out-of-stock variant. */
-    public function notifyWhenAvailable(int $variantId): void
+    /** Register a one-shot back-in-stock alert for an out-of-stock variant. True = saved (the page flips its own button). */
+    #[Renderless]
+    public function notifyWhenAvailable(int $variantId): bool
     {
         if (auth()->guest()) {
             $this->redirectRoute('login', navigate: true);
 
-            return;
+            return false;
         }
 
         $variant = $this->product->variants->firstWhere('id', $variantId);
@@ -103,17 +108,23 @@ class ProductDetail extends Component
         ]);
 
         $this->dispatch('toast', message: __("Done — we'll email you the moment it's back in stock."));
+
+        return true;
     }
 
-    public function buyNow(): void
+    /** The page picks variant + qty client side and sends them here; the variant must belong to this product. */
+    #[Renderless]
+    public function buyNow(?int $variantId = null, ?int $qty = null): void
     {
-        $variant = $this->resolvedVariant();
+        $variant = $variantId === null
+            ? $this->resolvedVariant()
+            : $this->product->variants->firstWhere('id', $variantId);
 
         if ($variant === null || $variant->stock < 1) {
             return;
         }
 
-        if ($this->addToCart($variant->id, $this->qty)) {
+        if ($this->addToCart($variant->id, $qty ?? $this->qty)) {
             $this->redirectRoute('cart', navigate: true);
         }
     }
@@ -125,15 +136,42 @@ class ProductDetail extends Component
         return view('livewire.storefront.product-detail', [
             'variant' => $this->resolvedVariant(),
             'availability' => $this->availabilityMap(),
+            'variantData' => $this->variantData(),
             'wishlistedIds' => $this->wishlistedIds(),
             'codAvailable' => app(GeneralSettings::class)->purchasing_enabled
                 && $this->product->cod_enabled
                 && app(CodSettings::class)->enabled,
             'storeProductsCount' => $this->product->store?->products()->live()->count() ?? 0,
             'jsonLd' => $this->jsonLd(),
-            'subscribedVariantIds' => $this->subscribedVariantIds(),
             'purchasingEnabled' => app(GeneralSettings::class)->purchasing_enabled,
         ])->title($this->product->getTranslation('name', app()->getLocale()));
+    }
+
+    /**
+     * Everything the picker needs, so variant and qty changes never leave the
+     * browser: ids, stock and ready-made display strings (money stays server formatted).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function variantData(): array
+    {
+        $converter = app(\App\Services\CurrencyConverter::class);
+        $subscribed = $this->subscribedVariantIds();
+
+        return $this->product->variants->map(fn (ProductVariant $v) => [
+            'id' => $v->id,
+            'ids' => $v->option_value_ids ?? [],
+            'stock' => $v->stock,
+            'price' => $converter->display($v->effectivePriceSen()),
+            'was' => $v->isOnSale() ? $converter->display($v->price_sen) : null,
+            'pct' => $v->isOnSale() ? $v->discountPercent() : null,
+            'sale' => $v->isOnSale() && $v->sale_ends_at !== null && $v->sale_ends_at->isFuture() && now()->diffInHours($v->sale_ends_at) < 48
+                ? __('Sale ends in :time', ['time' => intdiv($m = (int) now()->diffInMinutes($v->sale_ends_at), 60).'h '.($m % 60).'m'])
+                : null,
+            'image' => $v->getFirstMediaUrl('image') ?: null,
+            'label' => $v->options_label,
+            'subscribed' => in_array($v->id, $subscribed, true),
+        ])->values()->all();
     }
 
     private function canPreview(Product $product): bool

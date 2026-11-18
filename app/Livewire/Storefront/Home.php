@@ -6,6 +6,7 @@ use App\Livewire\Concerns\InteractsWithCart;
 use App\Services\HomeLayout;
 use App\Settings\ThemeSettings;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Renderless;
 use Livewire\Component;
 
 #[Layout('layouts.storefront')]
@@ -17,7 +18,8 @@ class Home extends Component
     public array $recentlyViewedIds = [];
 
     /** Called from the view's x-init with window.recentlyViewed.all(). */
-    public function loadRecentlyViewed(array $ids): void
+    #[Renderless]
+    public function loadRecentlyViewed(array $ids, ?int $sectionId = null): string
     {
         $this->recentlyViewedIds = collect($ids)
             ->filter(fn ($id) => is_int($id) || ctype_digit((string) $id))
@@ -26,6 +28,20 @@ class Home extends Component
             ->take(12)
             ->values()
             ->all();
+
+        $layout = app(HomeLayout::class);
+        $section = $layout->sections()->first(fn ($row) => $row['section']->type === 'recently_viewed'
+            && ($sectionId === null || $row['section']->id === $sectionId));
+
+        if ($section === null) {
+            return '';
+        }
+
+        return view('livewire.storefront.partials.recently-viewed', [
+            'data' => $layout->recentlyViewedProducts($this->recentlyViewedIds),
+            'title' => $section['section']->getTranslation('title', app()->getLocale()),
+            'wishlistedIds' => $this->wishlistedIds(),
+        ])->render();
     }
 
     public function render()

@@ -1,6 +1,6 @@
 <div
     x-data="{ open: false }"
-    x-on:open-mini-cart.window="open = true"
+    x-on:open-mini-cart.window="open = true; $wire.loadCart()"
     x-on:keydown.escape.window="open = false"
 >
     {{-- Backdrop --}}
@@ -24,6 +24,7 @@
         </div>
 
         <div class="flex-1 overflow-y-auto px-4 py-3">
+            <span wire:loading wire:target="loadCart" role="status">{{ __('Loading…') }}</span>
             @forelse ($groups as $storeId => $lines)
                 <div class="mb-4">
                     <a href="{{ $lines->first()->variant->product->store->storefrontUrl() }}" wire:navigate

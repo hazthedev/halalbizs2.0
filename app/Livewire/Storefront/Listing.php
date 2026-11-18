@@ -13,11 +13,13 @@ use App\Models\ProductBoost;
 use App\Models\ProductVariant;
 use App\Models\SearchLog;
 use App\Models\Store;
+use App\Services\HomeLayout;
 use App\Services\VectorSearchService;
 use App\Settings\BoostSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -231,9 +233,10 @@ class Listing extends Component
 
     public function render()
     {
-        $sponsored = $this->sponsoredProducts();
+        $filtered = $this->filteredQuery();
+        $sponsored = $this->sponsoredProducts(clone $filtered);
 
-        $query = $this->results();
+        $query = $this->applySort($filtered);
         $total = (clone $query)->count(); // sponsored products match the scope, so they count
 
         if ($sponsored->isNotEmpty()) {
@@ -253,7 +256,7 @@ class Listing extends Component
             'breadcrumbs' => $this->breadcrumbs(),
             'children' => $this->rootCategory?->children()->where('is_active', true)->get() ?? collect(),
             'chips' => $this->activeChips(),
-            'states' => Store::query()->approved()->whereNotNull('state')->distinct()->orderBy('state')->pluck('state'),
+            'states' => Cache::remember('storefront:listing-states', 300, fn () => Store::query()->approved()->whereNotNull('state')->distinct()->orderBy('state')->pluck('state')->all()),
             'wishlistedIds' => $this->wishlistedIds(),
             'facetAttributes' => $this->facetAttributes(),
             'selectedAttrs' => array_map('intval', $this->attrs),
@@ -285,12 +288,6 @@ class Listing extends Component
         return $this->hasSearchTerm() ? 'relevance' : 'latest';
     }
 
-    /** Filtered + sorted query for the current entry (search or category). */
-    private function results(): Builder
-    {
-        return $this->applySort($this->filteredQuery());
-    }
-
     /**
      * Up to 4 actively boosted products matching the current scope (category
      * tree or search result set + every applied filter), newest boost first.
@@ -299,7 +296,7 @@ class Listing extends Component
      *
      * @return EloquentCollection<int, Product>
      */
-    private function sponsoredProducts(): EloquentCollection
+    private function sponsoredProducts(Builder $scope): EloquentCollection
     {
         if (! app(BoostSettings::class)->enabled) {
             return new EloquentCollection;
@@ -311,12 +308,12 @@ class Listing extends Component
             ->orderByDesc('starts_at')
             ->limit(1);
 
-        return $this->filteredQuery()
+        $key = 'storefront:sponsored:'.Cache::get('storefront:sponsored-version', '').':'.sha1($scope->toSql().serialize($scope->getBindings()));
+
+        return HomeLayout::remember($key, 30, fn () => $scope
             ->whereHas('boosts', fn (Builder $boosts) => $boosts->active())
-            ->orderByDesc($latestBoostStart)
-            ->orderByDesc('products.id')
-            ->take(self::SPONSORED_SLOTS)
-            ->get()
+            ->orderByDesc($latestBoostStart)->orderByDesc('products.id')
+            ->take(self::SPONSORED_SLOTS)->get())
             ->each(fn (Product $product) => $product->sponsored = true);
     }
 
@@ -460,9 +457,11 @@ class Listing extends Component
         }
 
         // Smart mode (M2.3): semantic vector ranking; keyword Scout otherwise.
-        return $this->searchIdCache = $this->mode === 'smart' && app(VectorSearchService::class)->enabled()
-            ? app(VectorSearchService::class)->semanticSearch(trim($this->q))
-            : Product::searchKeywordIds(trim($this->q));
+        $key = 'storefront:search:'.sha1(app()->getLocale().'|'.$this->mode.'|'.trim($this->q));
+
+        return $this->searchIdCache = Cache::remember($key, 30, fn () => $this->mode === 'smart' && app(VectorSearchService::class)->enabled()
+                ? app(VectorSearchService::class)->semanticSearch(trim($this->q))
+                : Product::searchKeywordIds(trim($this->q)));
     }
 
     /** Log once per distinct executed search (search entry only). */

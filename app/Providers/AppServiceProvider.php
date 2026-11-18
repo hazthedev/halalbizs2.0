@@ -15,9 +15,11 @@ use App\Models\FlashSale;
 use App\Models\FlashSaleItem;
 use App\Models\HomeSection;
 use App\Models\Order;
+use App\Models\Page;
 use App\Models\Payment;
 use App\Models\Payout;
 use App\Models\Product;
+use App\Models\ProductBoost;
 use App\Models\ProductMetafield;
 use App\Models\ReturnRequest;
 use App\Models\Store;
@@ -124,7 +126,7 @@ class AppServiceProvider extends ServiceProvider
         // CMS: the app's cached home (HomeLayout::forApp) is cleared the moment
         // any content it is built from is saved, so an admin sees the change
         // at once. Product and stock changes are not listed: they ride the TTL.
-        foreach ([Banner::class, HomeSection::class, Category::class, FlashSale::class, FlashSaleItem::class, ThemeAsset::class, Media::class] as $content) {
+        foreach ([Banner::class, HomeSection::class, Category::class, Page::class, ProductBoost::class, FlashSale::class, FlashSaleItem::class, ThemeAsset::class, Media::class] as $content) {
             $content::saved(fn () => HomeLayout::flush());
             $content::deleted(fn () => HomeLayout::flush());
         }

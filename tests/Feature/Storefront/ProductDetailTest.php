@@ -65,8 +65,8 @@ it('disables out-of-stock option values without hiding them', function () {
         ->html();
 
     // The sold-out colour chip renders with the disabled attribute; the available one does not.
-    expect($html)->toMatch('/selectValue\('.$colour->id.', '.$soldOutColour->id.'\)"\s+disabled/');
-    expect($html)->not->toMatch('/selectValue\('.$colour->id.', '.$availableColour->id.'\)"\s+disabled/');
+    expect($html)->toMatch('/data-value-id="'.$soldOutColour->id.'"\s+disabled/');
+    expect($html)->not->toMatch('/data-value-id="'.$availableColour->id.'"\s+disabled/');
 });
 
 it('adds the variant to the cart for a logged-in buyer', function () {

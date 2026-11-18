@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-7xl px-4 py-6" wire:poll.30s>
+<div class="mx-auto max-w-7xl px-4 py-6" wire:poll.30s.visible>
     <div class="flex flex-wrap items-center justify-between gap-3">
         <h1 class="font-display text-2xl font-medium text-ink">{{ __('Flash Sale') }}</h1>
 

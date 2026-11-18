@@ -248,6 +248,7 @@
          reference's hardcoded four (it shows DUITNOW and PICKUP, neither of
          which this app supports).
     --}}
+    @php($footer = app(\App\Services\HomeLayout::class)->footer())
     <footer class="mt-16 bg-emerald-night text-on-dark-soft">
         <div class="mx-auto grid max-w-[1400px] gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:px-12"
              x-data="{ shown: false }" x-intersect.once="shown = true">
@@ -308,7 +309,7 @@
             <div class="motion-reveal" x-bind:class="shown && 'revealed'" style="animation-delay: 60ms">
                 <p class="font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-on-dark-faint">{{ __('Marketplace') }}</p>
                 <ul class="mt-4 space-y-2.5 text-[length:var(--text-base)]">
-                    @foreach (\App\Models\Category::active()->whereNull('parent_id')->orderBy('position')->get() as $footerCategory)
+                    @foreach ($footer['categories'] as $footerCategory)
                         <li><a href="{{ route('category.show', $footerCategory->slug) }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ $footerCategory->getTranslation('name', app()->getLocale()) }}</a></li>
                     @endforeach
                     <li><a href="{{ route('landing') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Discover HalalBizs') }}</a></li>
@@ -333,8 +334,8 @@
                 <p class="font-mono text-[length:var(--text-tiny)] uppercase tracking-[var(--tracking-label-xl)] text-on-dark-faint">{{ __('Company') }}</p>
                 <ul class="mt-4 space-y-2.5 text-[length:var(--text-base)]">
                     <li><a href="{{ route('page.show', 'about') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('About us') }}</a></li>
-                    {{-- Custom pages ticked "show in footer" (Admin → Content → Pages). ponytail: one small query per page view, cache if the footer ever shows in a profile. --}}
-                    @foreach (app(\App\Services\ContentDrafts::class)->visible(\App\Models\Page::class)->where('show_in_footer', true)->sortBy('id') as $footerPage)
+                    {{-- Custom pages ticked "show in footer" (Admin → Content → Pages). cached public links; staff previews bypass the cache. --}}
+                    @foreach ($footer['pages'] as $footerPage)
                         <li><a href="{{ route('page.show', $footerPage->slug) }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ $footerPage->title }}</a></li>
                     @endforeach
                     <li><a href="{{ route('seller.apply') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Sell on HalalBizs') }}</a></li>

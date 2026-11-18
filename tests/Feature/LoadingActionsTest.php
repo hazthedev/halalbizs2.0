@@ -71,10 +71,13 @@ it('guards live session creation and adding products', function () {
     $seller = User::factory()->create();
     $seller->assignRole('seller');
     Store::factory()->approved()->create(['user_id' => $seller->id]);
-    $page = Livewire::actingAs($seller)->test(App\Livewire\Seller\LiveSessions::class)->call('create');
-    assertLoadingAction($page->html(), 'save');
-    $page->set('title', 'Loading test')->call('save');
-    assertLoadingAction($page->html(), 'addProduct');
+    // HB-FORM-PAGES moved create to its own page and product adding to the session page.
+    $form = Livewire::actingAs($seller)->test(App\Livewire\Seller\LiveSessions\Form::class);
+    assertLoadingAction($form->html(), 'save');
+    $form->set('title', 'Loading test')->call('save')->assertHasNoErrors();
+    $session = App\Models\LiveSession::where('title', 'Loading test')->firstOrFail();
+    $detail = Livewire::actingAs($seller)->test(App\Livewire\Seller\LiveSessions\Detail::class, ['session' => $session]);
+    assertLoadingAction($detail->html(), 'addProduct');
 });
 
 it('guards bulk stock actions', function () {

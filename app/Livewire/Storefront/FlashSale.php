@@ -4,6 +4,7 @@ namespace App\Livewire\Storefront;
 
 use App\Models\FlashSale as FlashSaleModel;
 use App\Models\FlashSaleItem;
+use App\Services\HomeLayout;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -18,15 +19,17 @@ class FlashSale extends Component
 {
     public function render(): View
     {
-        $items = FlashSaleItem::query()
-            ->whereHas('flashSale', fn ($sale) => $sale->live())
-            ->with(['variant.product.media', 'variant.product.store', 'flashSale'])
-            ->orderByDesc('id')
-            ->get()
-            ->filter(fn (FlashSaleItem $item) => $item->variant?->product?->isLive())
-            ->values();
-
-        $endsAt = FlashSaleModel::query()->live()->min('ends_at');
+        // One shared read per 30 s for every viewer (same cadence as the poll); public data only.
+        ['items' => $items, 'endsAt' => $endsAt] = HomeLayout::remember('storefront:flash-sale', 30, fn () => [
+            'items' => FlashSaleItem::query()
+                ->whereHas('flashSale', fn ($sale) => $sale->live())
+                ->with(['variant.product.media', 'variant.product.store', 'flashSale'])
+                ->orderByDesc('id')
+                ->get()
+                ->filter(fn (FlashSaleItem $item) => $item->variant?->product?->isLive())
+                ->values(),
+            'endsAt' => FlashSaleModel::query()->live()->min('ends_at'),
+        ]);
 
         return view('livewire.storefront.flash-sale', [
             'items' => $items,

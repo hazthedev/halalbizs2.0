@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -106,12 +107,18 @@ class Category extends Model implements HasMedia
     /** @return array<int> self + all descendant ids (for product filtering) */
     public function descendantIds(): array
     {
-        $ids = [$this->id];
+        $children = Cache::remember('storefront:category-tree', 300,
+            fn () => static::query()->orderBy('position')->get(['id', 'parent_id'])->groupBy('parent_id')
+                ->map(fn ($rows) => $rows->pluck('id')->all())->all());
+        $walk = function (int $id) use (&$walk, $children): array {
+            $ids = [$id];
+            foreach ($children[$id] ?? [] as $childId) {
+                array_push($ids, ...$walk($childId));
+            }
 
-        foreach ($this->children as $child) {
-            $ids = array_merge($ids, $child->descendantIds());
-        }
+            return $ids;
+        };
 
-        return $ids;
+        return $walk($this->id);
     }
 }

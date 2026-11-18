@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-7xl px-4 py-6" x-data="{ filtersOpen: false }" x-on:keydown.escape.window="filtersOpen = false">
+<div class="mx-auto max-w-7xl px-4 py-6" x-data="{ filtersOpen: false }" x-on:resize.window="if (window.innerWidth >= 1024) filtersOpen = false" x-on:keydown.escape.window="filtersOpen = false">
 
     {{-- Breadcrumbs (category entry only) --}}
     @if (! $isSearch && count($breadcrumbs) > 0)
@@ -66,10 +66,24 @@
     </div>
 
     <div class="mt-6 flex items-start gap-8">
-        {{-- Desktop sidebar filters (sticky) --}}
-        <aside class="hidden w-60 shrink-0 lg:block" aria-label="{{ __('Filters') }}">
-            <div class="sticky top-20 max-h-[calc(100vh-6rem)] space-y-6 overflow-y-auto py-1 pb-4 pl-1 pr-2">
-                @include('livewire.storefront.listing.filters', ['idPrefix' => 'desktop'])
+        <div x-show="filtersOpen" x-cloak x-on:click="filtersOpen = false"
+             class="fixed inset-0 z-40 bg-emerald-night/50 lg:hidden"></div>
+        <aside x-bind:class="filtersOpen ? 'flex' : 'hidden'"
+               x-bind:role="filtersOpen ? 'dialog' : null" x-bind:aria-modal="filtersOpen ? 'true' : null"
+               x-trap.inert.noscroll="filtersOpen"
+               class="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] flex-col rounded-t-[var(--radius-card)] bg-surface shadow-pop lg:static lg:z-auto lg:block lg:max-h-none lg:w-60 lg:shrink-0 lg:rounded-none lg:bg-transparent lg:shadow-none"
+               aria-label="{{ __('Filters') }}">
+            <div class="flex items-center justify-between border-b border-line px-4 py-3 lg:hidden">
+                <p class="font-display text-lg font-medium">{{ __('Filters') }}</p>
+                <button type="button" x-on:click="filtersOpen = false" class="flex size-11 items-center justify-center" aria-label="{{ __('Close filters') }}">&times;</button>
+            </div>
+            <div class="min-h-0 space-y-6 overflow-y-auto p-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:py-1 lg:pb-4 lg:pl-1 lg:pr-2">
+                @include('livewire.storefront.listing.filters', ['idPrefix' => 'listing'])
+            </div>
+            <div class="border-t border-line p-4 lg:hidden">
+                <x-ui.button variant="primary" class="w-full" x-on:click="filtersOpen = false">
+                    {{ trans_choice('Show :count result|Show :count results', $total, ['count' => $total]) }}
+                </x-ui.button>
             </div>
         </aside>
 
@@ -175,32 +189,4 @@
         </div>
     </div>
 
-    {{-- Mobile filters bottom sheet (overlay — shadow permitted) --}}
-    <div x-show="filtersOpen" x-cloak class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="{{ __('Filters') }}">
-        <div x-show="filtersOpen" x-transition.opacity.duration.150ms class="absolute inset-0 bg-emerald-night/50" x-on:click="filtersOpen = false"></div>
-        <div
-            x-show="filtersOpen"
-            x-transition:enter="transition duration-150 ease-out"
-            x-transition:enter-start="translate-y-6 opacity-0"
-            x-transition:enter-end="translate-y-0 opacity-100"
-            x-transition:leave="transition duration-100 ease-in"
-            x-transition:leave-end="translate-y-6 opacity-0"
-            class="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-[var(--radius-card)] bg-surface shadow-pop"
-        >
-            <div class="flex items-center justify-between border-b border-line px-4 py-3">
-                <p class="font-display text-lg font-medium">{{ __('Filters') }}</p>
-                <button type="button" x-on:click="filtersOpen = false" class="flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink" aria-label="{{ __('Close filters') }}">
-                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <div class="min-h-0 flex-1 space-y-6 overflow-y-auto p-4">
-                @include('livewire.storefront.listing.filters', ['idPrefix' => 'mobile'])
-            </div>
-            <div class="border-t border-line p-4">
-                <x-ui.button variant="primary" class="w-full" x-on:click="filtersOpen = false">
-                    {{ trans_choice('Show :count result|Show :count results', $total, ['count' => $total]) }}
-                </x-ui.button>
-            </div>
-        </div>
-    </div>
 </div>

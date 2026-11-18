@@ -23,6 +23,22 @@ class CartPage extends Component
      */
     public array $removed = [];
 
+    /** Variant ids whose qty was cut to stock on this load (notice only; not kept between requests). */
+    private array $adjustedIds = [];
+
+    /** Stock clamp is a write, so it runs once on load, never inside render(). */
+    public function mount(): void
+    {
+        $service = app(CartService::class);
+
+        foreach ($service->groupedByStore(auth()->user())->flatten(1) as $line) {
+            if ($line->variant->product->isLive() && $line->variant->stock > 0 && $line->qty > $line->variant->stock) {
+                $service->updateQty(auth()->user(), $line->variant, $line->variant->stock);
+                $this->adjustedIds[] = $line->variant->id;
+            }
+        }
+    }
+
     public function updateQty(int $variantId, int $qty): void
     {
         if (! app(CartService::class)->purchasingEnabled()) {
@@ -136,8 +152,8 @@ class CartPage extends Component
         $service = app(CartService::class);
 
         $groups = $service->groupedByStore(auth()->user())
-            ->map(function ($lines) use ($service) {
-                $presented = $lines->map(fn ($line) => $this->presentLine($line, $service))->values();
+            ->map(function ($lines) {
+                $presented = $lines->map(fn ($line) => $this->presentLine($line))->values();
                 $selectable = $presented->reject(fn ($line) => $line->excluded);
 
                 return (object) [
@@ -165,16 +181,16 @@ class CartPage extends Component
      * Revalidate a cart line against live data: clamp over-stock quantities
      * (persisted) and flag lines that can no longer be bought.
      */
-    private function presentLine(object $line, CartService $service): object
+    private function presentLine(object $line): object
     {
         $variant = $line->variant;
         $unavailable = ! $variant->product->isLive();
         $outOfStock = ! $unavailable && $variant->stock < 1;
-        $adjusted = false;
+        $adjusted = in_array($variant->id, $this->adjustedIds, true);
         $qty = $line->qty;
 
+        // Display only: a line over stock between loads shows the clamped qty; the write waits for the next load.
         if (! $unavailable && ! $outOfStock && $qty > $variant->stock) {
-            $service->updateQty(auth()->user(), $variant, $variant->stock);
             $qty = $variant->stock;
             $adjusted = true;
         }

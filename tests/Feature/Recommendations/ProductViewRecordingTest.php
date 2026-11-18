@@ -16,7 +16,8 @@ test('visiting a PDP records a view for an authenticated buyer', function () {
     $buyer->assignRole('buyer');
     $product = Product::factory()->create();
 
-    Livewire::actingAs($buyer)->test(ProductDetail::class, ['product' => $product]);
+    // The write runs after the response (defer), so drive a real request.
+    $this->actingAs($buyer)->get(route('product.show', $product->slug))->assertOk();
 
     expect(ProductView::where('user_id', $buyer->id)->where('product_id', $product->id)->exists())->toBeTrue();
 });
