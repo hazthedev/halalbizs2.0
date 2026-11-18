@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Support\Articles;
+use App\Livewire\Admin\Support\Articles\Form as ArticlesForm;
 use App\Livewire\Storefront\Help\Article as HelpArticlePage;
 use App\Livewire\Storefront\Help\Index as HelpIndex;
 use App\Models\HelpArticle;
@@ -149,8 +150,7 @@ test('admin creates a help article with translations and a sanitized body', func
     $admin = helpCenterAdmin();
 
     Livewire::actingAs($admin)
-        ->test(Articles::class)
-        ->call('create')
+        ->test(ArticlesForm::class)
         ->set('category', 'payments')
         ->set('title.en', 'COD limits')
         ->set('title.ms', 'Had COD')
@@ -183,8 +183,7 @@ test('admin creates a help article with translations and a sanitized body', func
 
 test('admin article validation requires english title, english body, and a known category', function () {
     Livewire::actingAs(helpCenterAdmin())
-        ->test(Articles::class)
-        ->call('create')
+        ->test(ArticlesForm::class)
         ->set('category', 'nonsense')
         ->set('title.en', '')
         ->set('body.en', '')
@@ -204,8 +203,7 @@ test('admin updates, toggles, and deletes an article', function () {
     ]);
 
     Livewire::actingAs($admin)
-        ->test(Articles::class)
-        ->call('edit', $article->id)
+        ->test(ArticlesForm::class, ['article' => $article->id])
         ->set('title.en', 'New title')
         ->set('category', 'account')
         ->call('save')
@@ -234,13 +232,12 @@ test('clearing the ms translation removes it and en remains the fallback', funct
     ]);
 
     Livewire::actingAs($admin)
-        ->test(Articles::class)
-        ->call('edit', $article->id)
+        ->test(ArticlesForm::class, ['article' => $article->id])
         ->set('title.ms', '')
         ->set('body.ms', '')
         ->call('save')
-        ->assertHasNoErrors()
-        ->call('publishDraft', 'article', $article->id);
+        ->assertHasNoErrors();
+    publishDrafts();
 
     $article->refresh();
     expect($article->getTranslations('title'))->not->toHaveKey('ms')

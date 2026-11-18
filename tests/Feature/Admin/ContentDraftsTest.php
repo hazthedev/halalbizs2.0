@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Content\Pages;
+use App\Livewire\Admin\Content\Pages\Form as PagesForm;
 use App\Models\Banner;
 use App\Models\Page;
 use App\Models\User;
@@ -24,8 +25,7 @@ test('an edit is saved as a draft and shoppers keep seeing the live page', funct
     $page = aboutPage();
 
     Livewire::actingAs(contentEditor())
-        ->test(Pages::class)
-        ->call('edit', $page->id)
+        ->test(PagesForm::class, ['page' => $page->id])
         ->set('body.en', '<p>New words</p>')
         ->call('save')
         ->assertHasNoErrors();
@@ -41,11 +41,10 @@ test('a publisher makes the draft live; it is kept as a version and logged', fun
     $publisher = contentPublisher();
 
     Livewire::actingAs($publisher)
-        ->test(Pages::class)
-        ->call('edit', $page->id)
+        ->test(PagesForm::class, ['page' => $page->id])
         ->set('body.en', '<p>New words</p>')
-        ->call('save')
-        ->call('publishDraft', 'page', $page->id);
+        ->call('save')->assertRedirect(route('admin.content.pages'));
+    Livewire::actingAs($publisher)->test(Pages::class)->call('publishDraft', 'page', $page->id);
 
     expect($page->fresh()->getTranslation('body', 'en'))->toBe('<p>New words</p>')
         ->and($page->fresh()->draft)->toBeNull()
@@ -65,7 +64,7 @@ test('an editor cannot publish, delete, or throw away a draft', function () {
 
     $editor = contentEditor();
 
-    Livewire::actingAs($editor)->test(Pages::class)->call('edit', $page->id)->set('body.en', '<p>New words</p>')->call('save');
+    Livewire::actingAs($editor)->test(PagesForm::class, ['page' => $page->id])->set('body.en', '<p>New words</p>')->call('save');
 
     Livewire::actingAs($editor)->test(Pages::class)->call('publishDraft', 'page', $page->id)->assertForbidden();
     Livewire::actingAs($editor)->test(Pages::class)->call('discardDraft', 'page', $page->id)->assertForbidden();
@@ -77,8 +76,7 @@ test('an editor cannot publish, delete, or throw away a draft', function () {
 
 test('a new page stays hidden until it is published', function () {
     Livewire::actingAs(contentEditor())
-        ->test(Pages::class)
-        ->call('create')
+        ->test(PagesForm::class)
         ->set('slug', 'careers')
         ->set('title.en', 'Careers')
         ->set('body.en', '<p>Join us</p>')
@@ -116,7 +114,7 @@ test('staff see the draft with ?preview=1; shoppers and guests never do', functi
     $page = aboutPage();
     $editor = contentEditor();
 
-    Livewire::actingAs($editor)->test(Pages::class)->call('edit', $page->id)->set('body.en', '<p>New words</p>')->call('save');
+    Livewire::actingAs($editor)->test(PagesForm::class, ['page' => $page->id])->set('body.en', '<p>New words</p>')->call('save');
 
     $this->actingAs($editor)->get('/page/about?preview=1')->assertOk()->assertSee('New words')->assertSee(__('Preview'));
     $this->actingAs($editor)->get('/page/about')->assertSee('Old words');
@@ -197,8 +195,8 @@ test('the pages list marks a pending draft and offers publish only to a publishe
     $page = aboutPage();
     $editor = contentEditor();
 
-    Livewire::actingAs($editor)->test(Pages::class)->call('edit', $page->id)->set('title.en', 'About HalalBizs')->call('save')
-        ->assertSee(__('Draft'))
+    Livewire::actingAs($editor)->test(PagesForm::class, ['page' => $page->id])->set('title.en', 'About HalalBizs')->call('save')->assertRedirect(route('admin.content.pages'));
+    Livewire::actingAs($editor)->test(Pages::class)->assertSee(__('Draft'))
         ->assertSee('About HalalBizs')
         ->assertSee(__('Preview'))
         ->assertDontSeeHtml('publishDraft(')
@@ -224,7 +222,7 @@ test('the API shows drafts only to a staff token with ?preview=1, and lists stay
     Page::create(['slug' => 'aaa-first', 'title' => ['en' => 'Later id, same list'], 'body' => ['en' => '<p>x</p>'], 'is_active' => true]);
     $editor = contentEditor();
 
-    Livewire::actingAs($editor)->test(Pages::class)->call('edit', $page->id)->set('title.en', 'About HalalBizs')->call('save');
+    Livewire::actingAs($editor)->test(PagesForm::class, ['page' => $page->id])->set('title.en', 'About HalalBizs')->call('save');
 
     auth()->guard('web')->logout(); // the Livewire call above signed the editor in on this test's session
     $this->getJson('/api/v1/pages/about?preview=1')->assertJsonPath('data.title', 'About us');

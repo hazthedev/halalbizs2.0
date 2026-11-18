@@ -13,7 +13,7 @@
 use App\Enums\ProductStatus;
 use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
-use App\Livewire\Admin\Content\Pages;
+use App\Livewire\Admin\Content\Pages\Form as PagesForm;
 use App\Livewire\Admin\Support\Tickets as AdminTickets;
 use App\Livewire\Seller\Orders\Detail;
 use App\Livewire\Seller\Products\Form;
@@ -163,8 +163,7 @@ it('does not keep event handlers or javascript: urls on an admin-authored CMS pa
     $admin = makeAdmin(User::factory()->create());
 
     Livewire::actingAs($admin)
-        ->test(Pages::class)
-        ->call('create')
+        ->test(PagesForm::class)
         ->set('slug', 'qa-injection-page')
         ->set('title.en', 'QA Page')
         ->set('body.en', '<p onclick="alert(1)">hello</p><a href="javascript:alert(2)">link</a>')

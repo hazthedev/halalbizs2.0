@@ -4,6 +4,8 @@ use App\Enums\LiveSessionStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\StoreStatus;
 use App\Livewire\Seller\LiveSessions;
+use App\Livewire\Seller\LiveSessions\Detail;
+use App\Livewire\Seller\LiveSessions\Form;
 use App\Livewire\Storefront\Live\Room;
 use App\Models\LiveSession;
 use App\Models\Order;
@@ -142,19 +144,19 @@ test('the seller studio builds a rail, features a product and goes live', functi
     [$seller, $store] = liveStoreSeller();
     $product = Product::factory()->create(['store_id' => $store->id]);
 
-    $component = Livewire::actingAs($seller)
-        ->test(LiveSessions::class)
-        ->call('create')
+    Livewire::actingAs($seller)
+        ->test(Form::class)
         ->set('title', 'Eid Live')
         ->call('save')
-        ->assertHasNoErrors()
-        ->set('addProductId', $product->id)
-        ->call('addProduct');
+        ->assertHasNoErrors();
 
     $session = LiveSession::where('store_id', $store->id)->firstOrFail();
 
-    $component->call('feature', $session->id, $product->id)
-        ->call('goLive', $session->id);
+    $component = Livewire::actingAs($seller)->test(Detail::class, ['session' => $session])
+        ->set('addProductId', $product->id)->call('addProduct');
+
+    $component->call('feature', $session->id, $product->id);
+    Livewire::actingAs($seller)->test(LiveSessions::class)->call('goLive', $session->id);
 
     $session->refresh();
     expect($session->status)->toBe(LiveSessionStatus::Live)

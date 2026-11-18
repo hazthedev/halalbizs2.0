@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Content\Banners;
+use App\Livewire\Admin\Content\Banners\Form as BannersForm;
 use App\Models\Banner;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
@@ -35,8 +36,7 @@ test('an editor saves a banner change with a new picture; the live banner and pi
     $banner = liveBanner();
     $banner->addMedia(UploadedFile::fake()->image('old.jpg', 1500, 500))->toMediaCollection('image');
 
-    Livewire::actingAs(bannerEditor())->test(Banners::class)
-        ->call('edit', $banner->id)
+    Livewire::actingAs(bannerEditor())->test(BannersForm::class, ['banner' => $banner->id])
         ->set('title.en', 'New sale')
         ->set('image', UploadedFile::fake()->image('new.jpg', 1500, 500))
         ->call('save')
@@ -54,12 +54,11 @@ test('a publisher publishes the draft and the new picture goes live', function (
     $banner = liveBanner();
     $banner->addMedia(UploadedFile::fake()->image('old.jpg', 1500, 500))->toMediaCollection('image');
 
-    Livewire::actingAs(bannerPublisher())->test(Banners::class)
-        ->call('edit', $banner->id)
+    Livewire::actingAs(bannerPublisher())->test(BannersForm::class, ['banner' => $banner->id])
         ->set('title.en', 'New sale')
         ->set('image', UploadedFile::fake()->image('new.jpg', 1500, 500))
-        ->call('save')
-        ->call('publishDraft', 'banner', $banner->id);
+        ->call('save')->assertRedirect(route('admin.content.banners'));
+    Livewire::actingAs(bannerPublisher())->test(Banners::class)->call('publishDraft', 'banner', $banner->id);
 
     $banner = $banner->fresh();
     expect($banner->getTranslation('title', 'en'))->toBe('New sale')
@@ -70,9 +69,8 @@ test('a publisher publishes the draft and the new picture goes live', function (
 test('editing a banner with an open draft continues the draft', function () {
     $banner = liveBanner();
 
-    $page = Livewire::actingAs(bannerEditor())->test(Banners::class)
-        ->call('edit', $banner->id)->set('title.en', 'Draft title')->call('save')
-        ->call('edit', $banner->id);
+    Livewire::actingAs(bannerEditor())->test(BannersForm::class, ['banner' => $banner->id])->set('title.en', 'Draft title')->call('save')->assertRedirect(route('admin.content.banners'));
+    $page = Livewire::actingAs(bannerEditor())->test(BannersForm::class, ['banner' => $banner->id]);
 
     expect($page->get('title')['en'])->toBe('Draft title');
 });
@@ -80,8 +78,7 @@ test('editing a banner with an open draft continues the draft', function () {
 test('a new banner is hidden until published', function () {
     Storage::fake('public');
 
-    Livewire::actingAs(bannerEditor())->test(Banners::class)
-        ->call('create')
+    Livewire::actingAs(bannerEditor())->test(BannersForm::class)
         ->set('title.en', 'Fresh')
         ->set('image', UploadedFile::fake()->image('n.jpg', 1500, 500))
         ->call('save')
@@ -129,8 +126,7 @@ test('removing the video is staged, the live video stays until publish', functio
     $banner = liveBanner();
     $banner->addMedia(UploadedFile::fake()->create('v.mp4', 100, 'video/mp4'))->toMediaCollection('video');
 
-    Livewire::actingAs(bannerEditor())->test(Banners::class)
-        ->call('edit', $banner->id)->call('removeVideo');
+    Livewire::actingAs(bannerEditor())->test(BannersForm::class, ['banner' => $banner->id])->call('removeVideo');
 
     expect($banner->fresh()->getFirstMedia('video'))->not->toBeNull();
 
