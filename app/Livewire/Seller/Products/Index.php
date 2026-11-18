@@ -16,7 +16,7 @@ use InvalidArgumentException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
+use App\Livewire\Concerns\WithTable;
 
 /**
  * Seller products index (docs/07 §A3) — store-scoped datagrid with
@@ -25,7 +25,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.seller')]
 class Index extends Component
 {
-    use CurrentStore, WithPagination;
+    use CurrentStore, WithTable;
 
     public const PER_PAGE = 20;
 
@@ -40,32 +40,19 @@ class Index extends Component
     #[Url(as: 'low_stock', except: false)]
     public bool $lowStock = false;
 
-    #[Url(except: '')]
-    public string $search = '';
-
-    /** @var array<int, string> selected product ids (checkbox column) */
-    public array $selected = [];
-
-    public bool $selectPage = false;
-
-    public function updated(string $property): void
+    protected function tableFilters(): array
     {
-        if (in_array($property, ['status', 'category', 'lowStock', 'search'], true)) {
-            $this->resetPage();
-            $this->clearSelection();
-        }
+        return ['status', 'category', 'lowStock'];
     }
 
-    public function updatedPaginators(): void
+    protected function tableSorts(): array
     {
-        $this->clearSelection();
+        return ['product' => 'name->en', 'variants' => 'variants_count', 'sold' => 'sold_count', 'status' => 'status', 'updated' => 'updated_at'];
     }
 
-    public function updatedSelectPage(bool $value): void
+    protected function tableDefaultOrder(): array
     {
-        $this->selected = $value
-            ? $this->results()->pluck('id')->map(fn (int $id) => (string) $id)->all()
-            : [];
+        return ['updated_at' => 'desc'];
     }
 
     public function duplicate(int $productId): void
@@ -196,7 +183,7 @@ class Index extends Component
 
     private function results(): LengthAwarePaginator
     {
-        return $this->query()->paginate(self::PER_PAGE);
+        return $this->query()->paginate($this->tablePageSize());
     }
 
     private function query(): Builder
@@ -239,7 +226,7 @@ class Index extends Component
             });
         }
 
-        return $query->latest('updated_at')->latest('id');
+        return $this->sortTable($query);
     }
 
     private function ownProduct(int $productId): Product
@@ -254,12 +241,6 @@ class Index extends Component
         return Product::query()
             ->where('store_id', $this->currentStore()->id)
             ->whereIn('id', array_map(intval(...), $this->selected));
-    }
-
-    private function clearSelection(): void
-    {
-        $this->selected = [];
-        $this->selectPage = false;
     }
 
     /** @return array<int, string> flattened 3-level tree with depth markers */

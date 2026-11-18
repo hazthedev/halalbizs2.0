@@ -27,6 +27,24 @@ function productIndexOwnProduct(User $seller, array $attributes = []): Product
     return Product::factory()->create(['store_id' => $seller->store->id, ...$attributes]);
 }
 
+test('product table sorts both ways and rejects an unknown sort column', function () {
+    $seller = productIndexSeller();
+    productIndexOwnProduct($seller, ['name' => ['en' => 'Amber Honey'], 'sold_count' => 3]);
+    productIndexOwnProduct($seller, ['name' => ['en' => 'Zest Tea'], 'sold_count' => 8]);
+
+    $table = Livewire::actingAs($seller)->test(Index::class)
+        ->call('sortBy', 'sold')
+        ->assertSeeInOrder(['Amber Honey', 'Zest Tea'])
+        ->assertSeeHtml('aria-sort="ascending"')
+        ->call('sortBy', 'sold')
+        ->assertSeeInOrder(['Zest Tea', 'Amber Honey'])
+        ->assertSeeHtml('aria-sort="descending"');
+
+    $table->call('sortBy', 'not_a_column')->assertSet('sort', 'sold');
+    $table->set('sort', 'not_a_column')->set('direction', 'drop table products')
+        ->assertSee('Amber Honey')->assertSee('Zest Tea');
+});
+
 test('index lists only the current store\'s products', function () {
     $seller = productIndexSeller();
 
@@ -192,4 +210,33 @@ test('bulk delist moves selected live products to delisted', function () {
 
     expect($live->refresh()->status)->toBe(ProductStatus::Delisted)
         ->and($draft->refresh()->status)->toBe(ProductStatus::Draft);
+});
+
+test('product table combines filters shows ranges and clears selection across pages', function () {
+    $seller = productIndexSeller();
+    $products = Product::factory()->count(21)->create(['store_id' => $seller->store->id, 'status' => ProductStatus::Draft]);
+    $match = $products->first();
+    $match->update(['name' => ['en' => 'Table Honey']]);
+    $match->variants()->update(['stock' => 1]);
+    $other = productIndexOwnProduct($seller, ['name' => ['en' => 'Table Soap'], 'status' => ProductStatus::Live]);
+    $other->variants()->update(['stock' => 1]);
+
+    $table = Livewire::actingAs($seller)->test(Index::class)->assertSee('Showing 1 to 20 of 22')
+        ->set('selectPage', true);
+    expect($table->get('selected'))->toHaveCount(20);
+    $table->call('gotoPage', 2)->assertSee('Showing 21 to 22 of 22')->assertSet('selected', [])
+        ->set('status', 'draft')->set('lowStock', true)->set('search', 'Table')
+        ->assertSee('Table Honey')->assertDontSee('Table Soap')->assertSee('Showing 1 to 1 of 1')
+        ->set('selected', [(string) $match->id])->call('sortBy', 'updated')->assertSet('selected', [])
+        ->set('search', 'no match')->assertSee('Showing 0 to 0 of 0');
+    $table->set('perPage', -1)->assertDontSee('SQLSTATE');
+});
+
+test('product table delists two selected live rows', function () {
+    $seller = productIndexSeller();
+    $products = Product::factory()->count(2)->create(['store_id' => $seller->store->id, 'status' => ProductStatus::Live]);
+    Livewire::actingAs($seller)->test(Index::class)
+        ->set('selected', $products->pluck('id')->map(fn ($id) => (string) $id)->all())
+        ->call('bulkDelist')->assertSet('selected', []);
+    expect($products->each->refresh()->pluck('status')->all())->toBe([ProductStatus::Delisted, ProductStatus::Delisted]);
 });

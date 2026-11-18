@@ -332,3 +332,32 @@ test('the payments grid separates a refund the gateway made from one a human sti
 
     expect(substr_count($component->html(), __('Needs portal refund')))->toBe(2);
 });
+
+test('admin order table sorts safely and combines filters with search', function () {
+    $admin = oversightAdmin();
+    $small = oversightSubOrder(orderAttributes: ['payment_method' => PaymentMethod::Cod]);
+    $large = oversightSubOrder(orderAttributes: ['payment_method' => PaymentMethod::Cod]);
+    $small->update(['total_sen' => 1000]);
+    $large->update(['total_sen' => 9000]);
+
+    Livewire::actingAs($admin)->test(Index::class)
+        ->call('sortBy', 'total')->assertSeeInOrder([$small->sub_order_no, $large->sub_order_no])
+        ->assertSeeHtml('aria-sort="ascending"')
+        ->call('sortBy', 'total')->assertSeeInOrder([$large->sub_order_no, $small->sub_order_no])
+        ->assertSeeHtml('aria-sort="descending"')
+        ->call('sortBy', 'unknown')->assertSet('sort', 'total')
+        ->set('sort', 'unknown')->set('direction', 'invalid')->assertSee($small->sub_order_no)
+        ->set('search', $large->order->order_no)->set('status', 'confirmed')->set('store', (string) $large->store_id)->set('method', 'cod')
+        ->assertSee($large->sub_order_no)->assertDontSee($small->sub_order_no)->assertSee('Showing 1 to 1 of 1')
+        ->set('search', 'no match')->assertSee('Showing 0 to 0 of 0');
+});
+
+test('admin order table pages and resets the page when a filter changes', function () {
+    $admin = oversightAdmin();
+    $store = Store::factory()->approved()->create();
+    SubOrder::factory()->count(21)->create(['store_id' => $store->id]);
+    Livewire::actingAs($admin)->test(Index::class)->assertSee('Showing 1 to 20 of 21')
+        ->call('gotoPage', 2)->assertSee('Showing 21 to 21 of 21')
+        ->set('store', (string) $store->id)->assertSee('Showing 1 to 20 of 21')
+        ->set('perPage', 50)->assertSee('Showing 1 to 21 of 21');
+});

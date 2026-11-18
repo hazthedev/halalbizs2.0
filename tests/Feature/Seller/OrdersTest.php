@@ -266,3 +266,48 @@ test('packing slip downloads for the owner store and 403s otherwise', function (
         ->get(route('seller.orders.packing-slip', $subOrder))
         ->assertForbidden();
 });
+
+test('seller order table sorts safely and combines search payment and date filters', function () {
+    $seller = ordersSeller();
+    $small = ordersSubOrderFor($seller, attributes: ['total_sen' => 1000]);
+    $large = ordersSubOrderFor($seller, attributes: ['total_sen' => 9000]);
+    $small->forceFill(['created_at' => '2026-11-17 04:00:00'])->save();
+    $large->forceFill(['created_at' => '2026-11-18 04:00:00'])->save();
+    $other = ordersSubOrderFor($seller);
+    $other->order->update(['payment_method' => PaymentMethod::Ipay88]);
+    $small->order->user->update(['name' => 'Table Buyer']);
+    $large->order->user->update(['name' => 'Table Buyer']);
+
+    $table = Livewire::actingAs($seller)->test(Index::class)
+        ->call('sortBy', 'total')->assertSeeInOrder([$small->sub_order_no, $large->sub_order_no])
+        ->assertSeeHtml('aria-sort="ascending"')
+        ->call('sortBy', 'total')->assertSeeInOrder([$large->sub_order_no, $small->sub_order_no])
+        ->assertSeeHtml('aria-sort="descending"')
+        ->call('sortBy', 'unknown')->assertSet('sort', 'total')
+        ->set('sort', 'unknown')->set('direction', 'invalid')->assertSee($small->sub_order_no)
+        ->set('search', 'Table Buyer')->set('method', 'cod')->set('dateFrom', '2026-11-18')->set('dateTo', '2026-11-18')
+        ->assertSee($large->sub_order_no)->assertDontSee($small->sub_order_no)->assertDontSee($other->sub_order_no)
+        ->assertSee('Showing 1 to 1 of 1');
+
+    $table->set('selected', [(string) $large->id])->set('dateFrom', '2026-11-17')->assertSet('selected', []);
+});
+
+test('seller order table pages selects and packs two own orders through the status service', function () {
+    $seller = ordersSeller();
+    $orders = SubOrder::factory()->count(16)->create(['store_id' => $seller->store->id]);
+    $foreign = SubOrder::factory()->create();
+
+    $table = Livewire::actingAs($seller)->test(Index::class)
+        ->assertSee('Showing 1 to 15 of 16')
+        ->set('selectPage', true);
+    expect($table->get('selected'))->toHaveCount(15);
+    $table->call('gotoPage', 2)->assertSee('Showing 16 to 16 of 16')->assertSet('selected', [])
+        ->set('perPage', 50)->assertSee('Showing 1 to 16 of 16');
+    $ids = $orders->take(2)->pluck('id')->map(fn ($id) => (string) $id)->all();
+    $table->set('selected', [...$ids, (string) $foreign->id])->call('bulkConfirmAndPack')->assertSet('selected', []);
+    foreach ($orders->take(2) as $order) {
+        expect($order->refresh()->status)->toBe(SubOrderStatus::Processing);
+        $this->assertDatabaseHas('order_status_histories', ['sub_order_id' => $order->id, 'to_status' => 'processing', 'actor_type' => 'seller']);
+    }
+    expect($foreign->refresh()->status)->toBe(SubOrderStatus::Confirmed);
+});
