@@ -1,4 +1,4 @@
-<div wire:poll.15s class="mx-auto w-full max-w-7xl px-4 py-6">
+<div wire:poll.15s.visible class="mx-auto w-full max-w-7xl px-4 py-6">
     @php($featured = $session->featuredProduct)
     @php($isLive = $session->status === \App\Enums\LiveSessionStatus::Live)
     @php($purchasingEnabled = app(\App\Settings\GeneralSettings::class)->purchasing_enabled)

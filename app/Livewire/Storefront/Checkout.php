@@ -245,7 +245,9 @@ class Checkout extends Component
 
     public function render(): View
     {
-        $address = $this->selectedAddress();
+        // One addresses query feeds both the picker and the selected address.
+        $addresses = auth()->user()->addresses()->orderByDesc('is_default')->orderByDesc('id')->get();
+        $address = $this->addressId === null ? null : $addresses->firstWhere('id', $this->addressId);
 
         $quote = app(CheckoutService::class)->quote(
             auth()->user(),
@@ -273,7 +275,7 @@ class Checkout extends Component
         }
 
         return view('livewire.storefront.checkout', [
-            'addresses' => auth()->user()->addresses()->orderByDesc('is_default')->orderByDesc('id')->get(),
+            'addresses' => $addresses,
             'address' => $address,
             'groups' => $quote->groups,
             'subtotalSen' => $quote->subtotalSen,
