@@ -4,10 +4,9 @@
             <h1 class="font-display text-2xl font-medium">{{ __('Group buys') }}</h1>
             <p class="mt-1 text-[13px] text-ink-soft">{{ __('Offer a lower price that unlocks when shoppers team up.') }}</p>
         </div>
-        <button type="button" wire:click="create"
-                class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
+        <x-ui.button icon="plus" wire:click="create" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
             {{ __('Create deal') }}
-        </button>
+        </x-ui.button>
     </div>
 
     @if ($showForm)

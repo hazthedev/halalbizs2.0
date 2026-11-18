@@ -95,7 +95,7 @@
         {{-- ===== Ticket list ===== --}}
         <x-ui.section-heading as="h1" :title="__('Support tickets')">
             <x-slot:actions>
-                <x-ui.button wire:click="startTicket">{{ __('New ticket') }}</x-ui.button>
+                <x-ui.button icon="plus" wire:click="startTicket">{{ __('New ticket') }}</x-ui.button>
             </x-slot:actions>
         </x-ui.section-heading>
 

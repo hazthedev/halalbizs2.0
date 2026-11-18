@@ -2,6 +2,7 @@
     'variant' => 'primary',
     'type' => 'button',
     'href' => null,
+    'icon' => null,
 ])
 
 @php
@@ -26,7 +27,7 @@ $classes = match ($variant) {
 @endphp
 
 @if ($href)
-    <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }} wire:navigate>{{ $slot }}</a>
+    <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }} wire:navigate>@if ($icon === 'plus')<x-ui.icon.plus />@endif{{ $slot }}</a>
 @else
-    <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>{{ $slot }}</button>
+    <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>@if ($icon === 'plus')<x-ui.icon.plus />@endif{{ $slot }}</button>
 @endif
