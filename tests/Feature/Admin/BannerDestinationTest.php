@@ -1,7 +1,7 @@
 <?php
 
 use App\Enums\StoreStatus;
-use App\Livewire\Admin\Content\Banners;
+use App\Livewire\Admin\Content\Banners\Form as BannersForm;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Page;
@@ -18,7 +18,7 @@ use Livewire\Livewire;
 // CMS item 3: an admin picks where a banner goes from a list; every choice
 // opens on the web AND in the app.
 
-function bannerForm(): Testable
+function bannerForm(?Banner $banner = null): Testable
 {
     test()->seed(RoleSeeder::class);
     Storage::fake('public');
@@ -27,8 +27,7 @@ function bannerForm(): Testable
     makeAdmin($admin);
 
     return Livewire::actingAs($admin)
-        ->test(Banners::class)
-        ->call('create')
+        ->test(BannersForm::class, ['banner' => $banner])
         ->set('title.en', 'Raya Sale')
         ->set('image', UploadedFile::fake()->image('banner.jpg', 1200, 400));
 }
@@ -48,8 +47,8 @@ test('a picked product becomes the banner link on web and app', function () {
 
     expect($form->instance()->destinationMatches())->toBe([$product->slug => 'Ajwa Dates 500g']);
 
-    $form->call('chooseDestination', $product->slug)->call('save')->assertHasNoErrors()
-        ->call('publishDraft', 'banner', Banner::first()->id);
+    $form->call('chooseDestination', $product->slug)->call('save')->assertHasNoErrors();
+    publishDrafts();
 
     expect(Banner::first()->link_url)->toBe('/p/'.$product->slug)
         ->and(savedAppUrl())->toBe('/p/'.$product->slug);
@@ -68,8 +67,8 @@ test('a product that is not live or does not exist is refused', function () {
 test('store, category and page destinations save their own links', function (string $type, Closure $make, string $prefix) {
     $slug = $make();
 
-    bannerForm()->set('destination', $type)->set('destinationSlug', $slug)->call('save')->assertHasNoErrors()
-        ->call('publishDraft', 'banner', Banner::first()->id);
+    bannerForm()->set('destination', $type)->set('destinationSlug', $slug)->call('save')->assertHasNoErrors();
+    publishDrafts();
 
     expect(Banner::first()->link_url)->toBe($prefix.$slug)
         ->and(savedAppUrl())->toBe($prefix.$slug);
@@ -80,8 +79,8 @@ test('store, category and page destinations save their own links', function (str
 ]);
 
 test('flash sale, help and search destinations need no record', function (string $type, string $query, string $link) {
-    bannerForm()->set('destination', $type)->set('destinationQuery', $query)->call('save')->assertHasNoErrors()
-        ->call('publishDraft', 'banner', Banner::first()->id);
+    bannerForm()->set('destination', $type)->set('destinationQuery', $query)->call('save')->assertHasNoErrors();
+    publishDrafts();
 
     expect(Banner::first()->link_url)->toBe($link)
         ->and(savedAppUrl())->toBe($link);
@@ -116,8 +115,7 @@ test('editing reads the saved link back into the picker', function (string $link
     Category::factory()->create(['slug' => 'snacks', 'is_active' => true]);
     $banner = Banner::create(['title' => ['en' => 'B'], 'link_url' => $link, 'position' => 1, 'is_active' => true]);
 
-    bannerForm()
-        ->call('edit', $banner->id)
+    bannerForm($banner)
         ->assertSet('destination', $type)
         ->assertSet('destinationSlug', $slug)
         ->assertSet('destinationQuery', $query)
@@ -134,7 +132,7 @@ test('editing reads the saved link back into the picker', function (string $link
 test('a banner with no link opens the picker on No link', function () {
     $banner = Banner::create(['title' => ['en' => 'B'], 'link_url' => null, 'position' => 1, 'is_active' => true]);
 
-    bannerForm()->call('edit', $banner->id)->assertSet('destination', 'none');
+    bannerForm($banner)->assertSet('destination', 'none');
 });
 
 test('AppLinks opens every banner destination in the app', function (?string $web, ?string $app) {

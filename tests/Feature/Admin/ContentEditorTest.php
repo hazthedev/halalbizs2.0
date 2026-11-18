@@ -2,7 +2,9 @@
 
 use App\Enums\HelpCategory;
 use App\Livewire\Admin\Content\Pages;
+use App\Livewire\Admin\Content\Pages\Form as PagesForm;
 use App\Livewire\Admin\Support\Articles;
+use App\Livewire\Admin\Support\Articles\Form as ArticlesForm;
 use App\Models\HelpArticle;
 use App\Models\Page;
 use App\Models\User;
@@ -25,8 +27,7 @@ function editorAdmin(): User
 test('the page form offers an editor per language instead of an HTML box', function () {
     $page = Page::create(['slug' => 'about', 'title' => ['en' => 'About'], 'body' => ['en' => '<p>Hi</p>'], 'is_active' => true]);
 
-    Livewire::actingAs(editorAdmin())->test(Pages::class)
-        ->call('edit', $page->id)
+    Livewire::actingAs(editorAdmin())->test(PagesForm::class, ['page' => $page->id])
         ->assertSeeHtml('data-rich-editor="body.en"')
         ->assertSeeHtml('data-rich-editor="body.ms"')
         ->assertSeeHtml('data-rich-editor="body.vi"')
@@ -39,8 +40,7 @@ test('the page form offers an editor per language instead of an HTML box', funct
 test('the help article form offers the same editor', function () {
     $article = HelpArticle::create(['category' => HelpCategory::Buying, 'title' => ['en' => 'Track'], 'body' => ['en' => '<p>x</p>'], 'position' => 1, 'is_active' => true]);
 
-    Livewire::actingAs(editorAdmin())->test(Articles::class)
-        ->call('edit', $article->id)
+    Livewire::actingAs(editorAdmin())->test(ArticlesForm::class, ['article' => $article->id])
         ->assertSeeHtml('data-rich-editor="body.en"')
         ->assertSeeHtml('data-rich-editor="body.ms"')
         ->assertSeeHtml('data-rich-editor="body.vi"')
@@ -57,8 +57,7 @@ test('what the editor produces is kept, and anything unsafe is still removed', f
         .'<ul><li><p>One</p></li></ul><h3>Small</h3><ol><li><p>First</p></li></ol>'
         .'<p><a href="javascript:alert(1)">bad</a><script>alert(1)</script></p>';
 
-    Livewire::actingAs(editorAdmin())->test(Pages::class)
-        ->call('edit', $page->id)
+    Livewire::actingAs(editorAdmin())->test(PagesForm::class, ['page' => $page->id])
         ->set('body.en', $fromEditor)
         ->call('save')
         ->assertHasNoErrors();

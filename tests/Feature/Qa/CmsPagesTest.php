@@ -13,7 +13,9 @@
  */
 
 use App\Livewire\Admin\Content\Pages;
+use App\Livewire\Admin\Content\Pages\Form as PagesForm;
 use App\Livewire\Admin\Support\Articles;
+use App\Livewire\Admin\Support\Articles\Form as ArticlesForm;
 use App\Models\HelpArticle;
 use App\Models\Page;
 use App\Models\User;
@@ -48,8 +50,7 @@ function cmsPage(string $slug = 'qa-page', bool $active = true): Page
 function cmsSaveAndFetch(Page $page, string $body): string
 {
     Livewire::actingAs(cmsAdmin())
-        ->test(Pages::class)
-        ->call('edit', $page->id)
+        ->test(PagesForm::class, ['page' => $page->id])
         ->set('body.en', $body)
         ->call('save')
         ->assertHasNoErrors();
@@ -75,8 +76,7 @@ it('renders optional locale bodies and falls back to English when one is cleared
     $page = cmsPage();
 
     Livewire::actingAs(cmsAdmin())
-        ->test(Pages::class)
-        ->call('edit', $page->id)
+        ->test(PagesForm::class, ['page' => $page->id])
         ->set('body.en', '<p>ENGLISH-BODY</p>')
         ->set('body.ms', '<p>BADAN-MELAYU</p>')
         ->set('body.vi', '<p>NỘI-DUNG-TIẾNG-VIỆT</p>')
@@ -93,8 +93,7 @@ it('renders optional locale bodies and falls back to English when one is cleared
 
     // Clearing the ms body must fall back, not render an empty page.
     Livewire::actingAs(cmsAdmin())
-        ->test(Pages::class)
-        ->call('edit', $page->id)
+        ->test(PagesForm::class, ['page' => $page->id])
         ->set('body.ms', '')
         ->set('body.vi', '')
         ->call('save')
@@ -136,8 +135,7 @@ it('keeps a system page slug locked even when the form posts a new one', functio
     $page = cmsPage('terms');
 
     Livewire::actingAs(cmsAdmin())
-        ->test(Pages::class)
-        ->call('edit', $page->id)
+        ->test(PagesForm::class, ['page' => $page->id])
         ->set('slug', 'hijacked')
         ->set('body.en', '<p>still terms</p>')
         ->call('save')
@@ -161,8 +159,7 @@ it('moves a custom page when its slug changes', function () {
     $page = cmsPage('old-slug');
 
     Livewire::actingAs(cmsAdmin())
-        ->test(Pages::class)
-        ->call('edit', $page->id)
+        ->test(PagesForm::class, ['page' => $page->id])
         ->set('slug', 'new-slug')
         ->call('save')
         ->assertHasNoErrors();
@@ -310,8 +307,7 @@ it('rejects a body past the column limit instead of truncating it', function () 
     $page = cmsPage();
 
     Livewire::actingAs(cmsAdmin())
-        ->test(Pages::class)
-        ->call('edit', $page->id)
+        ->test(PagesForm::class, ['page' => $page->id])
         ->set('body.en', str_repeat('a', 65001))
         ->call('save')
         ->assertHasErrors(['body.en']);
@@ -337,8 +333,7 @@ it('publishes an edited help article to the public page', function () {
     $article = cmsArticle();
 
     Livewire::actingAs(cmsAdmin())
-        ->test(Articles::class)
-        ->call('edit', $article->id)
+        ->test(ArticlesForm::class, ['article' => $article->id])
         ->set('body.en', '<h2>New</h2><p>ARTICLE-MARKER-7</p>')
         ->call('save')
         ->assertHasNoErrors();
@@ -367,8 +362,7 @@ it('does not lose a help article body to broken markup either', function () {
     $article = cmsArticle();
 
     Livewire::actingAs(cmsAdmin())
-        ->test(Articles::class)
-        ->call('edit', $article->id)
+        ->test(ArticlesForm::class, ['article' => $article->id])
         ->set('body.en', '</div><p>ARTICLE-KEEP-ME</p>')
         ->call('save')
         ->assertHasNoErrors();

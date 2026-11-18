@@ -59,6 +59,15 @@ a deliberate choice, not a platform limitation: the host does carry Node
 (`/opt/alt/alt-nodejs*`), it's just not wired into the deploy PATH yet
 (`deploy.sh`, top-of-file comments).
 
+### Admin form pages
+
+Platform vouchers, banners, pages and help articles have separate `/create` and
+`/{record}/edit` pages under their existing list paths and permission gates.
+Save and Cancel return to the list. Content saves still stage drafts; publish,
+discard, delete, toggles and ordering stay on the list. All fields, uploads,
+translations, sanitization and voucher payloads keep their existing behavior.
+Coverage: `FormPagesTest` and `FormPagePayloadTest`, plus the existing content suites.
+
 ## Docs
 
 - `CLAUDE.md` — stack, architecture conventions, and the hard rules (money in

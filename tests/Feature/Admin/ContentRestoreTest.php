@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Content\History;
 use App\Livewire\Admin\Content\Pages;
+use App\Livewire\Admin\Content\Pages\Form as PagesForm;
 use App\Models\Banner;
 use App\Models\ContentVersion;
 use App\Models\Page;
@@ -17,9 +18,8 @@ beforeEach(fn () => $this->seed(RoleSeeder::class));
 /** Publish a new body on a page through the real admin screen. */
 function publishBody(Page $page, User $by, string $body): void
 {
-    Livewire::actingAs($by)->test(Pages::class)
-        ->call('edit', $page->id)->set('body.en', $body)->call('save')
-        ->call('publishDraft', 'page', $page->id);
+    Livewire::actingAs($by)->test(PagesForm::class, ['page' => $page->id])->set('body.en', $body)->call('save')->assertRedirect(route('admin.content.pages'));
+    Livewire::actingAs($by)->test(Pages::class)->call('publishDraft', 'page', $page->id);
 }
 
 function historyPage(): Page
