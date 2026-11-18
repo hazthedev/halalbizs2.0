@@ -34,7 +34,7 @@ class Articles extends Component
     public function render()
     {
         return view('livewire.admin.support.articles', [
-            'articles' => HelpArticle::with('draft')->get()
+            'articles' => HelpArticle::with('draft.media')->get()
                 ->map(fn (HelpArticle $article) => app(ContentDrafts::class)->preview($article))
                 ->sortBy(fn (HelpArticle $article) => [$article->category->value, $article->position, $article->id])
                 ->values(),

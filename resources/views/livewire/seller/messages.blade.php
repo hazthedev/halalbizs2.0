@@ -61,7 +61,7 @@
 
                 {{-- Messages (polls only while this pane is open; marks incoming as read) --}}
                 <div class="flex-1 space-y-3 overflow-y-auto bg-paper px-4 py-4"
-                     wire:poll.5s="refreshThread"
+                     wire:poll.5s.visible="refreshThread"
                      x-data
                      x-init="$el.scrollTop = $el.scrollHeight;
                              new MutationObserver(() => { $el.scrollTop = $el.scrollHeight }).observe($el, { childList: true, subtree: true })">

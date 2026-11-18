@@ -8,7 +8,6 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\StoreLedgerEntry;
-use App\Models\SubOrder;
 use App\Services\SellerDashboardService;
 use App\Services\Whip\WhipDirectory;
 use App\Support\DisplayTime;
@@ -163,6 +162,20 @@ class Dashboard extends Component
     }
 
     /**
+     * Chart payloads built once per request: the event dispatch and render()
+     * share them. Keyed by period so a period change inside one request cannot
+     * serve the old period's payload.
+     *
+     * @var array<string, array>
+     */
+    private array $payloads = [];
+
+    private function memo(string $chart, callable $build): array
+    {
+        return $this->payloads[$chart.$this->period] ??= $build();
+    }
+
+    /**
      * CHART 1 — revenue over time. Daily Σ total_sen for revenue-status
      * sub-orders of THIS store, bucketed by created_at across the period.
      * Money stays integer sen end to end; ApexCharts receives plain ints.
@@ -171,15 +184,22 @@ class Dashboard extends Component
      */
     private function revenuePayload(): array
     {
+        return $this->memo('revenue', fn () => $this->buildRevenuePayload());
+    }
+
+    private function buildRevenuePayload(): array
+    {
         $store = $this->currentStore();
         $days = $this->dayKeys();
 
         $byDay = $store->subOrders()
             ->whereIn('status', self::REVENUE_STATUSES)
             ->where('created_at', '>=', $this->periodStart())
-            ->get(['created_at', 'total_sen'])
-            ->groupBy(fn (SubOrder $subOrder) => $subOrder->created_at->display()->toDateString())
-            ->map(fn (Collection $rows) => (int) $rows->sum('total_sen'));
+            ->toBase()
+            ->selectRaw(DisplayTime::dayBucketSql('created_at').' as day, SUM(total_sen) as total')
+            ->groupBy('day')
+            ->pluck('total', 'day')
+            ->map(fn ($total) => (int) $total);
 
         // A period with cancelled orders still has a meaningful flat zero line.
         $hasOrders = $store->subOrders()->where('created_at', '>=', $this->periodStart())->exists();
@@ -209,13 +229,19 @@ class Dashboard extends Component
      */
     private function statusPayload(): array
     {
+        return $this->memo('status', fn () => $this->buildStatusPayload());
+    }
+
+    private function buildStatusPayload(): array
+    {
         $store = $this->currentStore();
 
         $counts = $store->subOrders()
             ->where('created_at', '>=', $this->periodStart())
-            ->get(['status'])
-            ->groupBy(fn (SubOrder $subOrder) => $subOrder->status->value)
-            ->map(fn (Collection $rows) => $rows->count());
+            ->toBase()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
         // Only show statuses that actually occur, in enum order.
         $present = collect(SubOrderStatus::cases())
@@ -259,6 +285,11 @@ class Dashboard extends Component
      * @return array{type: string, series: array<int, mixed>, options: array<string, mixed>}
      */
     private function topProductsPayload(): array
+    {
+        return $this->memo('top', fn () => $this->buildTopProductsPayload());
+    }
+
+    private function buildTopProductsPayload(): array
     {
         $store = $this->currentStore();
 

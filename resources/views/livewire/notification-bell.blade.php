@@ -6,7 +6,7 @@
 @php
     $onDark = $context !== 'storefront';
 @endphp
-<div class="relative" x-data="{ open: false }" x-on:keydown.escape.window="open = false" wire:poll.60s>
+<div class="relative" x-data="{ open: false }" x-on:keydown.escape.window="open = false" wire:poll.60s.visible="tick">
     <button type="button"
             x-on:click="open = !open"
             x-bind:aria-expanded="open ? 'true' : 'false'"

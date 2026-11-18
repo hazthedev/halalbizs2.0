@@ -36,6 +36,18 @@ final class DisplayTime
         return Carbon::now(self::zone());
     }
 
+    /**
+     * SQL that turns a stored UTC column into its display-zone calendar date,
+     * so a GROUP BY matches ->display()->toDateString() without loading rows.
+     * $column is a trusted constant from our own code, never request input.
+     * ponytail: shifts by the zone's current fixed offset; a zone with DST
+     * would need CONVERT_TZ (Asia/Kuala_Lumpur has none).
+     */
+    public static function dayBucketSql(string $column): string
+    {
+        return 'DATE(DATE_ADD('.$column.', INTERVAL '.(int) self::now()->utcOffset().' MINUTE))';
+    }
+
     /** Today's Malaysia calendar date as midnight in app.timezone, so it compares with `date` casts. */
     public static function today(): Carbon
     {

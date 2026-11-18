@@ -26,6 +26,7 @@ use App\Models\User;
 use App\Support\DisplayTime;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Layout;
@@ -48,6 +49,9 @@ class Dashboard extends Component
     public const TOP_STORES = 5;
 
     public const TOP_CATEGORIES = 5;
+
+    /** Seconds the all-time dashboard blocks are reused. */
+    public const ALL_TIME_TTL = 180;
 
     /** Status → donut colour (docs/03 §6 semantic palette). */
     private const STATUS_COLORS = [
@@ -140,14 +144,19 @@ class Dashboard extends Component
             ? User::query()->where('created_at', '>=', DisplayTime::dayStart())->count()
             : 0;
 
-        $topStores = SubOrder::query()
+        // Ranking is all-time (cached as plain rows); only the 5 store names are read live.
+        $topRows = $canSeeFinance ? $this->allTime('top-stores', fn () => SubOrder::query()
             ->where('status', SubOrderStatus::Completed)
+            ->toBase()
             ->selectRaw('store_id, sum(total_sen) as gmv_sen, count(*) as completed_count')
             ->groupBy('store_id')
             ->orderByDesc('gmv_sen')
             ->limit(self::TOP_STORES)
-            ->with('store')
-            ->get();
+            ->get()
+            ->map(fn ($row) => ['store_id' => (int) $row->store_id, 'gmv_sen' => (int) $row->gmv_sen, 'completed_count' => (int) $row->completed_count])
+            ->all()) : [];
+        $stores = Store::query()->whereIn('id', array_column($topRows, 'store_id'))->get()->keyBy('id');
+        $topStores = collect($topRows)->map(fn (array $row) => (object) ($row + ['store' => $stores->get($row['store_id'])]));
 
         // Take-rate = commission revenue as a share of completed GMV (M1.5).
         $completedGmvSen = (int) SubOrder::query()
@@ -173,7 +182,7 @@ class Dashboard extends Component
                 ? $this->categoriesChartPayload()
                 : ['type' => 'bar', 'series' => [], 'labels' => []],
             'buyersChart' => $this->buyersChartPayload(),
-            'topStores' => $canSeeFinance ? $topStores : collect(),
+            'topStores' => $topStores,
             'm2' => $this->m2Metrics(),
         ])->title(__('Dashboard'));
     }
@@ -198,14 +207,17 @@ class Dashboard extends Component
     private function m2Metrics(): array
     {
         $user = auth()->user();
-        $gated = fn (string $permission, callable $count): int => ($user?->can($permission) ?? false) ? $count() : 0;
+        // Lifetime snapshots: each count is reused for a few minutes.
+        $gated = fn (string $name, string $permission, callable $count): int => ($user?->can($permission) ?? false)
+            ? (int) $this->allTime('m2.'.$name, $count)
+            : 0;
 
         return [
-            'coin_circulation' => $gated('finance.manage', fn () => (int) CoinWallet::sum('balance')),
-            'active_subscriptions' => $gated('orders.manage', fn () => Subscription::where('status', SubscriptionStatus::Active)->count()),
-            'affiliate_referrals' => $gated('finance.manage', fn () => AffiliateReferral::count()),
-            'live_now' => $gated('cms.manage', fn () => LiveSession::where('status', LiveSessionStatus::Live)->count()),
-            'group_unlock_rate_pct' => $gated('orders.manage', function (): int {
+            'coin_circulation' => $gated('coin_circulation', 'finance.manage', fn () => (int) CoinWallet::sum('balance')),
+            'active_subscriptions' => $gated('active_subscriptions', 'orders.manage', fn () => Subscription::where('status', SubscriptionStatus::Active)->count()),
+            'affiliate_referrals' => $gated('affiliate_referrals', 'finance.manage', fn () => AffiliateReferral::count()),
+            'live_now' => $gated('live_now', 'cms.manage', fn () => LiveSession::where('status', LiveSessionStatus::Live)->count()),
+            'group_unlock_rate_pct' => $gated('group_unlock_rate_pct', 'orders.manage', function (): int {
                 $totalTeams = GroupBuyTeam::count();
 
                 return $totalTeams > 0
@@ -213,6 +225,28 @@ class Dashboard extends Component
                     : 0;
             }),
         ];
+    }
+
+    /**
+     * Chart payloads built once per request (dispatch + render share them),
+     * keyed by period so a period change cannot serve the old one.
+     *
+     * @var array<string, array>
+     */
+    private array $payloads = [];
+
+    private function memo(string $chart, callable $build): array
+    {
+        return $this->payloads[$chart.$this->period] ??= $build();
+    }
+
+    /**
+     * All-time blocks ignore the period, so a period click must not recompute
+     * them: kept a few minutes as plain arrays/scalars (never models).
+     */
+    private function allTime(string $key, callable $build): mixed
+    {
+        return Cache::remember('admin.dashboard.'.$key.'.'.app()->getLocale(), self::ALL_TIME_TTL, $build);
     }
 
     /**
@@ -267,21 +301,28 @@ class Dashboard extends Component
     }
 
     /**
-     * CHART 1 — daily paid GMV over the period (emerald = money). Grouped in PHP
-     * so it stays portable across SQLite/MySQL; amounts are integer sen.
+     * CHART 1 — daily paid GMV over the period (emerald = money). Grouped per display-zone day in SQL;
+     * amounts are integer sen.
      *
      * @return array{type: string, series: array, labels: array, options: array}
      */
     private function gmvChartPayload(): array
+    {
+        return $this->memo('gmv', fn () => $this->buildGmvChartPayload());
+    }
+
+    private function buildGmvChartPayload(): array
     {
         $days = $this->dayRange();
 
         $byDay = Order::query()
             ->where('payment_status', PaymentStatus::Paid)
             ->where('paid_at', '>=', $this->periodStart())
-            ->get(['paid_at', 'grand_total_sen'])
-            ->groupBy(fn (Order $order) => $order->paid_at->display()->toDateString())
-            ->map(fn ($orders) => (int) $orders->sum('grand_total_sen'));
+            ->toBase()
+            ->selectRaw(DisplayTime::dayBucketSql('paid_at').' as day, SUM(grand_total_sen) as total')
+            ->groupBy('day')
+            ->pluck('total', 'day')
+            ->map(fn ($total) => (int) $total);
 
         $series = $days->map(fn (string $day) => (int) ($byDay[$day] ?? 0))->values();
 
@@ -309,6 +350,11 @@ class Dashboard extends Component
      * @return array{type: string, series: array, labels: array, options: array}
      */
     private function statusChartPayload(): array
+    {
+        return $this->allTime('status', fn () => $this->buildStatusChartPayload());
+    }
+
+    private function buildStatusChartPayload(): array
     {
         $counts = SubOrder::query()
             ->selectRaw('status, count(*) as aggregate')
@@ -369,6 +415,11 @@ class Dashboard extends Component
      */
     private function categoriesChartPayload(): array
     {
+        return $this->allTime('categories', fn () => $this->buildCategoriesChartPayload());
+    }
+
+    private function buildCategoriesChartPayload(): array
+    {
         $rows = DB::table('order_items')
             ->join('sub_orders', 'sub_orders.id', '=', 'order_items.sub_order_id')
             ->join('products', 'products.id', '=', 'order_items.product_id')
@@ -420,13 +471,20 @@ class Dashboard extends Component
      */
     private function buyersChartPayload(): array
     {
+        return $this->memo('buyers', fn () => $this->buildBuyersChartPayload());
+    }
+
+    private function buildBuyersChartPayload(): array
+    {
         $days = $this->dayRange();
 
         $byDay = User::query()
             ->where('created_at', '>=', $this->periodStart())
-            ->get(['created_at'])
-            ->groupBy(fn (User $user) => $user->created_at->display()->toDateString())
-            ->map(fn ($users) => $users->count());
+            ->toBase()
+            ->selectRaw(DisplayTime::dayBucketSql('created_at').' as day, count(*) as total')
+            ->groupBy('day')
+            ->pluck('total', 'day')
+            ->map(fn ($total) => (int) $total);
 
         $series = $days->map(fn (string $day) => (int) ($byDay[$day] ?? 0))->values();
 
