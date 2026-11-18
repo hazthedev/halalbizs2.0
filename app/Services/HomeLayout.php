@@ -24,7 +24,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection as BaseCollection;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 /**
@@ -57,7 +59,7 @@ class HomeLayout
         }
 
         $ttl = max(1, min(self::CACHE_TTL, ScheduledLayout::secondsToNextSwitch() ?? self::CACHE_TTL));
-        $rows = Cache::remember('home-layout:web:'.app()->getLocale(), $ttl,
+        $rows = self::remember('home-layout:web:'.app()->getLocale(), $ttl,
             fn () => $this->uncachedSections([], 'web'));
 
         // Personal history is attached only after reading the public cache.
@@ -207,7 +209,26 @@ class HomeLayout
         ];
 
         return app(ContentDrafts::class)->previewing ? $build()
-            : Cache::remember('storefront:footer:'.app()->getLocale(), self::CACHE_TTL, $build);
+            : self::remember('storefront:footer:'.app()->getLocale(), self::CACHE_TTL, $build);
+    }
+
+    /**
+     * Cache a value holding Eloquent models. cache.serializable_classes is off, so a
+     * plain Cache::remember would hand back broken objects: store it encrypted
+     * (app-key MAC, so a forged cache entry cannot unserialize). Unreadable = rebuild.
+     */
+    public static function remember(string $key, int $ttl, \Closure $build): mixed
+    {
+        try {
+            if (($cached = Cache::get($key)) !== null) {
+                return Crypt::decrypt($cached);
+            }
+        } catch (DecryptException) {
+        }
+
+        Cache::put($key, Crypt::encrypt($value = $build()), $ttl);
+
+        return $value;
     }
 
     private static function cacheKey(string $locale): string

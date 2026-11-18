@@ -13,6 +13,7 @@ use App\Models\ProductBoost;
 use App\Models\ProductVariant;
 use App\Models\SearchLog;
 use App\Models\Store;
+use App\Services\HomeLayout;
 use App\Services\VectorSearchService;
 use App\Settings\BoostSettings;
 use Illuminate\Database\Eloquent\Builder;
@@ -255,7 +256,7 @@ class Listing extends Component
             'breadcrumbs' => $this->breadcrumbs(),
             'children' => $this->rootCategory?->children()->where('is_active', true)->get() ?? collect(),
             'chips' => $this->activeChips(),
-            'states' => Cache::remember('storefront:listing-states', 300, fn () => Store::query()->approved()->whereNotNull('state')->distinct()->orderBy('state')->pluck('state')),
+            'states' => Cache::remember('storefront:listing-states', 300, fn () => Store::query()->approved()->whereNotNull('state')->distinct()->orderBy('state')->pluck('state')->all()),
             'wishlistedIds' => $this->wishlistedIds(),
             'facetAttributes' => $this->facetAttributes(),
             'selectedAttrs' => array_map('intval', $this->attrs),
@@ -309,7 +310,7 @@ class Listing extends Component
 
         $key = 'storefront:sponsored:'.Cache::get('storefront:sponsored-version', '').':'.sha1($scope->toSql().serialize($scope->getBindings()));
 
-        return Cache::remember($key, 30, fn () => $scope
+        return HomeLayout::remember($key, 30, fn () => $scope
             ->whereHas('boosts', fn (Builder $boosts) => $boosts->active())
             ->orderByDesc($latestBoostStart)->orderByDesc('products.id')
             ->take(self::SPONSORED_SLOTS)->get())
