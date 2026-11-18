@@ -17,7 +17,7 @@
 use App\Enums\LiveSessionStatus;
 use App\Enums\SubOrderStatus;
 use App\Livewire\Admin\System\Staff;
-use App\Livewire\Seller\LiveSessions;
+use App\Livewire\Seller\LiveSessions\Detail;
 use App\Livewire\Seller\Orders\Detail as SellerOrderDetail;
 use App\Livewire\Seller\Products\Form as SellerProductForm;
 use App\Livewire\Storefront\Account\ReviewOrder;
@@ -105,14 +105,14 @@ test('#1 feature(): a seller CANNOT spotlight another store\'s product', functio
 
     // Sanity: featuring A's OWN rail product works (the path is genuinely live).
     Livewire::actingAs($sellerA)
-        ->test(LiveSessions::class)
+        ->test(Detail::class, ['session' => $sessionA])
         ->call('feature', $sessionA->id, $productA->id);
 
     expect($sessionA->fresh()->featured_product_id)->toBe($productA->id);
 
     // ATTACK: acting as A, drive feature() with store B's product id.
     Livewire::actingAs($sellerA)
-        ->test(LiveSessions::class)
+        ->test(Detail::class, ['session' => $sessionA])
         ->call('feature', $sessionA->id, $productB->id);
 
     // INVARIANT: the foreign product must NOT become featured (proof, not inference).
@@ -136,7 +136,7 @@ test('#1 feature(): foreign product on an empty rail stays un-featured', functio
     $productB = Product::factory()->create(['store_id' => $storeB->id]);
 
     Livewire::actingAs($sellerA)
-        ->test(LiveSessions::class)
+        ->test(Detail::class, ['session' => $sessionA])
         ->call('feature', $sessionA->id, $productB->id);
 
     expect($sessionA->fresh()->featured_product_id)->toBeNull();

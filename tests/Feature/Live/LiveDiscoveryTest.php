@@ -2,7 +2,7 @@
 
 use App\Enums\LiveSessionStatus;
 use App\Enums\ProductStatus;
-use App\Livewire\Seller\LiveSessions;
+use App\Livewire\Seller\LiveSessions\Form;
 use App\Livewire\Storefront\Listing;
 use App\Livewire\Storefront\Live\Room;
 use App\Livewire\Storefront\StorePage;
@@ -156,12 +156,12 @@ it('rejects a bad url in the seller form and names the platform on a good one', 
     $seller->assignRole('seller');
     Store::factory()->approved()->create(['user_id' => $seller->id]);
 
-    Livewire::actingAs($seller)->test(LiveSessions::class)
-        ->call('create')->set('title', 'T')->set('videoUrl', 'https://evil.com/#youtube.com/live/dQw4w9WgXcQ')
+    Livewire::actingAs($seller)->test(Form::class)
+        ->set('title', 'T')->set('videoUrl', 'https://evil.com/#youtube.com/live/dQw4w9WgXcQ')
         ->call('save')->assertHasErrors('videoUrl');
 
-    Livewire::actingAs($seller)->test(LiveSessions::class)
-        ->call('create')->set('title', 'T')->set('videoUrl', 'https://www.tiktok.com/@a/live')
+    Livewire::actingAs($seller)->test(Form::class)
+        ->set('title', 'T')->set('videoUrl', 'https://www.tiktok.com/@a/live')
         ->assertSee('Detected: Tiktok')
         ->call('save')->assertHasNoErrors();
 });

@@ -1,7 +1,7 @@
 <?php
 
 use App\Enums\GroupBuyStatus;
-use App\Livewire\Seller\GroupBuys;
+use App\Livewire\Seller\GroupBuys\Form;
 use App\Livewire\Storefront\GroupBuy\Panel;
 use App\Livewire\Storefront\GroupBuy\Team;
 use App\Models\GroupBuy;
@@ -79,8 +79,7 @@ test('a seller creates a group-buy deal below the current price', function () {
     $product->variants->first()->update(['price_sen' => 10_000, 'sale_price_sen' => null]);
 
     Livewire::actingAs($seller)
-        ->test(GroupBuys::class)
-        ->call('create')
+        ->test(Form::class)
         ->set('productId', $product->id)
         ->set('variantId', $product->variants->first()->id)
         ->set('groupPrice', '60.00')
@@ -101,8 +100,7 @@ test('the group price must be below the current price', function () {
     $product->variants->first()->update(['price_sen' => 10_000, 'sale_price_sen' => null]);
 
     Livewire::actingAs($seller)
-        ->test(GroupBuys::class)
-        ->call('create')
+        ->test(Form::class)
         ->set('productId', $product->id)
         ->set('variantId', $product->variants->first()->id)
         ->set('groupPrice', '200.00') // above the RM100 price
