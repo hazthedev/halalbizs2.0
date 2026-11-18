@@ -29,10 +29,10 @@
                         </button>
                     </li>
                 @endforeach
-                <li class="flex items-center gap-3 px-4 py-2 opacity-50">
+                <li class="flex items-center gap-3 px-4 py-2">
                     <div class="flex-1">
-                        <p class="text-[13px] font-medium text-ink">{{ __('Chinese (Simplified)') }} <span class="font-mono text-[12px] text-ink-faint">zh</span></p>
-                        <p class="text-[12px] text-ink-soft">{{ __('Coming later — not available yet.') }}</p>
+                        <p class="text-[13px] font-medium text-ink-faint">{{ __('Chinese (Simplified)') }} <span class="font-mono text-[12px] text-ink-faint">zh</span></p>
+                        <p class="text-[12px] text-ink-faint">{{ __('Coming later — not available yet.') }}</p>
                     </div>
                     <x-ui.badge variant="neutral">{{ __('Coming later') }}</x-ui.badge>
                 </li>

@@ -98,7 +98,7 @@
         </x-ui.card>
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div class="grid items-start gap-4 lg:grid-cols-2">
 
         {{-- Category overrides summary --}}
         <x-ui.card class="overflow-x-auto">
