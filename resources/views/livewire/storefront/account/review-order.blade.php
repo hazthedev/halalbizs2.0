@@ -78,7 +78,7 @@
                                 <input id="review-photos-{{ $item->id }}" type="file" multiple accept="image/*"
                                        wire:model="photos.{{ $item->id }}"
                                        class="mt-1 block w-full text-[13px] text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-ink file:bg-surface file:px-3 file:text-[13px] file:font-medium file:text-ink hover:file:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                                <p class="mt-1 text-[13px] text-ink-faint" wire:loading wire:target="photos.{{ $item->id }}">{{ __('Uploading photos…') }}</p>
+                                <p class="mt-1 text-[13px] text-ink-faint" wire:loading wire:target="photos.{{ $item->id }}"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading photos…') }}</p>
                                 @error('photos.'.$item->id)<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
                                 @error('photos.'.$item->id.'.*')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
 

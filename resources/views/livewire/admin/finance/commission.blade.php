@@ -15,10 +15,10 @@
                     <input id="global-rate" type="number" step="0.01" min="0" max="100" wire:model="globalRate"
                            class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 text-sm tabular-nums text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('globalRate') ? 'border-danger' : 'border-line-strong' }}">
                 </div>
-                <button type="submit" wire:loading.attr="disabled"
-                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                <x-ui.button variant="plain" type="submit" wire:loading.attr="disabled"
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2" target="saveGlobalRate">
                     {{ __('Save rate') }}
-                </button>
+                </x-ui.button>
             </form>
             @error('globalRate')
                 <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
@@ -51,10 +51,10 @@
                     {{ __('Applies to orders completed from now on. Settled commissions are snapshotted with the basis that produced them and never change.') }}
                 </p>
 
-                <button type="submit" wire:loading.attr="disabled"
-                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+                <x-ui.button variant="plain" type="submit" wire:loading.attr="disabled"
+                        class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2" target="saveDiscountBasis">
                     {{ __('Save basis') }}
-                </button>
+                </x-ui.button>
             </form>
             @error('discountBasis')
                 <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>

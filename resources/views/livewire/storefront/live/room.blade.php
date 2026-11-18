@@ -54,10 +54,10 @@
                         <p class="mt-0.5 text-lg font-medium text-ink tnum">@price($minSen)</p>
                     </div>
                     @if ($purchasingEnabled && $variant && $featured->variants->count() === 1)
-                        <button type="button" x-on:click="$store.cart.bump()" wire:click="addToCart({{ $variant->id }})"
+                        <x-ui.button variant="plain" type="button" x-on:click="$store.cart.bump()" wire:click="addToCart({{ $variant->id }})"
                                 class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white hover:bg-emerald-deep">
                             {{ __('Add to cart') }}
-                        </button>
+                        </x-ui.button>
                     @else
                         <a href="{{ route('product.show', $featured->slug) }}" wire:navigate class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-emerald bg-surface px-5 text-sm font-medium text-emerald hover:bg-emerald hover:text-white">{{ __('Choose options') }}</a>
                     @endif
@@ -110,10 +110,10 @@
                                 <p class="text-[13px] font-medium text-ink tnum">@price($minSen)</p>
                             </div>
                             @if ($purchasingEnabled && $variant && $product->variants->count() === 1)
-                                <button type="button" x-on:click="$store.cart.bump()" wire:click="addToCart({{ $variant->id }})"
+                                <x-ui.button variant="plain" type="button" x-on:click="$store.cart.bump()" wire:click="addToCart({{ $variant->id }})"
                                         class="inline-flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-emerald text-white hover:bg-emerald-deep" aria-label="{{ __('Add to cart') }}">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                                </button>
+                                </x-ui.button>
                             @else
                                 <a href="{{ route('product.show', $product->slug) }}" wire:navigate class="inline-flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-line-strong text-ink hover:border-emerald hover:text-emerald" aria-label="{{ __('View') }}">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>

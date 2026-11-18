@@ -118,12 +118,12 @@
                             <td class="px-3 py-2">
                                 <div class="flex justify-end">
                                     @if ($canRequery)
-                                        <button type="button" wire:click="requery({{ $payment->id }})"
+                                        <x-ui.button variant="plain" type="button" wire:click="requery({{ $payment->id }})"
                                                 wire:loading.attr="disabled" wire:target="requery({{ $payment->id }})"
                                                 class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald">
                                             <span wire:loading.remove wire:target="requery({{ $payment->id }})">{{ __('Requery') }}</span>
                                             <span wire:loading wire:target="requery({{ $payment->id }})">{{ __('Requerying…') }}</span>
-                                        </button>
+                                        </x-ui.button>
                                     @endif
                                 </div>
                             </td>

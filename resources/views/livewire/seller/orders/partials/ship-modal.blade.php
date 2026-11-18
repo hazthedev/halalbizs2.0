@@ -69,22 +69,21 @@
             </div>
 
             <div class="mt-5 flex justify-end gap-2">
-                <button
+                <x-ui.button variant="plain"
                     type="button"
                     wire:click="closeShipModal"
                     class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-ink px-4 text-sm font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2"
                 >
                     {{ __('Cancel') }}
-                </button>
-                <button
+                </x-ui.button>
+                <x-ui.button variant="plain"
                     type="button"
                     wire:click="ship"
                     wire:loading.attr="disabled"
                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2"
                 >
-                    <svg wire:loading wire:target="ship" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/></svg>
                     {{ __('Mark as shipped') }}
-                </button>
+                </x-ui.button>
             </div>
         </div>
     </div>

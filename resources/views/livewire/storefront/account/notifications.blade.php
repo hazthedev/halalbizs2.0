@@ -9,7 +9,7 @@
 
             <x-ui.card class="divide-y divide-line overflow-hidden">
                 @foreach ($notifications as $notification)
-                    <button
+                    <x-ui.button variant="plain"
                         type="button"
                         wire:key="notification-{{ $notification->id }}"
                         wire:click="markRead('{{ $notification->id }}')"
@@ -25,7 +25,7 @@
                         @unless ($notification->read_at)
                             <span class="sr-only">{{ __('Unread') }}</span>
                         @endunless
-                    </button>
+                    </x-ui.button>
                 @endforeach
             </x-ui.card>
         </div>

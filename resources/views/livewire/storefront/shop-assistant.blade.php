@@ -51,9 +51,9 @@
                 <p class="truncate text-[11px] text-on-dark/64">{{ __('Find products in English or Bahasa Melayu') }}</p>
             </div>
             @if ($history !== [])
-                <button type="button" wire:click="clearChat" class="rounded-[var(--radius-control)] px-2 py-1 text-[11px] font-medium text-on-dark/64 hover:text-on-dark" aria-label="{{ __('Clear conversation') }}">
+                <x-ui.button variant="plain" type="button" wire:click="clearChat" class="rounded-[var(--radius-control)] px-2 py-1 text-[11px] font-medium text-on-dark/64 hover:text-on-dark" aria-label="{{ __('Clear conversation') }}">
                     {{ __('Clear') }}
-                </button>
+                </x-ui.button>
             @endif
             <button type="button" x-on:click="open = false" class="flex size-8 items-center justify-center rounded-[var(--radius-control)] text-on-dark/64 hover:text-on-dark" aria-label="{{ __('Close') }}">
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
@@ -126,14 +126,14 @@
                 placeholder="{{ __('Ask about products…') }}"
                 class="max-h-24 min-h-10 w-full resize-none rounded-[var(--radius-control)] border border-line bg-paper px-3 py-2 text-[13px] text-ink placeholder:text-ink-faint focus:border-emerald focus:outline-none focus:ring-1 focus:ring-emerald"
             ></textarea>
-            <button
+            <x-ui.button variant="plain"
                 type="submit"
                 wire:loading.attr="disabled" wire:target="send"
                 class="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-emerald text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1"
                 aria-label="{{ __('Send') }}"
             >
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/></svg>
-            </button>
+            </x-ui.button>
         </form>
     </div>
 </div>

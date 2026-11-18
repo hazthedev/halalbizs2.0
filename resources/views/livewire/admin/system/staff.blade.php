@@ -37,7 +37,7 @@
                 </fieldset>
 
                 <div class="flex items-center gap-2">
-                    <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Invite admin') }}</x-ui.button>
+                    <x-ui.button type="submit" wire:loading.attr="disabled" target="invite">{{ __('Invite admin') }}</x-ui.button>
                     <x-ui.button variant="ghost" wire:click="cancelInvite">{{ __('Cancel') }}</x-ui.button>
                 </div>
             </form>
@@ -82,26 +82,26 @@
                         </div>
 
                         @if (auth()->user()->is_superadmin)
-                            <button type="button" wire:click="toggleSuperadmin({{ $admin->id }})"
+                            <x-ui.button variant="plain" type="button" wire:click="toggleSuperadmin({{ $admin->id }})"
                                     wire:confirm="{{ $admin->is_superadmin
                                         ? __('Remove superadmin from :name? They keep only their ticked permissions.', ['name' => $admin->name])
                                         : __('Make :name a superadmin? They will have full access to every admin section.', ['name' => $admin->name]) }}"
                                     class="inline-flex min-h-11 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ $admin->is_superadmin ? __('Remove superadmin') : __('Make superadmin') }}
-                            </button>
+                            </x-ui.button>
                         @endif
 
-                        <button type="button" wire:click="{{ $editingId === $admin->id ? 'cancelEdit' : 'startEditPermissions('.$admin->id.')' }}"
+                        <x-ui.button variant="plain" type="button" wire:click="{{ $editingId === $admin->id ? 'cancelEdit' : 'startEditPermissions('.$admin->id.')' }}"
                                 class="inline-flex min-h-11 shrink-0 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ $editingId === $admin->id ? __('Close') : __('Edit permissions') }}
-                        </button>
+                        </x-ui.button>
 
                         @if ($admin->id !== auth()->id())
-                            <button type="button" wire:click="removeAdmin({{ $admin->id }})"
+                            <x-ui.button variant="plain" type="button" wire:click="removeAdmin({{ $admin->id }})"
                                     wire:confirm="{{ __('Remove admin access for :name? They keep their account but lose the admin panel.', ['name' => $admin->name]) }}"
                                     class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                 {{ __('Remove admin') }}
-                            </button>
+                            </x-ui.button>
                         @endif
                     </div>
 
@@ -119,7 +119,7 @@
                             </div>
                             @error('editPermissions')<p role="alert" class="text-[13px] text-danger">{{ $message }}</p>@enderror
                             <div class="flex items-center gap-2">
-                                <x-ui.button type="submit" wire:loading.attr="disabled">{{ __('Save permissions') }}</x-ui.button>
+                                <x-ui.button type="submit" wire:loading.attr="disabled" target="savePermissions">{{ __('Save permissions') }}</x-ui.button>
                                 <x-ui.button variant="ghost" wire:click="cancelEdit">{{ __('Cancel') }}</x-ui.button>
                             </div>
                         </form>

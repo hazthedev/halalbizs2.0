@@ -29,12 +29,12 @@
                             <td class="px-3 py-2 text-right tabular-nums text-ink-soft">{{ $application->documents_count }}</td>
                             <td class="px-3 py-2">
                                 <div class="flex justify-end">
-                                    <button type="button"
+                                    <x-ui.button variant="plain" type="button"
                                             wire:click="review({{ $application->id }})"
                                             aria-expanded="{{ $reviewing === $application->id ? 'true' : 'false' }}"
                                             class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ $reviewing === $application->id ? __('Close') : __('Review') }}
-                                    </button>
+                                    </x-ui.button>
                                 </div>
                             </td>
                         </tr>

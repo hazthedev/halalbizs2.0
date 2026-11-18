@@ -142,15 +142,15 @@
                         </div>
 
                         <div class="mt-3 flex flex-wrap gap-2">
-                            <button type="button" wire:click="acceptReturn" wire:loading.attr="disabled"
+                            <x-ui.button variant="plain" type="button" wire:click="acceptReturn" wire:loading.attr="disabled"
                                     wire:confirm="{{ __('Accept this return? The buyer ships the item back to you, then you confirm receipt.') }}"
                                     class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                                 {{ __('Accept return') }}
-                            </button>
-                            <button type="button" wire:click="$set('disputing', true)"
+                            </x-ui.button>
+                            <x-ui.button variant="plain" type="button" wire:click="$set('disputing', true)"
                                     class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                                 {{ __('Dispute') }}
-                            </button>
+                            </x-ui.button>
                         </div>
 
                         @if ($disputing)
@@ -163,25 +163,25 @@
                                     <p class="text-[13px] text-danger">{{ $message }}</p>
                                 @enderror
                                 <div class="flex flex-wrap gap-2">
-                                    <button type="button" wire:click="disputeReturn" wire:loading.attr="disabled"
+                                    <x-ui.button variant="plain" type="button" wire:click="disputeReturn" wire:loading.attr="disabled"
                                             wire:confirm="{{ __('Dispute this return? It goes straight to the marketplace team for a decision.') }}"
                                             class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-danger px-4 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                                         {{ __('Submit dispute') }}
-                                    </button>
-                                    <button type="button" wire:click="$set('disputing', false)"
+                                    </x-ui.button>
+                                    <x-ui.button variant="plain" type="button" wire:click="$set('disputing', false)"
                                             class="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] px-4 text-sm font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ __('Never mind') }}
-                                    </button>
+                                    </x-ui.button>
                                 </div>
                             </div>
                         @endif
                     @elseif ($subOrder->status === \App\Enums\SubOrderStatus::ReturnRequested && $returnRequest->status === \App\Enums\ReturnStatus::Accepted)
                         <p class="mt-3 text-[13px] text-ink-soft">{{ __('Waiting for the buyer to ship the item back (manual for now). Confirm once it arrives.') }}</p>
-                        <button type="button" wire:click="confirmItemReceived" wire:loading.attr="disabled"
+                        <x-ui.button variant="plain" type="button" wire:click="confirmItemReceived" wire:loading.attr="disabled"
                                 wire:confirm="{{ __('Confirm the returned item arrived? The refund is then processed by the marketplace team.') }}"
                                 class="mt-2 inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                             {{ __('Item received') }}
-                        </button>
+                        </x-ui.button>
                     @elseif (in_array($returnRequest->status, [\App\Enums\ReturnStatus::Disputed, \App\Enums\ReturnStatus::Escalated], true))
                         <p class="mt-3 text-[13px] text-ink-soft">{{ __('With the marketplace team for review — you will be notified of the outcome.') }}</p>
                     @elseif ($subOrder->status === \App\Enums\SubOrderStatus::Returned && $returnRequest->status === \App\Enums\ReturnStatus::Accepted)
@@ -225,10 +225,10 @@
                 <h2 class="text-sm font-medium">{{ __('Actions') }}</h2>
 
                 @if ($subOrder->status === SubOrderStatus::Confirmed)
-                    <button type="button" wire:click="confirmAndPack" wire:loading.attr="disabled"
+                    <x-ui.button variant="plain" type="button" wire:click="confirmAndPack" wire:loading.attr="disabled"
                             class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                         {{ __('Confirm & pack') }}
-                    </button>
+                    </x-ui.button>
 
                     <div class="space-y-2 border-t border-line pt-3">
                         <label for="cancel-reason" class="block text-[13px] font-medium text-ink">{{ __('Cancellation reason') }}</label>
@@ -242,18 +242,18 @@
                         @error('cancelReasonId')
                             <p class="text-[13px] text-danger">{{ $message }}</p>
                         @enderror
-                        <button type="button" wire:click="cancelOrder" wire:loading.attr="disabled"
+                        <x-ui.button variant="plain" type="button" wire:click="cancelOrder" wire:loading.attr="disabled"
                                 wire:confirm="{{ __('Cancel this order? Items return to stock and the buyer is notified — this cannot be undone.') }}"
                                 class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-medium text-danger hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                             {{ __('Cancel order') }}
-                        </button>
+                        </x-ui.button>
                     </div>
 
                 @elseif ($subOrder->status === SubOrderStatus::Processing)
-                    <button type="button" wire:click="openShipModal({{ $subOrder->id }})"
+                    <x-ui.button variant="plain" type="button" wire:click="openShipModal({{ $subOrder->id }})"
                             class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                         {{ __('Arrange shipment') }}
-                    </button>
+                    </x-ui.button>
 
                 @elseif ($subOrder->status === SubOrderStatus::Shipped)
                     <div class="rounded-[var(--radius-control)] border border-line bg-paper p-3">
@@ -261,10 +261,10 @@
                         <p class="mt-0.5 text-[13px] font-medium text-ink">{{ $subOrder->tracking_courier }}</p>
                         <p class="font-mono text-[13px] text-ink">{{ $subOrder->tracking_no }}</p>
                     </div>
-                    <button type="button" wire:click="markDelivered" wire:loading.attr="disabled"
+                    <x-ui.button variant="plain" type="button" wire:click="markDelivered" wire:loading.attr="disabled"
                             class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
                         {{ __('Mark delivered') }}
-                    </button>
+                    </x-ui.button>
 
                 @elseif (in_array($subOrder->status, [SubOrderStatus::Delivered, SubOrderStatus::Completed], true))
                     @if ($subOrder->tracking_no)

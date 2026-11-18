@@ -16,15 +16,15 @@
                                 <p class="text-xs text-ink-faint">{{ $payout->requested_at?->display()->format('d M Y') }} · {{ data_get($payout->bank_snapshot, 'details') }}</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button type="button" wire:click="openPay({{ $payout->id }})" class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] bg-emerald px-3 text-[13px] font-medium text-white hover:bg-emerald-deep">{{ __('Mark paid') }}</button>
-                                <button type="button" wire:click="openReject({{ $payout->id }})" class="text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Reject') }}</button>
+                                <x-ui.button variant="plain" type="button" wire:click="openPay({{ $payout->id }})" class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] bg-emerald px-3 text-[13px] font-medium text-white hover:bg-emerald-deep">{{ __('Mark paid') }}</x-ui.button>
+                                <x-ui.button variant="plain" type="button" wire:click="openReject({{ $payout->id }})" class="text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Reject') }}</x-ui.button>
                             </div>
                         </div>
 
                         @if ($payingId === $payout->id)
                             <form wire:submit="markPaid" class="mt-2 flex flex-wrap items-end gap-2">
                                 <input type="text" wire:model="paidReference" placeholder="{{ __('Bank transfer reference') }}" class="min-h-11 w-64 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm">
-                                <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white">{{ __('Confirm paid') }}</button>
+                                <x-ui.button variant="plain" type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white" target="markPaid">{{ __('Confirm paid') }}</x-ui.button>
                                 @error('paidReference') <p class="w-full text-[13px] text-danger">{{ $message }}</p> @enderror
                             </form>
                         @endif
@@ -32,7 +32,7 @@
                         @if ($rejectingId === $payout->id)
                             <form wire:submit="reject" class="mt-2 flex flex-wrap items-end gap-2">
                                 <input type="text" wire:model="rejectReason" placeholder="{{ __('Reason for rejection') }}" class="min-h-11 w-64 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm">
-                                <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-medium text-danger hover:bg-danger hover:text-white">{{ __('Confirm reject') }}</button>
+                                <x-ui.button variant="plain" type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-danger px-4 text-sm font-medium text-danger hover:bg-danger hover:text-white" target="reject">{{ __('Confirm reject') }}</x-ui.button>
                                 @error('rejectReason') <p class="w-full text-[13px] text-danger">{{ $message }}</p> @enderror
                             </form>
                         @endif

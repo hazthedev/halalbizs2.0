@@ -290,9 +290,9 @@
                     <div class="group relative aspect-square overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper" wire:key="media-{{ $media->id }}">
                         <img src="{{ $media->getUrl() }}" alt="{{ __('Product image :n', ['n' => $index + 1]) }}" class="size-full object-cover">
                         <div class="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-emerald-night/70 p-1">
-                            <button type="button" wire:click="moveMedia({{ $media->id }}, -1)" @disabled($loop->first) class="flex size-8 items-center justify-center rounded text-on-dark disabled:opacity-40" aria-label="{{ __('Move image earlier') }}">←</button>
-                            <button type="button" wire:click="removeMedia({{ $media->id }})" class="flex size-8 items-center justify-center rounded text-on-dark hover:text-danger" aria-label="{{ __('Remove image') }}">✕</button>
-                            <button type="button" wire:click="moveMedia({{ $media->id }}, 1)" @disabled($loop->last) class="flex size-8 items-center justify-center rounded text-on-dark disabled:opacity-40" aria-label="{{ __('Move image later') }}">→</button>
+                            <x-ui.button variant="plain" type="button" wire:click="moveMedia({{ $media->id }}, -1)" :disabled="$loop->first" class="flex size-8 items-center justify-center rounded text-on-dark disabled:opacity-40" aria-label="{{ __('Move image earlier') }}">←</x-ui.button>
+                            <x-ui.button variant="plain" type="button" wire:click="removeMedia({{ $media->id }})" class="flex size-8 items-center justify-center rounded text-on-dark hover:text-danger" aria-label="{{ __('Remove image') }}">✕</x-ui.button>
+                            <x-ui.button variant="plain" type="button" wire:click="moveMedia({{ $media->id }}, 1)" :disabled="$loop->last" class="flex size-8 items-center justify-center rounded text-on-dark disabled:opacity-40" aria-label="{{ __('Move image later') }}">→</x-ui.button>
                         </div>
                     </div>
                 @endforeach
@@ -301,9 +301,9 @@
                     <div class="group relative aspect-square overflow-hidden rounded-[var(--radius-card)] border border-line bg-paper" wire:key="new-image-{{ $index }}-{{ $image->getFilename() }}">
                         <img src="{{ $image->temporaryUrl() }}" alt="{{ __('New image :n', ['n' => $index + 1]) }}" class="size-full object-cover">
                         <div class="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-emerald-night/70 p-1">
-                            <button type="button" wire:click="moveNewImage({{ $index }}, -1)" @disabled($loop->first) class="flex size-8 items-center justify-center rounded text-on-dark disabled:opacity-40" aria-label="{{ __('Move image earlier') }}">←</button>
-                            <button type="button" wire:click="removeNewImage({{ $index }})" class="flex size-8 items-center justify-center rounded text-on-dark hover:text-danger" aria-label="{{ __('Remove image') }}">✕</button>
-                            <button type="button" wire:click="moveNewImage({{ $index }}, 1)" @disabled($loop->last) class="flex size-8 items-center justify-center rounded text-on-dark disabled:opacity-40" aria-label="{{ __('Move image later') }}">→</button>
+                            <x-ui.button variant="plain" type="button" wire:click="moveNewImage({{ $index }}, -1)" :disabled="$loop->first" class="flex size-8 items-center justify-center rounded text-on-dark disabled:opacity-40" aria-label="{{ __('Move image earlier') }}">←</x-ui.button>
+                            <x-ui.button variant="plain" type="button" wire:click="removeNewImage({{ $index }})" class="flex size-8 items-center justify-center rounded text-on-dark hover:text-danger" aria-label="{{ __('Remove image') }}">✕</x-ui.button>
+                            <x-ui.button variant="plain" type="button" wire:click="moveNewImage({{ $index }}, 1)" :disabled="$loop->last" class="flex size-8 items-center justify-center rounded text-on-dark disabled:opacity-40" aria-label="{{ __('Move image later') }}">→</x-ui.button>
                         </div>
                     </div>
                 @endforeach
@@ -317,7 +317,7 @@
                 @endif
             </div>
 
-            <div wire:loading wire:target="newImages" class="mt-2 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+            <div wire:loading wire:target="newImages" class="mt-2 text-[13px] text-ink-soft"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
             @error('newImages')<p class="mt-2 text-[13px] text-danger">{{ $message }}</p>@enderror
             @error('newImages.*')<p class="mt-2 text-[13px] text-danger">{{ $message }}</p>@enderror
 
@@ -333,19 +333,19 @@
                         @else
                             <span class="text-[13px] font-medium text-ink">{{ $newVideo->getClientOriginalName() }}</span>
                         @endif
-                        <button type="button" wire:click="removeNewVideo"
+                        <x-ui.button variant="plain" type="button" wire:click="removeNewVideo"
                                 class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Remove video') }}
-                        </button>
+                        </x-ui.button>
                     </div>
                 @elseif ($existingVideo !== null)
                     <div class="mt-3 flex flex-wrap items-center gap-3">
                         <video src="{{ $existingVideo->getUrl() }}" controls preload="metadata" class="h-28 rounded-[var(--radius-control)] border border-line bg-paper"></video>
-                        <button type="button" wire:click="removeExistingVideo"
+                        <x-ui.button variant="plain" type="button" wire:click="removeExistingVideo"
                                 wire:confirm="{{ __('Remove this video from the product?') }}"
                                 class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">
                             {{ __('Remove video') }}
-                        </button>
+                        </x-ui.button>
                     </div>
                 @else
                     <label class="mt-3 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-control)] border border-dashed border-line-strong px-4 text-[13px] font-medium text-ink-soft hover:border-ink hover:text-ink">
@@ -355,7 +355,7 @@
                     </label>
                 @endif
 
-                <div wire:loading wire:target="newVideo" class="mt-2 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                <div wire:loading wire:target="newVideo" class="mt-2 text-[13px] text-ink-soft"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
                 @error('newVideo')<p class="mt-2 text-[13px] text-danger">{{ $message }}</p>@enderror
             </div>
         </x-ui.card>
@@ -426,19 +426,19 @@
                                     :placeholder="$groupIndex === 0 ? __('e.g. Colour') : __('e.g. Size')"
                                     :error="$errors->first('optionGroups.'.$groupIndex.'.name')"
                                 />
-                                <button type="button" wire:click="removeOptionGroup({{ $groupIndex }})"
+                                <x-ui.button variant="plain" type="button" wire:click="removeOptionGroup({{ $groupIndex }})"
                                         class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-danger focus-visible:ring-2 focus-visible:ring-emerald">
                                     {{ __('Remove') }}
-                                </button>
+                                </x-ui.button>
                             </div>
 
                             <div class="mt-3 flex flex-wrap items-center gap-2">
                                 @foreach ($group['values'] as $valueIndex => $value)
                                     <span class="inline-flex items-center gap-1 rounded-full border border-line bg-paper py-1 pl-3 pr-1 text-[13px] font-medium text-ink" wire:key="chip-{{ $groupIndex }}-{{ $valueIndex }}">
                                         {{ $value }}
-                                        <button type="button" wire:click="removeOptionValue({{ $groupIndex }}, {{ $valueIndex }})"
+                                        <x-ui.button variant="plain" type="button" wire:click="removeOptionValue({{ $groupIndex }}, {{ $valueIndex }})"
                                                 class="flex size-6 items-center justify-center rounded-full text-ink-soft hover:text-danger"
-                                                aria-label="{{ __('Remove :value', ['value' => $value]) }}">✕</button>
+                                                aria-label="{{ __('Remove :value', ['value' => $value]) }}">✕</x-ui.button>
                                     </span>
                                 @endforeach
 
@@ -451,10 +451,10 @@
                                         aria-label="{{ __('New value for option :n', ['n' => $groupIndex + 1]) }}"
                                         class="min-h-11 w-36 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-1.5 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
                                     >
-                                    <button type="button" wire:click="addOptionValue({{ $groupIndex }})"
+                                    <x-ui.button variant="plain" type="button" wire:click="addOptionValue({{ $groupIndex }})"
                                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ __('Add') }}
-                                    </button>
+                                    </x-ui.button>
                                 </div>
                             </div>
                             @error('optionGroups.'.$groupIndex.'.values')<p class="mt-2 text-[13px] text-danger">{{ $message }}</p>@enderror
@@ -462,11 +462,11 @@
                     @endforeach
 
                     @if (count($optionGroups) < \App\Livewire\Seller\Products\Form::MAX_OPTION_GROUPS)
-                        <button type="button" wire:click="addOptionGroup"
+                        <x-ui.button variant="plain" type="button" wire:click="addOptionGroup"
                                 class="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-ink px-4 text-sm font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
                             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                             {{ __('Add a second option') }}
-                        </button>
+                        </x-ui.button>
                     @endif
                     @error('optionGroups')<p class="text-[13px] text-danger">{{ $message }}</p>@enderror
                 </div>
@@ -493,21 +493,21 @@
                                         <div class="flex items-center gap-1">
                                             <input type="text" wire:model="bulkPrice" inputmode="decimal" placeholder="0.00" aria-label="{{ __('Price for all variants') }}"
                                                    class="min-h-11 w-20 rounded-[var(--radius-control)] border border-line-strong bg-surface px-2 py-1.5 text-right tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                                            <button type="button" wire:click="applyPriceToAll" class="min-h-11 rounded-[var(--radius-control)] px-2 text-[12px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Set') }}</button>
+                                            <x-ui.button variant="plain" type="button" wire:click="applyPriceToAll" class="min-h-11 rounded-[var(--radius-control)] px-2 text-[12px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Set') }}</x-ui.button>
                                         </div>
                                     </td>
                                     <td class="px-3 py-2">
                                         <div class="flex items-center gap-1">
                                             <input type="text" wire:model="bulkSalePrice" inputmode="decimal" placeholder="0.00" aria-label="{{ __('Sale price for all variants') }}"
                                                    class="min-h-11 w-20 rounded-[var(--radius-control)] border border-line-strong bg-surface px-2 py-1.5 text-right tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                                            <button type="button" wire:click="applySalePriceToAll" class="min-h-11 rounded-[var(--radius-control)] px-2 text-[12px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Set') }}</button>
+                                            <x-ui.button variant="plain" type="button" wire:click="applySalePriceToAll" class="min-h-11 rounded-[var(--radius-control)] px-2 text-[12px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Set') }}</x-ui.button>
                                         </div>
                                     </td>
                                     <td class="px-3 py-2">
                                         <div class="flex items-center gap-1">
                                             <input type="text" wire:model="bulkStock" inputmode="numeric" placeholder="0" aria-label="{{ __('Stock for all variants') }}"
                                                    class="min-h-11 w-16 rounded-[var(--radius-control)] border border-line-strong bg-surface px-2 py-1.5 text-right tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                                            <button type="button" wire:click="applyStockToAll" class="min-h-11 rounded-[var(--radius-control)] px-2 text-[12px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Set') }}</button>
+                                            <x-ui.button variant="plain" type="button" wire:click="applyStockToAll" class="min-h-11 rounded-[var(--radius-control)] px-2 text-[12px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Set') }}</x-ui.button>
                                         </div>
                                     </td>
                                     <td class="px-3 py-2"></td>
@@ -661,11 +661,11 @@
                             {{-- mt-7 clears the input's label rather than items-end on the
                                  row: an error line under an input is a normal case here, and
                                  items-end would make the button jump every time one appears. --}}
-                            <button type="button"
+                            <x-ui.button variant="plain" type="button"
                                     wire:click="removeMarketplaceLink({{ $linkIndex }})"
                                     class="mt-7 inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-medium text-ink-soft hover:bg-paper">
                                 {{ __('Remove') }}
-                            </button>
+                            </x-ui.button>
                         </div>
 
                         <x-ui.input
@@ -695,11 +695,11 @@
             </div>
 
             @if (count($marketplaceLinks) < \App\Livewire\Seller\Products\Form::MAX_MARKETPLACE_LINKS)
-                <button type="button"
+                <x-ui.button variant="plain" type="button"
                         wire:click="addMarketplaceLink"
                         class="mt-3 inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-4 text-[13px] font-medium text-ink hover:bg-paper">
                     {{ __('Add a link') }}
-                </button>
+                </x-ui.button>
             @endif
 
             <label class="mt-4 flex min-h-11 cursor-pointer items-start gap-2 text-sm font-medium text-ink">
@@ -730,11 +730,11 @@
         @enderror
 
         <div class="flex flex-wrap items-center justify-end gap-2">
-            <button type="button" wire:click="saveDraft" wire:loading.attr="disabled"
+            <x-ui.button variant="plain" type="button" wire:click="saveDraft" wire:loading.attr="disabled"
                     class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-ink px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Save as draft') }}
-            </button>
-            <x-ui.button type="submit" wire:loading.attr="disabled">
+            </x-ui.button>
+            <x-ui.button type="submit" wire:loading.attr="disabled" target="publish">
                 <span wire:loading.remove wire:target="publish">{{ $requireApproval ? __('Submit for review') : __('Publish') }}</span>
                 <span wire:loading wire:target="publish">{{ __('Publishing…') }}</span>
             </x-ui.button>

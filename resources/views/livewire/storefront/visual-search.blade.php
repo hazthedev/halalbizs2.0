@@ -18,7 +18,7 @@
         @if ($image)
             <div class="mt-3 flex items-center gap-3">
                 <img src="{{ $image->temporaryUrl() }}" alt="" class="size-16 rounded-[var(--radius-card)] border border-line object-cover">
-                <button type="button" wire:click="clear" class="text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Clear') }}</button>
+                <x-ui.button variant="plain" type="button" wire:click="clear" class="text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Clear') }}</x-ui.button>
             </div>
         @endif
     </div>

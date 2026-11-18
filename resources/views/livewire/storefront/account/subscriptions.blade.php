@@ -47,15 +47,15 @@
                         @unless ($cancelled)
                             <div class="mt-3 flex flex-wrap gap-2 border-t border-line pt-3">
                                 @if ($paused)
-                                    <button type="button" wire:click="resume({{ $subscription->id }})"
-                                            class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink hover:border-emerald hover:text-emerald">{{ __('Resume') }}</button>
+                                    <x-ui.button variant="plain" type="button" wire:click="resume({{ $subscription->id }})"
+                                            class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink hover:border-emerald hover:text-emerald">{{ __('Resume') }}</x-ui.button>
                                 @else
-                                    <button type="button" wire:click="pause({{ $subscription->id }})"
-                                            class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink hover:border-ink">{{ __('Pause') }}</button>
+                                    <x-ui.button variant="plain" type="button" wire:click="pause({{ $subscription->id }})"
+                                            class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink hover:border-ink">{{ __('Pause') }}</x-ui.button>
                                 @endif
-                                <button type="button" wire:click="cancel({{ $subscription->id }})"
+                                <x-ui.button variant="plain" type="button" wire:click="cancel({{ $subscription->id }})"
                                         wire:confirm="{{ __('Cancel this subscription?') }}"
-                                        class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Cancel') }}</button>
+                                        class="inline-flex min-h-9 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Cancel') }}</x-ui.button>
                             </div>
                         @endunless
                     </li>

@@ -103,7 +103,7 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="inline-flex rounded-full border border-line p-1" role="group" aria-label="{{ __('Chart period') }}">
             @foreach ($periods as $option)
-                <button
+                <x-ui.button variant="plain"
                     type="button"
                     wire:click="$set('period', '{{ $option }}')"
                     wire:key="period-{{ $option }}"
@@ -111,7 +111,7 @@
                     class="inline-flex min-h-8 items-center rounded-full px-3 text-[13px] font-medium tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 {{ $period === $option ? 'bg-emerald-night text-surface' : 'text-ink-soft hover:text-ink' }}"
                 >
                     {{ __(':n days', ['n' => (int) $option]) }}
-                </button>
+                </x-ui.button>
             @endforeach
         </div>
 

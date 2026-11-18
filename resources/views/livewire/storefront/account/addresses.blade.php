@@ -130,20 +130,20 @@
 
                     <div class="flex shrink-0 items-center gap-1">
                         @unless ($address->is_default)
-                            <button type="button" wire:click="setDefault({{ $address->id }})"
+                            <x-ui.button variant="plain" type="button" wire:click="setDefault({{ $address->id }})"
                                     class="flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink">
                                 {{ __('Set as default') }}
-                            </button>
+                            </x-ui.button>
                         @endunless
-                        <button type="button" wire:click="edit({{ $address->id }})"
+                        <x-ui.button variant="plain" type="button" wire:click="edit({{ $address->id }})"
                                 class="flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink">
                             {{ __('Edit') }}
-                        </button>
-                        <button type="button" wire:click="delete({{ $address->id }})"
+                        </x-ui.button>
+                        <x-ui.button variant="plain" type="button" wire:click="delete({{ $address->id }})"
                                 wire:confirm="{{ __('Delete this address?') }}"
                                 class="flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-danger hover:bg-danger-tint">
                             {{ __('Delete') }}
-                        </button>
+                        </x-ui.button>
                     </div>
                 </div>
             </x-ui.card>

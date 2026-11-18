@@ -20,10 +20,9 @@
             @error('endsAt')<p class="mt-1 text-[13px] text-danger">{{ $message }}</p>@enderror
         </div>
         <div class="sm:col-span-4">
-            <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white">
-                <x-ui.icon.plus />
+            <x-ui.button variant="plain" type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white" target="createSale" icon="plus">
                 {{ __('Create flash sale') }}
-            </button>
+            </x-ui.button>
         </div>
     </form>
 
@@ -41,9 +40,9 @@
                         <p class="text-[13px] text-ink-soft">{{ $sale->starts_at->display()->format('d M H:i') }} → {{ $sale->ends_at->display()->format('d M H:i') }}</p>
                     </div>
                     <div class="flex gap-2">
-                        <button wire:click="openAddItem({{ $sale->id }})" class="rounded-[var(--radius-control)] border border-line-strong px-3 py-1.5 text-[13px] font-medium">{{ __('Add deal') }}</button>
-                        <button wire:click="toggleActive({{ $sale->id }})" class="rounded-[var(--radius-control)] border border-line-strong px-3 py-1.5 text-[13px] font-medium">{{ $sale->is_active ? __('Disable') : __('Enable') }}</button>
-                        <button wire:click="deleteSale({{ $sale->id }})" wire:confirm="{{ __('Remove this flash sale?') }}" class="rounded-[var(--radius-control)] border border-danger/40 px-3 py-1.5 text-[13px] font-medium text-danger">{{ __('Delete') }}</button>
+                        <x-ui.button variant="plain" wire:click="openAddItem({{ $sale->id }})" class="rounded-[var(--radius-control)] border border-line-strong px-3 py-1.5 text-[13px] font-medium">{{ __('Add deal') }}</x-ui.button>
+                        <x-ui.button variant="plain" wire:click="toggleActive({{ $sale->id }})" class="rounded-[var(--radius-control)] border border-line-strong px-3 py-1.5 text-[13px] font-medium">{{ $sale->is_active ? __('Disable') : __('Enable') }}</x-ui.button>
+                        <x-ui.button variant="plain" wire:click="deleteSale({{ $sale->id }})" wire:confirm="{{ __('Remove this flash sale?') }}" class="rounded-[var(--radius-control)] border border-danger/40 px-3 py-1.5 text-[13px] font-medium text-danger">{{ __('Delete') }}</x-ui.button>
                     </div>
                 </div>
 
@@ -58,7 +57,7 @@
                         <input type="text" wire:model="itemPromo" placeholder="{{ __('Promo RM') }}" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong px-2 text-sm">
                         <input type="number" wire:model="itemAllocated" min="1" placeholder="{{ __('Qty') }}" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong px-2 text-sm">
                         <input type="number" wire:model="itemPerBuyer" min="1" placeholder="{{ __('Per buyer') }}" class="min-h-11 rounded-[var(--radius-control)] border border-line-strong px-2 text-sm">
-                        <button type="submit" class="min-h-11 rounded-[var(--radius-control)] bg-emerald px-3 text-sm font-medium text-white sm:col-span-5">{{ __('Add deal') }}</button>
+                        <x-ui.button variant="plain" type="submit" class="min-h-11 rounded-[var(--radius-control)] bg-emerald px-3 text-sm font-medium text-white sm:col-span-5" target="addItem">{{ __('Add deal') }}</x-ui.button>
                         @error('itemVariantId')<p class="text-[13px] text-danger sm:col-span-5">{{ $message }}</p>@enderror
                     </form>
                 @endif

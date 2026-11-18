@@ -3,12 +3,14 @@
     'type' => 'button',
     'href' => null,
     'icon' => null,
+    'target' => null,
 ])
 
 @php
 $base = 'inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] px-4 py-2.5 text-sm font-medium transition-all duration-150 ease-out-soft active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 min-h-11';
 
 $classes = match ($variant) {
+    'plain' => 'disabled:cursor-not-allowed disabled:opacity-50',
     'primary' => "$base bg-emerald text-white shadow-soft hover:bg-emerald-deep hover:-translate-y-px active:translate-y-0 active:bg-emerald-night",
     'secondary' => "$base border border-line-strong bg-surface text-ink hover:border-ink hover:bg-paper",
     // Brass FILL starts at brass-deep, not brass: white 14px label on plain
@@ -24,10 +26,25 @@ $classes = match ($variant) {
     'ink-outline' => "$base border border-paper/40 text-on-dark hover:bg-paper/10",
     default => $base,
 };
+// Explicit targets may also include upload properties that must block submission.
+$loadingTarget = $target ?? $attributes->get('wire:target');
+if (! $loadingTarget && $attributes->has('wire:click')) {
+    $action = $attributes->get('wire:click');
+    $loadingTarget = str_starts_with($action, '$set(') || str_starts_with($action, '$toggle(')
+        ? explode("'", $action)[1]
+        : trim(explode('(', $action, 2)[0]);
+}
+$buttonAttributes = $attributes;
+if ($loadingTarget) {
+    $buttonAttributes = $attributes->merge([
+        'wire:loading.attr' => 'disabled',
+        'wire:target' => $loadingTarget,
+    ]);
+}
 @endphp
 
 @if ($href)
     <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }} wire:navigate>@if ($icon === 'plus')<x-ui.icon.plus />@endif{{ $slot }}</a>
 @else
-    <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>@if ($icon === 'plus')<x-ui.icon.plus />@endif{{ $slot }}</button>
+    <button type="{{ $type }}" {{ $buttonAttributes->merge(['class' => $classes]) }}>@if ($icon === 'plus')<x-ui.icon.plus />@endif @if ($loadingTarget)<span wire:loading.inline-flex wire:target="{{ $loadingTarget }}" role="status"><x-ui.spinner /><span class="sr-only">{{ __('Loading…') }}</span></span>@endif {{ $slot }}</button>
 @endif

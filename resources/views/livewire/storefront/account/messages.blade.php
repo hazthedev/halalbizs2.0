@@ -8,7 +8,7 @@
                 <ul class="flex-1 divide-y divide-line overflow-y-auto">
                     @foreach ($this->conversations as $conversation)
                         <li wire:key="thread-{{ $conversation->id }}">
-                            <button type="button"
+                            <x-ui.button variant="plain" type="button"
                                     wire:click="openConversation({{ $conversation->id }})"
                                     class="flex min-h-11 w-full items-center gap-3 px-3.5 py-3 text-left transition-colors duration-150 hover:bg-paper {{ $conversationId === $conversation->id ? 'bg-paper' : '' }}">
                                 @if ($conversation->store?->getFirstMediaUrl('logo', 'thumb'))
@@ -35,7 +35,7 @@
                                         @endif
                                     </span>
                                 </span>
-                            </button>
+                            </x-ui.button>
                         </li>
                     @endforeach
                 </ul>
@@ -52,11 +52,11 @@
             @if ($active)
                 {{-- Pane header --}}
                 <div class="flex items-center gap-2 border-b border-line px-3 py-2.5">
-                    <button type="button" wire:click="closeConversation"
+                    <x-ui.button variant="plain" type="button" wire:click="closeConversation"
                             class="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition-colors duration-150 hover:text-ink lg:hidden"
                             aria-label="{{ __('Back to all messages') }}">
                         <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
-                    </button>
+                    </x-ui.button>
                     @if ($active->store?->getFirstMediaUrl('logo', 'thumb'))
                         <img src="{{ $active->store->getFirstMediaUrl('logo', 'thumb') }}" alt="{{ $active->store->name }}"
                              class="size-9 shrink-0 rounded-full border border-line bg-paper object-cover">
@@ -98,11 +98,11 @@
                                 <span class="block text-[11px] text-ink-faint">{{ __('Asking about') }}</span>
                                 <span class="line-clamp-1 text-xs font-medium text-ink">{{ $contextProduct->getTranslation('name', app()->getLocale()) }}</span>
                             </span>
-                            <button type="button" wire:click="removeContext"
+                            <x-ui.button variant="plain" type="button" wire:click="removeContext"
                                     class="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition-colors duration-150 hover:text-ink"
                                     aria-label="{{ __('Remove product from message') }}">
                                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-                            </button>
+                            </x-ui.button>
                         </div>
                     @endif
                     <div class="flex items-end gap-2">
@@ -112,12 +112,12 @@
                                   x-on:keydown.enter="if (! $event.shiftKey) { $event.preventDefault(); $wire.send(); }"
                                   placeholder="{{ __('Write a message…') }}"
                                   class="max-h-36 min-h-11 flex-1 resize-none rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald"></textarea>
-                        <button type="submit"
+                        <x-ui.button variant="plain" type="submit"
                                 wire:loading.attr="disabled" wire:target="send"
                                 class="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-emerald text-white transition-colors duration-150 hover:bg-emerald-deep active:bg-emerald-night disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-label="{{ __('Send message') }}">
                             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/></svg>
-                        </button>
+                        </x-ui.button>
                     </div>
                     @error('body')
                         <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>

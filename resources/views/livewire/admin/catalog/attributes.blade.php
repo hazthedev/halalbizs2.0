@@ -41,8 +41,8 @@
                                         <x-ui.input wire:model="editName.en" :error="$errors->first('editName.en')" aria-label="{{ __('Name (English)') }}" />
                                         <x-ui.input wire:model="editName.ms" :error="$errors->first('editName.ms')" placeholder="{{ __('BM (optional)') }}" aria-label="{{ __('Name (Bahasa Melayu)') }}" />
                                         <x-ui.input wire:model="editName.vi" :error="$errors->first('editName.vi')" placeholder="{{ __('VI (optional)') }}" aria-label="{{ __('Name (Vietnamese)') }}" />
-                                        <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Save') }}</button>
-                                        <button type="button" wire:click="cancelEdit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
+                                        <x-ui.button variant="plain" type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald" target="update">{{ __('Save') }}</x-ui.button>
+                                        <x-ui.button variant="plain" type="button" wire:click="cancelEdit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</x-ui.button>
                                     </form>
                                 @else
                                     <span class="font-medium text-ink">{{ $attribute->getTranslation('name', 'en') }}</span>
@@ -53,26 +53,26 @@
                             </td>
                             <td class="px-3 py-2 font-mono text-[12px] text-ink-soft">{{ $attribute->slug }}</td>
                             <td class="px-3 py-2">
-                                <button type="button" wire:click="toggleFilterable({{ $attribute->id }})" role="switch" aria-checked="{{ $attribute->is_filterable ? 'true' : 'false' }}"
+                                <x-ui.button variant="plain" type="button" wire:click="toggleFilterable({{ $attribute->id }})" role="switch" aria-checked="{{ $attribute->is_filterable ? 'true' : 'false' }}"
                                         class="flex min-h-11 items-center px-1 focus-visible:ring-2 focus-visible:ring-emerald"
                                         aria-label="{{ __('Toggle filterable for :name', ['name' => $attribute->getTranslation('name', 'en')]) }}">
                                     <span class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-150 {{ $attribute->is_filterable ? 'bg-emerald' : 'bg-line-strong' }}">
                                         <span class="inline-block size-4 transform rounded-full bg-surface transition-transform duration-150 {{ $attribute->is_filterable ? 'translate-x-[18px]' : 'translate-x-0.5' }}"></span>
                                     </span>
-                                </button>
+                                </x-ui.button>
                             </td>
                             <td class="px-3 py-2 text-right tabular-nums text-ink-soft">{{ $attribute->values_count }}</td>
                             <td class="px-3 py-2">
                                 <div class="flex items-center justify-end gap-1">
-                                    <button type="button" wire:click="manageValues({{ $attribute->id }})"
+                                    <x-ui.button variant="plain" type="button" wire:click="manageValues({{ $attribute->id }})"
                                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium {{ $managingId === $attribute->id ? 'text-emerald' : 'text-ink-soft hover:text-ink' }} focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ $managingId === $attribute->id ? __('Close values') : __('Values') }}
-                                    </button>
-                                    <button type="button" wire:click="edit({{ $attribute->id }})"
-                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</button>
-                                    <button type="button" wire:click="deleteAttribute({{ $attribute->id }})"
+                                    </x-ui.button>
+                                    <x-ui.button variant="plain" type="button" wire:click="edit({{ $attribute->id }})"
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Edit') }}</x-ui.button>
+                                    <x-ui.button variant="plain" type="button" wire:click="deleteAttribute({{ $attribute->id }})"
                                             wire:confirm="{{ __('Delete this attribute? Its values and category mappings are removed too.') }}"
-                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
+                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</x-ui.button>
                                 </div>
                             </td>
                         </tr>
@@ -92,19 +92,19 @@
                                                         <span class="text-ink-faint"> · {{ $value->getTranslation('value', 'ms', false) }}</span>
                                                     @endif
                                                 </span>
-                                                <button type="button" wire:click="moveValue({{ $value->id }}, -1)" @disabled($loop->first)
+                                                <x-ui.button variant="plain" type="button" wire:click="moveValue({{ $value->id }}, -1)" :disabled="$loop->first"
                                                         class="flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-40"
                                                         aria-label="{{ __('Move :value up', ['value' => $value->getTranslation('value', 'en')]) }}">
                                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/></svg>
-                                                </button>
-                                                <button type="button" wire:click="moveValue({{ $value->id }}, 1)" @disabled($loop->last)
+                                                </x-ui.button>
+                                                <x-ui.button variant="plain" type="button" wire:click="moveValue({{ $value->id }}, 1)" :disabled="$loop->last"
                                                         class="flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald disabled:cursor-not-allowed disabled:opacity-40"
                                                         aria-label="{{ __('Move :value down', ['value' => $value->getTranslation('value', 'en')]) }}">
                                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
-                                                </button>
-                                                <button type="button" wire:click="removeValue({{ $value->id }})"
+                                                </x-ui.button>
+                                                <x-ui.button variant="plain" type="button" wire:click="removeValue({{ $value->id }})"
                                                         wire:confirm="{{ __('Remove this value?') }}"
-                                                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Remove') }}</button>
+                                                        class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Remove') }}</x-ui.button>
                                             </div>
                                         @empty
                                             <p class="text-[13px] text-ink-faint">{{ __('No values yet.') }}</p>
@@ -114,7 +114,7 @@
                                             <x-ui.input class="min-w-36 flex-1" :label="__('Value (English)')" wire:model="valueDraft.en" :error="$errors->first('valueDraft.en')" />
                                             <x-ui.input class="min-w-36 flex-1" :label="__('Value (Bahasa Melayu)')" wire:model="valueDraft.ms" :error="$errors->first('valueDraft.ms')" placeholder="{{ __('Optional') }}" />
                                             <x-ui.input class="min-w-36 flex-1" :label="__('Value (Vietnamese)')" wire:model="valueDraft.vi" :error="$errors->first('valueDraft.vi')" placeholder="{{ __('Optional') }}" />
-                                            <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Add value') }}</button>
+                                            <x-ui.button variant="plain" type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald" target="addValue">{{ __('Add value') }}</x-ui.button>
                                         </form>
                                     </div>
                                 </td>

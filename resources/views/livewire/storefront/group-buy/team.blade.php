@@ -70,10 +70,10 @@
                         </button>
                     </div>
                 @else
-                    <button type="button" wire:click="join" wire:loading.attr="disabled" wire:target="join"
+                    <x-ui.button variant="plain" type="button" wire:click="join" wire:loading.attr="disabled" wire:target="join"
                             class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
                         {{ __('Join this group') }}
-                    </button>
+                    </x-ui.button>
                 @endif
             </div>
         </div>

@@ -51,9 +51,9 @@
                                 {{ __('Add root category') }}
                             @endif
                         </h2>
-                        <button type="button" wire:click="cancel" class="flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald" aria-label="{{ __('Close') }}">
+                        <x-ui.button variant="plain" type="button" wire:click="cancel" class="flex size-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald" aria-label="{{ __('Close') }}">
                             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-                        </button>
+                        </x-ui.button>
                     </div>
 
                     <div class="space-y-4 px-5 py-4">
@@ -138,10 +138,10 @@
                                         {{ ($image || $editingImageUrl) ? __('Replace image') : __('Upload image') }}
                                     </label>
                                     @if ($image || $editingImageUrl)
-                                        <button type="button" wire:click="removeImage" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Remove') }}</button>
+                                        <x-ui.button variant="plain" type="button" wire:click="removeImage" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Remove') }}</x-ui.button>
                                     @endif
                                 </div>
-                                <div wire:loading wire:target="image" class="mt-1.5 text-[13px] text-ink-faint">{{ __('Uploading…') }}</div>
+                                <div wire:loading wire:target="image" class="mt-1.5 text-[13px] text-ink-faint"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
                                 @error('image')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                             </div>
                         </div>
@@ -174,7 +174,7 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
-                        <button type="button" wire:click="cancel" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</button>
+                        <x-ui.button variant="plain" type="button" wire:click="cancel" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Cancel') }}</x-ui.button>
                         <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="save, image">
                             {{ $editingId !== null ? __('Save changes') : __('Create category') }}
                         </x-ui.button>

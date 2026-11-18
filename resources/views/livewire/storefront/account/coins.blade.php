@@ -47,10 +47,10 @@
 
                 <div class="mt-4">
                     @if ($canCheckIn)
-                        <button type="button" wire:click="checkIn" wire:loading.attr="disabled" wire:target="checkIn"
+                        <x-ui.button variant="plain" type="button" wire:click="checkIn" wire:loading.attr="disabled" wire:target="checkIn"
                                 class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
                             {{ __('Check in today') }}
-                        </button>
+                        </x-ui.button>
                     @else
                         <p class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-line bg-paper px-4 text-sm font-medium text-ink-soft">
                             {{ __('Checked in — see you tomorrow!') }}
@@ -74,10 +74,10 @@
                 </div>
 
                 @if ($canSpin)
-                    <button type="button" wire:click="spin" wire:loading.attr="disabled" wire:target="spin"
+                    <x-ui.button variant="plain" type="button" wire:click="spin" wire:loading.attr="disabled" wire:target="spin"
                             class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white transition-colors hover:bg-emerald-deep disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-1">
                         {{ __('Spin the wheel') }}
-                    </button>
+                    </x-ui.button>
                 @else
                     <p class="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] border border-line bg-paper px-4 text-sm font-medium text-ink-soft">
                         {{ __('Spun today — come back tomorrow!') }}

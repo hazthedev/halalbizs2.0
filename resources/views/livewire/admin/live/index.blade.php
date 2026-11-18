@@ -16,7 +16,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <a href="{{ route('live.room', $session->slug) }}" target="_blank" class="text-[13px] font-medium text-emerald hover:text-emerald-deep">{{ __('Open room') }}</a>
-                            <button type="button" wire:click="forceEnd({{ $session->id }})" wire:confirm="{{ __('Force-end this live session?') }}" class="text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Force end') }}</button>
+                            <x-ui.button variant="plain" type="button" wire:click="forceEnd({{ $session->id }})" wire:confirm="{{ __('Force-end this live session?') }}" class="text-[13px] font-medium text-ink-soft hover:text-danger">{{ __('Force end') }}</x-ui.button>
                         </div>
                     </li>
                 @endforeach

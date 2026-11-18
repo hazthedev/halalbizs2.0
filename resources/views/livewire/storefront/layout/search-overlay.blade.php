@@ -60,8 +60,8 @@
                             <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.04em] text-ink-faint">{{ __('Trending') }}</p>
                             <div class="flex flex-wrap gap-2">
                                 @foreach ($trending as $term)
-                                    <button type="button" wire:click="$set('query', '{{ $term }}')"
-                                            class="rounded-full border border-line px-3 py-1.5 text-[13px] text-ink-soft hover:border-ink hover:text-ink">{{ $term }}</button>
+                                    <x-ui.button variant="plain" type="button" wire:click="$set('query', '{{ $term }}')"
+                                            class="rounded-full border border-line px-3 py-1.5 text-[13px] text-ink-soft hover:border-ink hover:text-ink">{{ $term }}</x-ui.button>
                                 @endforeach
                             </div>
                         @endif

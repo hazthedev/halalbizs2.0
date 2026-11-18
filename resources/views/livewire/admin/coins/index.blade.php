@@ -35,7 +35,7 @@
                         <td class="px-4 py-3 text-right font-medium tnum">{{ number_format($wallet->balance) }}</td>
                         <td class="px-4 py-3 text-right text-ink-soft tnum">{{ number_format($wallet->lifetime_earned) }}</td>
                         <td class="px-4 py-3 text-right">
-                            <button type="button" wire:click="openAdjust({{ $wallet->user_id }})" class="text-[13px] font-medium text-emerald hover:text-emerald-deep">{{ __('Adjust') }}</button>
+                            <x-ui.button variant="plain" type="button" wire:click="openAdjust({{ $wallet->user_id }})" class="text-[13px] font-medium text-emerald hover:text-emerald-deep">{{ __('Adjust') }}</x-ui.button>
                         </td>
                     </tr>
                     @if ($adjustUserId === $wallet->user_id)
@@ -52,8 +52,8 @@
                                         <input type="text" wire:model="adjustReason" class="mt-1 block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm">
                                         @error('adjustReason') <p class="mt-1 text-[13px] text-danger">{{ $message }}</p> @enderror
                                     </div>
-                                    <button type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep">{{ __('Apply') }}</button>
-                                    <button type="button" wire:click="$set('adjustUserId', null)" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 text-sm font-medium text-ink">{{ __('Cancel') }}</button>
+                                    <x-ui.button variant="plain" type="submit" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] bg-emerald px-4 text-sm font-medium text-white hover:bg-emerald-deep" target="adjust">{{ __('Apply') }}</x-ui.button>
+                                    <x-ui.button variant="plain" type="button" wire:click="$set('adjustUserId', null)" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 text-sm font-medium text-ink">{{ __('Cancel') }}</x-ui.button>
                                 </form>
                             </td>
                         </tr>

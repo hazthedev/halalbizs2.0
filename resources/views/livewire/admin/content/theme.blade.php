@@ -89,7 +89,7 @@
                 @else
                     <p class="mt-1.5 text-[13px] text-ink-faint">{{ __('Wide image, at least 1600px — shown 280px tall with a dark overlay.') }}</p>
                 @enderror
-                <div wire:loading wire:target="heroImage" class="mt-2 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
+                <div wire:loading wire:target="heroImage" class="mt-2 text-[13px] text-ink-soft"><x-ui.spinner class="mr-1 inline-block align-middle" /> {{ __('Uploading…') }}</div>
             </div>
 
             @if ($heroImage)
@@ -103,11 +103,11 @@
                         <p class="mb-1.5 text-[13px] font-medium text-ink">{{ __('Current image') }}</p>
                         <img src="{{ $heroUrl }}" alt="{{ __('Current hero image') }}" class="h-24 w-full max-w-md rounded-[var(--radius-card)] border border-line object-cover">
                     </div>
-                    <button type="button" wire:click="removeHeroImage"
+                    <x-ui.button variant="plain" type="button" wire:click="removeHeroImage"
                             wire:confirm="{{ __('Remove the hero image?') }}"
                             class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                         {{ __('Remove') }}
-                    </button>
+                    </x-ui.button>
                 </div>
             @endif
         </x-ui.card>
