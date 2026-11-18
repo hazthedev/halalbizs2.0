@@ -2,6 +2,7 @@
 
 use App\Enums\VoucherScope;
 use App\Enums\VoucherType;
+use App\Livewire\Seller\Vouchers\Form;
 use App\Livewire\Seller\Vouchers\Index;
 use App\Models\Store;
 use App\Models\User;
@@ -55,8 +56,7 @@ test('creating a voucher stores it shop-scoped with RM converted to sen', functi
     $seller = sellerVouchersSeller();
 
     Livewire::actingAs($seller)
-        ->test(Index::class)
-        ->call('create')
+        ->test(Form::class)
         ->set('code', 'raya15')
         ->set('type', 'fixed')
         ->set('value', '15.50')
@@ -87,8 +87,7 @@ test('codes are unique per store — but two stores may share a code', function 
     sellerVouchersVoucher(Store::factory()->approved()->create(), ['code' => 'TWICE']);
 
     $component = Livewire::actingAs($seller)
-        ->test(Index::class)
-        ->call('create')
+        ->test(Form::class)
         ->set('type', 'fixed')
         ->set('value', '5.00')
         ->set('startsAt', now()->format('Y-m-d\TH:i'))
@@ -110,7 +109,7 @@ test('a seller cannot edit, toggle, or delete another store\'s voucher', functio
     $seller = sellerVouchersSeller();
     $foreign = sellerVouchersVoucher(Store::factory()->approved()->create(), ['code' => 'FOREIGN']);
 
-    expect(fn () => Livewire::actingAs($seller)->test(Index::class)->call('edit', $foreign->id))
+    expect(fn () => Livewire::actingAs($seller)->test(Form::class, ['voucher' => $foreign]))
         ->toThrow(ModelNotFoundException::class);
 
     expect(fn () => Livewire::actingAs($seller)->test(Index::class)->call('toggleActive', $foreign->id))
@@ -150,8 +149,7 @@ test('editing keeps the voucher in the same store and updates fields', function 
     $voucher = sellerVouchersVoucher($seller->store, ['code' => 'EDITME', 'value_sen' => 1000]);
 
     Livewire::actingAs($seller)
-        ->test(Index::class)
-        ->call('edit', $voucher->id)
+        ->test(Form::class, ['voucher' => $voucher])
         ->assertSet('code', 'EDITME')
         ->assertSet('value', '10.00')
         ->set('value', '12.34')

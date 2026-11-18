@@ -20,9 +20,11 @@ use App\Enums\VoucherType;
 use App\Livewire\Seller\Boosts;
 use App\Livewire\Seller\GroupBuys;
 use App\Livewire\Seller\LiveSessions;
+use App\Livewire\Seller\LiveSessions\Detail as LiveDetail;
 use App\Livewire\Seller\Orders\Detail;
 use App\Livewire\Seller\Products\Form;
-use App\Livewire\Seller\Vouchers\Index;
+use App\Livewire\Seller\Questions\Index;
+use App\Livewire\Seller\Vouchers\Form as VoucherForm;
 use App\Livewire\Storefront\Account\OrderDetail;
 use App\Models\CancellationReason;
 use App\Models\GroupBuy;
@@ -231,7 +233,7 @@ test('feature() cannot spotlight another store\'s product on my own session', fu
     $session = sisoLiveSession($attacker, $ownProduct);
 
     Livewire::actingAs($attacker)
-        ->test(LiveSessions::class)
+        ->test(LiveDetail::class, ['session' => $session])
         ->call('feature', $session->id, $foreignProduct->id);
 
     expect($session->refresh()->featured_product_id)->toBeNull();
@@ -245,8 +247,7 @@ test('addProduct() cannot pull another store\'s product into my rail', function 
     $session = sisoLiveSession($attacker);
 
     Livewire::actingAs($attacker)
-        ->test(LiveSessions::class)
-        ->set('managingId', $session->id)
+        ->test(LiveDetail::class, ['session' => $session])
         ->set('addProductId', $foreignProduct->id)
         ->call('addProduct');
 
@@ -260,8 +261,9 @@ test('removeProduct() cannot strip a product from another store\'s session', fun
     $victimProduct = Product::factory()->create(['store_id' => $victim->store->id]);
     $victimSession = sisoLiveSession($victim, $victimProduct);
 
+    $ownSession = sisoLiveSession($attacker);
     Livewire::actingAs($attacker)
-        ->test(LiveSessions::class)
+        ->test(LiveDetail::class, ['session' => $ownSession])
         ->call('removeProduct', $victimSession->id, $victimProduct->id);
 
     expect($victimSession->refresh()->products()->count())->toBe(1);
@@ -305,7 +307,7 @@ test('Vouchers editingId is #[Locked], so save() cannot be repointed at another 
     ]);
 
     expect(fn () => Livewire::actingAs($attacker)
-        ->test(Index::class)
+        ->test(VoucherForm::class)
         ->set('editingId', $foreign->id)
         ->set('code', 'STOLEN')
         ->set('type', VoucherType::Fixed->value)
@@ -336,12 +338,12 @@ test('Questions hide() and saveAnswer() cannot touch another store\'s question',
     ]);
 
     Livewire::actingAs($attacker)
-        ->test(App\Livewire\Seller\Questions\Index::class)
+        ->test(Index::class)
         ->call('hide', $question->id)
         ->assertNotFound();
 
     Livewire::actingAs($attacker)
-        ->test(App\Livewire\Seller\Questions\Index::class)
+        ->test(Index::class)
         ->set('answeringId', $question->id)
         ->set('answerText', 'Answered by the wrong shop.')
         ->call('saveAnswer')
