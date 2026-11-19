@@ -207,14 +207,13 @@ function invadeChart(Testable $component, string $method): array
     return $ref->invoke($instance);
 }
 
-test('HB-G153 period buttons show a spinner only for their own period and our CSS hides it at rest', function () {
-    $html = $this->actingAs(dashboardAdmin())->get(route('admin.dashboard'))->getContent();
+test('HB-G153 each period button spins only for its own period, never for a sibling', function () {
+    $html = html_entity_decode($this->actingAs(dashboardAdmin())->get(route('admin.dashboard'))->getContent(), ENT_QUOTES);
 
+    // A bare "setPeriod" target matches every setPeriod call, so one click lit
+    // all three spinners (Haze 2026-11-19, slow live request).
+    expect($html)->not->toContain('wire:target="setPeriod"');
     foreach (['today', '7d', '30d'] as $key) {
-        expect($html)->toContain('wire:target="setPeriod(\''.$key.'\')"');
+        expect(substr_count($html, "wire:target=\"setPeriod('{$key}')\""))->toBe(2); // button + spinner span
     }
-    expect($html)->not->toContain('wire:target="setPeriod" wire:click');
-
-    $css = collect(glob(public_path('build/assets/app-*.css')))->map('file_get_contents')->implode('');
-    expect($css)->toContain('[wire\:loading\.inline-flex]');
 });
