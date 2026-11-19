@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ActorType;
+use App\Enums\AffiliateReferralStatus;
 use App\Enums\LedgerEntryType;
 use App\Enums\PaymentMethod;
 use App\Enums\SubOrderStatus;
@@ -231,4 +232,19 @@ test('a full refund before completion: no affiliate commission, and the commissi
     expect(AffiliateReferral::where('sub_order_id', $sub->id)->exists())->toBeFalse()
         ->and($sub->commission_sen)->toBe(0)
         ->and($sub->commission_basis)->toBe(app(CommissionSettings::class)->basis());
+});
+
+test('a partial refund before completion, then the rest after: the affiliate ends at zero, never negative', function () {
+    $sub = referredReturnRequestedSubOrder();
+
+    app(RefundService::class)->refund($sub, 10_250, ActorType::Admin, null);
+    app(SubOrderStatusService::class)->transition($sub->fresh(), SubOrderStatus::Completed, ActorType::Admin);
+    expect(affiliatePendingSen($sub))->toBe(500);
+
+    app(RefundService::class)->refund($sub->fresh(), 10_250, ActorType::Admin, null);
+
+    $referral = AffiliateReferral::where('sub_order_id', $sub->id)->sole();
+    expect(affiliatePendingSen($sub))->toBe(0)
+        ->and($referral->reversed_sen)->toBe(1_000)
+        ->and($referral->status)->toBe(AffiliateReferralStatus::Reversed);
 });
