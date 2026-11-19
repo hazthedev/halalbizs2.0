@@ -5,7 +5,7 @@
             
 
             <div class="grid gap-4 sm:grid-cols-2">
-                <x-ui.input :label="__('Code')" wire:model="code" placeholder="MERDEKA10" :error="$errors->first('code')" :hint="__('Stored in UPPERCASE — what buyers type at checkout.')" class="font-mono" />
+                <x-ui.input :label="__('Code')" wire:model="code" placeholder="MERDEKA10" :error="$errors->first('code')" :hint="__('Stored in UPPERCASE — what buyers type at checkout.')" input-class="font-mono" />
                 <div>
                     <label for="voucher-type" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Type') }}</label>
                     <select id="voucher-type" wire:model.live="type"

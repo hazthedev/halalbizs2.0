@@ -55,7 +55,7 @@
                 <input type="checkbox" wire:model.live="expiring" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                 {{ __('Expiring soon') }}
             </label>
-            <div class="flex min-w-0 items-center gap-2">
+            <div class="flex min-w-0 items-center gap-2 lg:col-span-2">
                 <label for="acert-from" class="sr-only">{{ __('Submitted from') }}</label>
                 <input id="acert-from" type="date" wire:model.live="dateFrom" class="{{ $fieldClass }} min-w-0">
                 <span class="text-[13px] text-ink-faint" aria-hidden="true">–</span>

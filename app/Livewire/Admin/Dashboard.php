@@ -511,6 +511,9 @@ class Dashboard extends Component
             ]],
             'labels' => $days->all(),
             'options' => [
+                'chart' => ['height' => 240],
+                // Small y-axis labels leave no gutter, so the first rotated date was clipped.
+                'grid' => ['padding' => ['left' => 28]],
                 'colors' => ['#5C544B'],
                 'xaxis' => ['categories' => $days->all(), 'type' => 'category', 'tickAmount' => 6],
                 'yaxis' => ['min' => 0, 'forceNiceScale' => true],

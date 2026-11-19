@@ -1,7 +1,13 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <div class="flex flex-wrap items-center gap-3">
+    <div>
+    <a href="{{ route('admin.sellers.stores') }}" wire:navigate
+       class="inline-flex min-h-11 items-center gap-1.5 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+        {{ __('Stores') }}
+    </a>
+    <div class="mt-1 flex flex-wrap items-center gap-3">
         @php $logoUrl = $store->getFirstMediaUrl('logo'); @endphp
         @if ($logoUrl !== '')
             <img src="{{ $logoUrl }}" alt="{{ $store->name }}" class="size-12 rounded-[var(--radius-card)] border border-line bg-paper object-cover">
@@ -9,22 +15,13 @@
             <span class="flex size-12 items-center justify-center rounded-[var(--radius-card)] border border-line bg-paper font-display text-lg font-medium text-ink-faint" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($store->name, 0, 1)) }}</span>
         @endif
 
-        <div class="min-w-0">
-            <div class="flex flex-wrap items-center gap-2">
-                <h1 class="font-display text-[22px] font-medium leading-tight">{{ $store->name }}</h1>
-                <x-store-status-pill :status="$store->status" />
-            </div>
-            <p class="text-[13px] text-ink-soft">
-                {{ __('Owner: :name (:email)', ['name' => $store->user->name, 'email' => $store->user->email]) }}
-                · {{ __('Joined :date', ['date' => $store->created_at->display()->format('j M Y')]) }}
-            </p>
-        </div>
+        <x-ui.section-heading as="h1" class="min-w-0" :title="$store->name"
+            :subtitle="__('Owner: :name (:email)', ['name' => $store->user->name, 'email' => $store->user->email])
+                .' · '.__('Joined :date', ['date' => $store->created_at->display()->format('j M Y')])">
+            <x-slot:actions><x-store-status-pill :status="$store->status" /></x-slot:actions>
+        </x-ui.section-heading>
 
         <div class="ml-auto flex items-center gap-2">
-            <a href="{{ route('admin.sellers.stores') }}" wire:navigate
-               class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                {{ __('All stores') }}
-            </a>
             @if ($store->isApproved())
                 <a href="{{ $store->storefrontUrl() }}" target="_blank" rel="noopener"
                    class="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
@@ -33,6 +30,7 @@
                 </a>
             @endif
         </div>
+    </div>
     </div>
 
     @if ($store->status === \App\Enums\StoreStatus::Suspended && $store->rejection_reason)
@@ -114,7 +112,7 @@
                            max="100"
                            wire:model="commissionRate"
                            placeholder="{{ __('Inherit') }}"
-                           class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('commissionRate') ? 'border-danger' : 'border-line-strong' }}"
+                           class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('commissionRate') ? 'border-danger' : 'border-line-strong' }}">
                 </div>
                 <x-ui.button variant="secondary" wire:click="saveCommission" wire:loading.attr="disabled">
                     {{ __('Save override') }}
@@ -130,20 +128,20 @@
     <x-ui.card class="p-4">
         <h2 class="text-sm font-medium">{{ __('Record settlement') }}</h2>
         <p class="mt-1 text-[13px] text-ink-soft">{{ __('Seller paid us') }} · {{ __('Amount owed: :amount', ['amount' => \App\Support\Money::format($owedSen)]) }}</p>
-        <form wire:submit="recordSettlement" class="mt-3 flex flex-wrap items-start gap-2">
-            <div class="w-36">
+        <form wire:submit="recordSettlement" class="mt-3 grid items-start gap-3 md:grid-cols-[1fr_1fr_2fr_auto]">
+            <div>
                 <label for="settle-amount" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Amount (RM)') }}</label>
                 <input id="settle-amount" type="text" inputmode="decimal" wire:model="settleAmount"
                        class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('settleAmount') ? 'border-danger' : 'border-line-strong' }}">
                 @error('settleAmount') <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p> @enderror
             </div>
-            <div class="w-48">
+            <div>
                 <label for="settle-ref" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Bank reference') }}</label>
                 <input id="settle-ref" type="text" wire:model="settleReference"
                        class="block min-h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('settleReference') ? 'border-danger' : 'border-line-strong' }}">
                 @error('settleReference') <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p> @enderror
             </div>
-            <div class="min-w-48 flex-1">
+            <div>
                 <label for="settle-note" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Note (optional)') }}</label>
                 <input id="settle-note" type="text" wire:model="settleNote"
                        class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">

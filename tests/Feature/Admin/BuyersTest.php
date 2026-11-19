@@ -81,7 +81,8 @@ test('the buyer detail shows the orders summary, addresses and the PDPA note', f
         ->assertOk()
         ->assertSee('RM 123.45')
         ->assertSee('12 Jalan Mawar')
-        ->assertSee('PDPA anonymization arrives in M8');
+        ->assertDontSee('PDPA anonymization')
+        ->assertDontSee('M8');
 });
 
 test('the buyer detail returns 404 for admin staff accounts', function () {
