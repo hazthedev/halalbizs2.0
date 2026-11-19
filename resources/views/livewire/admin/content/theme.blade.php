@@ -83,7 +83,7 @@
             <div>
                 <label for="hero-image" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Hero image') }}</label>
                 <input id="hero-image" type="file" accept="image/*" wire:model="heroImage"
-                       class="block w-full text-[13px] text-ink-soft file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[var(--radius-control)] file:border file:border-line-strong file:bg-surface file:px-4 file:py-2 file:text-[13px] file:font-medium file:text-ink hover:file:bg-paper">
+                       class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-[13px] text-ink file:mr-3 file:rounded-md file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-[13px] file:font-medium file:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                 @error('heroImage')
                     <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
                 @else

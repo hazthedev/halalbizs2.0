@@ -94,13 +94,13 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 
 ## 10. Banners, home sections and pages
 
-1. **Content > Banners**: select **Add banner**. Set titles per language, **Button text**, and **When tapped, open** (a product, store, category, the flash sale, a page, the help centre, search results, or a web address). Add the **Image** (wide, 3:1, at least 1200 pixels, up to 4 MB), optional **Vietnamese image** and **Video**, **Starts at** and **Ends at**, and **Active**. Select **Create banner** or **Save banner**. Reorder with **Move up** and **Move down**.
+1. **Content > Banners**: select **Add banner**. Set titles per language, **Button text**, and **When tapped, open** (a product, store, category, the flash sale, a page, the help centre, search results, or a web address). Add the **Image** (wide, 3:1, at least 1200 pixels, up to 4 MB), optional **Vietnamese image** and **Video**, **Starts at** and **Ends at**, and **Active**. When editing, the current image shows above **Replace image**. Select **Create banner** or **Save banner**. Reorder with **Move up** and **Move down**.
 2. **Content > Home sections**: select a **Section type**, then **Add section**. The sections show on the home page top to bottom. Edit **Heading**, **Source** (**Latest products**, **Top sellers**), **Limit**, picked products or stores, tiles with pictures and links, and **Show on** (**Web and app**, **Web only**, **App only**). Select **Save section**.
 3. Changes are drafts first (a **Draft** tag). Use **Preview** to look, then **Publish** (or **Publish all**). **Throw away** discards a draft. **History** lists past versions, with **Restore as draft** and **Restore and publish**.
 4. **Scheduled layouts**: **New scheduled layout** (for example Ramadan) with **Starts at** and **Ends at**. It switches on by itself and goes back to the everyday layout at the end.
 5. **Content > Pages**: **Add page** for terms, FAQ and similar. Set **Slug**, titles and bodies per language, search title and description, **Share picture**, **Show a link to this page in the website footer** and **Published**. System pages keep their slug. Terms and privacy stay published because checkout links to them.
 6. **Footer & contact**: update **Email**, **Phone**, **WhatsApp**, **Address** and social links, then **Save contact**.
-7. **Flash sales**: enter **Title**, **Starts**, **Ends**, select **Create flash sale**, then **Add deal** with a **Promo RM** price, **Qty** and **Per buyer** limit.
+7. **Content > Flash sales**: enter **Title**, **Starts**, **Ends**, select **Create flash sale**, then **Add deal** with a **Promo RM** price, **Qty** and **Per buyer** limit.
 8. **Support > Help articles** and **Support > Tickets**: reply with **Send reply**, **Mark urgent**, **Close ticket**, **Reopen ticket**.
 9. **System > Localization**: turn languages on or off and set currencies and exchange rates (display only, charges stay in MYR).
 

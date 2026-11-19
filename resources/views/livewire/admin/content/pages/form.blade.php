@@ -1,7 +1,7 @@
 <div class="space-y-4">
     <x-ui.section-heading as="h1" :title="$editingId !== null ? __('Edit page') : __('New page')" />
     <x-ui.card class="p-4">
-        <form wire:submit="save" class="space-y-4">
+        <form wire:submit="save" class="space-y-4" x-data="{ tab: 'en' }">
             
 
             @if ($editingIsSystem)
@@ -13,8 +13,8 @@
                 <x-ui.input :label="__('Slug')" wire:model="slug" placeholder="shipping-guide" :error="$errors->first('slug')" :hint="__('Lowercase letters, numbers, and dashes — becomes the page URL.')" class="max-w-sm" />
             @endif
 
-            {{-- EN / BM tabs for title + body --}}
-            <div x-data="{ tab: 'en' }">
+            {{-- EN / BM / VI tabs drive title, body, search title and search description --}}
+            <div>
                 <div class="flex gap-1 border-b border-line" role="tablist">
                     <button type="button" role="tab" x-on:click="tab = 'en'"
                             x-bind:aria-selected="tab === 'en' ? 'true' : 'false'"
@@ -56,14 +56,12 @@
             <fieldset class="space-y-4 border-t border-line pt-4">
                 <legend class="font-display text-base font-medium">{{ __('Search and sharing') }}</legend>
                 <p class="text-[13px] text-ink-faint">{{ __('What Google and a shared link show. Leave empty to use the page title and the start of the page text.') }}</p>
-                <div class="grid gap-4 lg:grid-cols-3">
-                    @foreach (['en' => __('English'), 'ms' => __('Bahasa Melayu'), 'vi' => __('Tiếng Việt')] as $code => $language)
-                        <div class="space-y-3" wire:key="seo-{{ $code }}">
-                            <x-ui.input :label="__('Search title').' ('.$language.')'" wire:model="seoTitle.{{ $code }}" maxlength="70" :error="$errors->first('seoTitle.'.$code)" />
-                            <x-ui.input :label="__('Search description').' ('.$language.')'" wire:model="seoDescription.{{ $code }}" maxlength="200" :error="$errors->first('seoDescription.'.$code)" />
-                        </div>
-                    @endforeach
-                </div>
+                @foreach (['en' => __('English'), 'ms' => __('Bahasa Melayu'), 'vi' => __('Tiếng Việt')] as $code => $language)
+                    <div class="space-y-3" wire:key="seo-{{ $code }}" x-show="tab === '{{ $code }}'" @if ($code !== 'en') x-cloak @endif>
+                        <x-ui.input :label="__('Search title').' ('.$language.')'" wire:model="seoTitle.{{ $code }}" maxlength="70" :error="$errors->first('seoTitle.'.$code)" />
+                        <x-ui.input :label="__('Search description').' ('.$language.')'" wire:model="seoDescription.{{ $code }}" maxlength="200" :error="$errors->first('seoDescription.'.$code)" />
+                    </div>
+                @endforeach
                 <div>
                     <label for="share-image" class="block text-[13px] font-medium text-ink">{{ __('Share picture') }}</label>
                     <input id="share-image" type="file" wire:model="shareImage" accept="image/*"

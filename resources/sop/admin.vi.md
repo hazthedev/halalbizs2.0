@@ -94,13 +94,13 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 
 ## 10. Banner, mục trang chủ và trang nội dung
 
-1. **Content > Banners**: chọn **Add banner**. Đặt tiêu đề theo từng ngôn ngữ, **Button text**, và **When tapped, open** (một sản phẩm, cửa hàng, danh mục, flash sale, một trang, trung tâm trợ giúp, kết quả tìm kiếm, hoặc địa chỉ web). Thêm **Image** (rộng, tỉ lệ 3:1, ít nhất 1200 pixel, tối đa 4 MB), **Vietnamese image** và **Video** tuỳ chọn, **Starts at** và **Ends at**, và **Active**. Chọn **Create banner** hoặc **Save banner**. Sắp xếp bằng **Move up** và **Move down**.
+1. **Content > Banners**: chọn **Add banner**. Đặt tiêu đề theo từng ngôn ngữ, **Button text**, và **When tapped, open** (một sản phẩm, cửa hàng, danh mục, flash sale, một trang, trung tâm trợ giúp, kết quả tìm kiếm, hoặc địa chỉ web). Thêm **Image** (rộng, tỉ lệ 3:1, ít nhất 1200 pixel, tối đa 4 MB), **Vietnamese image** và **Video** tuỳ chọn, **Starts at** và **Ends at**, và **Active**. Khi sửa, ảnh hiện tại hiện phía trên **Replace image**. Chọn **Create banner** hoặc **Save banner**. Sắp xếp bằng **Move up** và **Move down**.
 2. **Content > Home sections**: chọn **Section type**, rồi **Add section**. Các mục hiện trên trang chủ từ trên xuống. Sửa **Heading**, **Source** (**Latest products**, **Top sellers**), **Limit**, sản phẩm hoặc cửa hàng được chọn, các ô ảnh kèm liên kết, và **Show on** (**Web and app**, **Web only**, **App only**). Chọn **Save section**.
 3. Thay đổi ban đầu là bản nháp (nhãn **Draft**). Dùng **Preview** để xem, rồi **Publish** (hoặc **Publish all**). **Throw away** bỏ bản nháp. **History** liệt kê các phiên bản cũ, với **Restore as draft** và **Restore and publish**.
 4. **Scheduled layouts**: **New scheduled layout** (ví dụ Ramadan) với **Starts at** và **Ends at**. Bố cục tự bật và tự quay về bố cục thường ngày khi kết thúc.
 5. **Content > Pages**: **Add page** cho điều khoản, FAQ và các trang tương tự. Đặt **Slug**, tiêu đề và nội dung theo ngôn ngữ, tiêu đề và mô tả tìm kiếm, **Share picture**, **Show a link to this page in the website footer** và **Published**. Trang hệ thống giữ slug. Trang điều khoản và bảo mật luôn được xuất bản vì trang thanh toán liên kết tới chúng.
 6. **Footer & contact**: cập nhật **Email**, **Phone**, **WhatsApp**, **Address** và các liên kết mạng xã hội, rồi **Save contact**.
-7. **Flash sales**: nhập **Title**, **Starts**, **Ends**, chọn **Create flash sale**, rồi **Add deal** với giá **Promo RM**, **Qty** và giới hạn **Per buyer**.
+7. **Content > Flash sales**: nhập **Title**, **Starts**, **Ends**, chọn **Create flash sale**, rồi **Add deal** với giá **Promo RM**, **Qty** và giới hạn **Per buyer**.
 8. **Support > Help articles** và **Support > Tickets**: trả lời bằng **Send reply**, **Mark urgent**, **Close ticket**, **Reopen ticket**.
 9. **System > Localization**: bật hoặc tắt ngôn ngữ và đặt tiền tệ và tỉ giá (chỉ để hiển thị, tiền thu vẫn bằng MYR).
 

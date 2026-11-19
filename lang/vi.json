@@ -2858,5 +2858,8 @@
     "Turn on selected": "Bật mục đã chọn",
     "{1}:count deal ended|[2,*]:count deals ended": "{1}:count ưu đãi đã kết thúc|[2,*]:count ưu đãi đã kết thúc",
     "{1}:count voucher updated|[2,*]:count vouchers updated": "{1}:count voucher đã cập nhật|[2,*]:count voucher đã cập nhật",
-    "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count voucher đã xóa|[2,*]:count voucher đã xóa"
+    "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count voucher đã xóa|[2,*]:count voucher đã xóa",
+    "Current banner image": "Ảnh biểu ngữ hiện tại",
+    "Create one above, then add deals to it.": "Tạo một chương trình ở trên, rồi thêm ưu đãi vào đó.",
+    "Deals": "Ưu đãi"
 }
