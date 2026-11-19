@@ -65,10 +65,10 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 5. Chọn **Send for review**. Đội của sàn duyệt hoặc từ chối. Nếu từ chối sẽ có lý do. Chọn **Fix and resubmit**.
 6. Cho đến khi được duyệt, nhãn halal không hiện. Không sản phẩm nào có nhãn cho đến khi quản trị viên duyệt.
 7. Để gia hạn, chọn **Renew or edit** trên cùng chứng nhận. Nhãn tạm dừng cho đến khi được duyệt lại, nhưng sản phẩm vẫn được bán. Hãy gia hạn ít nhất ba tháng trước **Expires on**. Danh sách cảnh báo "days to expiry".
-8. Từ ngày 2 tháng 12 năm 2026, sản phẩm thuộc danh mục thực phẩm, tạp hoá và đồ uống (được quản trị viên đánh dấu "Required to list") không thể xuất bản nếu không có chứng nhận hợp lệ đã được duyệt bao phủ sản phẩm đó. Chứng nhận bạn vừa nộp giữ cho sản phẩm được đăng trong 14 ngày trong lúc chúng tôi xét duyệt.
+8. Từ ngày 2 tháng 12 năm 2026, sản phẩm thuộc danh mục thực phẩm, tạp hoá, đồ uống, mỹ phẩm và dược phẩm (được quản trị viên đánh dấu "Required to list") không thể xuất bản nếu không có chứng nhận hợp lệ đã được duyệt bao phủ sản phẩm đó. Chứng nhận bạn vừa nộp giữ cho sản phẩm được đăng trong 14 ngày trong lúc chúng tôi xét duyệt.
 9. Nếu sản phẩm chưa thể lên sàn, biểu mẫu hiện **This product cannot go live yet** kèm lý do và liên kết **Go to Halal certificates**. Lý do thường gặp: chưa có chứng nhận, chứng nhận đã hết hạn, hoặc đang được kiểm tra.
-10. Danh mục mỹ phẩm và dược phẩm chỉ dùng nhãn. Không cần chứng nhận mới được đăng, nhưng có chứng nhận thì hiện nhãn halal.
-11. Trước ngày 2 tháng 12 năm 2026, kiểm tra này chỉ báo cáo và không chặn. Các danh mục cần chứng nhận là **Food & Snacks**, **Groceries & Pantry**, **Drinks** và **Home & Living > Groceries**.
+10. Từ ngày 2 tháng 12 năm 2026, danh mục mỹ phẩm và dược phẩm theo cùng quy định như thực phẩm: không có chứng nhận hợp lệ đã được duyệt thì không được đăng. Sản phẩm có chứng nhận hiện nhãn halal.
+11. Trước ngày 2 tháng 12 năm 2026, kiểm tra này chỉ báo cáo và không chặn. Các danh mục cần chứng nhận là **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** và **Pharma & Supplements**.
 12. Find my WHIP certificates: nhập **Company SSM number** và chọn **Find my certificates**, rồi **Link certificate**. Dùng **Import product drafts** để tạo bản nháp sản phẩm từ chứng nhận đã liên kết.
 
 ## 7. Xử lý đơn hàng

@@ -49,7 +49,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 1. Mở **Catalog > Categories**. Cây danh mục sâu tối đa ba cấp. Dùng **Add root category**, **Add child**, **Edit**, nút di chuyển lên và xuống, và **Activate** hoặc **Deactivate**. **Delete** chỉ dùng được khi danh mục không có danh mục con và sản phẩm.
 2. Trong biểu mẫu điền **Name (English)**, và tên, mô tả tiếng Malay và tiếng Việt tuỳ chọn. Thêm **Image** và đánh dấu **Active — visible on the storefront**. Chọn **Attributes for this category**.
 3. Đặt **Halal certificate**: **Inherit from parent**, **Required to list** hoặc **Not required**. Required nghĩa là người bán không đăng được ở đó nếu thiếu chứng nhận đã duyệt bao phủ sản phẩm.
-4. Quy định bắt đầu từ ngày 2 tháng 12 năm 2026. Trên bản live, các danh mục bắt buộc là **Food & Snacks**, **Groceries & Pantry**, **Drinks** và **Home & Living > Groceries**. **Cosmetics & Care** và **Pharma & Supplements** chỉ dùng nhãn (không bắt buộc).
+4. Quy định bắt đầu từ ngày 2 tháng 12 năm 2026. Trên bản live, các danh mục bắt buộc là **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** và **Pharma & Supplements**.
 5. Chọn **Create category** hoặc **Save changes**.
 6. Các menu danh mục liên quan: **Attributes**, **Brands**, **Reviews** (ẩn đánh giá không phù hợp) và **Moderation**.
 7. **Moderation**: khi **New products need admin approval before going live** bật (System > Settings), sản phẩm mới chờ ở đây. Chọn **Approve**, hoặc **Reject** kèm lý do (sản phẩm quay về bản nháp và người bán nhận lý do), hoặc **Ban** để gỡ. Bạn có thể xử lý hàng loạt bằng **Approve selected**, **Reject selected**, **Ban selected**.

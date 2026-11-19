@@ -49,7 +49,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 1. Open **Catalog > Categories**. The tree can be three levels deep. Use **Add root category**, **Add child**, **Edit**, the move up and move down buttons, and **Activate** or **Deactivate**. **Delete** works only when a category has no children or products.
 2. In the form fill in **Name (English)**, and optional Malay and Vietnamese names and descriptions. Add an **Image** and tick **Active — visible on the storefront**. Choose **Attributes for this category**.
 3. Set **Halal certificate**: **Inherit from parent**, **Required to list** or **Not required**. Required means a seller cannot list there without an approved certificate covering the product.
-4. The gate starts on 2 December 2026. On live, the required categories are **Food & Snacks**, **Groceries & Pantry**, **Drinks** and **Home & Living > Groceries**. **Cosmetics & Care** and **Pharma & Supplements** are badge only (not required).
+4. The gate starts on 2 December 2026. On live, the required categories are **Food & Snacks**, **Groceries & Pantry**, **Drinks** and **Home & Living > Groceries**, **Cosmetics & Care** and **Pharma & Supplements**.
 5. Select **Create category** or **Save changes**.
 6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (hide unsuitable reviews), and **Moderation**.
 7. **Moderation**: when **New products need admin approval before going live** is on (System > Settings), new products wait here. Select **Approve**, or **Reject** with a reason (the product returns to drafts and the seller gets the reason), or **Ban** to remove it. You can bulk **Approve selected**, **Reject selected**, **Ban selected**.
