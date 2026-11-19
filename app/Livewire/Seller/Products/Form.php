@@ -21,6 +21,7 @@ use App\Support\ContentLocales;
 use App\Support\DisplayTime;
 use App\Support\HtmlSanitizer;
 use App\Support\RinggitInput;
+use App\Support\UploadName;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -524,14 +525,14 @@ class Form extends Component
 
             foreach ($this->newImages as $file) {
                 $product->addMedia($file->getRealPath())
-                    ->usingFileName($file->getClientOriginalName())
+                    ->usingFileName(UploadName::unguessable($file))
                     ->toMediaCollection('images');
             }
 
             if ($this->newVideo !== null) {
                 // singleFile collection — replaces any previous video.
                 $product->addMedia($this->newVideo->getRealPath())
-                    ->usingFileName($this->newVideo->getClientOriginalName())
+                    ->usingFileName(UploadName::unguessable($this->newVideo))
                     ->toMediaCollection('videos');
             }
 
@@ -773,7 +774,7 @@ class Form extends Component
         foreach ($this->matrixImages as $key => $file) {
             if ($file !== null && isset($byKey[(string) $key])) {
                 $byKey[(string) $key]->addMedia($file->getRealPath())
-                    ->usingFileName($file->getClientOriginalName())
+                    ->usingFileName(UploadName::unguessable($file))
                     ->toMediaCollection('image');
             }
         }

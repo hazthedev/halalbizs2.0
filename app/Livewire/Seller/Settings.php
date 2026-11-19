@@ -6,6 +6,7 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Support\MalaysianBanks;
 use App\Support\MalaysianStates;
 use App\Support\RinggitInput;
+use App\Support\UploadName;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -89,13 +90,13 @@ class Settings extends Component
 
         if ($this->logo !== null) {
             $store->addMedia($this->logo->getRealPath())
-                ->usingFileName('logo-'.$this->logo->getClientOriginalName())
+                ->usingFileName(UploadName::unguessable($this->logo, 'logo-'))
                 ->toMediaCollection('logo');
         }
 
         if ($this->banner !== null) {
             $store->addMedia($this->banner->getRealPath())
-                ->usingFileName('banner-'.$this->banner->getClientOriginalName())
+                ->usingFileName(UploadName::unguessable($this->banner, 'banner-'))
                 ->toMediaCollection('banner');
         }
 
