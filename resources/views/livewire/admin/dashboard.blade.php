@@ -7,6 +7,7 @@
             @foreach ($this->periods() as $key => $label)
                 <x-ui.button variant="plain" type="button"
                         wire:click="setPeriod('{{ $key }}')"
+                        wire:target="setPeriod('{{ $key }}')"
                         wire:key="period-{{ $key }}"
                         aria-pressed="{{ $period === $key ? 'true' : 'false' }}"
                         class="min-h-10 rounded-md px-3 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $period === $key ? 'bg-emerald-night text-on-dark' : 'text-ink-soft hover:text-ink' }}">

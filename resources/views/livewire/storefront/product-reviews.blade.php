@@ -39,6 +39,7 @@
                 <x-ui.button variant="plain" type="button"
                         wire:key="review-filter-{{ $key }}"
                         wire:click="setReviewFilter('{{ $key }}')"
+                        wire:target="setReviewFilter('{{ $key }}')"
                         aria-pressed="{{ $reviewFilter === $key ? 'true' : 'false' }}"
                         class="min-h-11 rounded-full border px-4 text-[13px] font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald {{ $reviewFilter === $key ? 'border-emerald bg-emerald-tint text-emerald' : 'border-line-strong text-ink hover:border-ink' }}">
                     {{ $label }}

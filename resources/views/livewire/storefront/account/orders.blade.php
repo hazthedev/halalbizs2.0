@@ -5,7 +5,7 @@
             <nav class="flex min-w-max border-b border-line" aria-label="{{ __('Order status') }}">
                 @foreach ($tabs as $key => $label)
                     @php($isActive = $tab === $key)
-                    <x-ui.button variant="plain" type="button" wire:click="setTab('{{ $key }}')"
+                    <x-ui.button variant="plain" type="button" wire:click="setTab('{{ $key }}')" wire:target="setTab('{{ $key }}')"
                             :aria-current="$isActive ? 'true' : null"
                             class="-mb-px flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm transition-colors duration-150 {{ $isActive
                                 ? 'border-ink font-medium text-ink'
@@ -90,7 +90,7 @@
                                 <p class="mx-auto mt-6 max-w-md text-sm text-ink">{{ __('Your orders are here:') }}</p>
                                 <div class="mt-3 flex flex-wrap justify-center gap-2">
                                     @foreach ($elsewhere as $key => $count)
-                                        <x-ui.button variant="plain" type="button" wire:click="setTab('{{ $key }}')"
+                                        <x-ui.button variant="plain" type="button" wire:click="setTab('{{ $key }}')" wire:target="setTab('{{ $key }}')"
                                                 class="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-pill)] border border-line-strong bg-surface px-4 text-sm text-ink transition-colors duration-(--dur-micro) hover:border-ink hover:bg-paper">
                                             {{ $tabs[$key] }}
                                             <span class="rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium leading-none text-emerald">{{ $count }}</span>

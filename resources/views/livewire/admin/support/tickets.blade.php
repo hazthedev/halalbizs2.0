@@ -88,7 +88,7 @@
         {{-- ===== Queue tabs ===== --}}
         <div class="flex gap-1 overflow-x-auto border-b border-line" role="tablist">
             @foreach (TicketStatus::cases() as $status)
-                <x-ui.button variant="plain" type="button" role="tab" wire:click="setTab('{{ $status->value }}')"
+                <x-ui.button variant="plain" type="button" role="tab" wire:click="setTab('{{ $status->value }}')" wire:target="setTab('{{ $status->value }}')"
                         aria-selected="{{ $tab === $status->value ? 'true' : 'false' }}"
                         class="flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $status->value ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink' }}">
                     {{ $status->label() }}
