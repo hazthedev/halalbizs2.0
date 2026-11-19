@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Content\Vouchers\Form as VouchersForm;
+use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\Finance\Commission;
 use App\Livewire\Admin\Localization\Index as LocalizationIndex;
 use App\Livewire\Admin\Orders\Detail as OrderDetail;
@@ -76,4 +77,9 @@ test('the voucher Code font applies to the input, not the label wrapper', functi
     Livewire::actingAs(bugsAdmin())->test(VouchersForm::class)
         ->assertDontSeeHtml('<div class="font-mono">')
         ->assertSeeHtml('font-mono');
+});
+
+test('the new buyers chart carries a fixed height instead of the library auto ratio', function () {
+    Livewire::actingAs(bugsAdmin())->test(Dashboard::class)
+        ->assertViewHas('buyersChart', fn (array $chart) => ($chart['options']['chart']['height'] ?? null) === 240);
 });

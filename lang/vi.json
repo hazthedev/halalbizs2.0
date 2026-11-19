@@ -2859,11 +2859,11 @@
     "{1}:count deal ended|[2,*]:count deals ended": "{1}:count ưu đãi đã kết thúc|[2,*]:count ưu đãi đã kết thúc",
     "{1}:count voucher updated|[2,*]:count vouchers updated": "{1}:count voucher đã cập nhật|[2,*]:count voucher đã cập nhật",
     "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count voucher đã xóa|[2,*]:count voucher đã xóa",
-    "No status changes yet.": "No status changes yet.",
-    ":n items": ":n items",
+    "No status changes yet.": "Chưa có thay đổi trạng thái.",
+    ":n items": ":n mục",
     ":label: :n": ":label: :n",
-    "Pick a store and category to see the rate a new sub-order would get.": "Pick a store and category to see the rate a new sub-order would get.",
-    "Rates are set by hand. Saving writes a new row, and the history keeps the trail.": "Rates are set by hand. Saving writes a new row, and the history keeps the trail.",
-    "This record or its file was not found. A document may not have been uploaded yet.": "This record or its file was not found. A document may not have been uploaded yet.",
-    "Back to dashboard": "Back to dashboard"
+    "Pick a store and category to see the rate a new sub-order would get.": "Chọn cửa hàng và danh mục để xem mức phí mà một đơn hàng con mới sẽ được áp dụng.",
+    "Rates are set by hand. Saving writes a new row, and the history keeps the trail.": "Tỷ giá được nhập thủ công. Mỗi lần lưu sẽ ghi một dòng mới, và lịch sử lưu lại toàn bộ thay đổi.",
+    "This record or its file was not found. A document may not have been uploaded yet.": "Không tìm thấy bản ghi hoặc tệp của bản ghi này. Có thể tài liệu chưa được tải lên.",
+    "Back to dashboard": "Quay lại bảng điều khiển"
 }

@@ -138,13 +138,13 @@
                                 <div class="flex items-start gap-2">
                                     <div>
                                         <label for="rate-{{ $code }}" class="mb-1 block text-[12px] text-ink-soft">{{ __('Rate') }}</label>
-                                        <input id="rate-{{ $code }}" type="text" inputmode="decimal" wire:model="rateInput.{{ $code }}" placeholder="0.21"
+                                        <input id="rate-{{ $code }}" aria-label="{{ __(':code rate', ['code' => $code]) }}" type="text" inputmode="decimal" wire:model="rateInput.{{ $code }}" placeholder="0.21"
                                                class="block min-h-11 w-28 rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-right font-mono text-[13px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('rateInput.'.$code) ? 'border-danger' : 'border-line-strong' }}">
                                         @error('rateInput.'.$code)<p class="mt-1 max-w-40 text-[12px] text-danger">{{ $message }}</p>@enderror
                                     </div>
                                     <div>
                                         <label for="margin-{{ $code }}" class="mb-1 block text-[12px] text-ink-soft">{{ __('Margin %') }}</label>
-                                        <input id="margin-{{ $code }}" type="text" inputmode="decimal" wire:model="marginInput.{{ $code }}" placeholder="0"
+                                        <input id="margin-{{ $code }}" aria-label="{{ __(':code margin %', ['code' => $code]) }}" type="text" inputmode="decimal" wire:model="marginInput.{{ $code }}" placeholder="0"
                                                class="block min-h-11 w-20 rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-right font-mono text-[13px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('marginInput.'.$code) ? 'border-danger' : 'border-line-strong' }}">
                                         @error('marginInput.'.$code)<p class="mt-1 max-w-32 text-[12px] text-danger">{{ $message }}</p>@enderror
                                     </div>
