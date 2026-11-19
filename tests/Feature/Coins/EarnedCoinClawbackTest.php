@@ -81,3 +81,21 @@ test('the take-back is on the coin history with the sub-order as its reference',
         ->where('type', CoinTransactionType::Adjustment)->where('reference_id', $sub->id)->sole();
     expect((int) $row->amount)->toBe(-100)->and($row->reference_type)->toBe($sub->getMorphClass());
 });
+
+test('a refund before completion takes nothing back, because nothing was earned yet', function () {
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor']);
+    $product = Product::factory()->create(['cod_enabled' => true]);
+    $product->store->update(['shipping_mode' => 'flat', 'shipping_flat_fee_sen' => 0, 'free_shipping_over_sen' => null]);
+    $product->variants->first()->update(['price_sen' => 10_000, 'sale_price_sen' => null, 'stock' => 10]);
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+    $sub = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod)->subOrders->first();
+    app(CoinService::class)->adminAdjust($buyer, 30, 'unrelated grant');
+
+    app(RefundService::class)->refund($sub->fresh(), $sub->total_sen, ActorType::Admin, null);
+
+    expect(app(CoinService::class)->balance($buyer))->toBe(30)
+        ->and(app(CoinService::class)->walletFor($buyer)->transactions()
+            ->where('reference_type', $sub->getMorphClass())->where('reference_id', $sub->id)->exists())->toBeFalse();
+});
