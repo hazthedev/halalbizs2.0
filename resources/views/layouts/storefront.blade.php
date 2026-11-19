@@ -110,10 +110,6 @@
                     @endforeach
                 </form>
 
-                {{-- Stands down below sm so the ticker keeps its width. The same
-                     link lives in the footer's COMPANY column, so nothing on a
-                     phone becomes unreachable. --}}
-                <a href="{{ route('seller.apply') }}" wire:navigate class="hidden text-[length:var(--text-xs)] text-on-dark transition-colors duration-(--dur-micro) hover:text-white sm:inline">{{ __('Sell on HalalBizs') }}</a>
             </div>
         </div>
     </div>
@@ -338,7 +334,7 @@
                     @foreach ($footer['pages'] as $footerPage)
                         <li><a href="{{ route('page.show', $footerPage->slug) }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ $footerPage->title }}</a></li>
                     @endforeach
-                    <li><a href="{{ route('seller.login') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Sell on HalalBizs') }}</a></li>
+                    <li><a href="{{ auth()->guest() ? route('seller.login') : (auth()->user()->hasRole('seller') ? route('seller.dashboard') : route('seller.apply')) }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Sell on HalalBizs') }}</a></li>
                 </ul>
 
                 <form method="POST" action="{{ route('newsletter.subscribe') }}" class="mt-6 flex gap-2">
