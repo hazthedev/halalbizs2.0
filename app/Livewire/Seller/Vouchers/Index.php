@@ -99,11 +99,17 @@ class Index extends Component
     public function render()
     {
         return view('livewire.seller.vouchers.index', [
-            'vouchers' => $this->sortTable(Voucher::where('store_id', $this->currentStore()->id)
-                ->where('scope', VoucherScope::Shop)
-                ->when(trim($this->search) !== '', fn ($q) => $q->whereRaw(JsonSearch::clause('code'), [JsonSearch::pattern($this->search)])))
-                ->paginate($this->tablePageSize()),
+            'vouchers' => $this->results(),
         ])->title(__('Shop vouchers'));
+    }
+
+    /** One query for the grid and for "select all on this page" (WithTable::updatedSelectPage). */
+    private function results()
+    {
+        return $this->sortTable(Voucher::where('store_id', $this->currentStore()->id)
+            ->where('scope', VoucherScope::Shop)
+            ->when(trim($this->search) !== '', fn ($q) => $q->whereRaw(JsonSearch::clause('code'), [JsonSearch::pattern($this->search)])))
+            ->paginate($this->tablePageSize());
     }
 
     /** Store-scoped fetch — a foreign voucher id 404s, never leaks. */

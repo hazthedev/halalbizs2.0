@@ -99,8 +99,8 @@
                    class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface py-2 pl-9 pr-3 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
         </div></div>
 
-        <x-ui.table-skeleton wire:loading wire:target="ledgerSearch, payoutSearch, sortBy, perPage, gotoPage, nextPage, previousPage" />
-        <div wire:loading.remove wire:target="ledgerSearch, payoutSearch, sortBy, perPage, gotoPage, nextPage, previousPage">
+        <x-ui.table-skeleton wire:loading wire:target="ledgerSearch, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="ledgerSearch, sortBy, perPage, gotoPage, nextPage, previousPage">
         @if ($entries->isEmpty())
             <x-ui.empty-state :title="__('No entries yet')" :message="__('Sales land here when an order completes — that\'s when the money becomes yours.')" />
         @else
@@ -153,8 +153,8 @@
                    class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface py-2 pl-9 pr-3 text-[13px] text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
         </div></div>
 
-        <x-ui.table-skeleton wire:loading wire:target="ledgerSearch, payoutSearch, sortBy, perPage, gotoPage, nextPage, previousPage" />
-        <div wire:loading.remove wire:target="ledgerSearch, payoutSearch, sortBy, perPage, gotoPage, nextPage, previousPage">
+        <x-ui.table-skeleton wire:loading wire:target="payoutSearch, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="payoutSearch, sortBy, perPage, gotoPage, nextPage, previousPage">
         @if ($payouts->isEmpty())
             <x-ui.empty-state :title="__('No payouts yet')" :message="__('Request your available balance above — payouts land here.')" />
         @else

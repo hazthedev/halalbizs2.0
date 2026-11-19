@@ -132,3 +132,13 @@ test('earnings searches ledger and payouts separately', function () {
     Livewire::test(Earnings::class)->set('ledgerSearch', 'boost')->assertSee('Boost fee')->assertDontSee('Commission SO100')
         ->set('payoutSearch', 'zzz')->assertSee('Boost fee');
 });
+
+test('select all on the page ticks only this store rows (group buys and vouchers)', function () {
+    $deal = stdDeal($this->store, 5000);
+    stdDeal(Store::factory()->approved()->create(), 6000);
+    Livewire::test(GroupBuys::class)->set('selectPage', true)->assertSet('selected', [(string) $deal->id]);
+
+    $v = stdVoucher($this->store, 'MINE');
+    stdVoucher(Store::factory()->approved()->create(), 'THEIRS');
+    Livewire::test(Vouchers::class)->set('selectPage', true)->assertSet('selected', [(string) $v->id]);
+});

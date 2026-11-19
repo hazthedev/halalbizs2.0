@@ -63,7 +63,7 @@
                             <td class="px-3 py-2 text-right tabular-nums">{{ $deal->teams_count }}</td>
                             <td class="px-3 py-2"><x-ui.badge :variant="$deal->status === \App\Enums\GroupBuyStatus::Active ? 'success' : 'neutral'">{{ $deal->status->label() }}</x-ui.badge></td>
                             <td class="px-3 py-2">
-                                <div class="flex items-center justify-end gap-1">
+                                <div class="flex min-h-11 items-center justify-end gap-1">
                                     @if ($deal->status === \App\Enums\GroupBuyStatus::Active)
                                         <button type="button" wire:click="end({{ $deal->id }})" class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('End') }}</button>
                                     @endif

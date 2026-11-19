@@ -66,14 +66,18 @@ class GroupBuys extends Component
 
     public function render(): View
     {
-        $store = $this->currentStore();
-
         return view('livewire.seller.group-buys', [
-            'deals' => $this->sortTable(GroupBuy::where('store_id', $store->id)
-                ->with(['variant', 'product'])
-                ->withCount('teams')
-                ->when(trim($this->search) !== '', fn ($q) => $q->whereHas('product', fn ($p) => $p->whereRaw(JsonSearch::clause('name->en'), [JsonSearch::pattern($this->search)]))))
-                ->paginate($this->tablePageSize()),
+            'deals' => $this->results(),
         ])->title(__('Group buys'));
+    }
+
+    /** One query for the grid and for "select all on this page" (WithTable::updatedSelectPage). */
+    private function results()
+    {
+        return $this->sortTable(GroupBuy::where('store_id', $this->currentStore()->id)
+            ->with(['variant', 'product'])
+            ->withCount('teams')
+            ->when(trim($this->search) !== '', fn ($q) => $q->whereHas('product', fn ($p) => $p->whereRaw(JsonSearch::clause('name->en'), [JsonSearch::pattern($this->search)]))))
+            ->paginate($this->tablePageSize());
     }
 }
