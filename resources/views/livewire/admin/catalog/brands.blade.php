@@ -11,18 +11,24 @@
         </form>
     </x-ui.card>
 
+    <x-ui.table.search :placeholder="__('Search name or slug')" />
+
     {{-- List --}}
     <x-ui.card class="overflow-x-auto">
-        @if ($brands->isEmpty())
+        <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
+        @if ($brands->isEmpty() && $search !== '')
+            <x-ui.empty-state :title="__('No brands match')" :message="__('Try searching for something else.')" />
+        @elseif ($brands->isEmpty())
             <x-ui.empty-state :title="__('No brands yet')" :message="__('Brands are optional on products — add the ones sellers ask for.')" />
         @else
             <table class="w-full min-w-[560px] text-[13px]">
-                <thead>
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Name') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Slug') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Active') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Products') }}</th>
+                        <x-ui.table.sortable field="name" :sort="$sort" :direction="$direction">{{ __('Name') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="slug" :sort="$sort" :direction="$direction">{{ __('Slug') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="active" :sort="$sort" :direction="$direction">{{ __('Active') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="products" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Products') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -68,5 +74,8 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
+
+    <x-ui.table.footer :rows="$brands" />
 </div>

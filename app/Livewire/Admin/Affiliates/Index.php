@@ -9,8 +9,9 @@ use App\Services\AffiliateService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
+use App\Livewire\Concerns\WithTable;
+use App\Support\JsonSearch;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 /**
  * Admin affiliate oversight (M2.5): the creator roster and the withdrawal
@@ -20,9 +21,24 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Index extends Component
 {
-    use WithPagination;
+    use WithTable;
 
     public const PER_PAGE = 20;
+
+    protected function tableFilters(): array
+    {
+        return [];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['code' => 'code', 'clicks' => 'clicks', 'referrals' => 'referrals_count', 'commission' => 'commission_sen_sum'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['commission_sen_sum' => 'desc'];
+    }
 
     public ?int $payingId = null;
 
@@ -82,13 +98,22 @@ class Index extends Component
                 ->where('status', AffiliatePayoutStatus::Requested)
                 ->oldest('requested_at')
                 ->get(),
-            'affiliates' => Affiliate::query()
-                ->with('user')
-                ->withCount('referrals')
-                // HB-G136: net of refunds (payableSen), not the gross snapshot.
-                ->withSum('referrals as commission_sen_sum', DB::raw('commission_sen - reversed_sen'))
-                ->orderByDesc('commission_sen_sum')
-                ->paginate(self::PER_PAGE),
+            'affiliates' => $this->results(),
         ])->title(__('Affiliates'));
+    }
+
+    private function results()
+    {
+        $term = JsonSearch::pattern($this->search);
+
+        return $this->sortTable(Affiliate::query()
+            ->with('user')
+            ->withCount('referrals')
+            // HB-G136: net of refunds (payableSen), not the gross snapshot.
+            ->withSum('referrals as commission_sen_sum', DB::raw('commission_sen - reversed_sen'))
+            ->when(trim($this->search) !== '', fn ($q) => $q->where(fn ($q) => $q
+                ->whereRaw(JsonSearch::clause('code'), [$term])
+                ->orWhereHas('user', fn ($u) => $u->whereRaw(JsonSearch::clause('name'), [$term])->orWhereRaw(JsonSearch::clause('email'), [$term])))))
+            ->paginate($this->tablePageSize());
     }
 }

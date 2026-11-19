@@ -90,7 +90,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 2. Check the store and bank details against the verified documents. Select **Approve**, or **Reject** with a **Rejection reason** (the money returns to the seller's available balance).
 3. Select **Export bank CSV** for the approved payouts and run them at the bank.
 4. When the transfer is done, select **Mark paid** and enter the **Bank reference**. This is final.
-5. **Finance > Affiliates** lists creators and **Pending withdrawals** with **Mark paid** (bank transfer reference) and **Reject**.
+5. **Finance > Affiliates** lists creators and **Pending withdrawals** with **Mark paid** (bank transfer reference) and **Reject**. The creator list has a search box, sortable column headers and a footer with the number of rows per page.
 
 ## 10. Banners, home sections and pages
 
@@ -101,14 +101,14 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 5. **Content > Pages**: **Add page** for terms, FAQ and similar. Set **Slug**, titles and bodies per language, search title and description, **Share picture**, **Show a link to this page in the website footer** and **Published**. System pages keep their slug. Terms and privacy stay published because checkout links to them.
 6. **Footer & contact**: update **Email**, **Phone**, **WhatsApp**, **Address** and social links, then **Save contact**.
 7. **Flash sales**: enter **Title**, **Starts**, **Ends**, select **Create flash sale**, then **Add deal** with a **Promo RM** price, **Qty** and **Per buyer** limit.
-8. **Support > Help articles** and **Support > Tickets**: reply with **Send reply**, **Mark urgent**, **Close ticket**, **Reopen ticket**.
+8. **Support > Help articles** and **Support > Tickets**: reply with **Send reply**, **Mark urgent** / **Mark normal**, **Close ticket**, **Reopen ticket**. Tickets and help articles have a search box, sortable headers and a footer with the number of rows per page; help articles also filter by category.
 9. **System > Localization**: turn languages on or off and set currencies and exchange rates (display only, charges stay in MYR).
 
 ## 11. Coins and vouchers settings
 
 1. **Finance > Loyalty Coins**: shows **Coins in circulation** and each buyer's **Balance** and **Lifetime**. Select **Adjust**, enter **Coins (+ grant / − clawback)** and a **Reason**, then select **Apply**. The reason is recorded.
 2. The earning and spending rules (coins per RM, redemption value, per-order cap, expiry days, daily check-in rewards and the spin prizes) are not on a screen. They are set by the technical team in the app configuration. On live today: 1 coin per whole RM1 of a completed order, 1 coin = 1 sen off, at most RM50 of coins per order, coins expire after 180 days, and daily check-in pays 5, 5, 10, 10, 15, 15 and 30 coins over a 7-day streak.
-3. **Content > Vouchers** (platform vouchers): select **Add voucher**. Enter **Code** (stored in uppercase), **Type** (amount, percent, free shipping), **Maximum discount (RM)**, **Minimum spend (RM)**, **Quota**, **Per-user limit**, **Starts at**, **Ends at** and **Active**. Select **Create voucher** or **Save voucher**.
+3. **Content > Vouchers** (platform vouchers): select **Add voucher**. Enter **Code** (stored in uppercase), **Type** (amount, percent, free shipping), **Maximum discount (RM)**, **Minimum spend (RM)**, **Quota**, **Per-user limit**, **Starts at**, **Ends at** and **Active**. Select **Create voucher** or **Save voucher**. The voucher list has a search box for the code, sortable headers and a footer with the number of rows per page.
 4. Buyers can use one platform voucher, one shop voucher and one free-shipping voucher per order. Sellers make their own shop vouchers.
 5. **System > Settings** sections, each with its own save button: **General** (**Allow buyers to add to cart and checkout**: turn off for listing-only mode, and **Display currencies**), **Orders** (**Return window (days)**, **Auto-complete after (days)**, **Unpaid order expiry (minutes)**, **Minimum payout (RM)**), **Cash on delivery** (**COD enabled platform-wide**, **Maximum COD order (RM)**), **Mobile app**, **Moderation**, **Security**, **Tracking** and **iPay88**. Live values today: return window 7 days, auto-complete 7 days, unpaid order expiry 60 minutes, seller return response 48 hours, minimum payout RM50, COD on with a RM500 maximum.
 6. The **Security** section holds **Cloudflare Turnstile**, **Google sign-in** and the password rules. The breached-password check stays off while the site is in development.

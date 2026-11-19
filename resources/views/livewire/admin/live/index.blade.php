@@ -1,11 +1,11 @@
 <div class="space-y-4">
-    <x-ui.section-heading :title="__('Live shopping')" :subtitle="__('Monitor and moderate live-commerce sessions (M2.4).')" as="h1" />
+    <x-ui.section-heading :title="__('Live shopping')" :subtitle="__('Monitor and moderate live-commerce sessions.')" as="h1" />
 
     {{-- Live now --}}
-    <div class="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
-        <h2 class="border-b border-line px-4 py-3 font-medium">{{ __('Live now') }} <span class="text-ink-faint">({{ $liveNow->count() }})</span></h2>
+    <x-ui.card class="overflow-hidden">
+        <h2 class="border-b border-line px-4 py-3 font-medium">{{ __('Live now') }} @if ($liveNow->isNotEmpty())<span class="text-ink-faint">({{ $liveNow->count() }})</span>@endif</h2>
         @if ($liveNow->isEmpty())
-            <p class="px-4 py-8 text-center text-sm text-ink-soft">{{ __('No streams live right now.') }}</p>
+            <x-ui.empty-state :title="__('No streams live right now')" :message="__('Sessions that are streaming show up here, with a control to end them.')" />
         @else
             <ul class="divide-y divide-line">
                 @foreach ($liveNow as $session)
@@ -22,31 +22,38 @@
                 @endforeach
             </ul>
         @endif
-    </div>
+    </x-ui.card>
 
     {{-- Scheduled + ended --}}
-    <div class="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
-        <table class="w-full text-sm">
-            <thead class="border-b border-line text-left text-[11px] uppercase tracking-[0.06em] text-ink-faint">
-                <tr>
-                    <th class="px-4 py-3 font-medium">{{ __('Session') }}</th>
-                    <th class="px-4 py-3 font-medium">{{ __('Store') }}</th>
-                    <th class="px-4 py-3 font-medium">{{ __('Status') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-line">
-                @forelse ($sessions as $session)
-                    <tr wire:key="sess-{{ $session->id }}">
-                        <td class="px-4 py-3 font-medium text-ink">{{ $session->title }}</td>
-                        <td class="px-4 py-3 text-ink-soft">{{ $session->store?->name }}</td>
-                        <td class="px-4 py-3"><x-ui.badge variant="neutral">{{ $session->status->label() }}</x-ui.badge></td>
-                    </tr>
-                @empty
-                    <tr><td colspan="3" class="px-4 py-10 text-center text-ink-soft">{{ __('No scheduled or past sessions.') }}</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <x-ui.table.search :placeholder="__('Search session or store')" />
 
-    {{ $sessions->links() }}
+    <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
+        @if ($sessions->isEmpty())
+            <x-ui.empty-state :title="$search !== '' ? __('No sessions match') : __('No scheduled or past sessions')" :message="$search !== '' ? __('Try searching for something else.') : __('Scheduled and finished live sessions are listed here.')" />
+        @else
+            <table class="w-full min-w-[560px] text-[13px]">
+                <thead class="sticky top-0 z-10 bg-surface">
+                    <tr class="border-b border-line text-left text-ink-soft">
+                        <x-ui.table.sortable field="session" :sort="$sort" :direction="$direction">{{ __('Session') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction">{{ __('Status') }}</x-ui.table.sortable>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($sessions as $session)
+                        <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="sess-{{ $session->id }}">
+                            <td class="px-3 py-2 font-medium text-ink">{{ $session->title }}</td>
+                            <td class="px-3 py-2 text-ink-soft">{{ $session->store?->name }}</td>
+                            <td class="px-3 py-2"><x-ui.badge variant="neutral">{{ $session->status->label() }}</x-ui.badge></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+        </div>
+    </x-ui.card>
+
+    <x-ui.table.footer :rows="$sessions" />
 </div>

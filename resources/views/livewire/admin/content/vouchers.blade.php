@@ -13,23 +13,29 @@
     @endif
 
     <div class="rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 text-[13px] text-ink-soft shadow-soft">
-        {{ __('Shop vouchers and stacking arrive in M8. Platform vouchers created here already work at checkout.') }}
+        {{ __('Platform vouchers created here already work at checkout.') }}
     </div>
 
+    <x-ui.table.search :placeholder="__('Search code')" />
+
     <x-ui.card class="overflow-x-auto">
-        @if ($vouchers->isEmpty())
+        <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
+        @if ($vouchers->isEmpty() && $search !== '')
+            <x-ui.empty-state :title="__('No vouchers match')" :message="__('Try searching for something else.')" />
+        @elseif ($vouchers->isEmpty())
             <x-ui.empty-state :title="__('No platform vouchers yet')" :message="__('Create one above — buyers apply codes at checkout.')" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
-                <thead>
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Code') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Type') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Value') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Min spend') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Window') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Used') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Active') }}</th>
+                        <x-ui.table.sortable field="code" :sort="$sort" :direction="$direction">{{ __('Code') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="type" :sort="$sort" :direction="$direction">{{ __('Type') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="value" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Value') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="min_spend" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Min spend') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="window" :sort="$sort" :direction="$direction">{{ __('Window') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="used" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Used') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="active" :sort="$sort" :direction="$direction">{{ __('Active') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -79,5 +85,8 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
+
+    <x-ui.table.footer :rows="$vouchers" />
 </div>
