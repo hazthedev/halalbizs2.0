@@ -5,6 +5,8 @@ namespace App\Livewire\Seller\Vouchers;
 use App\Enums\VoucherScope;
 use App\Livewire\Concerns\CurrentStore;
 use App\Models\Voucher;
+use App\Support\JsonSearch;
+use App\Livewire\Concerns\WithTable;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -17,7 +19,24 @@ use Livewire\Component;
 #[Layout('layouts.seller')]
 class Index extends Component
 {
-    use CurrentStore;
+    use CurrentStore, WithTable;
+
+    public const PER_PAGE = 15;
+
+    protected function tableFilters(): array
+    {
+        return [];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['code' => 'code', 'type' => 'type', 'value' => 'value_sen', 'min_spend' => 'min_spend_sen', 'window' => 'starts_at', 'used' => 'used_count', 'active' => 'is_active'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['starts_at' => 'desc'];
+    }
 
     public function toggleActive(int $voucherId): void
     {
@@ -42,15 +61,55 @@ class Index extends Component
         $this->dispatch('toast', message: __('Voucher deleted'));
     }
 
+    public function bulkEnable(): void
+    {
+        $this->bulkActive(true);
+    }
+
+    public function bulkDisable(): void
+    {
+        $this->bulkActive(false);
+    }
+
+    private function bulkActive(bool $active): void
+    {
+        $count = $this->selectedVouchers()->update(['is_active' => $active]);
+        $this->clearSelection();
+
+        $this->dispatch('toast', message: trans_choice('{1}:count voucher updated|[2,*]:count vouchers updated', $count, ['count' => $count]));
+    }
+
+    /** Unused vouchers only (same rule as the single Delete); used ones stay. */
+    public function bulkDelete(): void
+    {
+        $count = $this->selectedVouchers()->where('used_count', 0)->delete();
+        $this->clearSelection();
+        $this->resetPage();
+
+        $this->dispatch('toast', message: trans_choice('{1}:count voucher deleted|[2,*]:count vouchers deleted', $count, ['count' => $count]));
+    }
+
+    private function selectedVouchers()
+    {
+        return Voucher::where('scope', VoucherScope::Shop)
+            ->where('store_id', $this->currentStore()->id)
+            ->whereIn('id', array_map(intval(...), $this->selected));
+    }
+
     public function render()
     {
         return view('livewire.seller.vouchers.index', [
-            'vouchers' => $this->currentStore()->vouchers()
-                ->where('scope', VoucherScope::Shop)
-                ->orderByDesc('starts_at')
-                ->orderByDesc('id')
-                ->get(),
+            'vouchers' => $this->results(),
         ])->title(__('Shop vouchers'));
+    }
+
+    /** One query for the grid and for "select all on this page" (WithTable::updatedSelectPage). */
+    private function results()
+    {
+        return $this->sortTable(Voucher::where('store_id', $this->currentStore()->id)
+            ->where('scope', VoucherScope::Shop)
+            ->when(trim($this->search) !== '', fn ($q) => $q->whereRaw(JsonSearch::clause('code'), [JsonSearch::pattern($this->search)])))
+            ->paginate($this->tablePageSize());
     }
 
     /** Store-scoped fetch — a foreign voucher id 404s, never leaks. */
