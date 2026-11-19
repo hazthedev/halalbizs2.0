@@ -8,6 +8,7 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Services\LedgerService;
 use App\Settings\OrderSettings;
 use App\Support\Csv;
+use App\Support\JsonSearch;
 use App\Support\RinggitInput;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -29,6 +30,54 @@ class Earnings extends Component
 
     /** RM amount typed by the seller — parsed via RinggitInput, never floats. */
     public string $amount = '';
+
+    public int $perPage = self::PER_PAGE;
+
+    /** Per-table sort state; the key is table-prefixed ("ledger:date") and whitelisted below. */
+    public string $ledgerSearch = '';
+
+    public string $payoutSearch = '';
+
+    public string $ledgerSort = '';
+
+    public string $ledgerDir = 'asc';
+
+    public string $payoutSort = '';
+
+    public string $payoutDir = 'asc';
+
+    private const LEDGER_SORTS = ['ledger:date' => 'created_at', 'ledger:type' => 'type', 'ledger:amount' => 'amount_sen'];
+
+    private const PAYOUT_SORTS = ['payout:payout' => 'payout_no', 'payout:amount' => 'amount_sen', 'payout:status' => 'status', 'payout:requested' => 'requested_at', 'payout:paid' => 'paid_at'];
+
+    public function sortBy(string $field): void
+    {
+        if (array_key_exists($field, self::LEDGER_SORTS)) {
+            $this->ledgerDir = $this->ledgerSort === $field && $this->ledgerDir === 'asc' ? 'desc' : 'asc';
+            $this->ledgerSort = $field;
+            $this->resetPage('ledgerPage');
+        } elseif (array_key_exists($field, self::PAYOUT_SORTS)) {
+            $this->payoutDir = $this->payoutSort === $field && $this->payoutDir === 'asc' ? 'desc' : 'asc';
+            $this->payoutSort = $field;
+            $this->resetPage('payoutPage');
+        }
+    }
+
+    public function updatedLedgerSearch(): void
+    {
+        $this->resetPage('ledgerPage');
+    }
+
+    public function updatedPayoutSearch(): void
+    {
+        $this->resetPage('payoutPage');
+    }
+
+    public function updatedPerPage(): void
+    {
+        $this->resetPage('ledgerPage');
+        $this->resetPage('payoutPage');
+    }
 
     public function requestPayout(LedgerService $ledger): void
     {
@@ -53,7 +102,8 @@ class Earnings extends Component
         }
 
         $this->reset('amount');
-        $this->resetPage();
+        $this->resetPage('ledgerPage');
+        $this->resetPage('payoutPage');
 
         $this->dispatch('toast', message: __('Payout :no requested — we\'ll review it and run the bank transfer.', ['no' => $payout->payout_no]));
     }
@@ -90,10 +140,25 @@ class Earnings extends Component
                 ->latest('requested_at')
                 ->first(),
             'paidOutSen' => (int) $store->payouts()->where('status', PayoutStatus::Paid)->sum('amount_sen'),
-            'entries' => $store->ledgerEntries()->latest('created_at')->latest('id')->paginate(self::PER_PAGE),
-            'payouts' => $store->payouts()->latest('requested_at')->latest('id')->take(20)->get(),
+            'entries' => $this->sorted($store->ledgerEntries()->when(trim($this->ledgerSearch) !== '', fn ($q) => $q->whereRaw(JsonSearch::clause('description'), [JsonSearch::pattern($this->ledgerSearch)])), self::LEDGER_SORTS, $this->ledgerSort, $this->ledgerDir, 'created_at')->paginate($this->pageSize(), pageName: 'ledgerPage'),
+            'payouts' => $this->sorted($store->payouts()->when(trim($this->payoutSearch) !== '', fn ($q) => $q->where(fn ($w) => $w->whereRaw(JsonSearch::clause('payout_no'), [JsonSearch::pattern($this->payoutSearch)])->orWhereRaw(JsonSearch::clause('reference'), [JsonSearch::pattern($this->payoutSearch)])->orWhereRaw(JsonSearch::clause('status'), [JsonSearch::pattern($this->payoutSearch)]))), self::PAYOUT_SORTS, $this->payoutSort, $this->payoutDir, 'requested_at')->paginate($this->pageSize(), pageName: 'payoutPage'),
             'minSen' => app(OrderSettings::class)->payout_min_sen,
             'bank' => $store->bank_details ?? [],
         ])->title(__('Earnings'));
+    }
+
+    private function pageSize(): int
+    {
+        return in_array($this->perPage, [15, 20, 50, 100], true) ? $this->perPage : self::PER_PAGE;
+    }
+
+    /** Whitelisted order only: the client sends a key, never a column name. */
+    private function sorted($query, array $map, string $sort, string $dir, string $default)
+    {
+        $column = $map[$sort] ?? null;
+
+        return $column !== null
+            ? $query->orderBy($column, $dir === 'desc' ? 'desc' : 'asc')->orderByDesc('id')
+            : $query->latest($default)->latest('id');
     }
 }
