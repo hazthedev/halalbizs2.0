@@ -93,6 +93,8 @@
                                          adjustment IS the refund and nothing is owed. --}}
                                     @if ($payment->gateway_refund_ok === false)
                                         <span class="mt-0.5 block text-[11px] font-sans font-medium text-danger">{{ __('Needs portal refund') }}</span>
+                                    @elseif ($payment->gateway_refund_ok === true && in_array($payment->id, $settledInPortal, true))
+                                        <span class="mt-0.5 block text-[11px] font-sans text-ink-soft">{{ __('Settled in portal') }}</span>
                                     @elseif ($payment->gateway_refund_ok === true)
                                         <span class="mt-0.5 block text-[11px] font-sans text-ink-soft">{{ __('Gateway confirmed') }}</span>
                                     @endif

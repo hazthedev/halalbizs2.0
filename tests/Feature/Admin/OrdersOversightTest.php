@@ -408,6 +408,11 @@ test('an admin marks a portal-owed refund settled, and it is audit-logged', func
         ->assertSee('payment refund settled in portal')
         ->assertSee('gateway_refund_ok:');
 
+    // The grid says how it cleared: a manual settle never reads "Gateway confirmed".
+    Livewire::actingAs($admin)->test(Payments::class)
+        ->assertSee(__('Settled in portal'))
+        ->assertDontSee(__('Gateway confirmed'));
+
     // Replay on an already-settled payment is a no-op: no second audit row.
     Livewire::actingAs($admin)->test(Payments::class)->call('markRefundSettled', $payment->id, null);
     expect(Activity::query()->where('description', 'payment refund settled in portal')->count())->toBe(1);
@@ -465,5 +470,7 @@ test('the settle control shows only on a payment flagged as owed in the portal',
     Payment::query()->update(['gateway_refund_ok' => true]);
 
     expect(Livewire::actingAs($admin)->test(Payments::class)->html())
-        ->not->toContain('data-settle-control');
+        ->not->toContain('data-settle-control')
+        ->toContain(__('Gateway confirmed'))
+        ->not->toContain(__('Settled in portal'));
 });
