@@ -4,7 +4,7 @@
 
     {{-- ── Languages ─────────────────────────────────────────────────── --}}
     <section class="space-y-3">
-        <x-ui.section-heading :title="__('Languages')" />
+        <h2 class="font-display text-lg font-medium text-ink">{{ __('Languages') }}</h2>
         <x-ui.card>
             <ul class="divide-y divide-line">
                 <li class="flex items-center gap-3 px-4 py-2">
@@ -42,7 +42,7 @@
 
     {{-- ── Currencies ────────────────────────────────────────────────── --}}
     <section class="space-y-3">
-        <x-ui.section-heading :title="__('Currencies')" />
+        <h2 class="font-display text-lg font-medium text-ink">{{ __('Currencies') }}</h2>
         <p class="text-[13px] text-ink-soft">{{ __('Display-only conversion — storage, checkout, and settlement stay MYR.') }}</p>
         <x-ui.card class="overflow-x-auto">
             <table class="w-full min-w-[560px] text-[13px]">
@@ -99,17 +99,8 @@
 
     {{-- ── Exchange rates ────────────────────────────────────────────── --}}
     <section class="space-y-3">
-        <x-ui.section-heading :title="__('Exchange rates')">
-            <x-slot:actions>
-                <div class="flex items-center gap-2 text-[13px] text-ink-faint">
-                    <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-line-strong opacity-50" aria-hidden="true">
-                        <span class="inline-block size-4 translate-x-1 rounded-full bg-white"></span>
-                    </span>
-                    {{ __('Automatic API sync (rates:sync) ships with M8 ops — rates are manual for now.') }}
-                </div>
-            </x-slot:actions>
-        </x-ui.section-heading>
-        <p class="text-[13px] text-ink-soft">{{ __('Rates are append-only — saving writes a new row and the history keeps the trail.') }}</p>
+        <h2 class="font-display text-lg font-medium text-ink">{{ __('Exchange rates') }}</h2>
+        <p class="text-[13px] text-ink-soft">{{ __('Rates are set by hand. Saving writes a new row, and the history keeps the trail.') }}</p>
 
         <x-ui.card class="overflow-x-auto">
             <table class="w-full min-w-[820px] text-[13px]">
@@ -146,19 +137,19 @@
                             <td class="px-3 py-2">
                                 <div class="flex items-start gap-2">
                                     <div>
-                                        <label for="rate-{{ $code }}" class="sr-only">{{ __(':code rate', ['code' => $code]) }}</label>
+                                        <label for="rate-{{ $code }}" class="mb-1 block text-[12px] text-ink-soft">{{ __('Rate') }}</label>
                                         <input id="rate-{{ $code }}" type="text" inputmode="decimal" wire:model="rateInput.{{ $code }}" placeholder="0.21"
                                                class="block min-h-11 w-28 rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-right font-mono text-[13px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('rateInput.'.$code) ? 'border-danger' : 'border-line-strong' }}">
                                         @error('rateInput.'.$code)<p class="mt-1 max-w-40 text-[12px] text-danger">{{ $message }}</p>@enderror
                                     </div>
                                     <div>
-                                        <label for="margin-{{ $code }}" class="sr-only">{{ __(':code margin %', ['code' => $code]) }}</label>
+                                        <label for="margin-{{ $code }}" class="mb-1 block text-[12px] text-ink-soft">{{ __('Margin %') }}</label>
                                         <input id="margin-{{ $code }}" type="text" inputmode="decimal" wire:model="marginInput.{{ $code }}" placeholder="0"
                                                class="block min-h-11 w-20 rounded-[var(--radius-control)] border bg-surface px-3 py-2 text-right font-mono text-[13px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('marginInput.'.$code) ? 'border-danger' : 'border-line-strong' }}">
                                         @error('marginInput.'.$code)<p class="mt-1 max-w-32 text-[12px] text-danger">{{ $message }}</p>@enderror
                                     </div>
                                     <x-ui.button variant="plain" type="button" wire:click="updateRate('{{ $code }}')" wire:loading.attr="disabled"
-                                            class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                            class="mt-5 inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ __('Save rate') }}
                                     </x-ui.button>
                                 </div>

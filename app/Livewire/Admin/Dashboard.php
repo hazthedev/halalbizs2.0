@@ -469,7 +469,9 @@ class Dashboard extends Component
             ]],
             'labels' => $labels,
             'options' => [
+                'chart' => ['height' => 280],
                 'colors' => ['#5C544B'],
+                'dataLabels' => ['enabled' => false],
                 'plotOptions' => ['bar' => ['horizontal' => true, 'borderRadius' => 4, 'barHeight' => '62%']],
                 'xaxis' => ['categories' => $labels],
                 'dataLabels' => ['enabled' => false],

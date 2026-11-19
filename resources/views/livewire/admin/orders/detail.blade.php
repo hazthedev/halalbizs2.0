@@ -10,21 +10,18 @@
 
     {{-- Header --}}
     <div>
-        <a href="{{ route('admin.orders.index') }}" wire:navigate
-           class="inline-flex min-h-11 items-center gap-1.5 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
-            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
-            {{ __('Orders') }}
-        </a>
-        <div class="mt-1 flex flex-wrap items-center gap-3">
-            <h1 class="font-mono text-xl font-medium text-ink">{{ $subOrder->sub_order_no }}</h1>
-            <x-order-status-pill :status="$subOrder->status" />
-        </div>
-        <p class="mt-1 text-[13px] text-ink-soft">
-            {{ __('Order :no', ['no' => $subOrder->order->order_no]) }}
-            · {{ __('Placed :date', ['date' => $placedAt->display()->format('j M Y, g:ia')]) }}
-            · {{ __('Store: :name', ['name' => $subOrder->store->name]) }}
-            · {{ __('Buyer: :name', ['name' => $subOrder->order->user->name]) }}
-        </p>
+<a href="{{ route('admin.orders.index') }}" wire:navigate
+       class="inline-flex min-h-11 items-center gap-1.5 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+        {{ __('Orders') }}
+    </a>
+        <x-ui.section-heading as="h1" class="mt-1" :title="$subOrder->sub_order_no"
+            :subtitle="__('Order :no', ['no' => $subOrder->order->order_no])
+                .' · '.__('Placed :date', ['date' => $placedAt->display()->format('j M Y, g:ia')])
+                .' · '.__('Store: :name', ['name' => $subOrder->store->name])
+                .' · '.__('Buyer: :name', ['name' => $subOrder->order->user->name])">
+            <x-slot:actions><x-order-status-pill :status="$subOrder->status" /></x-slot:actions>
+        </x-ui.section-heading>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-3">
@@ -79,6 +76,9 @@
             {{-- Status timeline --}}
             <x-ui.card class="p-4">
                 <h2 class="text-sm font-medium">{{ __('Timeline') }}</h2>
+                @if ($subOrder->statusHistories->isEmpty())
+                    <x-ui.empty-state class="py-8" :icon="false" :message="__('No status changes yet.')" />
+                @endif
                 <ol class="mt-3 space-y-3">
                     @foreach ($subOrder->statusHistories as $history)
                         <li class="flex gap-3" wire:key="history-{{ $history->id }}">
@@ -188,10 +188,12 @@
                         @endif
                     @endif
                 </dl>
+                <div class="mt-3 border-t border-line pt-2">
                 <a href="{{ route('admin.payments.index') }}" wire:navigate
-                   class="mt-3 inline-flex min-h-11 items-center border-t border-line pt-2 text-[13px] font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">
+                   class="inline-flex min-h-11 items-center text-[13px] font-medium text-emerald hover:text-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald">
                     {{ __('Open payments reconciliation') }}
                 </a>
+                </div>
             </x-ui.card>
 
             {{-- Address (order snapshot — sacred) --}}

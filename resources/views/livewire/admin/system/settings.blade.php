@@ -2,11 +2,11 @@
 
     <x-ui.section-heading :title="__('Settings')" :subtitle="__('Each section saves on its own. Commission settings live under Finance.')" as="h1" />
 
-    <div class="grid gap-6 xl:grid-cols-2">
+    <div class="grid items-start gap-6 xl:grid-cols-2">
 
         {{-- ── General ───────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
-            <form wire:submit="saveGeneral" class="flex h-full flex-col gap-4">
+            <form wire:submit="saveGeneral" class="flex flex-col gap-4">
                 <h2 class="font-display text-lg font-medium">{{ __('General') }}</h2>
 
                 <x-ui.input :label="__('Site name')" wire:model="siteName" :error="$errors->first('siteName')" />
@@ -40,13 +40,13 @@
                     @error('displayCurrencies.*')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                 </fieldset>
 
-                <x-ui.button class="mt-auto self-start" type="submit" wire:loading.attr="disabled" wire:target="saveGeneral">{{ __('Save general') }}</x-ui.button>
+                <x-ui.button class="self-start" type="submit" wire:loading.attr="disabled" wire:target="saveGeneral">{{ __('Save general') }}</x-ui.button>
             </form>
         </x-ui.card>
 
         {{-- ── Order ─────────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
-            <form wire:submit="saveOrder" class="flex h-full flex-col gap-4">
+            <form wire:submit="saveOrder" class="flex flex-col gap-4">
                 <h2 class="font-display text-lg font-medium">{{ __('Orders') }}</h2>
 
                 <div class="grid gap-4 sm:grid-cols-2">
@@ -56,13 +56,13 @@
                     <x-ui.input :label="__('Minimum payout (RM)')" inputmode="decimal" placeholder="50.00" wire:model="payoutMin" :error="$errors->first('payoutMin')" />
                 </div>
 
-                <x-ui.button class="mt-auto self-start" type="submit" wire:loading.attr="disabled" wire:target="saveOrder">{{ __('Save orders') }}</x-ui.button>
+                <x-ui.button class="self-start" type="submit" wire:loading.attr="disabled" wire:target="saveOrder">{{ __('Save orders') }}</x-ui.button>
             </form>
         </x-ui.card>
 
         {{-- ── COD ───────────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
-            <form wire:submit="saveCod" class="flex h-full flex-col gap-4">
+            <form wire:submit="saveCod" class="flex flex-col gap-4">
                 <h2 class="font-display text-lg font-medium">{{ __('Cash on delivery') }}</h2>
 
                 <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
@@ -72,13 +72,13 @@
 
                 <x-ui.input :label="__('Maximum COD order (RM)')" inputmode="decimal" placeholder="500.00" wire:model="codMaxOrder" :error="$errors->first('codMaxOrder')" class="max-w-xs" />
 
-                <x-ui.button class="mt-auto self-start" type="submit" wire:loading.attr="disabled" wire:target="saveCod">{{ __('Save COD') }}</x-ui.button>
+                <x-ui.button class="self-start" type="submit" wire:loading.attr="disabled" wire:target="saveCod">{{ __('Save COD') }}</x-ui.button>
             </form>
         </x-ui.card>
 
         {{-- ── Mobile app ────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
-            <form wire:submit="saveMobileApp" class="flex h-full flex-col gap-4">
+            <form wire:submit="saveMobileApp" class="flex flex-col gap-4">
                 <h2 class="font-display text-lg font-medium">{{ __('Mobile app') }}</h2>
 
                 <x-ui.input :label="__('Minimum app version')" placeholder="1.0.0" wire:model="minAppVersion" :error="$errors->first('minAppVersion')" :hint="__('Phones on an older version are asked to update before they can continue.')" class="max-w-xs" />
@@ -91,13 +91,13 @@
                 <x-ui.input :label="__('Maintenance notice (English)')" wire:model="appMaintenanceMessageEn" maxlength="200" :error="$errors->first('appMaintenanceMessageEn')" />
                 <x-ui.input :label="__('Maintenance notice (Malay)')" wire:model="appMaintenanceMessageMs" maxlength="200" :error="$errors->first('appMaintenanceMessageMs')" :hint="__('Left empty, the English notice is shown.')" />
 
-                <x-ui.button class="mt-auto self-start" type="submit" wire:loading.attr="disabled" wire:target="saveMobileApp">{{ __('Save mobile app') }}</x-ui.button>
+                <x-ui.button class="self-start" type="submit" wire:loading.attr="disabled" wire:target="saveMobileApp">{{ __('Save mobile app') }}</x-ui.button>
             </form>
         </x-ui.card>
 
         {{-- ── Moderation ────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
-            <form wire:submit="saveModeration" class="flex h-full flex-col gap-4">
+            <form wire:submit="saveModeration" class="flex flex-col gap-4">
                 <h2 class="font-display text-lg font-medium">{{ __('Moderation') }}</h2>
 
                 <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
@@ -105,13 +105,13 @@
                     {{ __('New products need admin approval before going live') }}
                 </label>
 
-                <x-ui.button class="mt-auto self-start" type="submit" wire:loading.attr="disabled" wire:target="saveModeration">{{ __('Save moderation') }}</x-ui.button>
+                <x-ui.button class="self-start" type="submit" wire:loading.attr="disabled" wire:target="saveModeration">{{ __('Save moderation') }}</x-ui.button>
             </form>
         </x-ui.card>
 
         {{-- ── Security (Turnstile + Google OAuth + SMS) ─────────────── --}}
         <x-ui.card class="p-4">
-            <form wire:submit="saveSecurity" class="flex h-full flex-col gap-4">
+            <form wire:submit="saveSecurity" class="flex flex-col gap-4">
                 <h2 class="font-display text-lg font-medium">{{ __('Security') }}</h2>
 
                 <p class="text-[13px] font-medium text-ink-soft">{{ __('Cloudflare Turnstile') }}</p>
@@ -143,13 +143,13 @@
                     </span>
                 </label>
 
-                <x-ui.button class="mt-auto self-start" type="submit" wire:loading.attr="disabled" wire:target="saveSecurity">{{ __('Save security') }}</x-ui.button>
+                <x-ui.button class="self-start" type="submit" wire:loading.attr="disabled" wire:target="saveSecurity">{{ __('Save security') }}</x-ui.button>
             </form>
         </x-ui.card>
 
         {{-- ── Tracking pixels ───────────────────────────────────────── --}}
         <x-ui.card class="p-4">
-            <form wire:submit="saveTracking" class="flex h-full flex-col gap-4">
+            <form wire:submit="saveTracking" class="flex flex-col gap-4">
                 <h2 class="font-display text-lg font-medium">{{ __('Tracking') }}</h2>
 
                 <div class="grid gap-4 sm:grid-cols-3">
@@ -158,13 +158,13 @@
                     <x-ui.input :label="__('TikTok pixel ID')" wire:model="tiktokPixelId" :error="$errors->first('tiktokPixelId')" />
                 </div>
 
-                <x-ui.button class="mt-auto self-start" type="submit" wire:loading.attr="disabled" wire:target="saveTracking">{{ __('Save tracking') }}</x-ui.button>
+                <x-ui.button class="self-start" type="submit" wire:loading.attr="disabled" wire:target="saveTracking">{{ __('Save tracking') }}</x-ui.button>
             </form>
         </x-ui.card>
 
         {{-- ── iPay88 ────────────────────────────────────────────────── --}}
         <x-ui.card class="p-4">
-            <form wire:submit="saveIpay88" class="flex h-full flex-col gap-4">
+            <form wire:submit="saveIpay88" class="flex flex-col gap-4">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <h2 class="font-display text-lg font-medium">{{ __('iPay88') }}</h2>
                     @if ($ipay88Mock)
@@ -204,7 +204,7 @@
                     {{ __('Sandbox mode') }}
                 </label>
 
-                <div class="mt-auto flex flex-wrap items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="saveIpay88">{{ __('Save iPay88') }}</x-ui.button>
                     <x-ui.button variant="secondary" wire:click="testIpay88Connection" wire:loading.attr="disabled" wire:target="testIpay88Connection"
                                  :disabled="! $ipay88Configured">

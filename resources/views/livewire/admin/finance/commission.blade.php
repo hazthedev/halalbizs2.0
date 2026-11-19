@@ -64,7 +64,7 @@
         {{-- Effective-rate tester (docs/08 §F — living documentation) --}}
         <x-ui.card class="p-4">
             <h2 class="text-sm font-medium">{{ __('Effective-rate tester') }}</h2>
-            <p class="mt-1 text-[13px] text-ink-soft">{{ __('Pick a store and category to see the rate a new sub-order would snapshot — resolved by the real CommissionResolver.') }}</p>
+            <p class="mt-1 text-[13px] text-ink-soft">{{ __('Pick a store and category to see the rate a new sub-order would get.') }}</p>
             <div class="mt-3 grid gap-2 sm:grid-cols-2">
                 <div>
                     <label for="tester-store" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Store') }}</label>

@@ -126,7 +126,12 @@
                                 <p class="truncate text-[12px] text-ink-soft">
                                     {{ $section->getTranslation('title', 'en', false) ?: __('No heading') }}
                                     @if ($section->payload)
-                                        · <span class="font-mono">{{ collect($section->payload)->map(fn ($v, $k) => is_array($v) ? $k.': '.count($v) : "$k: $v")->implode(' · ') }}</span>
+                                        <span class="mx-1 text-ink-faint" aria-hidden="true">·</span>{{ collect($section->payload)->map(fn ($v, $k) => match (true) {
+                                            $k === 'source' => $v === 'top' ? __('Top sellers') : __('Latest'),
+                                            $k === 'limit' => __(':n items', ['n' => $v]),
+                                            is_array($v) => __(':label: :n', ['label' => ucfirst(str_replace('_', ' ', $k)), 'n' => count($v)]),
+                                            default => ucfirst(str_replace('_', ' ', $k)).': '.$v,
+                                        })->implode(', ') }}
                                     @endif
                                 </p>
                             </div>

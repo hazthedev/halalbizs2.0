@@ -63,7 +63,10 @@
                                     @if (! $isSystem && auth()->user()->can('cms.publish'))
                                         <button type="button" wire:click="delete({{ $page->id }})"
                                                 wire:confirm="{{ __('Delete this page? This cannot be undone.') }}"
-                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
+                                                class="inline-flex min-h-11 w-[4.5rem] items-center justify-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Delete') }}</button>
+                                    @else
+                                        {{-- Reserved Delete slot keeps Edit/History in one column. --}}
+                                        <span class="inline-block w-[4.5rem]" aria-hidden="true"></span>
                                     @endif
                                 </div>
                             </td>

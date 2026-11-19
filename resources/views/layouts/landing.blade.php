@@ -18,12 +18,12 @@
          · 'light' — auth pages (register/login/etc., D-002 extended
            2026-07-25): static header on the light page background; the
            paper-on-dark text of the default would be invisible here. --}}
-    @php $light = ($variant ?? null) === 'light'; @endphp
+    @php $light = ($variant ?? null) === 'light'; $adminDoor = request()->routeIs('admin.login'); @endphp
     <header class="{{ $light ? 'border-b border-line bg-surface' : 'absolute inset-x-0 top-0 z-40 bg-gradient-to-b from-emerald-night/70 via-emerald-night/20 to-transparent' }}">
         <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-            <a href="{{ route('home') }}" wire:navigate class="flex shrink-0 items-center gap-2 font-display text-lg font-medium tracking-tight {{ $light ? 'text-ink' : 'text-on-dark' }}">
+            <a href="{{ $adminDoor ? route('admin.login') : route('home') }}" wire:navigate class="flex shrink-0 items-center gap-2 font-display text-lg font-medium tracking-tight {{ $light ? 'text-ink' : 'text-on-dark' }}">
                 <x-ui.star-mark :size="22" class="text-brass" />
-                HalalBizs
+                HalalBizs{{ $adminDoor ? ' '.__('Admin') : '' }}
             </a>
 
             {{-- Offer only what applies. A logged-in applicant was being shown
@@ -33,7 +33,8 @@
                 {{-- /login offers only Create account and /register only Log in; sellers
                      sign up through the Seller Centre, so Start Selling is hidden on both. --}}
                 @guest
-                    @if (request()->routeIs('login'))
+                    @if ($adminDoor)
+                    @elseif (request()->routeIs('login'))
                     <a href="{{ route('register') }}" wire:navigate class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium transition-colors {{ $light ? 'text-ink-soft hover:text-ink' : 'text-on-dark/80 hover:text-on-dark' }}">
                         {{ __('Create account') }}
                     </a>
@@ -52,7 +53,7 @@
                     </form>
                 @endguest
 
-                @unless (request()->routeIs('seller.apply', 'seller.status', 'login', 'register'))
+                @unless (request()->routeIs('seller.apply', 'seller.status', 'login', 'register', 'admin.login'))
                     <x-ui.button variant="brass" :href="route('seller.apply')">
                         {{ __('Start Selling') }}
                     </x-ui.button>
@@ -68,7 +69,9 @@
     {{-- ===== Minimal landing footer ===== --}}
     <footer class="border-t border-brass/20 bg-emerald-night px-4 py-6 text-center text-xs text-on-dark/64">
         © {{ now()->year }} HalalBizs.
-        <a href="{{ route('home') }}" wire:navigate class="font-medium text-brass-tint transition-colors hover:text-on-dark">{{ __('Back to shopping') }}</a>
+        @unless ($adminDoor)
+            <a href="{{ route('home') }}" wire:navigate class="font-medium text-brass-tint transition-colors hover:text-on-dark">{{ __('Back to shopping') }}</a>
+        @endunless
     </footer>
 
     @stack('scripts')
