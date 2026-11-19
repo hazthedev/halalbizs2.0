@@ -40,7 +40,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                 </span>
             </div>
 
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-end">
+            <div class="hidden sm:flex-1 sm:flex sm:items-center justify-end">
                 <div>
                     <span class="relative z-0 inline-flex rtl:flex-row-reverse rounded-md shadow-sm">
                         <span>
