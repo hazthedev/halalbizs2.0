@@ -2931,5 +2931,10 @@
     "Pick a store and category to see the rate a new sub-order would get.": "Pilih kedai dan kategori untuk melihat kadar yang akan dikenakan pada sub-pesanan baharu.",
     "Rates are set by hand. Saving writes a new row, and the history keeps the trail.": "Kadar ditetapkan secara manual. Setiap simpanan menulis baris baharu, dan sejarah menyimpan jejaknya.",
     "This record or its file was not found. A document may not have been uploaded yet.": "Rekod ini atau failnya tidak ditemui. Dokumen mungkin belum dimuat naik.",
-    "Back to dashboard": "Kembali ke papan pemuka"
+    "Back to dashboard": "Kembali ke papan pemuka",
+    "Search order no., ref no. or trans ID": "Cari no. pesanan, no. rujukan atau ID transaksi",
+    "Search payments": "Cari pembayaran",
+    "Search who, event or description": "Cari pelaku, acara atau keterangan",
+    "No banned products": "Tiada produk dilarang",
+    "Products you ban from the queue above are listed here for reference.": "Produk yang anda larang daripada barisan di atas disenaraikan di sini untuk rujukan."
 }

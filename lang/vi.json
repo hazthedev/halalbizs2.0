@@ -2902,5 +2902,10 @@
     "Pick a store and category to see the rate a new sub-order would get.": "Chọn cửa hàng và danh mục để xem mức phí mà một đơn hàng con mới sẽ được áp dụng.",
     "Rates are set by hand. Saving writes a new row, and the history keeps the trail.": "Tỷ giá được nhập thủ công. Mỗi lần lưu sẽ ghi một dòng mới, và lịch sử lưu lại toàn bộ thay đổi.",
     "This record or its file was not found. A document may not have been uploaded yet.": "Không tìm thấy bản ghi hoặc tệp của bản ghi này. Có thể tài liệu chưa được tải lên.",
-    "Back to dashboard": "Quay lại bảng điều khiển"
+    "Back to dashboard": "Quay lại bảng điều khiển",
+    "Search order no., ref no. or trans ID": "Tìm theo mã đơn, mã tham chiếu hoặc mã giao dịch",
+    "Search payments": "Tìm thanh toán",
+    "Search who, event or description": "Tìm theo người thực hiện, sự kiện hoặc mô tả",
+    "No banned products": "Chưa có sản phẩm bị cấm",
+    "Products you ban from the queue above are listed here for reference.": "Các sản phẩm bạn cấm từ hàng chờ phía trên được liệt kê ở đây để tham khảo."
 }

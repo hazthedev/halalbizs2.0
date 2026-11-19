@@ -122,14 +122,17 @@
         </div>
     </x-ui.card>
 
-    <x-ui.table.footer :rows="$pending" />
+    {{-- Empty queue: the empty state says it; "Showing 0 to 0 of 0" under it is noise. --}}
+    @if ($pending->total() > 0)
+        <x-ui.table.footer :rows="$pending" />
+    @endif
 
     {{-- Banned reference list --}}
     <div class="space-y-2 pt-2">
         <x-ui.section-heading :title="__('Banned products')" />
         <x-ui.card class="overflow-x-auto">
             @if ($banned->isEmpty())
-                <p class="px-4 py-6 text-[13px] text-ink-faint">{{ __('No banned products.') }}</p>
+                <x-ui.empty-state :title="__('No banned products')" :message="__('Products you ban from the queue above are listed here for reference.')" />
             @else
                 <table class="w-full min-w-[720px] text-[13px]">
                     <thead>

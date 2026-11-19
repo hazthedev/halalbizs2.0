@@ -20,7 +20,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 2. **Pending queues** dẫn thẳng tới việc đang chờ: đơn đăng ký, chứng nhận, kiểm duyệt, rút tiền, đổi trả.
 3. Biểu đồ: **GMV — last 30 days**, **New buyers over time**, **Orders by status**, **Top categories by GMV**, **Top stores by GMV**.
 4. **System > Search insights** hiện các tìm kiếm **Trending** và **Zero-result** (người mua muốn gì mà không thấy).
-5. **System > Audit log** liệt kê ai đã đổi gì, có bộ lọc **Subject** và ngày, và **Diff** các thay đổi.
+5. **System > Audit log** liệt kê ai đã đổi gì, có ô tìm kiếm (người thực hiện, sự kiện, mô tả), bộ lọc **Subject** và ngày, **Diff** các thay đổi, và **Rows per page** dưới danh sách.
 6. **Finance > Boosts** báo cáo thu nhập từ boost. **Finance > Payouts** có **Export bank CSV**.
 
 ## 3. Người bán và đơn đăng ký
@@ -30,10 +30,10 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 3. Với mỗi tài liệu chọn **Verify**, hoặc **Reject** (người đăng ký phải nộp lại). Thêm ghi chú nếu cần.
 4. Để chấp nhận, chọn **Approve store**. Chủ cửa hàng có quyền người bán ngay và nhận email.
 5. Để từ chối, viết **Rejection reason** (bắt buộc, gửi email cho người đăng ký) rồi chọn **Reject application**.
-6. **Sellers > Stores** liệt kê mọi cửa hàng. Tìm theo tên cửa hàng hoặc email chủ, lọc theo trạng thái. Mở một cửa hàng để xem **Live products**, **Sub-orders**, **GMV (completed)**.
+6. **Sellers > Stores** liệt kê mọi cửa hàng. Tìm theo tên cửa hàng hoặc email chủ, lọc theo trạng thái và sắp xếp theo tiêu đề cột. Mở một cửa hàng để xem **Live products**, **Sub-orders**, **GMV (completed)**.
 7. Để đình chỉ, viết **Suspension reason (emailed to the owner)** rồi chọn **Suspend store**. Cửa hàng rời khỏi trang công khai. **Reinstate store** đưa nó trở lại.
 8. **Record settlement**: khi người bán đang nợ tiền chuyển khoản trả, nhập **Amount (RM)**, **Bank reference** và ghi chú, rồi chọn **Record settlement**.
-9. **Buyers**: tìm kiếm, mở một người mua và dùng **Suspend account** (kèm lý do) hoặc **Unsuspend account**.
+9. **Buyers**: tìm theo tên hoặc email, lọc theo trạng thái, sắp xếp theo tiêu đề cột, mở một người mua và dùng **Suspend account** (kèm lý do) hoặc **Unsuspend account**.
 
 ## 4. Duyệt chứng nhận halal
 
@@ -51,7 +51,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 3. Đặt **Halal certificate**: **Inherit from parent**, **Required to list** hoặc **Not required**. Required nghĩa là người bán không đăng được ở đó nếu thiếu chứng nhận đã duyệt bao phủ sản phẩm.
 4. Quy định bắt đầu từ ngày 2 tháng 12 năm 2026. Trên bản live, các danh mục bắt buộc là **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** và **Pharma & Supplements**.
 5. Chọn **Create category** hoặc **Save changes**.
-6. Các menu danh mục liên quan: **Attributes**, **Brands**, **Reviews** (ẩn đánh giá không phù hợp) và **Moderation**. Danh sách **Attributes** và **Brands** có ô tìm kiếm, tiêu đề cột có thể sắp xếp và chân bảng cho số dòng mỗi trang.
+6. Các menu danh mục liên quan: **Attributes**, **Brands**, **Reviews** (sắp xếp theo **Rating** hoặc **Posted**, ẩn đánh giá không phù hợp) và **Moderation**. Danh sách **Attributes** và **Brands** có ô tìm kiếm, tiêu đề cột có thể sắp xếp và chân bảng cho số dòng mỗi trang.
 7. **Moderation**: khi **New products need admin approval before going live** bật (System > Settings), sản phẩm mới chờ ở đây. Chọn **Approve**, hoặc **Reject** kèm lý do (sản phẩm quay về bản nháp và người bán nhận lý do), hoặc **Ban** để gỡ. Bạn có thể xử lý hàng loạt bằng **Approve selected**, **Reject selected**, **Ban selected**.
 
 ## 6. Hoa hồng
@@ -69,7 +69,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 1. Mở **Orders > All orders**. Tìm theo mã đơn hoặc mã đơn con, và lọc theo **Status**, **Store**, **Payment method** và ngày. <!-- SHOT: All orders -->
 2. Mở một hàng để xem sản phẩm, **Timeline**, **Payment** (phương thức, mã cổng và trạng thái) và **Totals**. Dữ liệu đơn là bản chụp và chỉ đọc.
 3. **Admin actions**: **Force cancel** kèm **Cancellation reason** (hàng về kho, người mua được báo, không hoàn tác). Với đơn trực tuyến đã trả tiền và cần hoàn, trước tiên hoàn tiền ở cổng merchant iPay88, rồi nhập **iPay88 portal reference** và chọn **Mark refunded**. Với thanh toán khi nhận hàng thì không có tiền cổng để chuyển.
-4. **Orders > Payments** là bảng đối soát. Bảng hiện **Ref no.**, **Trans ID**, **Signature** (**Signature verified** hoặc **Mismatch**), **Requery result** và **Needs portal refund**. Lọc bằng **Mismatches only**. Chọn **Requery** ở khoản thanh toán bị treo.
+4. **Orders > Payments** là bảng đối soát. Bảng hiện **Ref no.**, **Trans ID**, **Signature** (**Signature verified** hoặc **Mismatch**), **Requery result** và **Needs portal refund**. Tìm theo mã đơn, **Ref no.** hoặc **Trans ID**, sắp xếp theo **Ref no.**, **Amount**, **Status** hoặc **Paid at**, và lọc bằng **Mismatches only**. Chọn **Requery** ở khoản thanh toán bị treo.
    - Hàng có nhãn **Needs portal refund** nghĩa là cổng thanh toán chưa hoàn tiền. Lọc bằng **Needs portal refund** để xem các hàng này. Trước tiên hoàn tiền ở cổng merchant iPay88. Sau đó chọn **Mark refund settled in portal** ở hàng đó, nhập **Portal reference (optional)** và chọn **Confirm settled**. Nhãn được xoá, hàng chuyển sang **Settled in portal**, và thao tác được lưu trong nhật ký kiểm tra kèm tên bạn và mã tham chiếu. **Cancel** đóng lại mà không thay đổi gì.
 5. Khi thanh toán đang ở chế độ mô phỏng, các khoản mô phỏng cũng hiện ở đây.
 6. **Orders > Subscriptions** liệt kê người mua định kỳ theo trạng thái. Tìm theo người mua hoặc sản phẩm, và sắp xếp theo **Every** hoặc **Next**.

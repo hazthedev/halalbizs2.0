@@ -83,6 +83,12 @@ trait WithTable
         return in_array($this->perPage, [15, 20, 50, 100], true) ? $this->perPage : self::PER_PAGE;
     }
 
+    /** The search box as a bound LIKE pattern: % _ and \ typed by the admin match themselves. */
+    protected function likeTerm(): string
+    {
+        return '%'.addcslashes(trim($this->search), '%_\\').'%';
+    }
+
     protected function clearSelection(): void
     {
         $this->selected = [];

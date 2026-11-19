@@ -6,7 +6,7 @@ use App\Models\Review;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
+use App\Livewire\Concerns\WithTable;
 
 /**
  * Review moderation (docs/09 §C) — every review on the marketplace, with
@@ -17,10 +17,9 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Reviews extends Component
 {
-    use WithPagination;
+    use WithTable;
 
-    #[Url(except: '')]
-    public string $search = '';
+    public const PER_PAGE = 15;
 
     #[Url(except: '')]
     public string $rating = '';
@@ -32,18 +31,24 @@ class Reviews extends Component
 
     public string $moderationReason = '';
 
-    public function updatedSearch(): void
+    protected function tableFilters(): array
     {
-        $this->resetPage();
+        return ['rating', 'hiddenOnly'];
     }
 
-    public function updatedRating(): void
+    protected function tableSorts(): array
     {
-        $this->resetPage();
+        return ['rating' => 'rating', 'posted' => 'created_at'];
     }
 
-    public function updatedHiddenOnly(): void
+    protected function tableDefaultOrder(): array
     {
+        return ['created_at' => 'desc'];
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset('search', 'rating', 'hiddenOnly');
         $this->resetPage();
     }
 
@@ -96,17 +101,17 @@ class Reviews extends Component
     {
         $search = trim($this->search);
 
-        return view('livewire.admin.catalog.reviews', [
-            'reviews' => Review::query()
+        $reviews = Review::query()
                 ->with(['product', 'store', 'user'])
                 ->when($this->hiddenOnly, fn ($query) => $query->where('is_hidden', true))
                 ->when(in_array($this->rating, ['1', '2', '3', '4', '5'], true), fn ($query) => $query->where('rating', (int) $this->rating))
                 ->when($search !== '', fn ($query) => $query->whereHas(
-                    'store', fn ($storeQuery) => $storeQuery->where('name', 'like', '%'.$search.'%')
+                    'store', fn ($storeQuery) => $storeQuery->where('name', 'like', $this->likeTerm())
                 ))
-                ->latest()
-                ->latest('id')
-                ->paginate(15),
+                ;
+
+        return view('livewire.admin.catalog.reviews', [
+            'reviews' => $this->sortTable($reviews)->paginate($this->tablePageSize()),
             'moderating' => $this->moderatingId !== null
                 ? Review::query()->with('product')->find($this->moderatingId)
                 : null,

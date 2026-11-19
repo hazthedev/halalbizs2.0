@@ -4,43 +4,54 @@
     <x-ui.section-heading :title="__('Reviews')" as="h1" />
 
     {{-- Filters --}}
-    <div class="flex flex-wrap items-center gap-3">
-        <label class="sr-only" for="review-search">{{ __('Search by store') }}</label>
-        <input id="review-search" type="search" wire:model.live.debounce.300ms="search"
-               placeholder="{{ __('Search by store name…') }}"
-               class="w-full max-w-xs rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-
-        <label class="sr-only" for="review-rating">{{ __('Filter by rating') }}</label>
-        <select id="review-rating" wire:model.live="rating"
-                class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-            <option value="">{{ __('Any rating') }}</option>
-            @foreach ([5, 4, 3, 2, 1] as $star)
-                <option value="{{ $star }}">{{ $star }} ★</option>
-            @endforeach
-        </select>
-
-        <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm text-ink">
-            <input type="checkbox" wire:model.live="hiddenOnly"
-                   class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
-            {{ __('Hidden only') }}
-        </label>
-    </div>
+    <x-ui.card class="p-3">
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+            <div class="min-w-0 lg:col-span-3">
+                <label class="sr-only" for="review-search">{{ __('Search by store') }}</label>
+                <input id="review-search" type="search" wire:model.live.debounce.300ms="search"
+                       placeholder="{{ __('Search by store name…') }}"
+                       class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald placeholder:text-ink-faint">
+            </div>
+            <div class="lg:col-span-2">
+                <label class="sr-only" for="review-rating">{{ __('Filter by rating') }}</label>
+                <select id="review-rating" wire:model.live="rating" class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    <option value="">{{ __('Any rating') }}</option>
+                    @foreach ([5, 4, 3, 2, 1] as $star)
+                        <option value="{{ $star }}">{{ $star }} ★</option>
+                    @endforeach
+                </select>
+            </div>
+            <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] text-ink">
+                <input type="checkbox" wire:model.live="hiddenOnly"
+                       class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                {{ __('Hidden only') }}
+            </label>
+        </div>
+        @if ($search !== '' || $rating !== '' || $hiddenOnly)
+            <button type="button" wire:click="resetFilters"
+                    class="mt-2 inline-flex min-h-11 items-center text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                {{ __('Clear filters') }}
+            </button>
+        @endif
+    </x-ui.card>
 
     {{-- Datagrid --}}
     <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, rating, hiddenOnly, resetFilters, sortBy, perPage" />
+        <div wire:loading.remove wire:target="search, rating, hiddenOnly, resetFilters, sortBy, perPage">
         @if ($reviews->isEmpty())
             <x-ui.empty-state :title="__('No reviews found')" :message="__('Buyer reviews appear here the moment they are posted.')" />
         @else
             <table class="w-full min-w-[960px] text-[13px]">
-                <thead>
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Product') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Rating') }}</th>
+                        <x-ui.table.sortable field="rating" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Rating') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Comment') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Posted') }}</th>
+                        <x-ui.table.sortable field="posted" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Posted') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -82,11 +93,10 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
 
-    @if ($reviews->hasPages())
-        <div>{{ $reviews->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$reviews" />
 
     {{-- Hide/unhide reason modal --}}
     @if ($moderating !== null)
