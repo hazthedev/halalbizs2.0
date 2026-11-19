@@ -7,6 +7,8 @@ use App\Enums\PaymentMethod;
 use App\Enums\SubOrderStatus;
 use App\Listeners\AwardCoinsOnCompletion;
 use App\Listeners\RecordAffiliateCommissionOnCompletion;
+use App\Livewire\Admin\Affiliates\Index as AdminAffiliates;
+use App\Livewire\Admin\Dashboard;
 use App\Models\Address;
 use App\Models\Affiliate;
 use App\Models\AffiliateReferral;
@@ -24,6 +26,7 @@ use App\Settings\CommissionSettings;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Queue;
+use Livewire\Livewire;
 
 /**
  * HB-G129 + HB-G130: a refund that lands BEFORE completion books (coins and the
@@ -247,4 +250,39 @@ test('a partial refund before completion, then the rest after: the affiliate end
     expect(affiliatePendingSen($sub))->toBe(0)
         ->and($referral->reversed_sen)->toBe(1_000)
         ->and($referral->status)->toBe(AffiliateReferralStatus::Reversed);
+});
+
+test('HB-G138: three partial refunds leave the affiliate exactly the rounded pro-rata of what is left', function () {
+    $sub = referredReturnRequestedSubOrder();
+    $refunds = app(RefundService::class);
+
+    app(SubOrderStatusService::class)->transition($sub->fresh(), SubOrderStatus::Completed, ActorType::Admin);
+    foreach ([25, 25, 25] as $sen) {
+        $refunds->refund($sub->fresh(), $sen, ActorType::Admin, null);
+    }
+
+    // Commission 1000 on total 20500. Refunded 75 in all: 1000 x 75 / 20500 = 3.66, so 4 voided, 996 left.
+    // Rounding each 25 alone voids round(1.22) = 1 three times = 3, leaving 997.
+    $referral = AffiliateReferral::where('sub_order_id', $sub->id)->sole();
+    expect($referral->reversed_sen)->toBe(4)
+        ->and(affiliatePendingSen($sub))->toBe(996);
+});
+
+test('HB-G136: after a partial refund before completion, the admin dashboard and affiliate leaderboard show net commission', function () {
+    $sub = referredReturnRequestedSubOrder();
+
+    app(RefundService::class)->refund($sub, 10_250, ActorType::Admin, null); // half the total
+    app(SubOrderStatusService::class)->transition($sub->fresh(), SubOrderStatus::Completed, ActorType::Admin);
+
+    $admin = makeAdmin(User::factory()->create(['two_factor_method' => 'email']));
+
+    // Platform commission 1000 (5% of 20000), half refunded: 500 earned, as booked in the ledger.
+    // Take-rate over net GMV (20500 - 10250): 500 / 10250 = 4.87%, not 2.43% over gross.
+    Livewire::actingAs($admin)->test(Dashboard::class)
+        ->assertViewHas('commissionSen', 500)
+        ->assertViewHas('takeRateBp', 487);
+
+    // Affiliate commission 1000, half voided: 500 earned.
+    $row = Livewire::actingAs($admin)->test(AdminAffiliates::class)->viewData('affiliates')->first();
+    expect((int) $row->commission_sen_sum)->toBe(500);
 });

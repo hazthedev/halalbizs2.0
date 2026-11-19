@@ -7,6 +7,7 @@ use App\Models\Affiliate;
 use App\Models\AffiliatePayout;
 use App\Services\AffiliateService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -84,7 +85,8 @@ class Index extends Component
             'affiliates' => Affiliate::query()
                 ->with('user')
                 ->withCount('referrals')
-                ->withSum('referrals as commission_sen_sum', 'commission_sen')
+                // HB-G136: net of refunds (payableSen), not the gross snapshot.
+                ->withSum('referrals as commission_sen_sum', DB::raw('commission_sen - reversed_sen'))
                 ->orderByDesc('commission_sen_sum')
                 ->paginate(self::PER_PAGE),
         ])->title(__('Affiliates'));
