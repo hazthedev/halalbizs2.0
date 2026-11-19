@@ -7,6 +7,7 @@ use App\Exceptions\CheckoutException;
 use App\Models\CoinTransaction;
 use App\Models\CoinWallet;
 use App\Models\Order;
+use App\Models\SubOrder;
 use App\Models\User;
 use App\Support\CoinRedemptionResult;
 use App\Support\DisplayTime;
@@ -210,6 +211,53 @@ class CoinService
 
             $this->creditLocked($wallet, $coins, CoinTransactionType::Refund, $order,
                 __('Coins returned for refund on order :no', ['no' => $order->order_no]));
+
+            return $coins;
+        });
+    }
+
+    /**
+     * HB-G004: take back the coins EARNED on a sub-order when it is refunded, pro
+     * rata to the refund, bounded so cumulative take-backs never exceed what was
+     * earned and never drive the wallet below zero (coins already spent stay
+     * spent, same rule as an admin clawback). Written as an Adjustment that
+     * references the sub-order, which is what makes the cap countable. Safe to
+     * call inside RefundService's transaction (wallet lock comes last).
+     */
+    public function clawBackEarnedForRefund(SubOrder $subOrder, int $refundAmountSen, int $basisSen): int
+    {
+        if (! $this->enabled() || $refundAmountSen <= 0 || $basisSen <= 0) {
+            return 0;
+        }
+
+        return DB::transaction(function () use ($subOrder, $refundAmountSen, $basisSen) {
+            $earn = CoinTransaction::where('type', CoinTransactionType::Earn)
+                ->where('reference_type', $subOrder->getMorphClass())
+                ->where('reference_id', $subOrder->id)
+                ->first();
+
+            if ($earn === null) {
+                return 0; // refunded before completion: nothing was earned
+            }
+
+            $earned = (int) $earn->amount;
+            $wallet = $this->lockWallet($earn->coin_wallet_id);
+
+            $alreadyTaken = (int) -$wallet->transactions()
+                ->where('type', CoinTransactionType::Adjustment)
+                ->where('reference_type', $subOrder->getMorphClass())
+                ->where('reference_id', $subOrder->id)
+                ->sum('amount');
+
+            $proportional = intdiv($earned * min($refundAmountSen, $basisSen) + intdiv($basisSen, 2), $basisSen);
+            $coins = min($earned - $alreadyTaken, $proportional, (int) $wallet->balance);
+
+            if ($coins <= 0) {
+                return 0;
+            }
+
+            $this->consumeLocked($wallet, $coins, CoinTransactionType::Adjustment, $subOrder,
+                __('Coins earned on order :no taken back after a refund', ['no' => $subOrder->sub_order_no]), null);
 
             return $coins;
         });
