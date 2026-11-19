@@ -12,7 +12,7 @@ One VPS, 4 vCPU / 8 GB, Ubuntu 24.04 — Nginx, PHP-FPM 8.4 (opcache, `pm.max_ch
 
 | Job | Cadence |
 |---|---|
-| `orders:expire-unpaid` (requery rescue → cancel + restock) | everyMinute |
+| `orders:expire-unpaid` (requery rescue → cancel + restock; no requery while the payment simulator is on, HB-G006) | everyMinute |
 | `orders:auto-complete` (delivered + 7d → completed, ledger) | hourly |
 | `returns:auto-escalate` (seller response timeout) | hourly |
 | `boosts:expire` (M-FE sponsored placements) | hourly |

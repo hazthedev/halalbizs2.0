@@ -18,7 +18,7 @@ List + search, detail (orders summary, addresses), suspend/ban with reason (bloc
 - **Moderation queue**: `pending_review` (when approval setting on) + flagged products — preview-as-storefront drawer, Approve → live / Reject (reason → seller notification) / Ban. Bulk approve.
 
 ## E. Orders oversight
-All sub_orders datagrid (filters: status, store, method, date; search order_no — mono). Detail mirrors seller view + admin powers: force-cancel (restock + payment flag), mark refunded (with iPay88 portal reference), reassign nothing (no edits to snapshots — read-only by design). Payments tab: reconciliation grid (payments vs iPay88 status, requery button per row, signature_valid flag highlighted).
+All sub_orders datagrid (filters: status, store, method, date; search order_no — mono). Detail mirrors seller view + admin powers: force-cancel (restock + payment flag), mark refunded (with iPay88 portal reference), reassign nothing (no edits to snapshots — read-only by design). Payments tab: reconciliation grid (payments vs iPay88 status, requery button per row, signature_valid flag highlighted; "Needs portal refund" rows get "Mark refund settled in portal" with an optional portal reference, audit-logged, and then read "Settled in portal", HB-G122).
 
 ## F. Finance
 - **Commission settings**: global rate, category overrides summary (links to category form), store overrides summary. Effective-rate tester widget (pick store+category → shows resolver result — uses CommissionResolver, doubles as living documentation).
