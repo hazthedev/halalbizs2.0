@@ -63,3 +63,19 @@ test('footer Sell on HalalBizs leads each visitor somewhere that works', functio
     expect($html)->toContain('href="'.route('seller.dashboard').'"');
     test()->actingAs($seller)->get(route('seller.dashboard'))->assertOk();
 });
+
+test('footer Sell link for a seller-role user without an approved store lands on a working page', function (string $state) {
+    test()->seed(RoleSeeder::class);
+    $user = User::factory()->create();
+    $user->assignRole('seller');
+    if ($state !== 'none') {
+        Store::factory()->create(['user_id' => $user->id, 'status' => \App\Enums\StoreStatus::from($state)]);
+    }
+
+    $html = test()->actingAs($user)->get(route('home'))->getContent();
+    expect($html)->toContain('href="'.route('seller.dashboard').'"');
+
+    $landing = $state === 'none' ? 'seller.apply' : 'seller.status';
+    test()->actingAs($user)->get(route('seller.dashboard'))->assertRedirect(route($landing));
+    test()->actingAs($user)->get(route($landing))->assertOk();
+})->with(['none', 'pending', 'rejected', 'suspended']);
