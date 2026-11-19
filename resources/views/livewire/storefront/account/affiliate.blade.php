@@ -10,7 +10,7 @@
                     <div class="min-w-0">
                         <h2 class="font-display text-xl font-medium">{{ __('Earn by sharing what you love') }}</h2>
                         <p class="mt-1 text-[13px] text-ink-soft">
-                            {{ __('Join the creator program for your own share link. Earn :rate% commission whenever a shopper you referred completes an order.', ['rate' => rtrim(rtrim(number_format(config('affiliate.commission_rate_bp', 500) / 100, 2), '0'), '.')]) }}
+                            {{ __('Join the creator program for your own share link. Earn :rate% commission whenever a shopper you referred completes an order.', ['rate' => rtrim(rtrim(number_format(app(\App\Services\AffiliateService::class)->cappedRateBp((int) config('affiliate.commission_rate_bp', 250)) / 100, 2), '0'), '.')]) }}
                         </p>
                         {{-- Shown BEFORE joining, not buried in a footer. The
                              hold period and the carry-forward only feel fair if

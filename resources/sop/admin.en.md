@@ -90,7 +90,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 2. Check the store and bank details against the verified documents. Select **Approve**, or **Reject** with a **Rejection reason** (the money returns to the seller's available balance).
 3. Select **Export bank CSV** for the approved payouts and run them at the bank.
 4. When the transfer is done, select **Mark paid** and enter the **Bank reference**. This is final.
-5. **Finance > Affiliates** lists creators and **Pending withdrawals** with **Mark paid** (bank transfer reference) and **Reject**.
+5. **Finance > Affiliates** lists creators and **Pending withdrawals** with **Mark paid** (bank transfer reference) and **Reject**. Creator commission is 2.5% of the referred items' value; the system caps it at 2.5% even if a higher rate is configured, so a referred sale always leaves the platform its own commission.
 
 ## 10. Banners, home sections and pages
 
