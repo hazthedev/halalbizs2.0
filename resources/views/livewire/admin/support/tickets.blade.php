@@ -109,11 +109,11 @@
                         <tr class="border-b border-line text-left text-ink-soft">
                             <x-ui.table.sortable field="id" :sort="$sort" :direction="$direction">#</x-ui.table.sortable>
                             <x-ui.table.sortable field="subject" :sort="$sort" :direction="$direction">{{ __('Subject') }}</x-ui.table.sortable>
-                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Buyer') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Buyer') }}</th>
                             <x-ui.table.sortable field="priority" :sort="$sort" :direction="$direction">{{ __('Priority') }}</x-ui.table.sortable>
-                            <x-ui.table.sortable field="messages" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Messages') }}</x-ui.table.sortable>
+                            <x-ui.table.sortable field="messages" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Messages') }}</x-ui.table.sortable>
                             <x-ui.table.sortable field="updated" default="desc" :sort="$sort" :direction="$direction">{{ __('Updated') }}</x-ui.table.sortable>
-                            <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
+                            <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>

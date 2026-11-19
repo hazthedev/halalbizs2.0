@@ -55,7 +55,7 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         @if ($tab === PayoutStatus::Approved->value)
-                            <th scope="col" class="w-10 px-3 py-5">
+                            <th scope="col" class="w-10 px-3 py-6.5">
                                 <input type="checkbox"
                                        data-ids="{{ json_encode($approvedIds) }}"
                                        x-bind:checked="selected.length > 0 && selected.length === JSON.parse($el.dataset.ids).length"
@@ -65,17 +65,17 @@
                             </th>
                         @endif
                         <x-ui.table.sortable field="payout" :sort="$sort" :direction="$direction">{{ __('Payout') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Store') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Store') }}</th>
                         <x-ui.table.sortable field="amount" :sort="$sort" :direction="$direction" class="text-right">{{ __('Amount') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Bank') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Bank') }}</th>
                         <x-ui.table.sortable field="requested" default="asc" :sort="$sort" :direction="$direction">{{ __('Requested') }}</x-ui.table.sortable>
                         @if ($tab === PayoutStatus::Paid->value)
-                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Reference') }}</th>
-                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Paid at') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Reference') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Paid at') }}</th>
                         @elseif ($tab === PayoutStatus::Rejected->value)
-                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Reason') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Reason') }}</th>
                         @else
-                            <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
+                            <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                         @endif
                     </tr>
                 </thead>

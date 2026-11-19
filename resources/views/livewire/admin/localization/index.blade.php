@@ -48,11 +48,11 @@
             <table class="w-full min-w-[560px] text-[13px]">
                 <thead>
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Order') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Code') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Name') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Symbol') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Active') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Order') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Code') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Name') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Symbol') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Active') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -106,13 +106,13 @@
             <table class="w-full min-w-[820px] text-[13px]">
                 <thead>
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Currency') }}</th>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Rate (per RM 1)') }}</th>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Margin %') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Source') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Fetched') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Update') }}</th>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('History') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Currency') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Rate (per RM 1)') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Margin %') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Source') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Fetched') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Update') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('History') }}</th>
                     </tr>
                 </thead>
                 <tbody>

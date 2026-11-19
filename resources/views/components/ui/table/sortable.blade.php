@@ -6,7 +6,7 @@
 $active = $sort === $field || ($sort === '' && $default !== null);
 $dir = $sort === $field ? $direction : $default;
 @endphp
-<th scope="col" aria-sort="{{ $active ? ($dir === 'desc' ? 'descending' : 'ascending') : 'none' }}" {{ $attributes->class(['px-3 py-5 font-medium']) }}>
+<th scope="col" aria-sort="{{ $active ? ($dir === 'desc' ? 'descending' : 'ascending') : 'none' }}" {{ $attributes->class(['px-3 py-6.5 font-medium']) }}>
     <button type="button" wire:click="sortBy('{{ $field }}')" @class(['group -my-2 inline-flex items-center gap-1 py-2 hover:text-emerald focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald', 'text-ink' => $active, 'text-ink-soft' => ! $active])>
         {{ $slot }}
         <svg aria-hidden="true" @class(['size-4 shrink-0', 'opacity-0 transition-opacity group-hover:opacity-50 group-focus-visible:opacity-50' => ! $active]) viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -38,12 +38,12 @@
             <table class="w-full min-w-[760px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <x-ui.table.sortable field="title" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Title') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="starts" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Starts') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="ends" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Ends') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Status') }}</th>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Deals') }}</th>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
+                        <x-ui.table.sortable field="title" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Title') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="starts" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Starts') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="ends" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Ends') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Status') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Deals') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 @foreach ($sales as $sale)

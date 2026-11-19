@@ -115,8 +115,8 @@
                 <table class="w-full text-[13px]">
                     <thead>
                         <tr class="border-b border-line text-left text-ink-soft">
-                            <th scope="col" class="px-4 py-5 font-medium">{{ __('Category') }}</th>
-                            <th scope="col" class="px-4 py-5 text-right font-medium">{{ __('Rate') }}</th>
+                            <th scope="col" class="px-4 py-6.5 font-medium">{{ __('Category') }}</th>
+                            <th scope="col" class="px-4 py-6.5 text-right font-medium">{{ __('Rate') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,8 +151,8 @@
                 <table class="w-full text-[13px]">
                     <thead>
                         <tr class="border-b border-line text-left text-ink-soft">
-                            <th scope="col" class="px-4 py-5 font-medium">{{ __('Store') }}</th>
-                            <th scope="col" class="px-4 py-5 text-right font-medium">{{ __('Rate') }}</th>
+                            <th scope="col" class="px-4 py-6.5 font-medium">{{ __('Store') }}</th>
+                            <th scope="col" class="px-4 py-6.5 text-right font-medium">{{ __('Rate') }}</th>
                         </tr>
                     </thead>
                     <tbody>

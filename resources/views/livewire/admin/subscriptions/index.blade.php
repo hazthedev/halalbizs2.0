@@ -22,10 +22,10 @@
             <table class="w-full min-w-[640px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Buyer') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Product') }}</th>
-                        <x-ui.table.sortable field="every" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Every') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="next" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Next') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Buyer') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Product') }}</th>
+                        <x-ui.table.sortable field="every" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Every') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="next" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Next') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
                 <tbody>

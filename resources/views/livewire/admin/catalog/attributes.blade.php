@@ -36,8 +36,8 @@
                         <x-ui.table.sortable field="name" :sort="$sort" :direction="$direction">{{ __('Name') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="slug" default="asc" :sort="$sort" :direction="$direction">{{ __('Slug') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="filterable" :sort="$sort" :direction="$direction">{{ __('Filterable') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="values" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Values') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
+                        <x-ui.table.sortable field="values" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Values') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

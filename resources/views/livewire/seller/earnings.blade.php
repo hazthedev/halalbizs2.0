@@ -109,8 +109,8 @@
                     <tr class="border-b border-line text-left text-ink-soft">
                         <x-ui.table.sortable field="ledger:date" default="desc" :sort="$ledgerSort" :direction="$ledgerDir">{{ __('Date') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="ledger:type" :sort="$ledgerSort" :direction="$ledgerDir">{{ __('Type') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Description') }}</th>
-                        <x-ui.table.sortable field="ledger:amount" :sort="$ledgerSort" :direction="$ledgerDir" class="px-3 py-5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Description') }}</th>
+                        <x-ui.table.sortable field="ledger:amount" :sort="$ledgerSort" :direction="$ledgerDir" class="px-3 py-6.5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
                 <tbody>
@@ -162,11 +162,11 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <x-ui.table.sortable field="payout:payout" :sort="$payoutSort" :direction="$payoutDir">{{ __('Payout') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="payout:amount" :sort="$payoutSort" :direction="$payoutDir" class="px-3 py-5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="payout:amount" :sort="$payoutSort" :direction="$payoutDir" class="px-3 py-6.5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="payout:status" :sort="$payoutSort" :direction="$payoutDir">{{ __('Status') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="payout:requested" default="desc" :sort="$payoutSort" :direction="$payoutDir">{{ __('Requested') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="payout:paid" :sort="$payoutSort" :direction="$payoutDir">{{ __('Paid') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Reference') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Reference') }}</th>
                     </tr>
                 </thead>
                 <tbody>

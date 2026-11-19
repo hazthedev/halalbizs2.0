@@ -28,8 +28,8 @@
             <table class="w-full min-w-[820px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Store') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Product') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Store') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Product') }}</th>
                         <x-ui.table.sortable field="window" :sort="$sort" :direction="$direction">{{ __('Window') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="fee" :sort="$sort" :direction="$direction" class="text-right">{{ __('Fee') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction">{{ __('Status') }}</x-ui.table.sortable>

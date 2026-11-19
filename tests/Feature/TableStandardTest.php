@@ -87,7 +87,7 @@ test('header cells share one padding on the standard lists', function () {
     preg_match_all('/<th\b[^>]*class="([^"]*)"/', $html, $m);
     expect($m[1])->not->toBeEmpty();
     foreach ($m[1] as $class) {
-        expect($class)->toContain('py-5')->not->toContain('py-2.5');
+        expect($class)->toContain('py-6.5')->not->toContain('py-2.5');
     }
 });
 

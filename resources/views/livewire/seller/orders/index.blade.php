@@ -57,22 +57,22 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         @if ($tab === 'new')
-                            <th scope="col" class="w-10 px-3 py-5"><input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald"></th>
+                            <th scope="col" class="w-10 px-3 py-6.5"><input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald"></th>
                         @endif
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Sub-order') }}</th>
-                        <x-ui.table.sortable field="placed" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Placed') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Buyer') }}</th>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Items') }}</th>
-                        <x-ui.table.sortable field="total" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Total') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Status') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Sub-order') }}</th>
+                        <x-ui.table.sortable field="placed" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Placed') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Buyer') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Items') }}</th>
+                        <x-ui.table.sortable field="total" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Total') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Status') }}</th>
                         @if ($tab === 'new')
-                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Waiting') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Waiting') }}</th>
                         @endif
                         @if ($tab === 'returns')
-                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Respond by') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Respond by') }}</th>
                         @endif
                         @if (in_array($tab, ['new', 'to_ship'], true))
-                            <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
+                            <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                         @endif
                     </tr>
                 </thead>

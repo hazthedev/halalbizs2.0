@@ -39,7 +39,7 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <x-ui.table.sortable field="session" :sort="$sort" :direction="$direction">{{ __('Session') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Store') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Store') }}</th>
                         <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction">{{ __('Status') }}</x-ui.table.sortable>
                     </tr>
                 </thead>

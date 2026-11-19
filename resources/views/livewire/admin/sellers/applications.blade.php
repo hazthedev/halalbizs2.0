@@ -17,11 +17,11 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <x-ui.table.sortable field="store" :sort="$sort" :direction="$direction">{{ __('Store') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Owner email') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Owner email') }}</th>
                         <x-ui.table.sortable field="state" :sort="$sort" :direction="$direction">{{ __('State') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="submitted" default="asc" :sort="$sort" :direction="$direction">{{ __('Submitted') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Documents') }}</th>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Documents') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

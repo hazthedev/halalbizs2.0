@@ -112,13 +112,13 @@
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Sub-order') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Store') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Buyer') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Reason') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Sub-order') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Store') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Buyer') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Reason') }}</th>
                         <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction">{{ __('Status') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="escalated" :sort="$sort" :direction="$direction">{{ __('Escalated') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

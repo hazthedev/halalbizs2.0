@@ -38,10 +38,10 @@
                     <tr class="border-b border-line text-left text-ink-soft">
                         <x-ui.table.sortable field="category" default="asc" :sort="$sort" :direction="$direction">{{ __('Category') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="title" :sort="$sort" :direction="$direction">{{ __('Title') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="position" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Position') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="views" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Views') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="position" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Position') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="views" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Views') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="published" :sort="$sort" :direction="$direction">{{ __('Published') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

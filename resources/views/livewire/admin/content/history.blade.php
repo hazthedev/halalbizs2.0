@@ -14,10 +14,10 @@
             <table class="w-full min-w-[640px] text-[13px]">
                 <thead>
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Published') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('By') }}</th>
-                        <th scope="col" class="px-3 py-5 font-medium">{{ __('What changed') }}</th>
-                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Published') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('By') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('What changed') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
