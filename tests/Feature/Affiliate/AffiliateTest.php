@@ -49,7 +49,7 @@ test('enrolment mints a unique code and is idempotent', function () {
 
     expect($first->code)->not->toBe('')
         ->and($first->id)->toBe($second->id)
-        ->and($first->commission_rate_bp)->toBe(500);
+        ->and($first->commission_rate_bp)->toBe(250); // configured 5%, capped at 2.5% (HB-G159)
 });
 
 test('the share link records a click, drops the cookie and redirects safely', function () {
@@ -106,15 +106,15 @@ test('completing a referred sub-order books commission exactly once', function (
     app(OrderService::class)->markDelivered($sub->fresh(), ActorType::System);
     app(OrderService::class)->confirmReceived($sub->fresh(), $buyer->id);
 
-    // Booked at the full 5%, but HELD: commission is pending until the return
+    // Booked at the capped 2.5% (HB-G159), but HELD: commission is pending until the return
     // window plus buffer has passed, so confirmed (payable) earnings are still
     // zero and the amount sits in pending. See AffiliateRefundClawbackTest for
     // the hold expiring and for refunds landing inside it.
     $referral = AffiliateReferral::where('sub_order_id', $sub->id)->first();
     expect($referral)->not->toBeNull()
-        ->and($referral->commission_sen)->toBe(500) // 5% of RM100
+        ->and($referral->commission_sen)->toBe(250) // 2.5% of RM100
         ->and(app(AffiliateService::class)->confirmedEarningsSen($affiliate))->toBe(0)
-        ->and(app(AffiliateService::class)->pendingEarningsSen($affiliate))->toBe(500);
+        ->and(app(AffiliateService::class)->pendingEarningsSen($affiliate))->toBe(250);
 
     // Re-running the booking is a no-op.
     app(AffiliateService::class)->recordCommission($sub->fresh());
@@ -156,7 +156,8 @@ it('publishes the creator programme terms and links them before anyone joins', f
         // The two clauses that exist because of what shipped today. If either
         // stops being true in code, this page is lying and must change with it.
         ->assertSee('never invoice you', false)
-        ->assertSee('reduced in proportion', false);
+        ->assertSee('reduced in proportion', false)
+        ->assertSee('2.5% of the value of the items', false); // HB-G159 cap
 
     // Reachable from the enrol screen, not just by URL — the hold only reads as
     // fair if it was visible before signing up.
@@ -165,4 +166,59 @@ it('publishes the creator programme terms and links them before anyone joins', f
     Livewire::actingAs($buyer)
         ->test(App\Livewire\Storefront\Account\Affiliate::class)
         ->assertSee('Read the programme terms');
+});
+
+/**
+ * HB-G159 (Haze 2026-11-19): the platform keeps 5% commission, so an affiliate
+ * share of 5% left the platform nothing on a referred sale. The affiliate share
+ * is capped at 2.5% (config affiliate.max_rate_bp = 250) wherever the rate
+ * comes from: the configured default or a rate already stored on the creator.
+ */
+function g159CompleteReferredOrder($affiliate, int $priceSen = 10_000)
+{
+    [$buyer, $address] = affiliateBuyer();
+    request()->cookies->set((string) config('affiliate.cookie'), $affiliate->code);
+
+    $product = affiliateProduct($priceSen);
+    app(CartService::class)->addItem($buyer, $product->variants->first(), 1);
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod);
+
+    $sub = $order->subOrders->first();
+    $status = app(SubOrderStatusService::class);
+    $status->transition($sub->fresh(), SubOrderStatus::Processing, ActorType::Seller);
+    $status->transition($sub->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
+    app(OrderService::class)->markDelivered($sub->fresh(), ActorType::System);
+    app(OrderService::class)->confirmReceived($sub->fresh(), $buyer->id);
+
+    return AffiliateReferral::where('sub_order_id', $sub->id)->first();
+}
+
+test('a configured 5% affiliate rate books only 2.5% of the sale', function () {
+    $affiliate = app(AffiliateService::class)->enroll(User::factory()->create());
+
+    $referral = g159CompleteReferredOrder($affiliate);
+
+    expect($affiliate->commission_rate_bp)->toBe(250)
+        ->and($referral->commission_sen)->toBe(250); // 2.5% of RM100, not 500
+});
+
+test('a creator already stored at 5% is still paid at most 2.5%', function () {
+    $affiliate = app(AffiliateService::class)->enroll(User::factory()->create());
+    $affiliate->forceFill(['commission_rate_bp' => 500])->save(); // enrolled before the cap
+
+    expect(g159CompleteReferredOrder($affiliate)->commission_sen)->toBe(250);
+});
+
+test('a rate below the cap is left alone', function () {
+    $affiliate = app(AffiliateService::class)->enroll(User::factory()->create());
+    $affiliate->forceFill(['commission_rate_bp' => 100])->save();
+
+    expect(g159CompleteReferredOrder($affiliate)->commission_sen)->toBe(100);
+});
+
+test('the join screen quotes the capped rate', function () {
+    Livewire::actingAs(User::factory()->create())
+        ->test(AffiliatePage::class)
+        ->assertSee('Earn 2.5% commission')
+        ->assertDontSee('Earn 5% commission');
 });

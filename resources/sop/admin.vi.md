@@ -90,7 +90,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 2. Đối chiếu cửa hàng và thông tin ngân hàng với tài liệu đã xác minh. Chọn **Approve**, hoặc **Reject** kèm **Rejection reason** (tiền quay lại số dư khả dụng của người bán).
 3. Chọn **Export bank CSV** cho các lệnh đã duyệt và chạy chúng tại ngân hàng.
 4. Khi chuyển khoản xong, chọn **Mark paid** và nhập **Bank reference**. Đây là trạng thái cuối.
-5. **Finance > Affiliates** liệt kê người sáng tạo và **Pending withdrawals** với **Mark paid** (mã tham chiếu chuyển khoản) và **Reject**.
+5. **Finance > Affiliates** liệt kê người sáng tạo và **Pending withdrawals** với **Mark paid** (mã tham chiếu chuyển khoản) và **Reject**. Hoa hồng người sáng tạo là 2.5% giá trị sản phẩm được giới thiệu; hệ thống giới hạn ở 2.5% kể cả khi cấu hình mức cao hơn, nên đơn được giới thiệu luôn để lại hoa hồng của nền tảng.
 
 ## 10. Banner, mục trang chủ và trang nội dung
 

@@ -7,8 +7,14 @@ return [
     'enabled' => env('AFFILIATE_ENABLED', true),
 
     // Default commission as basis points of a referred sub-order's items
-    // subtotal (pre-tax, pre-shipping). 500 bp = 5%.
-    'commission_rate_bp' => (int) env('AFFILIATE_COMMISSION_BP', 500),
+    // subtotal (pre-tax, pre-shipping). 250 bp = 2.5%.
+    'commission_rate_bp' => (int) env('AFFILIATE_COMMISSION_BP', 250),
+
+    // HB-G159 (Haze 2026-11-19): hard ceiling on the affiliate share. The
+    // platform keeps 5% commission, so a 5% affiliate share left it nothing on a
+    // referred sale. Applied when commission is booked, so it also caps a higher
+    // env value or a rate already stored on an affiliate row.
+    'max_rate_bp' => 250,
 
     // Minimum withdrawal a creator can request (sen). RM 50 default.
     'min_payout_sen' => (int) env('AFFILIATE_MIN_PAYOUT_SEN', 5000),
