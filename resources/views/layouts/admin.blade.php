@@ -81,6 +81,7 @@
                             ['admin.content.pages', __('Pages'), 'admin.content.pages'],
                             ['admin.content.site-info', __('Footer & contact'), 'admin.content.site-info'],
                             ['admin.content.vouchers', __('Vouchers'), 'admin.content.vouchers'],
+                            ['admin.content.flash-sales', __('Flash sales'), 'admin.content.flash-sales'],
                             ['admin.content.theme', __('Theme'), 'admin.content.theme'],
                             ['admin.live.index', __('Live shopping'), 'admin.live.*'],
                         ],

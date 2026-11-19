@@ -176,7 +176,9 @@ test('COD: a partial refund before completion leaves the seller where the same r
  */
 function referredReturnRequestedSubOrder(): SubOrder
 {
-    config(['affiliate.enabled' => true, 'affiliate.commission_rate_bp' => 500]);
+    // Refund arithmetic is rate-agnostic; pinned at 5% so the figures below stay
+    // as worked. The 2.5% cap (HB-G159) is covered in AffiliateTest.
+    config(['affiliate.enabled' => true, 'affiliate.commission_rate_bp' => 500, 'affiliate.max_rate_bp' => 500]);
     $affiliate = app(AffiliateService::class)->enroll(User::factory()->create());
     request()->cookies->set((string) config('affiliate.cookie'), $affiliate->code);
 

@@ -2892,5 +2892,8 @@
     "Search attribute name": "Search attribute name",
     "No attributes match": "No attributes match",
     "No articles match": "No articles match",
-    "Seller payout queue — approve requests, export the bank CSV, then mark them paid with the bank reference.": "Seller payout queue — approve requests, export the bank CSV, then mark them paid with the bank reference."
+    "Seller payout queue — approve requests, export the bank CSV, then mark them paid with the bank reference.": "Seller payout queue — approve requests, export the bank CSV, then mark them paid with the bank reference.",
+    "Current banner image": "Ảnh biểu ngữ hiện tại",
+    "Create one above, then add deals to it.": "Tạo một chương trình ở trên, rồi thêm ưu đãi vào đó.",
+    "Deals": "Ưu đãi"
 }

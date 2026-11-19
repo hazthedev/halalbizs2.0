@@ -51,7 +51,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 3. Set **Halal certificate**: **Inherit from parent**, **Required to list** or **Not required**. Required means a seller cannot list there without an approved certificate covering the product.
 4. The gate starts on 2 December 2026. On live, the required categories are **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** and **Pharma & Supplements**.
 5. Select **Create category** or **Save changes**.
-6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (hide unsuitable reviews), and **Moderation**.
+6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (hide unsuitable reviews), and **Moderation**. The **Attributes** and **Brands** lists have a search box, sortable headers and a footer with the number of rows per page.
 7. **Moderation**: when **New products need admin approval before going live** is on (System > Settings), new products wait here. Select **Approve**, or **Reject** with a reason (the product returns to drafts and the seller gets the reason), or **Ban** to remove it. You can bulk **Approve selected**, **Reject selected**, **Ban selected**.
 
 ## 6. Commission
@@ -72,7 +72,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 4. **Orders > Payments** is the reconciliation grid. It shows **Ref no.**, **Trans ID**, **Signature** (**Signature verified** or **Mismatch**), **Requery result** and **Needs portal refund**. Filter by **Mismatches only**. Select **Requery** on a stuck payment.
    - A row marked **Needs portal refund** means the gateway did not refund the money. Filter by **Needs portal refund** to list them. Refund the money in the iPay88 merchant portal first. Then select **Mark refund settled in portal** on that row, enter the **Portal reference (optional)** and select **Confirm settled**. The flag clears, the row then reads **Settled in portal**, and the action is kept in the audit log with your name and the reference. **Cancel** closes it without a change.
 5. While payment is in simulator mode, simulated payments show here too.
-6. **Orders > Subscriptions** lists recurring buyers by status.
+6. **Orders > Subscriptions** lists recurring buyers by status. Search by buyer or product, and sort by **Every** or **Next**.
 7. **System > Settings > iPay88** shows **Simulator active**, **Sandbox configured**, **Live configured** or **Not configured**. Save **Merchant code**, **Merchant key** and **Sandbox mode**, then **Test connection**. **Online payment is hidden from buyers until both credentials are saved.**
 8. On live today no merchant code or key is saved, so the simulator is active. Do not tell anyone that real card or FPX payment works until both are saved and **Test connection** passes.
 
@@ -90,17 +90,17 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 2. Check the store and bank details against the verified documents. Select **Approve**, or **Reject** with a **Rejection reason** (the money returns to the seller's available balance).
 3. Select **Export bank CSV** for the approved payouts and run them at the bank.
 4. When the transfer is done, select **Mark paid** and enter the **Bank reference**. This is final.
-5. **Finance > Affiliates** lists creators and **Pending withdrawals** with **Mark paid** (bank transfer reference) and **Reject**. The creator list has a search box, sortable column headers and a footer with the number of rows per page.
+5. **Finance > Affiliates** lists creators and **Pending withdrawals** with **Mark paid** (bank transfer reference) and **Reject**. Creator commission is 2.5% of the referred items' value; the system caps it at 2.5% even if a higher rate is configured, so a referred sale always leaves the platform its own commission. The creator list has a search box, sortable column headers and a footer with the number of rows per page.
 
 ## 10. Banners, home sections and pages
 
-1. **Content > Banners**: select **Add banner**. Set titles per language, **Button text**, and **When tapped, open** (a product, store, category, the flash sale, a page, the help centre, search results, or a web address). Add the **Image** (wide, 3:1, at least 1200 pixels, up to 4 MB), optional **Vietnamese image** and **Video**, **Starts at** and **Ends at**, and **Active**. Select **Create banner** or **Save banner**. Reorder with **Move up** and **Move down**.
+1. **Content > Banners**: select **Add banner**. Set titles per language, **Button text**, and **When tapped, open** (a product, store, category, the flash sale, a page, the help centre, search results, or a web address). Add the **Image** (wide, 3:1, at least 1200 pixels, up to 4 MB), optional **Vietnamese image** and **Video**, **Starts at** and **Ends at**, and **Active**. When editing, the current image shows above **Replace image**. Select **Create banner** or **Save banner**. Reorder with **Move up** and **Move down**.
 2. **Content > Home sections**: select a **Section type**, then **Add section**. The sections show on the home page top to bottom. Edit **Heading**, **Source** (**Latest products**, **Top sellers**), **Limit**, picked products or stores, tiles with pictures and links, and **Show on** (**Web and app**, **Web only**, **App only**). Select **Save section**.
 3. Changes are drafts first (a **Draft** tag). Use **Preview** to look, then **Publish** (or **Publish all**). **Throw away** discards a draft. **History** lists past versions, with **Restore as draft** and **Restore and publish**.
 4. **Scheduled layouts**: **New scheduled layout** (for example Ramadan) with **Starts at** and **Ends at**. It switches on by itself and goes back to the everyday layout at the end.
 5. **Content > Pages**: **Add page** for terms, FAQ and similar. Set **Slug**, titles and bodies per language, search title and description, **Share picture**, **Show a link to this page in the website footer** and **Published**. System pages keep their slug. Terms and privacy stay published because checkout links to them.
 6. **Footer & contact**: update **Email**, **Phone**, **WhatsApp**, **Address** and social links, then **Save contact**.
-7. **Flash sales**: enter **Title**, **Starts**, **Ends**, select **Create flash sale**, then **Add deal** with a **Promo RM** price, **Qty** and **Per buyer** limit.
+7. **Content > Flash sales**: enter **Title**, **Starts**, **Ends**, select **Create flash sale**, then **Add deal** with a **Promo RM** price, **Qty** and **Per buyer** limit.
 8. **Support > Help articles** and **Support > Tickets**: reply with **Send reply**, **Mark urgent** / **Mark normal**, **Close ticket**, **Reopen ticket**. Tickets and help articles have a search box, sortable headers and a footer with the number of rows per page; help articles also filter by category.
 9. **System > Localization**: turn languages on or off and set currencies and exchange rates (display only, charges stay in MYR).
 

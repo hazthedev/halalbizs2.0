@@ -51,7 +51,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 3. Đặt **Halal certificate**: **Inherit from parent**, **Required to list** hoặc **Not required**. Required nghĩa là người bán không đăng được ở đó nếu thiếu chứng nhận đã duyệt bao phủ sản phẩm.
 4. Quy định bắt đầu từ ngày 2 tháng 12 năm 2026. Trên bản live, các danh mục bắt buộc là **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** và **Pharma & Supplements**.
 5. Chọn **Create category** hoặc **Save changes**.
-6. Các menu danh mục liên quan: **Attributes**, **Brands**, **Reviews** (ẩn đánh giá không phù hợp) và **Moderation**.
+6. Các menu danh mục liên quan: **Attributes**, **Brands**, **Reviews** (ẩn đánh giá không phù hợp) và **Moderation**. Danh sách **Attributes** và **Brands** có ô tìm kiếm, tiêu đề cột có thể sắp xếp và chân bảng cho số dòng mỗi trang.
 7. **Moderation**: khi **New products need admin approval before going live** bật (System > Settings), sản phẩm mới chờ ở đây. Chọn **Approve**, hoặc **Reject** kèm lý do (sản phẩm quay về bản nháp và người bán nhận lý do), hoặc **Ban** để gỡ. Bạn có thể xử lý hàng loạt bằng **Approve selected**, **Reject selected**, **Ban selected**.
 
 ## 6. Hoa hồng
@@ -72,7 +72,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 4. **Orders > Payments** là bảng đối soát. Bảng hiện **Ref no.**, **Trans ID**, **Signature** (**Signature verified** hoặc **Mismatch**), **Requery result** và **Needs portal refund**. Lọc bằng **Mismatches only**. Chọn **Requery** ở khoản thanh toán bị treo.
    - Hàng có nhãn **Needs portal refund** nghĩa là cổng thanh toán chưa hoàn tiền. Lọc bằng **Needs portal refund** để xem các hàng này. Trước tiên hoàn tiền ở cổng merchant iPay88. Sau đó chọn **Mark refund settled in portal** ở hàng đó, nhập **Portal reference (optional)** và chọn **Confirm settled**. Nhãn được xoá, hàng chuyển sang **Settled in portal**, và thao tác được lưu trong nhật ký kiểm tra kèm tên bạn và mã tham chiếu. **Cancel** đóng lại mà không thay đổi gì.
 5. Khi thanh toán đang ở chế độ mô phỏng, các khoản mô phỏng cũng hiện ở đây.
-6. **Orders > Subscriptions** liệt kê người mua định kỳ theo trạng thái.
+6. **Orders > Subscriptions** liệt kê người mua định kỳ theo trạng thái. Tìm theo người mua hoặc sản phẩm, và sắp xếp theo **Every** hoặc **Next**.
 7. **System > Settings > iPay88** hiện **Simulator active**, **Sandbox configured**, **Live configured** hoặc **Not configured**. Lưu **Merchant code**, **Merchant key** và **Sandbox mode**, rồi chọn **Test connection**. **Online payment is hidden from buyers until both credentials are saved.**
 8. Trên bản live hiện chưa lưu mã hay khoá merchant, nên trình mô phỏng đang bật. Đừng nói với ai rằng thanh toán thẻ hoặc FPX thật đã hoạt động cho đến khi lưu đủ cả hai và **Test connection** thành công.
 
@@ -90,17 +90,17 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 2. Đối chiếu cửa hàng và thông tin ngân hàng với tài liệu đã xác minh. Chọn **Approve**, hoặc **Reject** kèm **Rejection reason** (tiền quay lại số dư khả dụng của người bán).
 3. Chọn **Export bank CSV** cho các lệnh đã duyệt và chạy chúng tại ngân hàng.
 4. Khi chuyển khoản xong, chọn **Mark paid** và nhập **Bank reference**. Đây là trạng thái cuối.
-5. **Finance > Affiliates** liệt kê người sáng tạo và **Pending withdrawals** với **Mark paid** (mã tham chiếu chuyển khoản) và **Reject**. Danh sách người sáng tạo có ô tìm kiếm, tiêu đề cột có thể sắp xếp và chân bảng cho số dòng mỗi trang.
+5. **Finance > Affiliates** liệt kê người sáng tạo và **Pending withdrawals** với **Mark paid** (mã tham chiếu chuyển khoản) và **Reject**. Hoa hồng người sáng tạo là 2.5% giá trị sản phẩm được giới thiệu; hệ thống giới hạn ở 2.5% kể cả khi cấu hình mức cao hơn, nên đơn được giới thiệu luôn để lại hoa hồng của nền tảng. Danh sách người sáng tạo có ô tìm kiếm, tiêu đề cột có thể sắp xếp và chân bảng cho số dòng mỗi trang.
 
 ## 10. Banner, mục trang chủ và trang nội dung
 
-1. **Content > Banners**: chọn **Add banner**. Đặt tiêu đề theo từng ngôn ngữ, **Button text**, và **When tapped, open** (một sản phẩm, cửa hàng, danh mục, flash sale, một trang, trung tâm trợ giúp, kết quả tìm kiếm, hoặc địa chỉ web). Thêm **Image** (rộng, tỉ lệ 3:1, ít nhất 1200 pixel, tối đa 4 MB), **Vietnamese image** và **Video** tuỳ chọn, **Starts at** và **Ends at**, và **Active**. Chọn **Create banner** hoặc **Save banner**. Sắp xếp bằng **Move up** và **Move down**.
+1. **Content > Banners**: chọn **Add banner**. Đặt tiêu đề theo từng ngôn ngữ, **Button text**, và **When tapped, open** (một sản phẩm, cửa hàng, danh mục, flash sale, một trang, trung tâm trợ giúp, kết quả tìm kiếm, hoặc địa chỉ web). Thêm **Image** (rộng, tỉ lệ 3:1, ít nhất 1200 pixel, tối đa 4 MB), **Vietnamese image** và **Video** tuỳ chọn, **Starts at** và **Ends at**, và **Active**. Khi sửa, ảnh hiện tại hiện phía trên **Replace image**. Chọn **Create banner** hoặc **Save banner**. Sắp xếp bằng **Move up** và **Move down**.
 2. **Content > Home sections**: chọn **Section type**, rồi **Add section**. Các mục hiện trên trang chủ từ trên xuống. Sửa **Heading**, **Source** (**Latest products**, **Top sellers**), **Limit**, sản phẩm hoặc cửa hàng được chọn, các ô ảnh kèm liên kết, và **Show on** (**Web and app**, **Web only**, **App only**). Chọn **Save section**.
 3. Thay đổi ban đầu là bản nháp (nhãn **Draft**). Dùng **Preview** để xem, rồi **Publish** (hoặc **Publish all**). **Throw away** bỏ bản nháp. **History** liệt kê các phiên bản cũ, với **Restore as draft** và **Restore and publish**.
 4. **Scheduled layouts**: **New scheduled layout** (ví dụ Ramadan) với **Starts at** và **Ends at**. Bố cục tự bật và tự quay về bố cục thường ngày khi kết thúc.
 5. **Content > Pages**: **Add page** cho điều khoản, FAQ và các trang tương tự. Đặt **Slug**, tiêu đề và nội dung theo ngôn ngữ, tiêu đề và mô tả tìm kiếm, **Share picture**, **Show a link to this page in the website footer** và **Published**. Trang hệ thống giữ slug. Trang điều khoản và bảo mật luôn được xuất bản vì trang thanh toán liên kết tới chúng.
 6. **Footer & contact**: cập nhật **Email**, **Phone**, **WhatsApp**, **Address** và các liên kết mạng xã hội, rồi **Save contact**.
-7. **Flash sales**: nhập **Title**, **Starts**, **Ends**, chọn **Create flash sale**, rồi **Add deal** với giá **Promo RM**, **Qty** và giới hạn **Per buyer**.
+7. **Content > Flash sales**: nhập **Title**, **Starts**, **Ends**, chọn **Create flash sale**, rồi **Add deal** với giá **Promo RM**, **Qty** và giới hạn **Per buyer**.
 8. **Support > Help articles** và **Support > Tickets**: trả lời bằng **Send reply**, **Mark urgent** / **Mark normal**, **Close ticket**, **Reopen ticket**. Danh sách ticket và bài viết trợ giúp có ô tìm kiếm, tiêu đề cột có thể sắp xếp và chân bảng cho số dòng mỗi trang; bài viết trợ giúp còn lọc được theo danh mục.
 9. **System > Localization**: bật hoặc tắt ngôn ngữ và đặt tiền tệ và tỉ giá (chỉ để hiển thị, tiền thu vẫn bằng MYR).
 
