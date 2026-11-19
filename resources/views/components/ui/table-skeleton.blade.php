@@ -3,7 +3,7 @@
 {{-- Row skeletons for seller/admin datagrids (design §6): line blocks with
      an animate-pulse shimmer, matching the table's column rhythm — mono id,
      date, name, numbers, status pill. Shown via wire:loading only. --}}
-<div {{ $attributes->merge(['class' => 'px-3']) }} aria-hidden="true">
+<div {{ $attributes->merge(['class' => 'w-full px-3']) }} aria-hidden="true">
     <div class="divide-y divide-line">
         @for ($i = 0; $i < $rows; $i++)
             <div class="flex items-center gap-4 py-3.5">

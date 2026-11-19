@@ -91,7 +91,7 @@
     {{-- ===== Ledger ===== --}}
     <x-ui.card class="overflow-x-auto">
         <div class="border-b border-line px-4 py-3">
-            <h2 class="text-sm font-medium">{{ __('Ledger') }}</h2>
+            <x-ui.table.per-page><h2 class="text-sm font-medium">{{ __('Ledger') }}</h2></x-ui.table.per-page>
         </div>
         <div class="border-b border-line p-3"><div class="relative">
             <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
@@ -107,10 +107,10 @@
             <table class="w-full min-w-[640px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <x-ui.table.sortable field="ledger:date" :sort="$ledgerSort" :direction="$ledgerDir">{{ __('Date') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="ledger:date" default="desc" :sort="$ledgerSort" :direction="$ledgerDir">{{ __('Date') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="ledger:type" :sort="$ledgerSort" :direction="$ledgerDir">{{ __('Type') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Description') }}</th>
-                        <x-ui.table.sortable field="ledger:amount" :sort="$ledgerSort" :direction="$ledgerDir" class="px-3 py-2.5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Description') }}</th>
+                        <x-ui.table.sortable field="ledger:amount" :sort="$ledgerSort" :direction="$ledgerDir" class="px-3 py-6.5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
                 <tbody>
@@ -145,7 +145,7 @@
     {{-- ===== Payout history ===== --}}
     <x-ui.card class="overflow-x-auto">
         <div class="border-b border-line px-4 py-3">
-            <h2 class="text-sm font-medium">{{ __('Payout history') }}</h2>
+            <x-ui.table.per-page><h2 class="text-sm font-medium">{{ __('Payout history') }}</h2></x-ui.table.per-page>
         </div>
         <div class="border-b border-line p-3"><div class="relative">
             <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
@@ -162,11 +162,11 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <x-ui.table.sortable field="payout:payout" :sort="$payoutSort" :direction="$payoutDir">{{ __('Payout') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="payout:amount" :sort="$payoutSort" :direction="$payoutDir" class="px-3 py-2.5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="payout:amount" :sort="$payoutSort" :direction="$payoutDir" class="px-3 py-6.5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="payout:status" :sort="$payoutSort" :direction="$payoutDir">{{ __('Status') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="payout:requested" :sort="$payoutSort" :direction="$payoutDir">{{ __('Requested') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="payout:requested" default="desc" :sort="$payoutSort" :direction="$payoutDir">{{ __('Requested') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="payout:paid" :sort="$payoutSort" :direction="$payoutDir">{{ __('Paid') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Reference') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Reference') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -174,7 +174,7 @@
                         @php
                             $pill = match ($payout->status) {
                                 PayoutStatus::Requested => 'warn',
-                                PayoutStatus::Approved => 'neutral',
+                                PayoutStatus::Approved => 'info',
                                 PayoutStatus::Paid => 'sale',
                                 PayoutStatus::Rejected => 'danger',
                             };

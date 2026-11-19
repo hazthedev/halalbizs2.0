@@ -10,18 +10,7 @@
          Returns tab: sub-orders with an open return request (docs/09 §D). --}}
     <nav wire:poll.30s class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Order status') }}">
         @foreach ($tabLabels as $key => $label)
-            <button
-                type="button"
-                wire:click="$set('tab', '{{ $key }}')"
-                wire:key="tab-{{ $key }}"
-                aria-current="{{ $tab === $key ? 'page' : 'false' }}"
-                class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $key ? 'border-ink font-medium text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}"
-            >
-                {{ $label }}
-                @if ($counts[$key] > 0)
-                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-emerald">{{ $counts[$key] }}</span>
-                @endif
-            </button>
+            <x-ui.tab wire:click="$set('tab', '{{ $key }}')" wire:key="tab-{{ $key }}" :active="$tab === $key" :count="$counts[$key]">{{ $label }}</x-ui.tab>
         @endforeach
     </nav>
 
@@ -44,6 +33,8 @@
     </x-ui.table.bulk-bar>
 
     {{-- Table per design §6 — hairline rows, 13px, mono ids/amounts, sticky header --}}
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         {{-- Row skeletons while the tab switches (targeted: the 30s poll must not flash them) --}}
         <x-ui.table-skeleton wire:loading wire:target="tab, search, method, dateFrom, dateTo, sortBy, perPage" />
@@ -66,22 +57,22 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         @if ($tab === 'new')
-                            <th scope="col" class="w-10 px-3 py-2.5"><input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald"></th>
+                            <th scope="col" class="w-10 px-3 py-6.5"><input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald"></th>
                         @endif
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Sub-order') }}</th>
-                        <x-ui.table.sortable field="placed" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Placed') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Items') }}</th>
-                        <x-ui.table.sortable field="total" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Total') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Sub-order') }}</th>
+                        <x-ui.table.sortable field="placed" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Placed') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Buyer') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Items') }}</th>
+                        <x-ui.table.sortable field="total" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Total') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Status') }}</th>
                         @if ($tab === 'new')
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Waiting') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Waiting') }}</th>
                         @endif
                         @if ($tab === 'returns')
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Respond by') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Respond by') }}</th>
                         @endif
                         @if (in_array($tab, ['new', 'to_ship'], true))
-                            <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                            <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                         @endif
                     </tr>
                 </thead>
@@ -89,15 +80,6 @@
                     @foreach ($subOrders as $subOrder)
                         @php
                             $placedAt = $subOrder->order->placed_at ?? $subOrder->order->created_at;
-                            $badgeVariant = match ($subOrder->status) {
-                                \App\Enums\SubOrderStatus::PendingPayment => 'warn',
-                                \App\Enums\SubOrderStatus::Completed => 'sale',
-                                \App\Enums\SubOrderStatus::Cancelled,
-                                \App\Enums\SubOrderStatus::ReturnRequested,
-                                \App\Enums\SubOrderStatus::Returned,
-                                \App\Enums\SubOrderStatus::Refunded => 'danger',
-                                default => 'neutral',
-                            };
                         @endphp
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="sub-order-{{ $subOrder->id }}">
                             @if ($tab === 'new')
@@ -113,7 +95,7 @@
                             <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $subOrder->order->user->name }}</span></td>
                             <td class="px-3 py-2 text-right tabular-nums text-ink-soft">{{ $subOrder->items_count }}</td>
                             <td class="px-3 py-2 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($subOrder->total_sen)</td>
-                            <td class="px-3 py-2"><x-ui.badge :variant="$badgeVariant">{{ $subOrder->status->label() }}</x-ui.badge></td>
+                            <td class="px-3 py-2"><x-order-status-pill :status="$subOrder->status" /></td>
                             @if ($tab === 'new')
                                 @php $hoursWaiting = (int) $placedAt->diffInHours(now()); @endphp
                                 <td class="px-3 py-2 whitespace-nowrap">

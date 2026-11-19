@@ -4,14 +4,15 @@ namespace App\Livewire\Admin\Sellers;
 
 use App\Enums\StoreStatus;
 use App\Livewire\Admin\Sellers\Concerns\ReviewsDocuments;
+use App\Livewire\Concerns\WithTable;
 use App\Models\Store;
 use App\Models\StoreDocument;
 use App\Notifications\SellerApplicationDecision;
+use App\Support\JsonSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 /**
  * Seller applications queue (docs/08 §B) — pending stores, oldest first,
@@ -22,9 +23,24 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Applications extends Component
 {
-    use ReviewsDocuments, WithPagination;
+    use ReviewsDocuments, WithTable;
 
     public const PER_PAGE = 15;
+
+    protected function tableFilters(): array
+    {
+        return [];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['store' => 'name', 'state' => 'state', 'submitted' => 'created_at'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['created_at' => 'asc'];
+    }
 
     /** Store id whose review panel is open. */
     public ?int $reviewing = null;
@@ -98,12 +114,14 @@ class Applications extends Component
 
     public function render()
     {
-        $applications = $this->pending()
+        $term = JsonSearch::pattern($this->search);
+        $applications = $this->sortTable($this->pending()
             ->with('user')
             ->withCount('documents')
-            ->oldest('created_at')
-            ->oldest('id')
-            ->paginate(self::PER_PAGE);
+            ->when(trim($this->search) !== '', fn ($q) => $q->where(fn ($q) => $q
+                ->whereRaw(JsonSearch::clause('name'), [$term])
+                ->orWhereHas('user', fn ($u) => $u->whereRaw(JsonSearch::clause('email'), [$term])))))
+            ->paginate($this->tablePageSize());
 
         $reviewingStore = $this->reviewing !== null
             ? $this->pending()->with(['user', 'documents.media'])->find($this->reviewing)

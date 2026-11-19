@@ -95,7 +95,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 
 1. Mở **Earnings**. Bạn thấy **Available**, **On hold**, **In escrow**, **Pending payout** và **Paid out (lifetime)**.
 2. **In escrow** là tiền được nhả khi người mua nhận hàng. **On hold** là tiền từ đơn đã hoàn tất, được chuyển sang **Available** khi hết thời hạn đổi trả (7 ngày sau khi giao).
-3. **Ledger** liệt kê mọi bút toán với **Date**, **Type**, **Description** và **Amount**: doanh số, hoa hồng, hoàn tiền, rút tiền, boost. Chọn tiêu đề cột để sắp xếp, dùng ô tìm kiếm để tìm bút toán, và dùng chân bảng để đổi số dòng mỗi trang. **Payout history** hoạt động tương tự.
+3. **Ledger** liệt kê mọi bút toán với **Date**, **Type**, **Description** và **Amount**: doanh số, hoa hồng, hoàn tiền, rút tiền, boost. Chọn tiêu đề cột để sắp xếp, dùng ô tìm kiếm để tìm bút toán, và đổi số dòng mỗi trang bằng **Số dòng mỗi trang** ở góc trên bên phải bảng. Chân bảng hiện "Hiển thị x đến y trong z" bên trái và số trang bên phải. **Payout history** hoạt động tương tự.
 4. Để nhận tiền, kiểm tra dòng **Paid to:** (đổi ngân hàng ở **Shop settings** qua **Update in settings**), nhập **Amount (RM)** ở **Request a payout**, và chọn **Request**. Mức tối thiểu là RM50, và bạn không thể yêu cầu quá **Available**. Chỉ một lệnh rút tiền được xử lý cùng lúc.
 5. Các bước rút tiền: **Requested**, **Approved**, **Paid** (kèm **Reference** của ngân hàng) hoặc **Rejected** (tiền quay lại Available). Xem **Payout history**.
 6. Nếu số dư âm (ví dụ hoa hồng phải trả cho đơn COD, hoặc hoàn tiền sau khi đã rút), trang hiện số tiền còn nợ. Doanh số sau này sẽ bù khoản đó, hoặc bạn có thể chuyển khoản. Việc rút tiền tiếp tục khi số dư dương.

@@ -3,15 +3,6 @@
 
     $placedAt = $subOrder->order->placed_at ?? $subOrder->order->created_at;
     $address = $subOrder->order->shipping_address ?? [];
-    $badgeVariant = match ($subOrder->status) {
-        SubOrderStatus::PendingPayment => 'warn',
-        SubOrderStatus::Completed => 'sale',
-        SubOrderStatus::Cancelled,
-        SubOrderStatus::ReturnRequested,
-        SubOrderStatus::Returned,
-        SubOrderStatus::Refunded => 'danger',
-        default => 'neutral',
-    };
 @endphp
 
 <div class="space-y-4">
@@ -25,7 +16,7 @@
         </a>
         <div class="mt-1 flex flex-wrap items-center gap-3">
             <h1 class="font-mono text-xl font-medium text-ink">{{ $subOrder->sub_order_no }}</h1>
-            <x-ui.badge :variant="$badgeVariant">{{ $subOrder->status->label() }}</x-ui.badge>
+            <x-order-status-pill :status="$subOrder->status" />
         </div>
         <p class="mt-1 text-[13px] text-ink-soft">
             {{ __('Placed :date', ['date' => $placedAt->display()->format('j M Y, g:ia')]) }}

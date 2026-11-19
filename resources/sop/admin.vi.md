@@ -16,11 +16,13 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 
 ## 2. Dashboard và báo cáo
 
+Mọi danh sách hoạt động giống nhau: ô tìm kiếm và bộ lọc ở trên cùng, **Rows per page** ở góc trên bên phải bảng, và chọn tiêu đề cột để sắp xếp theo cột đó (mũi tên đánh dấu cột đang dùng để sắp xếp và chỉ chiều sắp xếp). Dưới bảng, "Showing x to y of z" ở bên trái và số trang ở bên phải. **Finance > Boosts**, **Finance > Payouts**, **Orders > Returns** và **Sellers > Applications** cũng có ô tìm kiếm.
+
 1. **Dashboard** hiện **GMV (paid)**, **Commission revenue**, **Completed sub-orders**, **Take-rate**, **Boost revenue**, **Orders today**, **New buyers today**, **Coins in circulation**, **Active subscriptions**, **Affiliate referrals**, **Live now** và **Group-buy unlock rate**. Đổi kỳ bằng các nút chọn kỳ thống kê.
 2. **Pending queues** dẫn thẳng tới việc đang chờ: đơn đăng ký, chứng nhận, kiểm duyệt, rút tiền, đổi trả.
 3. Biểu đồ: **GMV — last 30 days**, **New buyers over time**, **Orders by status**, **Top categories by GMV**, **Top stores by GMV**.
 4. **System > Search insights** hiện các tìm kiếm **Trending** và **Zero-result** (người mua muốn gì mà không thấy).
-5. **System > Audit log** liệt kê ai đã đổi gì, có ô tìm kiếm (người thực hiện, sự kiện, mô tả), bộ lọc **Subject** và ngày, **Diff** các thay đổi, và **Rows per page** dưới danh sách.
+5. **System > Audit log** liệt kê ai đã đổi gì, có ô tìm kiếm (người thực hiện, sự kiện, mô tả), bộ lọc **Subject** và ngày, **Diff** các thay đổi, và **Rows per page** ở góc trên bên phải bảng.
 6. **Finance > Boosts** báo cáo thu nhập từ boost. **Finance > Payouts** có **Export bank CSV**.
 
 ## 3. Người bán và đơn đăng ký
@@ -51,7 +53,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 3. Đặt **Halal certificate**: **Inherit from parent**, **Required to list** hoặc **Not required**. Required nghĩa là người bán không đăng được ở đó nếu thiếu chứng nhận đã duyệt bao phủ sản phẩm.
 4. Quy định bắt đầu từ ngày 2 tháng 12 năm 2026. Trên bản live, các danh mục bắt buộc là **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** và **Pharma & Supplements**.
 5. Chọn **Create category** hoặc **Save changes**.
-6. Các menu danh mục liên quan: **Attributes**, **Brands**, **Reviews** (sắp xếp theo **Rating** hoặc **Posted**, ẩn đánh giá không phù hợp) và **Moderation**. Danh sách **Attributes** và **Brands** có ô tìm kiếm, tiêu đề cột có thể sắp xếp và chân bảng cho số dòng mỗi trang.
+6. Các menu danh mục liên quan: **Attributes**, **Brands**, **Reviews** (sắp xếp theo **Rating** hoặc **Posted**, ẩn đánh giá không phù hợp) và **Moderation**. Danh sách **Attributes** và **Brands** có ô tìm kiếm, tiêu đề cột có thể sắp xếp và **Rows per page** ở góc trên bên phải bảng.
 7. **Moderation**: khi **New products need admin approval before going live** bật (System > Settings), sản phẩm mới chờ ở đây. Chọn **Approve**, hoặc **Reject** kèm lý do (sản phẩm quay về bản nháp và người bán nhận lý do), hoặc **Ban** để gỡ. Bạn có thể xử lý hàng loạt bằng **Approve selected**, **Reject selected**, **Ban selected**.
 
 ## 6. Hoa hồng
@@ -101,7 +103,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 5. **Content > Pages**: **Add page** cho điều khoản, FAQ và các trang tương tự. Đặt **Slug**, tiêu đề và nội dung theo ngôn ngữ, tiêu đề và mô tả tìm kiếm, **Share picture**, **Show a link to this page in the website footer** và **Published**. Trang hệ thống giữ slug. Trang điều khoản và bảo mật luôn được xuất bản vì trang thanh toán liên kết tới chúng.
 6. **Footer & contact**: cập nhật **Email**, **Phone**, **WhatsApp**, **Address** và các liên kết mạng xã hội, rồi **Save contact**.
 7. **Content > Flash sales**: nhập **Title**, **Starts**, **Ends**, chọn **Create flash sale**, rồi **Add deal** với giá **Promo RM**, **Qty** và giới hạn **Per buyer**.
-8. **Support > Help articles** và **Support > Tickets**: trả lời bằng **Send reply**, **Mark urgent** / **Mark normal**, **Close ticket**, **Reopen ticket**. Danh sách ticket và bài viết trợ giúp có ô tìm kiếm, tiêu đề cột có thể sắp xếp và chân bảng cho số dòng mỗi trang; bài viết trợ giúp còn lọc được theo danh mục.
+8. **Support > Help articles** và **Support > Tickets**: trả lời bằng **Send reply**, **Mark urgent** / **Mark normal**, **Close ticket**, **Reopen ticket**. Danh sách ticket và bài viết trợ giúp có ô tìm kiếm, tiêu đề cột có thể sắp xếp và **Rows per page** ở góc trên bên phải bảng; bài viết trợ giúp còn lọc được theo danh mục.
 9. **System > Localization**: bật hoặc tắt ngôn ngữ và đặt tiền tệ và tỉ giá (chỉ để hiển thị, tiền thu vẫn bằng MYR). Với mỗi loại tiền, nhập **Rate** và **Margin %**, rồi chọn **Save rate**.
 
 ## 11. Cài đặt xu và voucher

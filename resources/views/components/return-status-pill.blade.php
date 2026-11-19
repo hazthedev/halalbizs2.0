@@ -2,11 +2,11 @@
 
 @php
 // Return request status colors: requested → warn (clock ticking) ·
-// accepted → ink outline · disputed/escalated → danger · refunded → emerald ·
+// accepted → info · disputed/escalated → danger · refunded → emerald ·
 // rejected → neutral.
 $variant = match ($status) {
     \App\Enums\ReturnStatus::Requested => 'warn',
-    \App\Enums\ReturnStatus::Accepted => 'cod',
+    \App\Enums\ReturnStatus::Accepted => 'info',
     \App\Enums\ReturnStatus::Disputed,
     \App\Enums\ReturnStatus::Escalated => 'danger',
     \App\Enums\ReturnStatus::Refunded => 'sale',

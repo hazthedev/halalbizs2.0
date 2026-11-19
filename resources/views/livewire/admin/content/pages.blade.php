@@ -19,11 +19,11 @@
             <table class="w-full min-w-[640px] text-[13px]">
                 <thead>
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Slug') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Title') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Published') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Updated') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Slug') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Title') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Published') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Updated') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

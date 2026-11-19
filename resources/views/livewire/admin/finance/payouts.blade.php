@@ -14,6 +14,8 @@
         @endforeach
     </nav>
 
+    <x-ui.table.search :placeholder="__('Search payout no. or store')" />
+
     {{-- Batch bar (approved tab) --}}
     @if ($tab === PayoutStatus::Approved->value && $payouts->isNotEmpty())
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -33,11 +35,15 @@
         </div>
     @endif
 
+    <x-ui.table.per-page />
+
     {{-- Table per design §6 --}}
     <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, tab, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, tab, sortBy, perPage, gotoPage, nextPage, previousPage">
         @if ($payouts->isEmpty())
             <x-ui.empty-state
-                :title="match ($tab) {
+                :title="$search !== '' ? __('No payouts match') : match ($tab) {
                     PayoutStatus::Approved->value => __('Nothing approved yet'),
                     PayoutStatus::Paid->value => __('No payouts paid yet'),
                     PayoutStatus::Rejected->value => __('No rejected payouts'),
@@ -49,7 +55,7 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         @if ($tab === PayoutStatus::Approved->value)
-                            <th scope="col" class="w-10 px-3 py-2.5">
+                            <th scope="col" class="w-10 px-3 py-6.5">
                                 <input type="checkbox"
                                        data-ids="{{ json_encode($approvedIds) }}"
                                        x-bind:checked="selected.length > 0 && selected.length === JSON.parse($el.dataset.ids).length"
@@ -58,18 +64,18 @@
                                        class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                             </th>
                         @endif
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Payout') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Amount') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Bank') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Requested') }}</th>
+                        <x-ui.table.sortable field="payout" :sort="$sort" :direction="$direction">{{ __('Payout') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Store') }}</th>
+                        <x-ui.table.sortable field="amount" :sort="$sort" :direction="$direction" class="text-right">{{ __('Amount') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Bank') }}</th>
+                        <x-ui.table.sortable field="requested" default="asc" :sort="$sort" :direction="$direction">{{ __('Requested') }}</x-ui.table.sortable>
                         @if ($tab === PayoutStatus::Paid->value)
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Reference') }}</th>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Paid at') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Reference') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Paid at') }}</th>
                         @elseif ($tab === PayoutStatus::Rejected->value)
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Reason') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Reason') }}</th>
                         @else
-                            <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                            <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                         @endif
                     </tr>
                 </thead>
@@ -184,9 +190,8 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
 
-    @if ($payouts->hasPages())
-        <div>{{ $payouts->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$payouts" />
 </div>

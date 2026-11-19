@@ -42,6 +42,8 @@
     </x-ui.card>
 
     {{-- Table per design §6 --}}
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         {{-- Row skeletons while the filters refresh the grid (design §6) --}}
         <x-ui.table-skeleton wire:loading wire:target="search, status, mismatchesOnly, needsPortalRefund, resetFilters, sortBy, perPage" />
@@ -52,21 +54,21 @@
             <table class="w-full min-w-[1000px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <x-ui.table.sortable field="ref" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Ref no.') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Order') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Gateway') }}</th>
-                        <x-ui.table.sortable field="amount" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="ref" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Ref no.') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Order') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Gateway') }}</th>
+                        <x-ui.table.sortable field="amount" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
                         {{-- H-3: refunded_sen was written by RefundService and read by
                              nothing in the whole app, so a refund — including cash owed
                              on a cancelled-after-payment order — appeared on no
                              reconciliation surface. This grid is that surface. --}}
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Refunded') }}</th>
-                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Trans ID') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Signature') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Requery result') }}</th>
-                        <x-ui.table.sortable field="paid" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Paid at') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Refunded') }}</th>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Trans ID') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Signature') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Requery result') }}</th>
+                        <x-ui.table.sortable field="paid" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Paid at') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

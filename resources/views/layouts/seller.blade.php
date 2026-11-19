@@ -8,7 +8,7 @@
     <title>{{ isset($title) && $title ? $title.' · ' : '' }}{{ __('Seller Centre') }} · {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen overflow-x-clip bg-paper text-ink antialiased lg:h-screen lg:overflow-hidden" x-data="{ sidebarOpen: false }">
+<body data-shell="console" class="min-h-screen overflow-x-clip bg-paper text-ink antialiased lg:h-screen lg:overflow-hidden" x-data="{ sidebarOpen: false }">
 
     {{-- Ink topbar --}}
     <header class="sticky top-0 z-40 border-b border-emerald-edge bg-emerald-night">

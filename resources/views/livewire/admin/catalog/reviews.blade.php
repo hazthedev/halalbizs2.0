@@ -36,6 +36,8 @@
     </x-ui.card>
 
     {{-- Datagrid --}}
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, rating, hiddenOnly, resetFilters, sortBy, perPage" />
         <div wire:loading.remove wire:target="search, rating, hiddenOnly, resetFilters, sortBy, perPage">
@@ -45,14 +47,14 @@
             <table class="w-full min-w-[960px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Product') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
-                        <x-ui.table.sortable field="rating" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Rating') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Comment') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
-                        <x-ui.table.sortable field="posted" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Posted') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Product') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Store') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Buyer') }}</th>
+                        <x-ui.table.sortable field="rating" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Rating') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Comment') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Status') }}</th>
+                        <x-ui.table.sortable field="posted" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Posted') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

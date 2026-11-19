@@ -20,6 +20,8 @@
     <x-ui.table.search :placeholder="__('Search attribute name')" />
 
     {{-- List --}}
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
         <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
@@ -32,10 +34,10 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <x-ui.table.sortable field="name" :sort="$sort" :direction="$direction">{{ __('Name') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="slug" :sort="$sort" :direction="$direction">{{ __('Slug') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="slug" default="asc" :sort="$sort" :direction="$direction">{{ __('Slug') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="filterable" :sort="$sort" :direction="$direction">{{ __('Filterable') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="values" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Values') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <x-ui.table.sortable field="values" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Values') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

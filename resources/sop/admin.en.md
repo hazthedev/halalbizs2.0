@@ -16,11 +16,13 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 
 ## 2. Dashboard and reports
 
+Every list works the same way: the search box and filters sit at the top, **Rows per page** at the top right of the table, and selecting a column heading sorts by it (an arrow marks the column the list is sorted by and points the way it runs). Under the table, "Showing x to y of z" is on the left and the page numbers on the right. **Finance > Boosts**, **Finance > Payouts**, **Orders > Returns** and **Sellers > Applications** have a search box too.
+
 1. **Dashboard** shows **GMV (paid)**, **Commission revenue**, **Completed sub-orders**, **Take-rate**, **Boost revenue**, **Orders today**, **New buyers today**, **Coins in circulation**, **Active subscriptions**, **Affiliate referrals**, **Live now**, and the **Group-buy unlock rate**. Change the period with the stats period buttons.
 2. **Pending queues** link straight to work waiting: applications, certificates, moderation, payouts, returns.
 3. Charts: **GMV — last 30 days**, **New buyers over time**, **Orders by status**, **Top categories by GMV**, **Top stores by GMV**.
 4. **System > Search insights** shows **Trending** searches and **Zero-result** searches (what buyers wanted and did not find).
-5. **System > Audit log** lists who changed what, with a search box (who, event, description), **Subject** and date filters, a **Diff** of changes, and **Rows per page** under the list.
+5. **System > Audit log** lists who changed what, with a search box (who, event, description), **Subject** and date filters, a **Diff** of changes, and **Rows per page** at the top right of the table.
 6. **Finance > Boosts** reports boost income. **Finance > Payouts** has **Export bank CSV**.
 
 ## 3. Sellers and applications
@@ -51,7 +53,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 3. Set **Halal certificate**: **Inherit from parent**, **Required to list** or **Not required**. Required means a seller cannot list there without an approved certificate covering the product.
 4. The gate starts on 2 December 2026. On live, the required categories are **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** and **Pharma & Supplements**.
 5. Select **Create category** or **Save changes**.
-6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (sort by **Rating** or **Posted**, hide unsuitable reviews), and **Moderation**. The **Attributes** and **Brands** lists have a search box, sortable headers and a footer with the number of rows per page.
+6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (sort by **Rating** or **Posted**, hide unsuitable reviews), and **Moderation**. The **Attributes** and **Brands** lists have a search box, sortable headers and **Rows per page** at the top right of the table.
 7. **Moderation**: when **New products need admin approval before going live** is on (System > Settings), new products wait here. Select **Approve**, or **Reject** with a reason (the product returns to drafts and the seller gets the reason), or **Ban** to remove it. You can bulk **Approve selected**, **Reject selected**, **Ban selected**.
 
 ## 6. Commission
@@ -101,7 +103,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 5. **Content > Pages**: **Add page** for terms, FAQ and similar. Set **Slug**, titles and bodies per language, search title and description, **Share picture**, **Show a link to this page in the website footer** and **Published**. System pages keep their slug. Terms and privacy stay published because checkout links to them.
 6. **Footer & contact**: update **Email**, **Phone**, **WhatsApp**, **Address** and social links, then **Save contact**.
 7. **Content > Flash sales**: enter **Title**, **Starts**, **Ends**, select **Create flash sale**, then **Add deal** with a **Promo RM** price, **Qty** and **Per buyer** limit.
-8. **Support > Help articles** and **Support > Tickets**: reply with **Send reply**, **Mark urgent** / **Mark normal**, **Close ticket**, **Reopen ticket**. Tickets and help articles have a search box, sortable headers and a footer with the number of rows per page; help articles also filter by category.
+8. **Support > Help articles** and **Support > Tickets**: reply with **Send reply**, **Mark urgent** / **Mark normal**, **Close ticket**, **Reopen ticket**. Tickets and help articles have a search box, sortable headers and **Rows per page** at the top right of the table; help articles also filter by category.
 9. **System > Localization**: turn languages on or off and set currencies and exchange rates (display only, charges stay in MYR). For each currency type the **Rate** and the **Margin %**, then select **Save rate**.
 
 ## 11. Coins and vouchers settings

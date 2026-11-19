@@ -27,6 +27,8 @@
         </x-ui.button>
     </x-ui.table.bulk-bar>
 
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
         <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
@@ -38,16 +40,16 @@
             <table class="w-full min-w-[820px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="w-10 px-3 py-2.5">
+                        <th scope="col" class="w-10 px-3 py-6.5">
                             <input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                         </th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Product') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Size') }}</th>
-                        <x-ui.table.sortable field="price" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Team price') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="people" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('People needed') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="teams" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Teams') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Product') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Size') }}</th>
+                        <x-ui.table.sortable field="price" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Team price') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="people" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('People needed') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="teams" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Teams') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction">{{ __('Status') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

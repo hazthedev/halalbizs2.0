@@ -10,7 +10,10 @@ $classes = match ($variant) {
     'out-of-stock' => 'bg-line text-ink-faint',
     'warn' => 'bg-warn-tint text-warn',
     'danger' => 'bg-danger-tint text-danger',
-    'neutral' => 'bg-paper text-ink-soft border border-line',
+    // Status badges (HB-G165): one shape, a tinted fill + matching text, no border.
+    // success = sale/success · in progress = info · waiting = warn · problem = danger · closed = neutral.
+    'info' => 'bg-info-tint text-info',
+    'neutral' => 'bg-line text-ink-soft',
     default => 'bg-emerald-tint text-emerald',
 };
 @endphp

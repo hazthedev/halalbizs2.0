@@ -72,6 +72,8 @@
     </x-ui.card>
 
     {{-- Table per design §6 — hairline rows, 13px, mono ids, right-aligned tabular numbers --}}
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         {{-- Row skeletons while search/filters refresh the grid (design §6) --}}
         <x-ui.table-skeleton wire:loading wire:target="search, status, store, method, dateFrom, dateTo, resetFilters, sortBy, perPage" />
@@ -82,13 +84,13 @@
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Sub-order') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Order') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
-                        <x-ui.table.sortable field="placed" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Placed') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="total" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Total') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Sub-order') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Order') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Store') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Buyer') }}</th>
+                        <x-ui.table.sortable field="placed" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Placed') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="total" :sort="$sort" :direction="$direction" class="px-3 py-6.5 text-right font-medium">{{ __('Total') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
                 <tbody>

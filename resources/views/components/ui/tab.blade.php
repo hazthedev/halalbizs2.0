@@ -1,5 +1,5 @@
 @props(['active' => false, 'count' => 0])
-{{-- The one admin tab: underline style. A zero count is never shown. --}}
+{{-- The one list tab (admin + seller): underline style, no spinner (one loading cue = the table skeleton). A zero count is never shown. --}}
 <button type="button" aria-current="{{ $active ? 'page' : 'false' }}"
         {{ $attributes->class([
             'inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald',

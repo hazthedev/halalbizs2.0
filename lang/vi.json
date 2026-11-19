@@ -2907,5 +2907,15 @@
     "Search payments": "Tìm thanh toán",
     "Search who, event or description": "Tìm theo người thực hiện, sự kiện hoặc mô tả",
     "No banned products": "Chưa có sản phẩm bị cấm",
-    "Products you ban from the queue above are listed here for reference.": "Các sản phẩm bạn cấm từ hàng chờ phía trên được liệt kê ở đây để tham khảo."
+    "Products you ban from the queue above are listed here for reference.": "Các sản phẩm bạn cấm từ hàng chờ phía trên được liệt kê ở đây để tham khảo.",
+    "Search store or product": "Tìm cửa hàng hoặc sản phẩm",
+    "No boosts match": "Không có boost nào khớp",
+    "Search payout no. or store": "Tìm mã rút tiền hoặc cửa hàng",
+    "No payouts match": "Không có khoản rút tiền nào khớp",
+    "No return requests match": "Không có yêu cầu đổi trả nào khớp",
+    "Search order no., sub-order no. or store": "Tìm mã đơn, mã đơn con hoặc cửa hàng",
+    "Search store or owner email": "Tìm cửa hàng hoặc email chủ cửa hàng",
+    "No applications match": "Không có đơn đăng ký nào khớp",
+    "Search flash sale title": "Tìm tiêu đề ưu đãi chớp nhoáng",
+    "No flash sales match": "Không có ưu đãi chớp nhoáng nào khớp"
 }

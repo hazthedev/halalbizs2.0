@@ -46,6 +46,8 @@
         $showDescription = $activities->contains(fn ($row) => trim((string) $row->description) !== ''
             && strcasecmp(trim((string) $row->description), (string) $row->event) !== 0);
     @endphp
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, subjectType, dateFrom, dateTo, clearFilters, sortBy, perPage" />
         <div wire:loading.remove wire:target="search, subjectType, dateFrom, dateTo, clearFilters, sortBy, perPage">
@@ -55,14 +57,14 @@
             <table class="w-full min-w-[820px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <x-ui.table.sortable field="when" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('When') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Who') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Subject') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Event') }}</th>
+                        <x-ui.table.sortable field="when" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-6.5 font-medium">{{ __('When') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Who') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Subject') }}</th>
+                        <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Event') }}</th>
                         @if ($showDescription)
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Description') }}</th>
+                            <th scope="col" class="px-3 py-6.5 font-medium">{{ __('Description') }}</th>
                         @endif
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Changes') }}</th>
+                        <th scope="col" class="px-3 py-6.5 text-right font-medium">{{ __('Changes') }}</th>
                     </tr>
                 </thead>
                 @foreach ($activities as $activity)

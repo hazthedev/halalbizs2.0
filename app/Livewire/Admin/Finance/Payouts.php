@@ -3,13 +3,14 @@
 namespace App\Livewire\Admin\Finance;
 
 use App\Enums\PayoutStatus;
+use App\Livewire\Concerns\WithTable;
 use App\Models\Payout;
 use App\Services\LedgerService;
 use App\Support\DisplayTime;
+use App\Support\JsonSearch;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 /**
  * Payouts queue (docs/08 §F + docs/09 §A): requested → approve → export
@@ -22,9 +23,24 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Payouts extends Component
 {
-    use WithPagination;
+    use WithTable;
 
     public const PER_PAGE = 20;
+
+    protected function tableFilters(): array
+    {
+        return ['tab'];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['payout' => 'payout_no', 'amount' => 'amount_sen', 'requested' => 'requested_at'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['requested_at' => 'asc'];
+    }
 
     #[Url(except: 'requested')]
     public string $tab = 'requested';
@@ -208,21 +224,27 @@ class Payouts extends Component
 
     public function render()
     {
-        $payouts = Payout::query()
-            ->with(['store', 'processedBy'])
-            ->where('status', $this->tab)
-            ->oldest('requested_at')
-            ->oldest('id')
-            ->paginate(self::PER_PAGE);
-
         return view('livewire.admin.finance.payouts', [
-            'payouts' => $payouts,
+            'payouts' => $this->results(),
             'counts' => $this->counts(),
             // Header "select all" works in the browser, so it needs the ids up front.
             'approvedIds' => $this->tab === PayoutStatus::Approved->value
                 ? Payout::query()->where('status', PayoutStatus::Approved)->pluck('id')->map(fn (int $id) => (string) $id)->all()
                 : [],
         ])->title(__('Payouts'));
+    }
+
+    private function results()
+    {
+        $term = JsonSearch::pattern($this->search);
+
+        return $this->sortTable(Payout::query()
+            ->with(['store', 'processedBy'])
+            ->where('status', $this->tab)
+            ->when(trim($this->search) !== '', fn ($q) => $q->where(fn ($q) => $q
+                ->whereRaw(JsonSearch::clause('payout_no'), [$term])
+                ->orWhereHas('store', fn ($s) => $s->whereRaw(JsonSearch::clause('name'), [$term])))))
+            ->paginate($this->tablePageSize());
     }
 
     /** @return array<string, int> status value → count (one query) */

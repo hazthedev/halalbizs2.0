@@ -6,14 +6,15 @@ use App\Enums\ActorType;
 use App\Enums\PaymentMethod;
 use App\Enums\ReturnStatus;
 use App\Enums\SubOrderStatus;
+use App\Livewire\Concerns\WithTable;
 use App\Models\ReturnRequest;
 use App\Services\RefundService;
 use App\Services\SubOrderStatusService;
+use App\Support\JsonSearch;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 /**
  * Admin returns queue (docs/09 §D) — disputed + auto-escalated requests
@@ -30,9 +31,24 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Returns extends Component
 {
-    use WithPagination;
+    use WithTable;
 
     public const PER_PAGE = 20;
+
+    protected function tableFilters(): array
+    {
+        return ['tab'];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['status' => 'status', 'escalated' => 'escalated_at'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['id' => 'desc'];
+    }
 
     #[Url(except: 'queue')]
     public string $tab = 'queue';
@@ -178,13 +194,17 @@ class Returns extends Component
 
     public function render()
     {
-        $requests = ReturnRequest::query()
+        $term = JsonSearch::pattern($this->search);
+        $requests = $this->sortTable(ReturnRequest::query()
             ->with(['subOrder.order.user', 'subOrder.store', 'reason'])
             ->when($this->tab === 'queue', fn ($query) => $query->whereIn('status', [ReturnStatus::Disputed, ReturnStatus::Escalated]))
             ->when($this->tab === 'accepted', fn ($query) => $query->where('status', ReturnStatus::Accepted))
             ->when($this->tab === 'refunded', fn ($query) => $query->where('status', ReturnStatus::Refunded))
-            ->latest('id')
-            ->paginate(self::PER_PAGE);
+            ->when(trim($this->search) !== '', fn ($q) => $q->whereHas('subOrder', fn ($so) => $so->where(fn ($so) => $so
+                ->whereRaw(JsonSearch::clause('sub_order_no'), [$term])
+                ->orWhereHas('order', fn ($o) => $o->whereRaw(JsonSearch::clause('order_no'), [$term]))
+                ->orWhereHas('store', fn ($st) => $st->whereRaw(JsonSearch::clause('name'), [$term]))))))
+            ->paginate($this->tablePageSize());
 
         $resolving = $this->resolvingId !== null
             ? ReturnRequest::query()->with(['subOrder.order', 'subOrder.store', 'reason'])->find($this->resolvingId)
