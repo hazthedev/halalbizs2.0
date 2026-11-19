@@ -6,7 +6,12 @@
     />
     <a href="{{ route('help.guide', 'seller') }}" wire:navigate class="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-emerald underline hover:text-emerald-deep">{{ __('Read the seller guide first') }}</a>
 
-    <form wire:submit="submit" class="mt-6 space-y-4">
+    <x-ui.card class="mt-6 p-6">
+        <h2 class="font-display text-lg font-medium">{{ __('Commission') }}</h2>
+        <p class="mt-1 text-sm text-ink-soft">{{ $commission }}</p>
+    </x-ui.card>
+
+    <form wire:submit="submit" class="mt-4 space-y-4">
         {{-- ===== Shop details ===== --}}
         <x-ui.card class="p-6">
             <h2 class="font-display text-lg font-medium">{{ __('Shop details') }}</h2>

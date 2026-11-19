@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller;
 
 use App\Livewire\Concerns\CurrentStore;
+use App\Services\CommissionResolver;
 use App\Support\MalaysianBanks;
 use App\Support\MalaysianStates;
 use App\Support\RinggitInput;
@@ -223,6 +224,7 @@ class Settings extends Component
             'store' => $this->currentStore(),
             'states' => MalaysianStates::ALL,
             'banks' => MalaysianBanks::ALL,
+            'commission' => app(CommissionResolver::class)->summary($this->currentStore()),
         ])->title(__('Shop settings'));
     }
 }

@@ -2130,6 +2130,7 @@
     "Trust": "Kepercayaan",
     "Trust & safety": "Kepercayaan & keselamatan",
     "Trust this device for 30 days": "Percayai peranti ini selama 30 hari",
+    "You're signing in from a new device. Enter the code we emailed to confirm it's you.": "Anda log masuk dari peranti baharu. Masukkan kod yang kami e-melkan untuk mengesahkan ini anda.",
     "Try a different word, or ask us directly below.": "Cuba perkataan lain atau tanya kami terus di bawah.",
     "Try removing a filter or searching for something else.": "Cuba buang penapis atau cari perkara lain.",
     "Turn off 2FA": "Matikan 2FA",
@@ -2857,5 +2858,7 @@
     "Contents": "Kandungan",
     "Read the seller guide first": "Baca panduan penjual dahulu",
     "Shopping, paying, tracking a parcel and returns, step by step.": "Membeli-belah, membayar, menjejak bungkusan dan pemulangan, langkah demi langkah.",
-    "Opening a shop, listing products, halal certificates, orders and payouts.": "Membuka kedai, menyenaraikan produk, sijil halal, pesanan dan pembayaran keluar."
+    "Opening a shop, listing products, halal certificates, orders and payouts.": "Membuka kedai, menyenaraikan produk, sijil halal, pesanan dan pembayaran keluar.",
+    ":rate% of each sale": ":rate% daripada setiap jualan",
+    ":min% to :max% of each sale, by category": ":min% hingga :max% daripada setiap jualan, mengikut kategori"
 }

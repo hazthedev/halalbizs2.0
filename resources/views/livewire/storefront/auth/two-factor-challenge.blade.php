@@ -2,6 +2,10 @@
     <x-ui.card class="p-6 sm:p-8">
         <x-ui.section-heading as="h1" :title="__('Two-factor check')" />
 
+        @if ($newDevice)
+            <p class="mt-1 text-sm text-ink">{{ __('You\'re signing in from a new device. Enter the code we emailed to confirm it\'s you.') }}</p>
+        @endif
+
         @if ($useRecoveryCode)
             <p class="mt-1 text-sm text-ink-soft">{{ __('Enter one of the recovery codes you saved when you set up your authenticator. Each code works once.') }}</p>
         @elseif ($method === \App\Enums\TwoFactorMethod::Totp)
@@ -40,7 +44,7 @@
                 />
             @endif
 
-            @unless ($useRecoveryCode)
+            @unless ($useRecoveryCode || $newDevice)
                 <label class="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm text-ink">
                     <input type="checkbox" wire:model="trustDevice" class="size-4 rounded accent-emerald">
                     {{ __('Trust this device for 30 days') }}

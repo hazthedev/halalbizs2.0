@@ -82,17 +82,22 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['email' => __('Your account has been suspended.')]);
         }
 
-        if ($user->hasTwoFactor()) {
+        // Admins/sellers without 2FA on a new device get the same emailed-code
+        // challenge the app already handles for email 2FA (no app change).
+        $newDevice = ! $user->hasTwoFactor() && app(DeviceGuard::class)->needsCode($user, $request);
+
+        if ($newDevice || $user->hasTwoFactor()) {
             $challenge = (string) Str::uuid();
+            $method = $user->two_factor_method ?? TwoFactorMethod::Email;
 
-            Cache::put('api:2fa:'.$challenge, ['user_id' => $user->id, 'attempts' => 0], now()->addMinutes(self::CHALLENGE_TTL_MINUTES));
+            Cache::put('api:2fa:'.$challenge, ['user_id' => $user->id, 'attempts' => 0, 'new_device' => $newDevice], now()->addMinutes(self::CHALLENGE_TTL_MINUTES));
 
-            if ($user->two_factor_method === TwoFactorMethod::Email) {
+            if ($method === TwoFactorMethod::Email) {
                 app(OtpService::class)->issue($user, OtpService::PURPOSE_2FA_EMAIL);
             }
 
             return ApiResponse::ok([
-                'two_factor' => ['challenge' => $challenge, 'method' => $user->two_factor_method->value],
+                'two_factor' => ['challenge' => $challenge, 'method' => $method->value],
             ], null, 202);
         }
 
@@ -119,7 +124,7 @@ class AuthController extends Controller
             $pending = Cache::get($key);
             $user = is_array($pending) ? User::find($pending['user_id']) : null;
 
-            if ($user === null || ! $user->hasTwoFactor() || $user->isSuspended()) {
+            if ($user === null || $user->isSuspended() || (! $user->hasTwoFactor() && empty($pending['new_device']))) {
                 Cache::forget($key);
 
                 throw ValidationException::withMessages([
@@ -141,7 +146,7 @@ class AuthController extends Controller
 
             Cache::forget($key);
 
-            app(DeviceGuard::class)->record($user, $request);
+            app(DeviceGuard::class)->record($user, $request, codeEmailed: ($user->two_factor_method ?? TwoFactorMethod::Email) === TwoFactorMethod::Email);
 
             return $this->issueToken($user, $data['device_name']);
         });

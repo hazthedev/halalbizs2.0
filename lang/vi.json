@@ -2415,6 +2415,7 @@
     "Trust": "Tin cậy",
     "Trust & safety": "Tin cậy & an toàn",
     "Trust this device for 30 days": "Tin cậy thiết bị này trong 30 ngày",
+    "You're signing in from a new device. Enter the code we emailed to confirm it's you.": "Bạn đang đăng nhập từ một thiết bị mới. Nhập mã chúng tôi đã gửi qua email để xác nhận đó là bạn.",
     "Try a different word, or ask us directly below.": "Hãy thử một từ khác, hoặc hỏi trực tiếp chúng tôi bên dưới.",
     "Try: “a gift under RM50” or “tudung bawal terlaris”.": "Thử: “quà tặng dưới RM50” hoặc “khăn trùm đầu bán chạy nhất”.",
     "Turn off 2FA": "Tắt xác thực hai bước",
@@ -2828,5 +2829,7 @@
     "Contents": "Mục lục",
     "Read the seller guide first": "Đọc hướng dẫn người bán trước",
     "Shopping, paying, tracking a parcel and returns, step by step.": "Mua sắm, thanh toán, theo dõi bưu kiện và đổi trả, từng bước một.",
-    "Opening a shop, listing products, halal certificates, orders and payouts.": "Mở cửa hàng, đăng sản phẩm, chứng nhận halal, đơn hàng và rút tiền."
+    "Opening a shop, listing products, halal certificates, orders and payouts.": "Mở cửa hàng, đăng sản phẩm, chứng nhận halal, đơn hàng và rút tiền.",
+    ":rate% of each sale": ":rate% trên mỗi đơn bán",
+    ":min% to :max% of each sale, by category": ":min% đến :max% trên mỗi đơn bán, tùy theo danh mục"
 }

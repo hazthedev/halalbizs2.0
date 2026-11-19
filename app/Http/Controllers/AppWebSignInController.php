@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TwoFactorMethod;
 use App\Models\SubOrder;
 use App\Models\User;
+use App\Services\DeviceGuard;
+use App\Services\OtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,10 +83,31 @@ class AppWebSignInController extends Controller
         // millisecond could both pass. Use Cache::lock if that ever matters.
         [$user, $to, $id] = $this->resolve($request, Cache::pull(self::key((string) $request->query('nonce'))));
 
+        $destination = route($to, $id === null ? [] : [$id]);
+
+        // A seller's app token is not proof of THIS browser (HB-NEWDEV-2FA):
+        // an unseen device goes through the same code screen as the web login,
+        // then lands on the asked-for page via url.intended.
+        if (app(DeviceGuard::class)->needsCode($user, $request)) {
+            $request->session()->regenerate();
+            $request->session()->put([
+                'two_factor:user_id' => $user->id,
+                'two_factor:remember' => false,
+                'two_factor:new_device' => ! $user->hasTwoFactor(),
+                'url.intended' => $destination,
+            ]);
+
+            if (($user->two_factor_method ?? TwoFactorMethod::Email) === TwoFactorMethod::Email) {
+                app(OtpService::class)->issue($user, OtpService::PURPOSE_2FA_EMAIL);
+            }
+
+            return redirect()->route('two-factor.challenge');
+        }
+
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
 
-        return redirect()->route($to, $id === null ? [] : [$id]);
+        return redirect()->to($destination);
     }
 
     /** @return array{0: User, 1: string, 2: ?int} */
