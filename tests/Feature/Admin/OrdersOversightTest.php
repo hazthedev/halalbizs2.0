@@ -18,6 +18,7 @@ use App\Settings\Ipay88Settings;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
+use Spatie\Activitylog\Models\Activity;
 
 function oversightAdmin(): User
 {
@@ -360,4 +361,109 @@ test('admin order table pages and resets the page when a filter changes', functi
         ->call('gotoPage', 2)->assertSee('Showing 21 to 21 of 21')
         ->set('store', (string) $store->id)->assertSee('Showing 1 to 20 of 21')
         ->set('perPage', 50)->assertSee('Showing 1 to 21 of 21');
+});
+
+/** HB-G122: a refunded online payment the gateway never refunded (money owed in the portal). */
+function portalOwedPayment(string $ref = 'MPOWED0122'): Payment
+{
+    return Payment::create([
+        'order_id' => Order::factory()->create()->id,
+        'gateway' => PaymentMethod::Ipay88,
+        'ref_no' => $ref,
+        'amount_sen' => 5000,
+        'currency' => 'MYR',
+        'status' => GatewayPaymentStatus::Success,
+        'refunded_sen' => 5000,
+        'refunded_at' => now(),
+        'gateway_refund_ok' => false,
+        'signature_valid' => true,
+    ]);
+}
+
+test('an admin marks a portal-owed refund settled, and it is audit-logged', function () {
+    $admin = oversightAdmin();
+    $payment = portalOwedPayment();
+
+    Livewire::actingAs($admin)
+        ->test(Payments::class)
+        ->call('markRefundSettled', $payment->id, '  PORTAL-REF-9  ')
+        ->assertOk();
+
+    expect($payment->fresh()->gateway_refund_ok)->toBeTrue();
+
+    $log = Activity::query()->where('description', 'payment refund settled in portal')->get();
+    expect($log)->toHaveCount(1)
+        ->and($log->first()->causer_id)->toBe($admin->id)
+        ->and($log->first()->subject_id)->toBe($payment->id)
+        ->and($log->first()->properties->all())->toBe([
+            'payment_id' => $payment->id,
+            'reference' => 'PORTAL-REF-9',
+            'old' => ['gateway_refund_ok' => false],
+            'attributes' => ['gateway_refund_ok' => true],
+        ]);
+
+    // The row renders on the audit-log screen with its old -> new diff.
+    $this->actingAs($admin)->get(route('admin.system.audit'))
+        ->assertOk()
+        ->assertSee('payment refund settled in portal')
+        ->assertSee('gateway_refund_ok:');
+
+    // Replay on an already-settled payment is a no-op: no second audit row.
+    Livewire::actingAs($admin)->test(Payments::class)->call('markRefundSettled', $payment->id, null);
+    expect(Activity::query()->where('description', 'payment refund settled in portal')->count())->toBe(1);
+});
+
+test('a non-admin cannot mark a portal refund settled', function () {
+    $this->seed(RoleSeeder::class);
+    $payment = portalOwedPayment();
+
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+
+    // Admin role but no orders.manage permission: the route gate would stop
+    // them, and so must the action.
+    $adminNoPerms = User::factory()->create(['two_factor_method' => 'email']);
+    $adminNoPerms->assignRole('admin');
+    $adminNoPerms->syncPermissions([]);
+
+    foreach ([$buyer, $adminNoPerms] as $user) {
+        Livewire::actingAs($user)
+            ->test(Payments::class)
+            ->call('markRefundSettled', $payment->id, 'X')
+            ->assertForbidden();
+    }
+
+    expect($payment->fresh()->gateway_refund_ok)->toBeFalse()
+        ->and(Activity::query()->where('description', 'payment refund settled in portal')->count())->toBe(0);
+});
+
+test('the settle control shows only on a payment flagged as owed in the portal', function () {
+    $admin = oversightAdmin();
+    portalOwedPayment('MPOWED0122');
+
+    foreach (['MPDONE0122' => true, 'MPCODD0122' => null] as $ref => $ok) {
+        Payment::create([
+            'order_id' => Order::factory()->create()->id,
+            'gateway' => PaymentMethod::Ipay88,
+            'ref_no' => $ref,
+            'amount_sen' => 5000,
+            'currency' => 'MYR',
+            'status' => GatewayPaymentStatus::Success,
+            'refunded_sen' => 5000,
+            'refunded_at' => now(),
+            'gateway_refund_ok' => $ok,
+            'signature_valid' => true,
+        ]);
+    }
+
+    $html = Livewire::actingAs($admin)->test(Payments::class)->html();
+
+    // Three refunded rows, one flagged: exactly one control.
+    expect(substr_count($html, 'data-settle-control'))->toBe(1)
+        ->and($html)->toContain(__('Mark refund settled in portal'));
+
+    Payment::query()->update(['gateway_refund_ok' => true]);
+
+    expect(Livewire::actingAs($admin)->test(Payments::class)->html())
+        ->not->toContain('data-settle-control');
 });

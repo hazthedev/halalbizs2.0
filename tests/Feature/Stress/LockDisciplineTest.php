@@ -140,6 +140,7 @@ test('an order that settles during the requery is not expired underneath it', fu
     // gateway callback landing inside it is exactly the race, so settle the
     // order from inside the mocked call and return "not paid" afterwards.
     $this->mock(Ipay88Service::class, function ($mock) use ($order) {
+        $mock->shouldReceive('isMock')->andReturnFalse(); // real gateway: the requery runs (HB-G006)
         $mock->shouldReceive('requery')->andReturnUsing(function () use ($order) {
             Order::whereKey($order->id)->update(['payment_status' => PaymentStatus::Paid, 'paid_at' => now()]);
 

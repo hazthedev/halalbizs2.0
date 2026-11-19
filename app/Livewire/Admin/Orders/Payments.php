@@ -85,6 +85,53 @@ class Payments extends Component
         $this->dispatch('toast', message: __('iPay88 answered: :result', ['result' => $result]), type: 'error');
     }
 
+    /**
+     * HB-G122: a human finished a refund the gateway did not perform (the
+     * "Needs portal refund" flag RefundService leaves). Clears the flag and
+     * keeps who, which payment and the portal reference in the audit log.
+     * The guard repeats the route's EnsureAdmin + can:orders.manage because
+     * this moves a money flag.
+     */
+    public function markRefundSettled(int $paymentId, ?string $reference = null): void
+    {
+        $user = auth()->user();
+        abort_unless($user?->hasRole('admin') && $user->can('orders.manage'), 403);
+
+        $reference = trim((string) $reference);
+
+        if (mb_strlen($reference) > 100) {
+            $this->dispatch('toast', message: __('The portal reference is too long (100 characters max).'), type: 'error');
+
+            return;
+        }
+
+        $payment = Payment::query()->findOrFail($paymentId);
+
+        // Conditional write: only a flagged row flips, so a double click or a
+        // stale page cannot write a second audit row.
+        $flipped = Payment::query()->whereKey($payment->id)
+            ->where('gateway_refund_ok', false)
+            ->update(['gateway_refund_ok' => true]);
+
+        if ($flipped === 0) {
+            return;
+        }
+
+        activity()
+            ->causedBy($user)
+            ->performedOn($payment)
+            ->withProperties([
+                'payment_id' => $payment->id,
+                'reference' => $reference === '' ? null : $reference,
+                // The audit-log screen renders old/attributes as its Diff.
+                'old' => ['gateway_refund_ok' => false],
+                'attributes' => ['gateway_refund_ok' => true],
+            ])
+            ->log('payment refund settled in portal');
+
+        $this->dispatch('toast', message: __('Refund for :ref marked settled in the iPay88 portal.', ['ref' => $payment->ref_no]));
+    }
+
     public function render()
     {
         $payments = Payment::query()

@@ -151,9 +151,8 @@ class RefundService
                         // gateway DOES accept must not clear an earlier one a human
                         // still owes in the portal. Money owed does not expire because
                         // the next call went through.
-                        // ponytail: nothing ever clears this — there is no "I settled
-                        //   it in the portal" control. Add one to the admin payments
-                        //   grid if the flag starts crying wolf.
+                        // A human clears it with "Mark refund settled in portal" on
+                        // the admin payments grid (HB-G122, audit-logged).
                         'gateway_refund_ok' => $payment->gateway_refund_ok === false
                             ? false
                             : $gatewayOk,

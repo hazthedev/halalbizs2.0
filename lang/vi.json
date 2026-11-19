@@ -2831,5 +2831,11 @@
     "Shopping, paying, tracking a parcel and returns, step by step.": "Mua sắm, thanh toán, theo dõi bưu kiện và đổi trả, từng bước một.",
     "Opening a shop, listing products, halal certificates, orders and payouts.": "Mở cửa hàng, đăng sản phẩm, chứng nhận halal, đơn hàng và rút tiền.",
     ":rate% of each sale": ":rate% trên mỗi đơn bán",
-    ":min% to :max% of each sale, by category": ":min% đến :max% trên mỗi đơn bán, tùy theo danh mục"
+    ":min% to :max% of each sale, by category": ":min% đến :max% trên mỗi đơn bán, tùy theo danh mục",
+    "Mark refund settled in portal": "Mark refund settled in portal",
+    "Only confirm once the money has been refunded in the iPay88 merchant portal.": "Only confirm once the money has been refunded in the iPay88 merchant portal.",
+    "Portal reference (optional)": "Portal reference (optional)",
+    "Confirm settled": "Confirm settled",
+    "The portal reference is too long (100 characters max).": "The portal reference is too long (100 characters max).",
+    "Refund for :ref marked settled in the iPay88 portal.": "Refund for :ref marked settled in the iPay88 portal."
 }

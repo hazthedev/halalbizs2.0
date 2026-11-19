@@ -72,6 +72,12 @@ class SecurityHeaders
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
         }
 
+        // HB-G081: never advertise the PHP version. header_remove() drops the
+        // one PHP itself queues (expose_php); the Symfony remove covers one set
+        // on the response. public/.htaccess also unsets it at the web server.
+        header_remove('X-Powered-By');
+        $response->headers->remove('X-Powered-By');
+
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');

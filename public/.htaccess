@@ -1,3 +1,10 @@
+# HB-G081: do not advertise the PHP version. "always" and the default table
+# both, because PHP-set headers land in the default one.
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
