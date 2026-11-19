@@ -36,8 +36,10 @@ class ExpireUnpaidOrders extends Command
 
         // HB-G006: the simulator has no gateway to ask — a simulated payment
         // settles through mockConfirm, never late — so skip the requery and
-        // just expire. Same switch ConfirmIpay88PaymentJob uses.
-        $mock = $ipay88->isMock();
+        // just expire. Same switch ConfirmIpay88PaymentJob uses. Only asked
+        // when something expired: isMock() logs a warning on production, and
+        // this runs every minute.
+        $mock = $expired->isNotEmpty() && $ipay88->isMock();
 
         foreach ($expired as $order) {
             $payment = $order->payments->where('status', GatewayPaymentStatus::Pending)->sortByDesc('id')->first();
