@@ -137,4 +137,4 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 1. Mở **Trung tâm trợ giúp** ở chân trang để đọc bài viết. Chân trang cũng có **Câu hỏi thường gặp**, **Chính sách hoàn tiền**, **Điều khoản & điều kiện** và **Chính sách bảo mật**.
 2. Khi gặp vấn đề, hãy đăng nhập, mở **Hỗ trợ**, chọn **Phiếu mới**, viết **Chủ đề** và **Tin nhắn** (ít nhất 20 ký tự, kèm mã đơn hàng), rồi chọn **Tạo phiếu hỗ trợ**.
 3. Trả lời trong phiếu bằng **Gửi trả lời**. Chọn **Đóng phiếu hỗ trợ** khi đã xong.
-4. Muốn bán hàng trên HalalBizs, xem Hướng dẫn dành cho người bán. Bắt đầu từ **Bán hàng trên HalalBizs**.
+4. Muốn bán hàng trên HalalBizs, xem Hướng dẫn dành cho người bán. Bắt đầu từ **Bán hàng trên HalalBizs** ở chân trang.

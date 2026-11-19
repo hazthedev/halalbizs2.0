@@ -137,4 +137,4 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 1. Open **Help centre** from the footer to read articles. The footer also has **FAQ**, **Refund policy**, **Terms & conditions** and **Privacy policy**.
 2. For a problem, sign in, open **Support**, select **New ticket**, write a **Subject** and **Message** (at least 20 characters, include the order number), and select **Create ticket**.
 3. Reply in the ticket with **Send reply**. Select **Close ticket** when solved.
-4. To sell on HalalBizs, see the Seller Guide. Start with **Sell on HalalBizs**.
+4. To sell on HalalBizs, see the Seller Guide. Start with **Sell on HalalBizs** in the footer.
