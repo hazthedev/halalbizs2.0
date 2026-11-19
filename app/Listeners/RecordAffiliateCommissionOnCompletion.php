@@ -49,7 +49,7 @@ class RecordAffiliateCommissionOnCompletion implements ShouldQueue
 
         if ($referral !== null) {
             $referral->affiliate->user?->notify(
-                new AffiliateCommissionNotification($referral->commission_sen, $referral->locks_at),
+                new AffiliateCommissionNotification($referral->payableSen(), $referral->locks_at),
             );
         }
     }

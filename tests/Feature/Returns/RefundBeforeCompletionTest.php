@@ -5,16 +5,21 @@ use App\Enums\LedgerEntryType;
 use App\Enums\PaymentMethod;
 use App\Enums\SubOrderStatus;
 use App\Listeners\AwardCoinsOnCompletion;
+use App\Listeners\RecordAffiliateCommissionOnCompletion;
 use App\Models\Address;
+use App\Models\Affiliate;
+use App\Models\AffiliateReferral;
 use App\Models\Product;
 use App\Models\SubOrder;
 use App\Models\User;
+use App\Services\AffiliateService;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\CoinService;
 use App\Services\OrderService;
 use App\Services\RefundService;
 use App\Services\SubOrderStatusService;
+use App\Settings\CommissionSettings;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Queue;
@@ -159,4 +164,71 @@ test('COD: a partial refund before completion leaves the seller where the same r
     expect((int) $before->ledgerEntries()->sum('amount_sen'))->toBe(-10_750)
         ->and((int) $after->ledgerEntries()->sum('amount_sen'))->toBe(-10_750)
         ->and(ledgerAmount($before, LedgerEntryType::CodOffset))->toBe(-20_500);
+});
+
+/**
+ * HB-G133 + HB-G134: the affiliate's commission and the sub-order's commission
+ * snapshot follow the same rule. Affiliate rate 5% → 1000 on the 20000 items.
+ */
+function referredReturnRequestedSubOrder(): SubOrder
+{
+    config(['affiliate.enabled' => true, 'affiliate.commission_rate_bp' => 500]);
+    $affiliate = app(AffiliateService::class)->enroll(User::factory()->create());
+    request()->cookies->set((string) config('affiliate.cookie'), $affiliate->code);
+
+    [, $sub] = returnRequestedSubOrder();
+    expect($sub->order->affiliate_id)->toBe($affiliate->id);
+
+    return $sub;
+}
+
+function affiliatePendingSen(SubOrder $sub): int
+{
+    return app(AffiliateService::class)->pendingEarningsSen(Affiliate::findOrFail($sub->order->affiliate_id));
+}
+
+test('a partial refund before completion: the affiliate earns only on the part kept', function () {
+    $sub = referredReturnRequestedSubOrder();
+
+    app(RefundService::class)->refund($sub, 10_250, ActorType::Admin, null);
+    app(SubOrderStatusService::class)->transition($sub->fresh(), SubOrderStatus::Completed, ActorType::Admin);
+
+    // 1000 less half, the same scaling as a refund after completion
+    expect(affiliatePendingSen($sub))->toBe(500);
+});
+
+test('a partial refund after completion: the affiliate commission is reduced as before', function () {
+    $sub = referredReturnRequestedSubOrder();
+
+    app(SubOrderStatusService::class)->transition($sub->fresh(), SubOrderStatus::Completed, ActorType::Admin);
+    expect(affiliatePendingSen($sub))->toBe(1_000);
+
+    app(RefundService::class)->refund($sub->fresh(), 10_250, ActorType::Admin, null);
+    expect(affiliatePendingSen($sub))->toBe(500);
+});
+
+test('a refund that lands after completion but before the queued affiliate job runs is netted out', function () {
+    $sub = referredReturnRequestedSubOrder();
+    Queue::fake();
+
+    app(SubOrderStatusService::class)->transition($sub->fresh(), SubOrderStatus::Completed, ActorType::Admin);
+    app(RefundService::class)->refund($sub->fresh(), 10_250, ActorType::Admin, null); // no referral row yet
+
+    $job = Queue::pushed(CallQueuedListener::class, fn ($job) => $job->class === RecordAffiliateCommissionOnCompletion::class)->sole();
+    $job = unserialize(serialize($job));
+    app($job->class)->{$job->method}(...array_values($job->data));
+
+    expect(affiliatePendingSen($sub))->toBe(500);
+});
+
+test('a full refund before completion: no affiliate commission, and the commission snapshot is still saved', function () {
+    $sub = referredReturnRequestedSubOrder();
+
+    app(RefundService::class)->refund($sub, 20_500, ActorType::Admin, null, markRefunded: false);
+    app(SubOrderStatusService::class)->transition($sub->fresh(), SubOrderStatus::Completed, ActorType::Admin);
+
+    $sub->refresh();
+    expect(AffiliateReferral::where('sub_order_id', $sub->id)->exists())->toBeFalse()
+        ->and($sub->commission_sen)->toBe(0)
+        ->and($sub->commission_basis)->toBe(app(CommissionSettings::class)->basis());
 });
