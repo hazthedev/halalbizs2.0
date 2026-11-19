@@ -65,10 +65,10 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 5. Select **Send for review**. The marketplace team approves or rejects it. A rejection gives a reason. Select **Fix and resubmit**.
 6. Until approval, the halal badge does not show. Nothing is badged until an admin approves.
 7. To renew, select **Renew or edit** on the same certificate. The badge pauses until it is approved again, but your products stay on sale. Renew at least three months before **Expires on**. The list warns "days to expiry".
-8. From 2 December 2026, products in food, grocery and drink categories (marked "Required to list" by admin) cannot be published without an approved, valid certificate covering that product. A certificate you have just submitted holds the listing for 14 days while we review it.
+8. From 2 December 2026, products in food, grocery, drink, cosmetics and pharmaceutical categories (marked "Required to list" by admin) cannot be published without an approved, valid certificate covering that product. A certificate you have just submitted holds the listing for 14 days while we review it.
 9. If a product cannot go live, the form shows **This product cannot go live yet** with the reason and a **Go to Halal certificates** link. Typical reasons: no certificate, the certificate expired, or it is still being checked.
-10. Cosmetics and pharmaceutical categories are badge only. They never need a certificate to be listed, but with one they show the halal badge.
-11. Before 2 December 2026 the same check only reports and does not block. The categories that need a certificate are **Food & Snacks**, **Groceries & Pantry**, **Drinks** and **Home & Living > Groceries**.
+10. Cosmetics and pharmaceutical categories follow the same rule as food from 2 December 2026: no approved, valid certificate, no listing. Products with a certificate show the halal badge.
+11. Before 2 December 2026 the same check only reports and does not block. The categories that need a certificate are **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** and **Pharma & Supplements**.
 12. Find my WHIP certificates: enter your **Company SSM number** and select **Find my certificates**, then **Link certificate**. Use **Import product drafts** to create draft products from a linked certificate.
 
 ## 7. Handle orders

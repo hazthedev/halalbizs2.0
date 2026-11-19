@@ -40,7 +40,7 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 4. You can also open **Certificate register** directly, type the **Certificate number** (for example MY-JKM-2140-118) and select **Verify**.
 5. A valid result shows the holder, issuing body, validity, facility and **Covered SKUs**. The certificate covers only the products named in its scope, not the whole shop.
 6. If you see **No record**, do not trust that number. Select **Report a listing** and tell Help centre support.
-7. Cosmetics and pharmaceutical products show the badge when they have a certificate, but a certificate is not required to list them. From 2 December 2026, food, grocery and drink categories cannot be listed without an approved certificate.
+7. From 2 December 2026, food, grocery, drink, cosmetics and pharmaceutical categories cannot be listed without an approved certificate.
 8. On the product page, **Ingredients & scope** and **Traceability** (facility, batch, certificate expiry) give more detail when the seller filled them in.
 
 ## 5. Add to cart

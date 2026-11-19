@@ -191,10 +191,13 @@ class AffiliateService
 
         $commissionSen = (int) $referral->commission_sen;
 
-        // Same half-up integer form as the seller reversal, so a refund split
-        // into parts sums back to the whole and never over-reverses.
-        $slice = intdiv($commissionSen * min($refundedSen, $totalSen) + intdiv($totalSen, 2), $totalSen);
-        $slice = min($slice, $commissionSen - (int) $referral->reversed_sen);
+        // HB-G138: round the CUMULATIVE refunded share and void the step, as
+        // RefundService does for the seller, so any number of partial refunds
+        // adds up to the exact pro-rata. Rounding each slice alone drifted 1 sen
+        // per extra split. Both callers record refunded_sen first, so the
+        // sub-order's figure already includes this refund.
+        $cumulativeSen = min((int) $subOrder->refunded_sen, $totalSen);
+        $slice = intdiv($commissionSen * $cumulativeSen + intdiv($totalSen, 2), $totalSen) - (int) $referral->reversed_sen;
 
         if ($slice <= 0) {
             return 0;

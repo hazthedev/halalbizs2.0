@@ -40,7 +40,7 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 4. Bạn cũng có thể mở **Sổ đăng ký chứng nhận** trực tiếp, gõ **Số chứng nhận** (ví dụ MY-JKM-2140-118) và chọn **Xác minh**.
 5. Kết quả hợp lệ hiện đơn vị được cấp, cơ quan cấp, thời hạn, cơ sở và **Các SKU được bao phủ**. Chứng nhận chỉ bao phủ các sản phẩm nêu trong phạm vi của nó, không phải cả cửa hàng.
 6. Nếu thấy **Không có hồ sơ**, đừng tin số đó. Chọn **Báo cáo một sản phẩm** và báo cho bộ phận hỗ trợ ở **Trung tâm trợ giúp**.
-7. Mỹ phẩm và dược phẩm hiện nhãn khi có chứng nhận, nhưng không bắt buộc phải có chứng nhận mới được đăng bán. Từ ngày 2 tháng 12 năm 2026, các danh mục thực phẩm, tạp hoá và đồ uống không thể đăng bán nếu không có chứng nhận đã được duyệt.
+7. Từ ngày 2 tháng 12 năm 2026, các danh mục thực phẩm, tạp hoá, đồ uống, mỹ phẩm và dược phẩm không thể đăng bán nếu không có chứng nhận đã được duyệt.
 8. Trên trang sản phẩm, **Thành phần & phạm vi** và **Truy xuất nguồn gốc** (cơ sở, lô, hạn chứng nhận) cho thêm chi tiết khi người bán đã điền.
 
 ## 5. Thêm vào giỏ
