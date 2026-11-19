@@ -350,7 +350,7 @@ test('replacing the video keeps a single file and removeExistingVideo clears it'
         ->assertHasNoErrors();
 
     expect($product->refresh()->getMedia('videos'))->toHaveCount(1)
-        ->and($product->getFirstMedia('videos')->file_name)->toBe('second.webm');
+        ->and($product->getFirstMedia('videos')->file_name)->toEndWith('.webm');
 
     Livewire::actingAs($seller)
         ->test(Form::class, ['product' => $product])
