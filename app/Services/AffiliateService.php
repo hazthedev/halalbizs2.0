@@ -36,9 +36,18 @@ class AffiliateService
             [
                 'code' => $this->uniqueCode(),
                 'status' => AffiliateStatus::Active,
-                'commission_rate_bp' => (int) config('affiliate.commission_rate_bp', 500),
+                'commission_rate_bp' => $this->cappedRateBp((int) config('affiliate.commission_rate_bp', 250)),
             ],
         );
+    }
+
+    /**
+     * HB-G159: the affiliate share never exceeds affiliate.max_rate_bp (2.5%),
+     * whether the rate comes from config or a value stored on the affiliate.
+     */
+    public function cappedRateBp(int $rateBp): int
+    {
+        return min($rateBp, (int) config('affiliate.max_rate_bp', 250));
     }
 
     /** The active affiliate referenced by the request's attribution cookie, if any. */
@@ -92,7 +101,7 @@ class AffiliateService
             }
 
             $itemsSubtotalSen = (int) $subOrder->items_subtotal_sen;
-            $commissionSen = intdiv($itemsSubtotalSen * $affiliate->commission_rate_bp + 5000, 10000);
+            $commissionSen = intdiv($itemsSubtotalSen * $this->cappedRateBp($affiliate->commission_rate_bp) + 5000, 10000);
 
             $referral = AffiliateReferral::create([
                 'affiliate_id' => $affiliate->id,

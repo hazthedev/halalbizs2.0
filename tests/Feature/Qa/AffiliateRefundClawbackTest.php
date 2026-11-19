@@ -33,7 +33,13 @@ use App\Services\RefundService;
 use App\Services\SubOrderStatusService;
 use Database\Seeders\RoleSeeder;
 
-beforeEach(fn () => test()->seed(RoleSeeder::class));
+// The refund and hold arithmetic below is rate-agnostic and was worked at 5%;
+// pin that rate so the figures stay readable. The 2.5% cap itself (HB-G159)
+// is covered in tests/Feature/Affiliate/AffiliateTest.php.
+beforeEach(function () {
+    test()->seed(RoleSeeder::class);
+    config(['affiliate.commission_rate_bp' => 500, 'affiliate.max_rate_bp' => 500]);
+});
 
 function arcBuyer(): array
 {
