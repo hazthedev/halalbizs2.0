@@ -238,6 +238,11 @@ class CheckoutService
             //    previews with exactly the same code.
             $storeTotals = $this->priceByStore($lines, $buyer, $address, $flashItems, $groupMemberships);
 
+            // HB-G003: the team price covers a limited quantity per member.
+            if (($capReason = $this->groupBuyCapReason($lines)) !== null) {
+                throw new CheckoutException($capReason);
+            }
+
             // 3. Vouchers (M8 engine, docs/09 §B): one platform + one shop
             //    code, each re-validated and consumed under lockForUpdate in
             //    THIS transaction — quota can never oversell.
@@ -549,7 +554,7 @@ class CheckoutService
         $blockReason = match (true) {
             $lines->isEmpty() => __('Your cart has no selected items.'),
             $preCoinTotalSen <= 0 => __('Order total must be above zero.'),
-            default => null,
+            default => $this->groupBuyCapReason($lines),
         };
 
         $coinsEnabled = $this->coins->enabled();
@@ -672,6 +677,31 @@ class CheckoutService
         }
 
         return null;
+    }
+
+    /**
+     * HB-G003: why a line priced at the group-buy price cannot be bought, or
+     * null. One membership covers GroupBuyService::MAX_QTY_PER_MEMBER units;
+     * more on the same line is refused, never silently charged the normal
+     * price. Call after priceByStore() (it sets groupMembership).
+     *
+     * @param  Collection<int, object>  $lines
+     */
+    private function groupBuyCapReason(Collection $lines): ?string
+    {
+        $line = $lines->first(fn ($line) => ($line->groupMembership ?? null) !== null
+            && $line->qty > GroupBuyService::MAX_QTY_PER_MEMBER);
+
+        if ($line === null) {
+            return null;
+        }
+
+        $label = trim($line->variant->product->getTranslation('name', 'en').' '.($line->variant->options_label ?? ''));
+
+        return __('The group-buy price covers :max unit per member. Change :item to :max in your cart to check out.', [
+            'max' => GroupBuyService::MAX_QTY_PER_MEMBER,
+            'item' => $label,
+        ]);
     }
 
     /**

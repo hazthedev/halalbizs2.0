@@ -108,6 +108,6 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 2. **Reviews**: select **Reply** under a review, write your answer and select **Post reply**. You can edit it for 24 hours, then it locks.
 3. **Questions**: **Unanswered** questions show first. Select **Answer**, write and **Post answer**. Use **Hide** for unsuitable questions.
 4. **Vouchers**: select **Add voucher**. Set **Code**, **Type** (amount, percent or free shipping), **Minimum spend (RM)**, **Quota**, **Per-user limit**, **Starts at**, **Ends at**, and keep **Active** on. Select **Save voucher**. A shop voucher applies only to your items.
-5. **Group buys**: select **Create deal**, choose **Product** and **Variant**, set **Group price (RM)**, **People needed**, **Team window (hours)** and **Deal ends**, then **Save deal**. Select **End** to stop it.
+5. **Group buys**: select **Create deal**, choose **Product** and **Variant**, set **Group price (RM)**, **People needed**, **Team window (hours)** and **Deal ends**, then **Save deal**. Select **End** to stop it. Each member can buy **1 unit** at the group price. If a member's group order is cancelled or fully refunded before it is completed, that member can buy 1 unit at the group price again while the deal runs; the team stays unlocked.
 6. **Live shopping**: select **New session**, then **Manage rail** to add products, **Go live** and **End**.
 7. Use the bell (**Notifications**) to see new orders, returns and questions.
