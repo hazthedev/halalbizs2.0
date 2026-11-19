@@ -30,10 +30,18 @@
                  "Log in", and someone already on the apply page was being shown
                  "Start Selling" pointing at the page they are on. --}}
             <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+                {{-- /login offers only Create account and /register only Log in; sellers
+                     sign up through the Seller Centre, so Start Selling is hidden on both. --}}
                 @guest
+                    @if (request()->routeIs('login'))
+                    <a href="{{ route('register') }}" wire:navigate class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium transition-colors {{ $light ? 'text-ink-soft hover:text-ink' : 'text-on-dark/80 hover:text-on-dark' }}">
+                        {{ __('Create account') }}
+                    </a>
+                    @else
                     <a href="{{ route('login') }}" wire:navigate class="rounded-[var(--radius-control)] px-3 py-2 text-[13px] font-medium transition-colors {{ $light ? 'text-ink-soft hover:text-ink' : 'text-on-dark/80 hover:text-on-dark' }}">
                         {{ __('Log in') }}
                     </a>
+                    @endif
                 @else
                     <span class="hidden text-[13px] text-ink-faint sm:inline">{{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}">
@@ -44,7 +52,7 @@
                     </form>
                 @endguest
 
-                @unless (request()->routeIs('seller.apply', 'seller.status'))
+                @unless (request()->routeIs('seller.apply', 'seller.status', 'login', 'register'))
                     <x-ui.button variant="brass" :href="route('seller.apply')">
                         {{ __('Start Selling') }}
                     </x-ui.button>

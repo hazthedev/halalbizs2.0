@@ -338,7 +338,7 @@
                     @foreach ($footer['pages'] as $footerPage)
                         <li><a href="{{ route('page.show', $footerPage->slug) }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ $footerPage->title }}</a></li>
                     @endforeach
-                    <li><a href="{{ route('seller.apply') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Sell on HalalBizs') }}</a></li>
+                    <li><a href="{{ route('seller.login') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Sell on HalalBizs') }}</a></li>
                 </ul>
 
                 <form method="POST" action="{{ route('newsletter.subscribe') }}" class="mt-6 flex gap-2">
