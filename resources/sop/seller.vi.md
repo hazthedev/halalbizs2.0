@@ -2,7 +2,7 @@
 
 Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản phẩm, đăng ký chứng nhận halal, xử lý đơn hàng và đổi trả, và nhận tiền. Tên nút và tên mục menu được in **đậm**, đúng như Trung tâm người bán hiển thị. Màn hình Trung tâm người bán hiện vẫn hầu hết bằng tiếng Anh dù bạn chọn tiếng Việt, nên hướng dẫn giữ nguyên nhãn tiếng Anh và giải thích bằng tiếng Việt.
 
-> Thanh toán trực tuyến của người mua vẫn đang phát triển và chạy bằng trình mô phỏng. Đơn thanh toán khi nhận hàng (COD) là đơn thật. Hãy hỏi đội HalalBizs trước khi nói với người mua rằng họ có thể trả tiền trực tuyến.
+> Hiện HalalBizs đang ở chế độ chỉ đăng sản phẩm (listing-only): người mua xem được sản phẩm và chứng nhận của bạn, nhưng không thể thêm vào giỏ hay thanh toán. Trong thời gian này, các liên kết **Also available in** là cách người mua tìm đến bạn. Thanh toán trực tuyến của người mua vẫn đang phát triển và chạy bằng trình mô phỏng. Hãy hỏi đội HalalBizs trước khi nói với người mua rằng họ có thể trả tiền trực tuyến.
 
 ## 1. Đăng ký làm người bán
 
@@ -30,8 +30,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 
 1. Mở **Seller Centre**. Menu gồm: **Dashboard**, **Products**, **Halal certificates**, **Orders**, **Messages**, **Vouchers**, **Group buys**, **Live shopping**, **Earnings**, **Reviews**, **Questions**, **Shop settings** và **Get help**. **View storefront** mở cửa hàng công khai của bạn.
 2. **Dashboard** hiện **Today's orders**, **To ship**, **Live products**, **Low stock**, **Available balance**, **On hold**, **Gross (period)**, **Commission (period)**, **Revenue over time**, **Orders by status**, **Top products** và **Recent orders**. Dùng nút chọn kỳ (ví dụ 7 days) để đổi khoảng thời gian.
-3. Nếu cửa hàng thuộc chương trình chứng nhận WHIP, dashboard còn liệt kê **My WHIP applications** với **Refresh status** và **Follow application**.
-<!-- CHECK: WHIP panels (My WHIP applications, Find my WHIP certificates) depend on a WHIP link being configured. The 16 Nov decision says leave the WHIP links as they are. Confirm they are visible to sellers on live before keeping this step. -->
+3. Dashboard còn hiện **My WHIP applications** cho các cửa hàng thuộc chương trình chứng nhận WHIP. Chọn **Refresh status** để tải danh sách, và **Follow application** để tự liên kết chứng nhận và sản phẩm khi WHIP cấp chứng nhận. Nếu cửa hàng chưa có chứng nhận, **Get certified** mở trang đăng ký WHIP.
 
 ## 4. Cài đặt cửa hàng
 
@@ -70,8 +69,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 8. Từ ngày 2 tháng 12 năm 2026, sản phẩm thuộc danh mục thực phẩm, tạp hoá và đồ uống (được quản trị viên đánh dấu "Required to list") không thể xuất bản nếu không có chứng nhận hợp lệ đã được duyệt bao phủ sản phẩm đó. Chứng nhận bạn vừa nộp giữ cho sản phẩm được đăng trong 14 ngày trong lúc chúng tôi xét duyệt.
 9. Nếu sản phẩm chưa thể lên sàn, biểu mẫu hiện **This product cannot go live yet** kèm lý do và liên kết **Go to Halal certificates**. Lý do thường gặp: chưa có chứng nhận, chứng nhận đã hết hạn, hoặc đang được kiểm tra.
 10. Danh mục mỹ phẩm và dược phẩm chỉ dùng nhãn. Không cần chứng nhận mới được đăng, nhưng có chứng nhận thì hiện nhãn halal.
-11. Trước ngày 2 tháng 12 năm 2026, kiểm tra này chỉ báo cáo và không chặn.
-<!-- CHECK: The date comes from HALAL_GATE_ENFORCED_FROM=2026-12-02 in the live .env (decision HB-GATE-D1) and the gated categories are Food & Snacks, Groceries & Pantry, Drinks and Home & Living > Groceries (HB-GATE-D2). The testing copy has its own .env, so its date may differ. -->
+11. Trước ngày 2 tháng 12 năm 2026, kiểm tra này chỉ báo cáo và không chặn. Các danh mục cần chứng nhận là **Food & Snacks**, **Groceries & Pantry**, **Drinks** và **Home & Living > Groceries**.
 12. Find my WHIP certificates: nhập **Company SSM number** và chọn **Find my certificates**, rồi **Link certificate**. Dùng **Import product drafts** để tạo bản nháp sản phẩm từ chứng nhận đã liên kết.
 
 ## 7. Xử lý đơn hàng
@@ -89,7 +87,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 ## 8. Đổi trả
 
 1. Đơn có yêu cầu đổi trả hiện ở **Returns** và cho thấy **Return request** với **Reason**, **Details** và ảnh của người mua.
-2. Hãy trả lời trước giờ **Respond by**. Yêu cầu không được trả lời sẽ tự chuyển lên quản trị viên.
+2. Hãy trả lời trước giờ **Respond by** (48 giờ sau khi có yêu cầu). Yêu cầu không được trả lời sẽ tự chuyển lên quản trị viên.
 3. Để đồng ý, chọn **Accept return**. Người mua gửi hàng lại. Khi hàng đến, chọn **Item received**. Đội của sàn sau đó xử lý hoàn tiền.
 4. Để không đồng ý, chọn **Dispute**, giải thích ở **Why are you disputing this return?** và chọn **Submit dispute**. Quản trị viên quyết định.
 5. Hoàn tiền trước khi đơn hoàn tất cũng bị trừ khỏi doanh số của bạn và khỏi số xu người mua đã nhận từ đơn đó.
@@ -97,14 +95,13 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 ## 9. Thu nhập, sổ cái, sao kê và rút tiền
 
 1. Mở **Earnings**. Bạn thấy **Available**, **On hold**, **In escrow**, **Pending payout** và **Paid out (lifetime)**.
-2. **In escrow** là tiền được nhả khi người mua nhận hàng. **On hold** là tiền từ đơn đã hoàn tất, được chuyển sang **Available** khi hết thời hạn đổi trả.
+2. **In escrow** là tiền được nhả khi người mua nhận hàng. **On hold** là tiền từ đơn đã hoàn tất, được chuyển sang **Available** khi hết thời hạn đổi trả (7 ngày sau khi giao).
 3. **Ledger** liệt kê mọi bút toán với **Date**, **Type**, **Description** và **Amount**: doanh số, hoa hồng, hoàn tiền, rút tiền, boost.
-4. Để nhận tiền, kiểm tra dòng **Paid to:** (đổi ngân hàng ở **Shop settings** qua **Update in settings**), nhập **Amount (RM)** ở **Request a payout**, và chọn **Request**. Có mức tối thiểu, và bạn không thể yêu cầu quá **Available**. Chỉ một lệnh rút tiền được xử lý cùng lúc.
+4. Để nhận tiền, kiểm tra dòng **Paid to:** (đổi ngân hàng ở **Shop settings** qua **Update in settings**), nhập **Amount (RM)** ở **Request a payout**, và chọn **Request**. Mức tối thiểu là RM50, và bạn không thể yêu cầu quá **Available**. Chỉ một lệnh rút tiền được xử lý cùng lúc.
 5. Các bước rút tiền: **Requested**, **Approved**, **Paid** (kèm **Reference** của ngân hàng) hoặc **Rejected** (tiền quay lại Available). Xem **Payout history**.
 6. Nếu số dư âm (ví dụ hoa hồng phải trả cho đơn COD, hoặc hoàn tiền sau khi đã rút), trang hiện số tiền còn nợ. Doanh số sau này sẽ bù khoản đó, hoặc bạn có thể chuyển khoản. Việc rút tiền tiếp tục khi số dư dương.
 7. Vào ngày 1 hằng tháng lúc 09:00, một email **sao kê hằng tháng** được gửi cho các cửa hàng còn nợ.
-8. **Export CSV** lưu sổ cái.
-<!-- CHECK: Minimum payout amount and return window days are admin settings (Admin > Settings > Orders). Insert live values. Only the monthly commission statement email exists in code; there is no statements page. -->
+8. **Export CSV** lưu sổ cái. Không có trang sao kê; email hằng tháng chính là sao kê.
 
 ## 10. Trò chuyện, đánh giá, câu hỏi và khuyến mãi
 

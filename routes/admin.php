@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 // Admin panel — guarded by EnsureAdmin; sections gated by spatie permissions.
 Route::get('/', Admin\Dashboard::class)->name('dashboard');
+Route::get('/help', Admin\Guide::class)->name('help'); // HB-SOP admin guide, every admin
 
 Route::middleware('can:sellers.manage')->group(function () {
     Route::get('/sellers/applications', Admin\Sellers\Applications::class)->name('sellers.applications');

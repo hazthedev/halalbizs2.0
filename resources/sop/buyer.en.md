@@ -4,7 +4,7 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 
 > Online payment is still in development. At checkout you will see "Online payment", but today it runs on a built-in simulator and no real money is taken. Cash on delivery works normally.
 
-<!-- CHECK: Production may be in "Listing only" mode (Admin > Settings > "Allow buyers to add to cart and checkout" turned off). In that mode Add to cart, Buy now and Checkout are hidden. Confirm the live setting before publishing. -->
+> Today HalalBizs is in listing-only mode. You can browse products, check certificates and chat with sellers, but **Add to cart**, **Buy now** and **Checkout** are hidden. Where the seller added them, **Also available in** opens the seller's listing on another site. Sections 5 to 9 apply once ordering is switched on.
 
 ## 1. Create an account and sign in
 
@@ -60,13 +60,12 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 3. Write an optional **Note to seller** for each shop.
 4. Under **Vouchers**, select **Select voucher** and pick one, or type a code in **Voucher code** and select **Apply**. You can use one platform voucher, one shop voucher (it applies only to that shop's items) and one free-shipping voucher. Remove one with its **Remove ... voucher** button.
 5. If **Use my coins** appears, tick it to spend coins (see section 9).
-6. Under **Payment method** choose **Cash on delivery** or **Online payment — FPX, cards, e-wallets**. Cash on delivery appears only when it is enabled, every item allows it, and the order total is below the COD limit. If no method fits, the page says "No payment method is available for this order."
+6. Under **Payment method** choose **Cash on delivery** or **Online payment — FPX, cards, e-wallets**. Cash on delivery appears only when it is enabled, every item allows it, and the order total is not above RM500. If no method fits, the page says "No payment method is available for this order."
 7. Check **Order summary**: **Items subtotal**, **Shipping total**, **SST** (when charged), voucher lines, **Coins** and **Grand total**.
 8. Select **Place order** once. <!-- SHOT: checkout order summary and payment methods -->
 9. The **Order placed** page shows your **Order number**. For cash on delivery it says how much cash to pay when the parcel arrives.
 10. For online payment, select **Complete your payment**. While in development this opens a **Payment simulator** page with **Simulate successful payment**, **Simulate failure** and **Cancel**. No real charge is made.
-11. An online order waiting for payment is under **To Pay** and expires after a set time. Items go back into stock when it expires.
-<!-- CHECK: Exact COD limit and unpaid-order expiry minutes are admin settings (Admin > Settings > Cash on delivery / Orders). State live values if wanted. -->
+11. An online order waiting for payment is under **To Pay** and expires after 60 minutes. Items go back into stock when it expires.
 
 ## 7. Vouchers
 
@@ -86,12 +85,11 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 ## 9. Coins
 
 1. Open **My account > Coins**. You see **Coin balance**, expiry notes and **Recent activity**. (The menu item is hidden when the programme is off.)
-2. Select **Check in today** once a day. Your streak grows and later days pay more.
+2. Select **Check in today** once a day. Your streak grows and later days pay more: 5 coins on days 1 and 2, 10 on days 3 and 4, 15 on days 5 and 6, and 30 on day 7. Then the cycle starts again.
 3. Select **Spin the wheel** once a day for coins or a surprise voucher.
-4. You earn coins on completed orders. If an order is refunded, the coins earned from it are taken back.
-5. At checkout tick **Use my coins**. Spending is capped by your balance and a per-order limit, and the order total never drops to zero from coins alone.
-6. Coins expire. The page tells you when.
-<!-- CHECK: Defaults in config/coins.php (1 coin per RM1 earned, 1 coin = 1 sen, max RM50 per order, 180 days expiry, check-in 5-30 coins) can be overridden by environment values. Confirm live values before quoting numbers. -->
+4. You earn 1 coin for every whole RM1 of items in a completed order. If an order is refunded, the coins earned from it are taken back.
+5. At checkout tick **Use my coins**. 1 coin takes 1 sen off. You can use up to RM50 of coins per order, and the order total never drops to zero from coins alone.
+6. Coins expire 180 days after you earn them. The page tells you when.
 
 ## 10. Orders and tracking
 
@@ -100,19 +98,18 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 3. Each seller's part of an order is its own order. Select **View details** to open it. You see **Order status** history, items, **Delivery address**, **Order summary** and **Payment method**.
 4. When the seller ships, the page shows **Tracking** with the courier and number. Select **Copy tracking number** if needed, or **Track on courier website** to open the courier's own tracking page.
 5. HalalBizs does not show courier checkpoints itself. The courier link is the way to follow a parcel.
-6. When the parcel arrives and the status is **Delivered**, check it and select **Order received**. This completes the order. If you do nothing, it completes by itself after the set number of days.
+6. When the parcel arrives and the status is **Delivered**, check it and select **Order received**. This completes the order. If you do nothing, it completes by itself 7 days after delivery.
 7. Select **Download invoice** on an order that has been confirmed.
 8. After completion, **Buy again** puts the items back into your cart.
 
 ## 11. Cancel, return and refund
 
 1. To cancel, open the order while its status is **Confirmed**. Select **Cancel order**, choose **Pick a reason**, then **Confirm cancellation**. Once the seller starts packing (**Processing**), you cannot cancel. Contact support instead.
-2. To return, open an order that is **Delivered** or **Completed**, inside the return window, with no earlier request. Select **Request return**.
+2. To return, open an order that is **Delivered** or **Completed**, within 7 days of delivery, with no earlier request. Select **Request return**.
 3. Choose a reason, add details in **Tell us more (optional)** and add photos if useful. Select **Submit return request**. Only one request per order.
-4. Follow **Return status**. The seller has a deadline to answer. If the seller accepts, ship the item back. If the seller disputes, or does not answer in time, our support team decides.
+4. Follow **Return status**. The seller has 48 hours to answer. If the seller accepts, ship the item back. If the seller disputes, or does not answer in time, our support team decides.
 5. When the status is **Refunded** the page says "Your refund has been processed." Cash-on-delivery refunds are recorded by HalalBizs. Online refunds go back through the payment channel and the bank may take time to post them.
 6. If a return is **Rejected**, the page says it was reviewed and not approved. Contact support if you disagree.
-<!-- CHECK: Return window days, seller response hours and auto-complete days are admin settings (Admin > Settings > Orders). Insert live values if wanted. -->
 
 ## 12. Reviews, questions and chat
 

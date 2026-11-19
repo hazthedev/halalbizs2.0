@@ -2,7 +2,7 @@
 
 This guide shows how to open a shop on HalalBizs, list products, register halal certificates, handle orders and returns, and get paid. Button and menu names are written in **bold** exactly as the Seller Centre shows them.
 
-> Online payment for buyers is still in development and runs on a simulator. Cash on delivery orders are real. Check with the HalalBizs team before telling buyers they can pay online.
+> Today HalalBizs is in listing-only mode: buyers can browse your products and certificates, but cannot add to cart or check out. Your **Also available in** links are how buyers reach you meanwhile. Online payment for buyers is still in development and runs on a simulator. Check with the HalalBizs team before telling buyers they can pay online.
 
 ## 1. Apply to become a seller
 
@@ -30,8 +30,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 
 1. Open **Seller Centre**. The menu has: **Dashboard**, **Products**, **Halal certificates**, **Orders**, **Messages**, **Vouchers**, **Group buys**, **Live shopping**, **Earnings**, **Reviews**, **Questions**, **Shop settings**, and **Get help**. **View storefront** opens your public shop.
 2. The **Dashboard** shows **Today's orders**, **To ship**, **Live products**, **Low stock**, **Available balance**, **On hold**, **Gross (period)**, **Commission (period)**, **Revenue over time**, **Orders by status**, **Top products** and **Recent orders**. Use the period buttons (for example 7 days) to change the range.
-3. If your shop is on the WHIP certification programme, the dashboard also lists **My WHIP applications** with **Refresh status** and **Follow application**.
-<!-- CHECK: WHIP panels (My WHIP applications, Find my WHIP certificates) depend on a WHIP link being configured. The 16 Nov decision says leave the WHIP links as they are. Confirm they are visible to sellers on live before keeping this step. -->
+3. The dashboard also shows **My WHIP applications** for shops on the WHIP certification programme. Select **Refresh status** to load them, and **Follow application** to link its certificate and products automatically when WHIP certifies it. If your shop has no certificate yet, **Get certified** opens the WHIP sign-up page.
 
 ## 4. Shop settings
 
@@ -70,8 +69,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 8. From 2 December 2026, products in food, grocery and drink categories (marked "Required to list" by admin) cannot be published without an approved, valid certificate covering that product. A certificate you have just submitted holds the listing for 14 days while we review it.
 9. If a product cannot go live, the form shows **This product cannot go live yet** with the reason and a **Go to Halal certificates** link. Typical reasons: no certificate, the certificate expired, or it is still being checked.
 10. Cosmetics and pharmaceutical categories are badge only. They never need a certificate to be listed, but with one they show the halal badge.
-11. Before 2 December 2026 the same check only reports and does not block.
-<!-- CHECK: The date comes from HALAL_GATE_ENFORCED_FROM=2026-12-02 in the live .env (decision HB-GATE-D1) and the gated categories are Food & Snacks, Groceries & Pantry, Drinks and Home & Living > Groceries (HB-GATE-D2). The testing copy has its own .env, so its date may differ. -->
+11. Before 2 December 2026 the same check only reports and does not block. The categories that need a certificate are **Food & Snacks**, **Groceries & Pantry**, **Drinks** and **Home & Living > Groceries**.
 12. Find my WHIP certificates: enter your **Company SSM number** and select **Find my certificates**, then **Link certificate**. Use **Import product drafts** to create draft products from a linked certificate.
 
 ## 7. Handle orders
@@ -89,7 +87,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 ## 8. Returns
 
 1. Orders with a return request appear in **Returns** and show **Return request** with the buyer's **Reason**, **Details** and photos.
-2. Answer before the **Respond by** time. Unanswered requests go to admin automatically.
+2. Answer before the **Respond by** time (48 hours after the request). Unanswered requests go to admin automatically.
 3. To agree, select **Accept return**. The buyer ships the item back. When it arrives select **Item received**. The marketplace team then processes the refund.
 4. To disagree, select **Dispute**, explain in **Why are you disputing this return?** and select **Submit dispute**. Admin decides.
 5. A refund before completion is also taken out of your sale and the coins the buyer earned on it.
@@ -97,14 +95,13 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 ## 9. Earnings, ledger, statements and payouts
 
 1. Open **Earnings**. You see **Available**, **On hold**, **In escrow**, **Pending payout** and **Paid out (lifetime)**.
-2. **In escrow** is money released when buyers receive their orders. **On hold** is money from completed orders, released to **Available** when the return window closes.
+2. **In escrow** is money released when buyers receive their orders. **On hold** is money from completed orders, released to **Available** when the return window closes (7 days after delivery).
 3. The **Ledger** lists every entry with **Date**, **Type**, **Description** and **Amount**: sales, commission, refunds, payouts, boosts.
-4. To get paid, check the **Paid to:** bank line (change it in **Shop settings** with **Update in settings**), enter **Amount (RM)** under **Request a payout**, and select **Request**. There is a minimum amount, and you cannot ask for more than **Available**. Only one payout can be in progress.
+4. To get paid, check the **Paid to:** bank line (change it in **Shop settings** with **Update in settings**), enter **Amount (RM)** under **Request a payout**, and select **Request**. The minimum is RM50, and you cannot ask for more than **Available**. Only one payout can be in progress.
 5. Payout steps: **Requested**, **Approved**, **Paid** (with a bank **Reference**) or **Rejected** (the money returns to Available). See **Payout history**.
 6. If the balance is negative (for example commission owed on cash on delivery orders, or a refund after payout), the page shows the amount owed. Future sales repay it, or you can pay by bank transfer. Payouts resume when the balance is positive.
 7. On the 1st of each month at 09:00 a **monthly statement** email is sent to shops that owe a balance.
-8. **Export CSV** saves the ledger.
-<!-- CHECK: Minimum payout amount and return window days are admin settings (Admin > Settings > Orders). Insert live values. Only the monthly commission statement email exists in code; there is no statements page. -->
+8. **Export CSV** saves the ledger. There is no statements page; the monthly email is the statement.
 
 ## 10. Chat, reviews, questions and promotions
 

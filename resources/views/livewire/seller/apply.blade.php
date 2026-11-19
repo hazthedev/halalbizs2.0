@@ -4,6 +4,7 @@
         :title="__('Become a seller')"
         :subtitle="__('Tell us about your shop. Applications are reviewed within 2–3 business days.')"
     />
+    <a href="{{ route('help.guide', 'seller') }}" wire:navigate class="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-emerald underline hover:text-emerald-deep">{{ __('Read the seller guide first') }}</a>
 
     <form wire:submit="submit" class="mt-6 space-y-4">
         {{-- ===== Shop details ===== --}}

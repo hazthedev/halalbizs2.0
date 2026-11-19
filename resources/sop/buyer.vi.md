@@ -4,7 +4,7 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 
 > Thanh toán trực tuyến vẫn đang trong giai đoạn phát triển. Khi thanh toán bạn sẽ thấy "Thanh toán trực tuyến", nhưng hiện chạy bằng trình mô phỏng, không trừ tiền thật. Thanh toán khi nhận hàng hoạt động bình thường.
 
-<!-- CHECK: Production may be in "Listing only" mode (Admin > Settings > "Allow buyers to add to cart and checkout" turned off). In that mode Add to cart, Buy now and Checkout are hidden. Confirm the live setting before publishing. -->
+> Hiện HalalBizs đang ở chế độ chỉ đăng sản phẩm (listing-only). Bạn có thể xem sản phẩm, kiểm tra chứng nhận và trò chuyện với người bán, nhưng **Thêm vào giỏ**, **Mua ngay** và **Thanh toán** bị ẩn. Nếu người bán đã thêm, mục **Cũng có trên** mở trang sản phẩm của người bán trên trang web khác. Mục 5 đến 9 áp dụng khi chức năng đặt hàng được bật.
 
 ## 1. Tạo tài khoản và đăng nhập
 
@@ -60,13 +60,12 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 3. Viết **Ghi chú cho người bán** (không bắt buộc) cho từng cửa hàng.
 4. Ở **Voucher**, chọn **Chọn voucher** và chọn một cái, hoặc gõ mã vào **Mã voucher** rồi chọn **Áp dụng**. Bạn dùng được một voucher của sàn, một voucher của cửa hàng (chỉ áp dụng cho sản phẩm của cửa hàng đó) và một voucher miễn phí vận chuyển. Bỏ voucher bằng nút gỡ ngay cạnh nó.
 5. Nếu thấy **Dùng xu của tôi**, đánh dấu để dùng xu (xem mục 9).
-6. Ở **Phương thức thanh toán**, chọn **Thanh toán khi nhận hàng** hoặc **Thanh toán trực tuyến — FPX, thẻ, ví điện tử**. Thanh toán khi nhận hàng chỉ hiện khi đã được bật, mọi sản phẩm đều cho phép, và tổng đơn không vượt giới hạn COD. Nếu không có phương thức nào phù hợp, trang báo "No payment method is available for this order."
+6. Ở **Phương thức thanh toán**, chọn **Thanh toán khi nhận hàng** hoặc **Thanh toán trực tuyến — FPX, thẻ, ví điện tử**. Thanh toán khi nhận hàng chỉ hiện khi đã được bật, mọi sản phẩm đều cho phép, và tổng đơn không vượt quá RM500. Nếu không có phương thức nào phù hợp, trang báo "No payment method is available for this order."
 7. Kiểm tra **Tóm tắt đơn hàng**: **Tạm tính sản phẩm**, **Tổng phí vận chuyển**, **SST** (nếu có), các dòng voucher, **Xu** và **Tổng cộng**.
 8. Chọn **Đặt hàng** một lần. <!-- SHOT: checkout order summary and payment methods -->
 9. Trang **Đã đặt đơn** hiện **Mã đơn hàng** của bạn. Với thanh toán khi nhận hàng, trang cho biết số tiền mặt phải trả khi nhận bưu kiện.
 10. Với thanh toán trực tuyến, chọn **Hoàn tất thanh toán**. Trong giai đoạn phát triển, nút này mở trang **Payment simulator** với **Simulate successful payment**, **Simulate failure** và **Cancel**. Không có khoản trừ tiền thật nào.
-11. Đơn trực tuyến đang chờ thanh toán nằm ở **Chờ thanh toán** và sẽ hết hạn sau một thời gian. Hàng được trả lại kho khi đơn hết hạn.
-<!-- CHECK: Exact COD limit and unpaid-order expiry minutes are admin settings (Admin > Settings > Cash on delivery / Orders). State live values if wanted. -->
+11. Đơn trực tuyến đang chờ thanh toán nằm ở **Chờ thanh toán** và sẽ hết hạn sau 60 phút. Hàng được trả lại kho khi đơn hết hạn.
 
 ## 7. Voucher
 
@@ -86,12 +85,11 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 ## 9. Xu
 
 1. Mở **Tài khoản của tôi > Xu**. Bạn thấy **Số dư xu**, ghi chú hết hạn và **Hoạt động gần đây**. (Mục menu này bị ẩn khi chương trình tắt.)
-2. Chọn **Điểm danh hôm nay** mỗi ngày một lần. Chuỗi ngày của bạn tăng dần và các ngày sau được nhiều xu hơn.
+2. Chọn **Điểm danh hôm nay** mỗi ngày một lần. Chuỗi ngày của bạn tăng dần và các ngày sau được nhiều xu hơn: 5 xu ngày 1 và 2, 10 xu ngày 3 và 4, 15 xu ngày 5 và 6, và 30 xu ngày 7. Sau đó chu kỳ bắt đầu lại.
 3. Chọn **Quay vòng quay** mỗi ngày một lần để nhận xu hoặc một voucher bất ngờ.
-4. Bạn nhận xu khi đơn hoàn tất. Nếu đơn được hoàn tiền, số xu đã nhận từ đơn đó bị thu lại.
-5. Khi thanh toán, đánh dấu **Dùng xu của tôi**. Số xu dùng được bị giới hạn bởi số dư và mức tối đa mỗi đơn, và xu không bao giờ đưa tổng đơn về 0.
-6. Xu có hạn dùng. Trang cho biết khi nào hết hạn.
-<!-- CHECK: Defaults in config/coins.php (1 coin per RM1 earned, 1 coin = 1 sen, max RM50 per order, 180 days expiry, check-in 5-30 coins) can be overridden by environment values. Confirm live values before quoting numbers. -->
+4. Bạn nhận 1 xu cho mỗi RM1 trọn vẹn tiền hàng của đơn đã hoàn tất. Nếu đơn được hoàn tiền, số xu đã nhận từ đơn đó bị thu lại.
+5. Khi thanh toán, đánh dấu **Dùng xu của tôi**. 1 xu giảm 1 sen. Mỗi đơn dùng tối đa RM50 bằng xu, và xu không bao giờ đưa tổng đơn về 0.
+6. Xu hết hạn 180 ngày sau khi bạn nhận. Trang cho biết khi nào hết hạn.
 
 ## 10. Đơn hàng và theo dõi
 
@@ -100,19 +98,18 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 3. Phần của mỗi người bán trong một đơn là một đơn riêng. Chọn **Xem chi tiết** để mở. Bạn thấy lịch sử **Trạng thái đơn hàng**, sản phẩm, **Địa chỉ giao hàng**, **Tóm tắt đơn hàng** và **Phương thức thanh toán**.
 4. Khi người bán gửi hàng, trang hiện **Theo dõi vận chuyển** với đơn vị vận chuyển và mã vận đơn. Chọn **Sao chép mã vận đơn** nếu cần, hoặc **Theo dõi trên trang của đơn vị vận chuyển** để mở trang theo dõi của chính đơn vị đó.
 5. HalalBizs không tự hiển thị các mốc của đơn vị vận chuyển. Liên kết của đơn vị vận chuyển là cách để theo dõi bưu kiện.
-6. Khi bưu kiện đến và trạng thái là **Delivered**, hãy kiểm tra hàng rồi chọn **Đã nhận đơn**. Việc này hoàn tất đơn hàng. Nếu bạn không làm gì, đơn tự hoàn tất sau số ngày đã đặt.
+6. Khi bưu kiện đến và trạng thái là **Delivered**, hãy kiểm tra hàng rồi chọn **Đã nhận đơn**. Việc này hoàn tất đơn hàng. Nếu bạn không làm gì, đơn tự hoàn tất 7 ngày sau khi giao.
 7. Chọn **Tải hoá đơn** ở đơn đã được xác nhận.
 8. Sau khi hoàn tất, **Mua lại** đưa các sản phẩm vào giỏ của bạn lần nữa.
 
 ## 11. Huỷ, đổi trả và hoàn tiền
 
 1. Để huỷ, mở đơn khi trạng thái còn **Confirmed**. Chọn **Huỷ đơn hàng**, chọn lý do ở **Chọn lý do**, rồi **Xác nhận huỷ**. Khi người bán bắt đầu đóng gói (**Processing**), bạn không huỷ được nữa. Hãy liên hệ hỗ trợ.
-2. Để đổi trả, mở đơn đã **Delivered** hoặc **Hoàn tất**, còn trong thời hạn đổi trả và chưa có yêu cầu nào trước đó. Chọn **Yêu cầu đổi trả**.
+2. Để đổi trả, mở đơn đã **Delivered** hoặc **Hoàn tất**, trong vòng 7 ngày kể từ khi giao và chưa có yêu cầu nào trước đó. Chọn **Yêu cầu đổi trả**.
 3. Chọn lý do, ghi thêm ở **Cho chúng tôi biết thêm (không bắt buộc)** và thêm ảnh nếu cần. Chọn **Gửi yêu cầu đổi trả**. Mỗi đơn chỉ một yêu cầu.
-4. Theo dõi **Trạng thái đổi trả**. Người bán có hạn chót để trả lời. Nếu người bán chấp nhận, hãy gửi hàng lại. Nếu người bán tranh chấp, hoặc không trả lời kịp, đội hỗ trợ của chúng tôi sẽ quyết định.
+4. Theo dõi **Trạng thái đổi trả**. Người bán có 48 giờ để trả lời. Nếu người bán chấp nhận, hãy gửi hàng lại. Nếu người bán tranh chấp, hoặc không trả lời kịp, đội hỗ trợ của chúng tôi sẽ quyết định.
 5. Khi trạng thái là **Refunded**, trang báo "Your refund has been processed." Hoàn tiền với đơn thanh toán khi nhận hàng do HalalBizs ghi nhận. Hoàn tiền trực tuyến đi ngược qua kênh thanh toán và ngân hàng có thể mất thời gian để ghi có.
 6. Nếu đổi trả bị **Rejected**, trang báo yêu cầu đã được xem xét và không được chấp thuận. Hãy liên hệ hỗ trợ nếu bạn không đồng ý.
-<!-- CHECK: Return window days, seller response hours and auto-complete days are admin settings (Admin > Settings > Orders). Insert live values if wanted. -->
 
 ## 12. Đánh giá, câu hỏi và trò chuyện
 

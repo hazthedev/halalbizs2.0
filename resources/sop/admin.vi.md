@@ -2,7 +2,7 @@
 
 Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt người bán và chứng nhận halal, theo dõi đơn hàng, thanh toán, đổi trả và rút tiền, và quản lý giao diện cửa hàng. Tên nút và tên menu được in **đậm**, đúng như Admin panel hiển thị. Màn hình Admin hiện vẫn hầu hết bằng tiếng Anh dù bạn chọn tiếng Việt, nên hướng dẫn giữ nguyên nhãn tiếng Anh và giải thích bằng tiếng Việt. Bạn thấy được những gì tuỳ theo quyền của tài khoản.
 
-> Thanh toán trực tuyến vẫn đang phát triển và chạy bằng trình mô phỏng có sẵn. Cần có mã merchant thật trước khi tiền thật được chuyển.
+> Hiện sàn đang ở chế độ chỉ đăng sản phẩm (**System > Settings > General**, **Allow buyers to add to cart and checkout** đang tắt). Thanh toán trực tuyến vẫn đang phát triển và chạy bằng trình mô phỏng có sẵn. Cần có mã merchant thật trước khi tiền thật được chuyển.
 
 ## 1. Đăng nhập
 
@@ -52,7 +52,6 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 3. Đặt **Halal certificate**: **Inherit from parent**, **Required to list** hoặc **Not required**. Required nghĩa là người bán không đăng được ở đó nếu thiếu chứng nhận đã duyệt bao phủ sản phẩm.
 4. Quy định bắt đầu từ ngày 2 tháng 12 năm 2026. Trên bản live, các danh mục bắt buộc là **Food & Snacks**, **Groceries & Pantry**, **Drinks** và **Home & Living > Groceries**. **Cosmetics & Care** và **Pharma & Supplements** chỉ dùng nhãn (không bắt buộc).
 5. Chọn **Create category** hoặc **Save changes**.
-<!-- CHECK: Gated category list and 2 Dec 2026 date come from decisions HB-GATE-D1/D2 (live .env). Confirm the live admin screen still shows these before publishing. -->
 6. Các menu danh mục liên quan: **Attributes**, **Brands**, **Reviews** (ẩn đánh giá không phù hợp) và **Moderation**.
 7. **Moderation**: khi **New products need admin approval before going live** bật (System > Settings), sản phẩm mới chờ ở đây. Chọn **Approve**, hoặc **Reject** kèm lý do (sản phẩm quay về bản nháp và người bán nhận lý do), hoặc **Ban** để gỡ. Bạn có thể xử lý hàng loạt bằng **Approve selected**, **Reject selected**, **Ban selected**.
 
@@ -75,7 +74,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 5. Khi thanh toán đang ở chế độ mô phỏng, các khoản mô phỏng cũng hiện ở đây.
 6. **Orders > Subscriptions** liệt kê người mua định kỳ theo trạng thái.
 7. **System > Settings > iPay88** hiện **Simulator active**, **Sandbox configured**, **Live configured** hoặc **Not configured**. Lưu **Merchant code**, **Merchant key** và **Sandbox mode**, rồi chọn **Test connection**. **Online payment is hidden from buyers until both credentials are saved.**
-<!-- CHECK: In the current setup the simulator is active (no merchant code). Confirm before telling anyone that real card or FPX payment works. -->
+8. Trên bản live hiện chưa lưu mã hay khoá merchant, nên trình mô phỏng đang bật. Đừng nói với ai rằng thanh toán thẻ hoặc FPX thật đã hoạt động cho đến khi lưu đủ cả hai và **Test connection** thành công.
 
 ## 8. Đổi trả và hoàn tiền
 
@@ -108,9 +107,8 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 ## 11. Cài đặt xu và voucher
 
 1. **Finance > Loyalty Coins**: hiện **Coins in circulation** và **Balance** cùng **Lifetime** của từng người mua. Chọn **Adjust**, nhập **Coins (+ grant / − clawback)** và **Reason**, rồi chọn **Apply**. Lý do được ghi lại.
-2. Quy tắc tích và dùng xu (xu trên mỗi RM, giá trị quy đổi, mức tối đa mỗi đơn, số ngày hết hạn, thưởng điểm danh và giải quay) không nằm trên màn hình nào. Đội kỹ thuật đặt chúng trong cấu hình ứng dụng.
-<!-- CHECK: Defaults in config/coins.php (1 coin per RM1, 1 coin = 1 sen, max RM50 per order, expires in 180 days, check-in 5 to 30 coins). Env values on live may differ. There is no admin screen for these. -->
+2. Quy tắc tích và dùng xu (xu trên mỗi RM, giá trị quy đổi, mức tối đa mỗi đơn, số ngày hết hạn, thưởng điểm danh và giải quay) không nằm trên màn hình nào. Đội kỹ thuật đặt chúng trong cấu hình ứng dụng. Trên bản live hiện tại: 1 xu cho mỗi RM1 trọn vẹn của đơn đã hoàn tất, 1 xu = giảm 1 sen, tối đa RM50 bằng xu mỗi đơn, xu hết hạn sau 180 ngày, và điểm danh hằng ngày được 5, 5, 10, 10, 15, 15 và 30 xu theo chuỗi 7 ngày.
 3. **Content > Vouchers** (voucher của sàn): chọn **Add voucher**. Nhập **Code** (lưu dạng chữ hoa), **Type** (số tiền, phần trăm, miễn phí vận chuyển), **Maximum discount (RM)**, **Minimum spend (RM)**, **Quota**, **Per-user limit**, **Starts at**, **Ends at** và **Active**. Chọn **Create voucher** hoặc **Save voucher**.
 4. Người mua dùng được một voucher của sàn, một voucher của cửa hàng và một voucher miễn phí vận chuyển cho mỗi đơn. Người bán tự tạo voucher cửa hàng.
-5. Các phần của **System > Settings**, mỗi phần có nút lưu riêng: **General** (**Allow buyers to add to cart and checkout**: tắt để vào chế độ chỉ đăng sản phẩm, và **Display currencies**), **Orders** (**Return window (days)**, **Auto-complete after (days)**, **Unpaid order expiry (minutes)**, **Minimum payout (RM)**), **Cash on delivery** (**COD enabled platform-wide**, **Maximum COD order (RM)**), **Mobile app**, **Moderation**, **Security**, **Tracking** và **iPay88**.
+5. Các phần của **System > Settings**, mỗi phần có nút lưu riêng: **General** (**Allow buyers to add to cart and checkout**: tắt để vào chế độ chỉ đăng sản phẩm, và **Display currencies**), **Orders** (**Return window (days)**, **Auto-complete after (days)**, **Unpaid order expiry (minutes)**, **Minimum payout (RM)**), **Cash on delivery** (**COD enabled platform-wide**, **Maximum COD order (RM)**), **Mobile app**, **Moderation**, **Security**, **Tracking** và **iPay88**. Giá trị trên bản live hiện tại: thời hạn đổi trả 7 ngày, tự hoàn tất sau 7 ngày, đơn chưa thanh toán hết hạn sau 60 phút, người bán phản hồi đổi trả trong 48 giờ, rút tiền tối thiểu RM50, COD bật với mức tối đa RM500.
 6. Phần **Security** có **Cloudflare Turnstile**, **Google sign-in** và quy tắc mật khẩu. Kiểm tra mật khẩu bị lộ vẫn tắt trong lúc trang đang phát triển.

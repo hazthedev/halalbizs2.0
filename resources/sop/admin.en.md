@@ -2,7 +2,7 @@
 
 This guide is for HalalBizs staff who run the marketplace: approving sellers and halal certificates, watching orders, payments, returns and payouts, and managing the storefront. Menu and button names are written in **bold** exactly as the Admin panel shows them. What you can see depends on the permissions on your account.
 
-> Online payment is still in development and runs on a built-in simulator. A real merchant code is needed before real money moves.
+> Today the marketplace is in listing-only mode (**System > Settings > General**, **Allow buyers to add to cart and checkout** is off). Online payment is still in development and runs on a built-in simulator. A real merchant code is needed before real money moves.
 
 ## 1. Sign in
 
@@ -52,7 +52,6 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 3. Set **Halal certificate**: **Inherit from parent**, **Required to list** or **Not required**. Required means a seller cannot list there without an approved certificate covering the product.
 4. The gate starts on 2 December 2026. On live, the required categories are **Food & Snacks**, **Groceries & Pantry**, **Drinks** and **Home & Living > Groceries**. **Cosmetics & Care** and **Pharma & Supplements** are badge only (not required).
 5. Select **Create category** or **Save changes**.
-<!-- CHECK: Gated category list and 2 Dec 2026 date come from decisions HB-GATE-D1/D2 (live .env). Confirm the live admin screen still shows these before publishing. -->
 6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (hide unsuitable reviews), and **Moderation**.
 7. **Moderation**: when **New products need admin approval before going live** is on (System > Settings), new products wait here. Select **Approve**, or **Reject** with a reason (the product returns to drafts and the seller gets the reason), or **Ban** to remove it. You can bulk **Approve selected**, **Reject selected**, **Ban selected**.
 
@@ -75,7 +74,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 5. While payment is in simulator mode, simulated payments show here too.
 6. **Orders > Subscriptions** lists recurring buyers by status.
 7. **System > Settings > iPay88** shows **Simulator active**, **Sandbox configured**, **Live configured** or **Not configured**. Save **Merchant code**, **Merchant key** and **Sandbox mode**, then **Test connection**. **Online payment is hidden from buyers until both credentials are saved.**
-<!-- CHECK: In the current setup the simulator is active (no merchant code). Confirm before telling anyone that real card or FPX payment works. -->
+8. On live today no merchant code or key is saved, so the simulator is active. Do not tell anyone that real card or FPX payment works until both are saved and **Test connection** passes.
 
 ## 8. Returns and refunds
 
@@ -108,9 +107,8 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 ## 11. Coins and vouchers settings
 
 1. **Finance > Loyalty Coins**: shows **Coins in circulation** and each buyer's **Balance** and **Lifetime**. Select **Adjust**, enter **Coins (+ grant / − clawback)** and a **Reason**, then select **Apply**. The reason is recorded.
-2. The earning and spending rules (coins per RM, redemption value, per-order cap, expiry days, daily check-in rewards and the spin prizes) are not on a screen. They are set by the technical team in the app configuration.
-<!-- CHECK: Defaults in config/coins.php (1 coin per RM1, 1 coin = 1 sen, max RM50 per order, expires in 180 days, check-in 5 to 30 coins). Env values on live may differ. There is no admin screen for these. -->
+2. The earning and spending rules (coins per RM, redemption value, per-order cap, expiry days, daily check-in rewards and the spin prizes) are not on a screen. They are set by the technical team in the app configuration. On live today: 1 coin per whole RM1 of a completed order, 1 coin = 1 sen off, at most RM50 of coins per order, coins expire after 180 days, and daily check-in pays 5, 5, 10, 10, 15, 15 and 30 coins over a 7-day streak.
 3. **Content > Vouchers** (platform vouchers): select **Add voucher**. Enter **Code** (stored in uppercase), **Type** (amount, percent, free shipping), **Maximum discount (RM)**, **Minimum spend (RM)**, **Quota**, **Per-user limit**, **Starts at**, **Ends at** and **Active**. Select **Create voucher** or **Save voucher**.
 4. Buyers can use one platform voucher, one shop voucher and one free-shipping voucher per order. Sellers make their own shop vouchers.
-5. **System > Settings** sections, each with its own save button: **General** (**Allow buyers to add to cart and checkout**: turn off for listing-only mode, and **Display currencies**), **Orders** (**Return window (days)**, **Auto-complete after (days)**, **Unpaid order expiry (minutes)**, **Minimum payout (RM)**), **Cash on delivery** (**COD enabled platform-wide**, **Maximum COD order (RM)**), **Mobile app**, **Moderation**, **Security**, **Tracking** and **iPay88**.
+5. **System > Settings** sections, each with its own save button: **General** (**Allow buyers to add to cart and checkout**: turn off for listing-only mode, and **Display currencies**), **Orders** (**Return window (days)**, **Auto-complete after (days)**, **Unpaid order expiry (minutes)**, **Minimum payout (RM)**), **Cash on delivery** (**COD enabled platform-wide**, **Maximum COD order (RM)**), **Mobile app**, **Moderation**, **Security**, **Tracking** and **iPay88**. Live values today: return window 7 days, auto-complete 7 days, unpaid order expiry 60 minutes, seller return response 48 hours, minimum payout RM50, COD on with a RM500 maximum.
 6. The **Security** section holds **Cloudflare Turnstile**, **Google sign-in** and the password rules. The breached-password check stays off while the site is in development.
