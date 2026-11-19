@@ -8,6 +8,8 @@
 
     <x-ui.table.search :placeholder="__('Search buyer by name or email')" />
 
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
         <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
@@ -17,10 +19,10 @@
         <table class="w-full min-w-[640px] text-[13px]">
             <thead class="sticky top-0 z-10 bg-surface">
                 <tr class="border-b border-line text-left text-ink-soft">
-                    <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
-                    <x-ui.table.sortable field="balance" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Balance') }}</x-ui.table.sortable>
-                    <x-ui.table.sortable field="lifetime" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Lifetime') }}</x-ui.table.sortable>
-                    <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                    <th scope="col" class="px-3 py-5 font-medium">{{ __('Buyer') }}</th>
+                    <x-ui.table.sortable field="balance" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Balance') }}</x-ui.table.sortable>
+                    <x-ui.table.sortable field="lifetime" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Lifetime') }}</x-ui.table.sortable>
+                    <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>

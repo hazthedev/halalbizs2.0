@@ -2,20 +2,26 @@
 
     <x-ui.section-heading :title="__('Seller applications')" :subtitle="__('Oldest first — verify the documents, then approve or reject.')" as="h1" />
 
+    <x-ui.table.search :placeholder="__('Search store or owner email')" />
+
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
         @if ($applications->isEmpty())
-            <x-ui.empty-state :title="__('Queue clear')" :message="__('New seller applications appear here the moment they are submitted.')" />
+            <x-ui.empty-state :title="$search !== '' ? __('No applications match') : __('Queue clear')" :message="$search !== '' ? __('Try searching for something else.') : __('New seller applications appear here the moment they are submitted.')" />
         @else
             {{-- Table per design §6 — hairline rows, 13px, sticky header --}}
             <table class="w-full min-w-[760px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Owner email') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('State') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Submitted') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Documents') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <x-ui.table.sortable field="store" :sort="$sort" :direction="$direction">{{ __('Store') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Owner email') }}</th>
+                        <x-ui.table.sortable field="state" :sort="$sort" :direction="$direction">{{ __('State') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="submitted" default="asc" :sort="$sort" :direction="$direction">{{ __('Submitted') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Documents') }}</th>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -132,9 +138,8 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
 
-    @if ($applications->hasPages())
-        <div>{{ $applications->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$applications" />
 </div>

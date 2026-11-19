@@ -116,6 +116,8 @@
             @endif
         </x-ui.card>
 
+        <x-ui.table.per-page />
+
         <x-ui.card class="overflow-x-auto">
             <x-ui.table-skeleton wire:loading wire:target="search, status, body, source, expiring, validFrom, validTo, resetFilters, sortBy, perPage" />
             <div wire:loading.remove wire:target="search, status, body, source, expiring, validFrom, validTo, resetFilters, sortBy, perPage">
@@ -127,11 +129,11 @@
                         <tr class="border-b border-line text-left text-ink-soft">
                             <x-ui.table.sortable field="number" :sort="$sort" :direction="$direction">{{ __('Number') }}</x-ui.table.sortable>
                             <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction">{{ __('Status') }}</x-ui.table.sortable>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Issuing body') }}</th>
+                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Issuing body') }}</th>
                             <x-ui.table.sortable field="valid_to" :sort="$sort" :direction="$direction">{{ __('Valid') }}</x-ui.table.sortable>
-                            <x-ui.table.sortable field="products" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Products') }}</x-ui.table.sortable>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Source') }}</th>
-                            <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                            <x-ui.table.sortable field="products" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Products') }}</x-ui.table.sortable>
+                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Source') }}</th>
+                            <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>

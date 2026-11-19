@@ -5,10 +5,12 @@ namespace App\Livewire\Seller;
 use App\Enums\BoostStatus;
 use App\Exceptions\CheckoutException;
 use App\Livewire\Concerns\CurrentStore;
+use App\Livewire\Concerns\WithTable;
 use App\Models\Product;
 use App\Models\ProductBoost;
 use App\Services\LedgerService;
 use App\Settings\BoostSettings;
+use App\Support\JsonSearch;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -24,7 +26,24 @@ use Livewire\Component;
 #[Layout('layouts.seller')]
 class Boosts extends Component
 {
-    use CurrentStore;
+    use CurrentStore, WithTable;
+
+    public const PER_PAGE = 20;
+
+    protected function tableFilters(): array
+    {
+        return [];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['window' => 'starts_at', 'cost' => 'amount_sen', 'status' => 'status'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['created_at' => 'desc'];
+    }
 
     public const MIN_DAYS = 1;
 
@@ -134,7 +153,9 @@ class Boosts extends Component
         return view('livewire.seller.boosts', [
             'settings' => $settings,
             'products' => Product::query()->live()->where('store_id', $store->id)->orderBy('id')->get(),
-            'boosts' => $store->boosts()->with('product')->latest()->latest('id')->take(50)->get(),
+            'boosts' => $this->sortTable(ProductBoost::query()->where('store_id', $store->id)->with('product')
+                ->when(trim($this->search) !== '', fn ($q) => $q->whereHas('product', fn ($p) => $p->whereRaw(JsonSearch::clause('name'), [JsonSearch::pattern($this->search)]))))
+                ->paginate($this->tablePageSize()),
             'activeCount' => $store->boosts()->active()->count(),
             'costSen' => $days * $settings->price_sen_per_day,
             'availableSen' => app(LedgerService::class)->availableBalanceSen($store),

@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Admin\Finance;
 
+use App\Livewire\Concerns\WithTable;
 use App\Models\ProductBoost;
 use App\Support\DisplayTime;
+use App\Support\JsonSearch;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 /**
  * Boost oversight (Phase-4): every boost across stores plus a revenue
@@ -17,23 +18,46 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Boosts extends Component
 {
-    use WithPagination;
+    use WithTable;
 
     public const PER_PAGE = 20;
+
+    protected function tableFilters(): array
+    {
+        return [];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['window' => 'starts_at', 'fee' => 'amount_sen', 'status' => 'status'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['created_at' => 'desc'];
+    }
 
     public function render()
     {
         return view('livewire.admin.finance.boosts', [
-            'boosts' => ProductBoost::query()
-                ->with(['product', 'store'])
-                ->latest()
-                ->latest('id')
-                ->paginate(self::PER_PAGE),
+            'boosts' => $this->results(),
             'revenue' => $this->revenue(),
         ])->title(__('Boosts'));
     }
 
     /** @return array<string, int> period key → revenue in sen (sum of fees charged in the period) */
+    private function results()
+    {
+        $term = JsonSearch::pattern($this->search);
+
+        return $this->sortTable(ProductBoost::query()
+            ->with(['product', 'store'])
+            ->when(trim($this->search) !== '', fn ($q) => $q->where(fn ($q) => $q
+                ->whereHas('store', fn ($s) => $s->whereRaw(JsonSearch::clause('name'), [$term]))
+                ->orWhereHas('product', fn ($p) => $p->whereRaw(JsonSearch::clause('name'), [$term])))))
+            ->paginate($this->tablePageSize());
+    }
+
     private function revenue(): array
     {
         $sum = fn ($query) => (int) $query->sum('amount_sen');

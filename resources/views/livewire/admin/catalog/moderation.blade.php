@@ -59,6 +59,8 @@
     </x-ui.table.bulk-bar>
 
     {{-- Pending queue --}}
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, store, category, dateFrom, dateTo, resetFilters, sortBy, perPage" />
         <div wire:loading.remove wire:target="search, store, category, dateFrom, dateTo, resetFilters, sortBy, perPage">
@@ -68,17 +70,17 @@
             <table class="w-full min-w-[880px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="w-10 px-3 py-2.5">
+                        <th scope="col" class="w-10 px-3 py-5">
                             <input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}"
                                    class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                         </th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Product') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Category') }}</th>
-                        <x-ui.table.sortable field="price" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Price') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
-                        <x-ui.table.sortable field="submitted" :sort="$sort" :direction="$direction">{{ __('Submitted') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Product') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Store') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Category') }}</th>
+                        <x-ui.table.sortable field="price" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Price') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Status') }}</th>
+                        <x-ui.table.sortable field="submitted" default="asc" :sort="$sort" :direction="$direction">{{ __('Submitted') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -137,12 +139,12 @@
                 <table class="w-full min-w-[720px] text-[13px]">
                     <thead>
                         <tr class="border-b border-line text-left text-ink-soft">
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Product') }}</th>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Category') }}</th>
-                            <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Price') }}</th>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Banned') }}</th>
+                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Product') }}</th>
+                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Store') }}</th>
+                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Category') }}</th>
+                            <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Price') }}</th>
+                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Status') }}</th>
+                            <th scope="col" class="px-3 py-5 font-medium">{{ __('Banned') }}</th>
                         </tr>
                     </thead>
                     <tbody>

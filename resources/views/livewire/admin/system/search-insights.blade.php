@@ -25,9 +25,9 @@
                 <table class="w-full text-[13px]">
                     <thead>
                         <tr class="border-b border-line text-left text-ink-soft">
-                            <th scope="col" class="px-4 py-2.5 font-medium">{{ __('Term') }}</th>
-                            <th scope="col" class="px-4 py-2.5 text-right font-medium">{{ __('Searches') }}</th>
-                            <th scope="col" class="px-4 py-2.5 text-right font-medium">{{ __('Last seen') }}</th>
+                            <th scope="col" class="px-4 py-5 font-medium">{{ __('Term') }}</th>
+                            <th scope="col" class="px-4 py-5 text-right font-medium">{{ __('Searches') }}</th>
+                            <th scope="col" class="px-4 py-5 text-right font-medium">{{ __('Last seen') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,9 +56,9 @@
                 <table class="w-full text-[13px]">
                     <thead>
                         <tr class="border-b border-line text-left text-ink-soft">
-                            <th scope="col" class="px-4 py-2.5 font-medium">{{ __('Term') }}</th>
-                            <th scope="col" class="px-4 py-2.5 text-right font-medium">{{ __('Searches') }}</th>
-                            <th scope="col" class="px-4 py-2.5 text-right font-medium">{{ __('Last seen') }}</th>
+                            <th scope="col" class="px-4 py-5 font-medium">{{ __('Term') }}</th>
+                            <th scope="col" class="px-4 py-5 text-right font-medium">{{ __('Searches') }}</th>
+                            <th scope="col" class="px-4 py-5 text-right font-medium">{{ __('Last seen') }}</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -72,6 +72,10 @@
     --color-danger: #BE123C;
     --color-warn-tint: #FBF3E8;
     --color-danger-tint: #FBEDF0;
+    /* in-progress status (confirmed / shipped / accepted …): one tinted badge shape for
+       every status, only the colour changes (HB-G165). #2B4C6F on its tint = 7.9:1. */
+    --color-info: #2B4C6F;
+    --color-info-tint: #EDF2F7;
 
     /* ── Elevation: depth is PRINT, not UI ──
        The reference renders exactly ONE shadow on its whole home screen — on
@@ -543,4 +547,18 @@
    rendered for a frame before Alpine booted and then vanished. */
 [x-cloak] {
     display: none !important;
+}
+
+/* One select chevron in the admin and seller consoles (HB-G165, Haze 2026-11-19: "the chevron,
+   give it a little space at its right"). The native arrow sat flush against the right edge and
+   differs per browser; this draws one 16px chevron 14px in from the edge. Unlayered on purpose:
+   it must beat each view's px-3 utility. Only image/position/size are set, never the
+   `background` shorthand, so the views' bg-surface colour survives. */
+[data-shell='console'] select:not([multiple]):not([size]) {
+    appearance: none;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233D4A3C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    background-size: 1rem;
 }

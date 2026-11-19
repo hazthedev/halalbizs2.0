@@ -45,6 +45,8 @@
     {{-- Roster --}}
     <x-ui.table.search :placeholder="__('Search creator or code')" />
 
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
         <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
@@ -54,11 +56,11 @@
             <table class="w-full min-w-[640px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Creator') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Creator') }}</th>
                         <x-ui.table.sortable field="code" :sort="$sort" :direction="$direction">{{ __('Code') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="clicks" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Clicks') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="referrals" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Referrals') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="commission" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Commission') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="clicks" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Clicks') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="referrals" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Referrals') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="commission" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Commission') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
                 <tbody>

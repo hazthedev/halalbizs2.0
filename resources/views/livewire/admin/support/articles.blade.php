@@ -23,6 +23,8 @@
         </select>
     </x-ui.table.search>
 
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, category, sortBy, perPage, gotoPage, nextPage, previousPage" />
         <div wire:loading.remove wire:target="search, category, sortBy, perPage, gotoPage, nextPage, previousPage">
@@ -34,12 +36,12 @@
             <table class="w-full min-w-[720px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <x-ui.table.sortable field="category" :sort="$sort" :direction="$direction">{{ __('Category') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="category" default="asc" :sort="$sort" :direction="$direction">{{ __('Category') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="title" :sort="$sort" :direction="$direction">{{ __('Title') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="position" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Position') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="views" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Views') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="position" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Position') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="views" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Views') }}</x-ui.table.sortable>
                         <x-ui.table.sortable field="published" :sort="$sort" :direction="$direction">{{ __('Published') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

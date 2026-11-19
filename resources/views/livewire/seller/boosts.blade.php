@@ -78,18 +78,24 @@
     </x-ui.card>
 
     {{-- Active & past boosts --}}
+    <x-ui.table.search :placeholder="__('Search product')" />
+
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
         @if ($boosts->isEmpty())
-            <x-ui.empty-state :title="__('No boosts yet')" :message="__('Boost a live product and it jumps to the top of category and search results.')" />
+            <x-ui.empty-state :title="$search !== '' ? __('No boosts match') : __('No boosts yet')" :message="$search !== '' ? __('Try searching for something else.') : __('Boost a live product and it jumps to the top of category and search results.')" />
         @else
             <table class="w-full min-w-[720px] text-[13px]">
-                <thead>
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Product') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Window') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Cost') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Product') }}</th>
+                        <x-ui.table.sortable field="window" :sort="$sort" :direction="$direction">{{ __('Window') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="cost" :sort="$sort" :direction="$direction" class="text-right">{{ __('Cost') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction">{{ __('Status') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,5 +135,8 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
+
+    <x-ui.table.footer :rows="$boosts" />
 </div>

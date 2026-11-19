@@ -1,7 +1,7 @@
 @props(['status'])
 
 @php
-// Status colors per docs/03 §6: pending → warn · shipped/processing → ink ·
+// Status colors per docs/03 §6: pending → warn · shipped/processing → info ·
 // completed → emerald · cancelled/refund → danger.
 $variant = match ($status) {
     \App\Enums\SubOrderStatus::PendingPayment => 'warn',
@@ -10,7 +10,7 @@ $variant = match ($status) {
     \App\Enums\SubOrderStatus::ReturnRequested,
     \App\Enums\SubOrderStatus::Returned,
     \App\Enums\SubOrderStatus::Refunded => 'danger',
-    default => 'cod', // ink outline — confirmed / processing / shipped / delivered
+    default => 'info', // in progress — confirmed / processing / shipped / delivered
 };
 @endphp
 

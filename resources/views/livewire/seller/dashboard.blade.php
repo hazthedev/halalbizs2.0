@@ -214,20 +214,9 @@
                         </thead>
                         <tbody>
                             @foreach ($recentOrders as $subOrder)
-                                @php
-                                    $badgeVariant = match ($subOrder->status) {
-                                        \App\Enums\SubOrderStatus::PendingPayment => 'warn',
-                                        \App\Enums\SubOrderStatus::Completed => 'sale',
-                                        \App\Enums\SubOrderStatus::Cancelled,
-                                        \App\Enums\SubOrderStatus::ReturnRequested,
-                                        \App\Enums\SubOrderStatus::Returned,
-                                        \App\Enums\SubOrderStatus::Refunded => 'danger',
-                                        default => 'neutral',
-                                    };
-                                @endphp
                                 <tr class="border-b border-line last:border-0 hover:bg-paper">
                                     <td class="px-4 py-2.5 font-mono font-medium">{{ $subOrder->sub_order_no }}</td>
-                                    <td class="px-4 py-2.5"><x-ui.badge :variant="$badgeVariant">{{ $subOrder->status->label() }}</x-ui.badge></td>
+                                    <td class="px-4 py-2.5"><x-order-status-pill :status="$subOrder->status" /></td>
                                     <td class="px-4 py-2.5 text-right font-mono tabular-nums">@money($subOrder->total_sen)</td>
                                     <td class="px-4 py-2.5 text-right text-ink-soft">{{ $subOrder->created_at->diffForHumans() }}</td>
                                 </tr>

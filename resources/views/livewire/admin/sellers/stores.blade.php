@@ -29,6 +29,8 @@
         @endif
     </x-ui.card>
 
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, status, resetFilters, sortBy, perPage" />
         <div wire:loading.remove wire:target="search, status, resetFilters, sortBy, perPage">
@@ -38,13 +40,13 @@
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <x-ui.table.sortable field="store" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Store') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Owner') }}</th>
-                        <x-ui.table.sortable field="state" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('State') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="rating" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Rating') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="products" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Live products') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="commission" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Commission override') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="store" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Store') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Owner') }}</th>
+                        <x-ui.table.sortable field="state" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('State') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="rating" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Rating') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="products" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Live products') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="commission" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Commission override') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
                 <tbody>

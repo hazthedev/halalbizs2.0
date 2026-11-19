@@ -10,6 +10,8 @@
         @endforeach
     </nav>
 
+    <x-ui.table.search :placeholder="__('Search order no., sub-order no. or store')" />
+
     {{-- Resolution panel (docs/09 §D): refund buyer or side with the seller --}}
     @if ($resolving)
         @php($resolvingOnline = $resolving->subOrder->order->payment_method === \App\Enums\PaymentMethod::Ipay88)
@@ -95,24 +97,28 @@
     @endif
 
     {{-- Table per design §6 — hairline rows, 13px, mono ids --}}
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, tab, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, tab, sortBy, perPage, gotoPage, nextPage, previousPage">
         @if ($requests->isEmpty())
             <x-ui.empty-state
-                :title="$tab === 'queue' ? __('Nothing needs a decision') : __('No return requests here')"
-                :message="$tab === 'queue'
+                :title="$search !== '' ? __('No return requests match') : ($tab === 'queue' ? __('Nothing needs a decision') : __('No return requests here'))"
+                :message="$search !== '' ? __('Try searching for something else.') : ($tab === 'queue'
                     ? __('Disputed and auto-escalated returns land here for a refund-or-reject call.')
-                    : __('Switch tabs to see the rest of the returns lifecycle.')" />
+                    : __('Switch tabs to see the rest of the returns lifecycle.'))" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Sub-order') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Reason') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Escalated') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Sub-order') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Store') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Buyer') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Reason') }}</th>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction">{{ __('Status') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="escalated" :sort="$sort" :direction="$direction">{{ __('Escalated') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -148,9 +154,8 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
 
-    @if ($requests->hasPages())
-        <div>{{ $requests->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$requests" />
 </div>

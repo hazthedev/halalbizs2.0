@@ -2936,5 +2936,15 @@
     "Search payments": "Cari pembayaran",
     "Search who, event or description": "Cari pelaku, acara atau keterangan",
     "No banned products": "Tiada produk dilarang",
-    "Products you ban from the queue above are listed here for reference.": "Produk yang anda larang daripada barisan di atas disenaraikan di sini untuk rujukan."
+    "Products you ban from the queue above are listed here for reference.": "Produk yang anda larang daripada barisan di atas disenaraikan di sini untuk rujukan.",
+    "Search store or product": "Cari kedai atau produk",
+    "No boosts match": "Tiada boost yang sepadan",
+    "Search payout no. or store": "Cari no. pengeluaran atau kedai",
+    "No payouts match": "Tiada pengeluaran yang sepadan",
+    "No return requests match": "Tiada permintaan pemulangan yang sepadan",
+    "Search order no., sub-order no. or store": "Cari no. pesanan, no. sub-pesanan atau kedai",
+    "Search store or owner email": "Cari kedai atau e-mel pemilik",
+    "No applications match": "Tiada permohonan yang sepadan",
+    "Search flash sale title": "Cari tajuk jualan kilat",
+    "No flash sales match": "Tiada jualan kilat yang sepadan"
 }

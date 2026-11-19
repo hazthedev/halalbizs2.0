@@ -63,6 +63,8 @@
     <p class="text-[13px] text-ink-soft lg:hidden">{{ __('Scroll sideways to see prices, status and actions.') }}</p>
 
     {{-- Datagrid --}}
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         {{-- Row skeletons while search/filters refresh the grid (design §6) --}}
         <x-ui.table-skeleton wire:loading wire:target="search, status, category, lowStock" />
@@ -79,18 +81,18 @@
             <table class="w-full min-w-[820px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="w-10 px-3 py-2.5">
+                        <th scope="col" class="w-10 px-3 py-5">
                             <input type="checkbox" wire:model.live="selectPage" aria-label="{{ __('Select all on this page') }}"
                                    class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                         </th>
-                        <x-ui.table.sortable field="product" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Product') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="variants" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Variants') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Price') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Stock') }}</th>
-                        <x-ui.table.sortable field="sold" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Sold') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="updated" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Updated') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <x-ui.table.sortable field="product" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Product') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="variants" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Variants') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Price') }}</th>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Stock') }}</th>
+                        <x-ui.table.sortable field="sold" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Sold') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="updated" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Updated') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

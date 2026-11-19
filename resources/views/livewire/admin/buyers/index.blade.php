@@ -28,6 +28,8 @@
         @endif
     </x-ui.card>
 
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, status, resetFilters, sortBy, perPage" />
         <div wire:loading.remove wire:target="search, status, resetFilters, sortBy, perPage">
@@ -37,12 +39,12 @@
             <table class="w-full min-w-[760px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <x-ui.table.sortable field="name" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Name') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="email" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Email') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Verified') }}</th>
-                        <x-ui.table.sortable field="orders" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Orders') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="joined" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Joined') }}</x-ui.table.sortable>
-                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="name" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Name') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="email" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Email') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Verified') }}</th>
+                        <x-ui.table.sortable field="orders" :sort="$sort" :direction="$direction" class="px-3 py-5 text-right font-medium">{{ __('Orders') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="joined" default="desc" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Joined') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
                 <tbody>

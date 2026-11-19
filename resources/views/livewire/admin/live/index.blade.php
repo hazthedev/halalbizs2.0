@@ -27,6 +27,8 @@
     {{-- Scheduled + ended --}}
     <x-ui.table.search :placeholder="__('Search session or store')" />
 
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
         <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
@@ -37,7 +39,7 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <x-ui.table.sortable field="session" :sort="$sort" :direction="$direction">{{ __('Session') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Store') }}</th>
                         <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction">{{ __('Status') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
@@ -46,7 +48,7 @@
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="sess-{{ $session->id }}">
                             <td class="px-3 py-2 font-medium text-ink">{{ $session->title }}</td>
                             <td class="px-3 py-2 text-ink-soft">{{ $session->store?->name }}</td>
-                            <td class="px-3 py-2"><x-ui.badge variant="neutral">{{ $session->status->label() }}</x-ui.badge></td>
+                            <td class="px-3 py-2"><x-ui.badge :variant="$session->status === \App\Enums\LiveSessionStatus::Scheduled ? 'info' : 'neutral'">{{ $session->status->label() }}</x-ui.badge></td>
                         </tr>
                     @endforeach
                 </tbody>

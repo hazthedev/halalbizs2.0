@@ -7,6 +7,7 @@ use App\Models\FlashSale;
 use App\Models\FlashSaleItem;
 use App\Models\ProductVariant;
 use App\Support\DisplayTime;
+use App\Support\JsonSearch;
 use App\Support\RinggitInput;
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -134,7 +135,9 @@ class FlashSales extends Component
 
     protected function results()
     {
-        return $this->sortTable(FlashSale::query()->with(['items.variant.product']))->paginate($this->tablePageSize());
+        return $this->sortTable(FlashSale::query()->with(['items.variant.product'])
+            ->when(trim($this->search) !== '', fn ($q) => $q->whereRaw(JsonSearch::clause('title'), [JsonSearch::pattern($this->search)])))
+            ->paginate($this->tablePageSize());
     }
 
     public function render(): View

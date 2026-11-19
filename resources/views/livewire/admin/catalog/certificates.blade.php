@@ -56,6 +56,8 @@
         @endif
     </x-ui.card>
 
+    <x-ui.table.per-page />
+
     <x-ui.card class="overflow-x-auto">
         <x-ui.table-skeleton wire:loading wire:target="search, filter, body, store, expiring, dateFrom, dateTo, resetFilters, sortBy, perPage" />
         <div wire:loading.remove wire:target="search, filter, body, store, expiring, dateFrom, dateTo, resetFilters, sortBy, perPage">
@@ -69,13 +71,13 @@
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
                         <x-ui.table.sortable field="number" :sort="$sort" :direction="$direction">{{ __('Number') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Status') }}</th>
                         <x-ui.table.sortable field="store" :sort="$sort" :direction="$direction">{{ __('Store') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Issuing body') }}</th>
+                        <th scope="col" class="px-3 py-5 font-medium">{{ __('Issuing body') }}</th>
                         <x-ui.table.sortable field="valid_to" :sort="$sort" :direction="$direction">{{ __('Valid') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Products') }}</th>
-                        <x-ui.table.sortable field="submitted" :sort="$sort" :direction="$direction">{{ __('Submitted') }}</x-ui.table.sortable>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Products') }}</th>
+                        <x-ui.table.sortable field="submitted" default="asc" :sort="$sort" :direction="$direction">{{ __('Submitted') }}</x-ui.table.sortable>
+                        <th scope="col" class="px-3 py-5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 @foreach ($certificates as $certificate)
