@@ -544,3 +544,19 @@
 [x-cloak] {
     display: none !important;
 }
+
+/* HB-G153: wire:loading elements must be hidden by OUR stylesheet, not only by
+   the <style> Livewire injects into the response head: when that block is not
+   applied, every spinner rendered at rest (admin period switch). Livewire's JS
+   sets an inline display while a request runs, which beats this rule. */
+[wire\:loading],
+[wire\:loading\.inline-flex],
+[wire\:loading\.inline-block],
+[wire\:loading\.inline],
+[wire\:loading\.block],
+[wire\:loading\.flex],
+[wire\:loading\.grid],
+[wire\:loading\.table],
+[wire\:loading\.list-item] {
+    display: none;
+}
