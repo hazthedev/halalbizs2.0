@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Store;
+use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
 test('login header offers only Create account, no Start Selling', function () {
@@ -31,3 +34,48 @@ test('reset password submit button holds exactly one spinner', function () {
     $html = Livewire::test(\App\Livewire\Storefront\Auth\ResetPassword::class, ['token' => 'x'])->html();
     expect(substr_count($html, 'animate-spin'))->toBe(1);
 });
+
+test('storefront top bar no longer shows Sell on HalalBizs', function () {
+    $html = test()->get(route('home'))->assertOk()->getContent();
+    $bar = substr($html, 0, strpos($html, '<header'));
+    expect($bar)->not->toContain('Sell on HalalBizs');
+});
+
+test('footer Sell on HalalBizs leads each visitor somewhere that works', function () {
+    test()->seed(RoleSeeder::class);
+
+    // guest
+    test()->get(route('home'))->assertSee('href="'.route('seller.login').'"', false);
+    test()->get(route('seller.login'))->assertOk();
+
+    // signed-in buyer: the old seller.login link bounced to /
+    $buyer = User::factory()->create();
+    test()->actingAs($buyer)->get(route('seller.login'))->assertRedirect('/');
+    $html = test()->actingAs($buyer)->get(route('home'))->getContent();
+    expect($html)->toContain('href="'.route('seller.apply').'"')->not->toContain('href="'.route('seller.login').'"');
+    test()->actingAs($buyer)->get(route('seller.apply'))->assertOk();
+
+    // approved seller
+    $seller = User::factory()->create();
+    $seller->assignRole('seller');
+    Store::factory()->approved()->create(['user_id' => $seller->id]);
+    $html = test()->actingAs($seller)->get(route('home'))->getContent();
+    expect($html)->toContain('href="'.route('seller.dashboard').'"');
+    test()->actingAs($seller)->get(route('seller.dashboard'))->assertOk();
+});
+
+test('footer Sell link for a seller-role user without an approved store lands on a working page', function (string $state) {
+    test()->seed(RoleSeeder::class);
+    $user = User::factory()->create();
+    $user->assignRole('seller');
+    if ($state !== 'none') {
+        Store::factory()->create(['user_id' => $user->id, 'status' => \App\Enums\StoreStatus::from($state)]);
+    }
+
+    $html = test()->actingAs($user)->get(route('home'))->getContent();
+    expect($html)->toContain('href="'.route('seller.dashboard').'"');
+
+    $landing = $state === 'none' ? 'seller.apply' : 'seller.status';
+    test()->actingAs($user)->get(route('seller.dashboard'))->assertRedirect(route($landing));
+    test()->actingAs($user)->get(route($landing))->assertOk();
+})->with(['none', 'pending', 'rejected', 'suspended']);

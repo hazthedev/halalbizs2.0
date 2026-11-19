@@ -2837,5 +2837,6 @@
     "Portal reference (optional)": "Portal reference (optional)",
     "Confirm settled": "Confirm settled",
     "The portal reference is too long (100 characters max).": "The portal reference is too long (100 characters max).",
-    "Refund for :ref marked settled in the iPay88 portal.": "Refund for :ref marked settled in the iPay88 portal."
+    "Refund for :ref marked settled in the iPay88 portal.": "Refund for :ref marked settled in the iPay88 portal.",
+    "The group-buy price covers :max unit per member. Change :item to :max in your cart to check out.": "Giá mua theo nhóm áp dụng cho :max sản phẩm mỗi thành viên. Hãy đổi :item thành :max trong giỏ hàng để thanh toán."
 }

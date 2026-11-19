@@ -80,7 +80,9 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 2. After starting, copy the team link with **Copy** and share it. The page shows how many have joined (for example "2 of 3 joined") and when the group **expires**.
 3. When the group is full the page says **Unlocked!** Select **Shop now at the group price**, add the item to your cart and check out.
 4. If the group does not fill in time, start a fresh one from the product page.
-5. Group buys are blocked while the marketplace is in listing-only mode.
+5. The group price covers **1 unit per member**. If your cart line has more, checkout stops and asks you to change it to 1. To buy more, place a separate order at the normal price after your group order.
+6. If your group-buy order is cancelled, or fully refunded before it is completed, your place at the group price comes back. You can buy 1 unit at the group price again while the deal is still running. The group itself stays unlocked; once the deal has ended the group price no longer applies.
+7. Group buys are blocked while the marketplace is in listing-only mode.
 
 ## 9. Coins
 
@@ -137,4 +139,4 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 1. Open **Help centre** from the footer to read articles. The footer also has **FAQ**, **Refund policy**, **Terms & conditions** and **Privacy policy**.
 2. For a problem, sign in, open **Support**, select **New ticket**, write a **Subject** and **Message** (at least 20 characters, include the order number), and select **Create ticket**.
 3. Reply in the ticket with **Send reply**. Select **Close ticket** when solved.
-4. To sell on HalalBizs, see the Seller Guide. Start with **Sell on HalalBizs**.
+4. To sell on HalalBizs, see the Seller Guide. Start with **Sell on HalalBizs** in the footer.

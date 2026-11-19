@@ -32,6 +32,7 @@ class RefundService
         private CoinService $coins,
         private VoucherService $vouchers,
         private AffiliateService $affiliates,
+        private GroupBuyService $groupBuy,
     ) {}
 
     public function refund(
@@ -65,6 +66,16 @@ class RefundService
 
             if ($amountSen <= 0) {
                 return;
+            }
+
+            $fullyRefunded = ($alreadyRefunded + $amountSen) >= $total;
+
+            // HB-G003: a full refund before completion gives the group-buy seat
+            // back. Taken here, after the order and sub-order locks and before
+            // the wallet and ledger, the same order as checkout. Idempotent: a
+            // cancel already released it.
+            if ($fullyRefunded && $subOrder->completed_at === null) {
+                $this->groupBuy->releaseSeat($subOrder);
             }
 
             $online = $subOrder->order->payment_method === PaymentMethod::Ipay88;
@@ -173,8 +184,6 @@ class RefundService
             // 3. Only a genuinely FULL refund moves the sub-order to the terminal
             //    Refunded state — a partial must not mislabel a half-refunded order
             //    as fully refunded (and trap it in a terminal status).
-            $fullyRefunded = ($alreadyRefunded + $amountSen) >= $total;
-
             if ($markRefunded && $fullyRefunded && $this->status->canTransition($subOrder, SubOrderStatus::Refunded)) {
                 $this->status->transition(
                     $subOrder,

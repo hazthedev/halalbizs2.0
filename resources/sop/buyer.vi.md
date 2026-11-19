@@ -80,7 +80,9 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 2. Sau khi tạo, chọn **Sao chép** để chép liên kết nhóm và chia sẻ. Trang cho biết đã có bao nhiêu người tham gia (ví dụ "2 of 3 joined") và khi nào nhóm hết hạn.
 3. Khi nhóm đủ người, trang báo **Unlocked!** Chọn **Mua ngay với giá nhóm**, thêm sản phẩm vào giỏ và thanh toán.
 4. Nếu nhóm không đủ người đúng hạn, hãy tạo nhóm mới từ trang sản phẩm.
-5. Mua theo nhóm bị chặn khi sàn đang ở chế độ chỉ đăng sản phẩm (listing-only).
+5. Giá nhóm áp dụng cho **1 sản phẩm mỗi thành viên**. Nếu dòng trong giỏ có nhiều hơn, bước thanh toán sẽ dừng và yêu cầu bạn đổi số lượng thành 1. Muốn mua thêm, hãy đặt một đơn riêng với giá thường sau đơn mua theo nhóm.
+6. Nếu đơn mua theo nhóm của bạn bị huỷ, hoặc được hoàn tiền toàn bộ trước khi đơn hoàn tất, bạn được trả lại suất mua giá nhóm. Bạn có thể mua lại 1 sản phẩm với giá nhóm khi ưu đãi vẫn đang diễn ra. Nhóm vẫn giữ trạng thái đã mở khoá; khi ưu đãi đã kết thúc thì giá nhóm không còn áp dụng.
+7. Mua theo nhóm bị chặn khi sàn đang ở chế độ chỉ đăng sản phẩm (listing-only).
 
 ## 9. Xu
 
@@ -137,4 +139,4 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 1. Mở **Trung tâm trợ giúp** ở chân trang để đọc bài viết. Chân trang cũng có **Câu hỏi thường gặp**, **Chính sách hoàn tiền**, **Điều khoản & điều kiện** và **Chính sách bảo mật**.
 2. Khi gặp vấn đề, hãy đăng nhập, mở **Hỗ trợ**, chọn **Phiếu mới**, viết **Chủ đề** và **Tin nhắn** (ít nhất 20 ký tự, kèm mã đơn hàng), rồi chọn **Tạo phiếu hỗ trợ**.
 3. Trả lời trong phiếu bằng **Gửi trả lời**. Chọn **Đóng phiếu hỗ trợ** khi đã xong.
-4. Muốn bán hàng trên HalalBizs, xem Hướng dẫn dành cho người bán. Bắt đầu từ **Bán hàng trên HalalBizs**.
+4. Muốn bán hàng trên HalalBizs, xem Hướng dẫn dành cho người bán. Bắt đầu từ **Bán hàng trên HalalBizs** ở chân trang.
