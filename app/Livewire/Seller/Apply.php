@@ -11,6 +11,7 @@ use App\Services\Turnstile;
 use App\Support\MalaysianBanks;
 use App\Support\MalaysianStates;
 use App\Support\ReservedSubdomains;
+use App\Support\UploadName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -144,7 +145,7 @@ class Apply extends Component
                 ]);
 
                 $document->addMedia($file->getRealPath())
-                    ->usingFileName($type.'-'.$file->getClientOriginalName())
+                    ->usingFileName(UploadName::unguessable($file, $type.'-'))
                     ->toMediaCollection('file');
             }
 
