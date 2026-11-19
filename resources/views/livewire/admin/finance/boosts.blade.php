@@ -10,10 +10,7 @@
             'month' => __('Last 30 days'),
             'all' => __('All time'),
         ] as $key => $label)
-            <x-ui.card class="p-4" wire:key="revenue-{{ $key }}">
-                <p class="text-[13px] text-ink-soft">{{ $label }}</p>
-                <p class="mt-1 font-display text-xl font-medium tabular-nums">@money($revenue[$key])</p>
-            </x-ui.card>
+            <x-ui.stat :label="$label" :value="\App\Support\Money::format($revenue[$key])" wire:key="revenue-{{ $key }}" />
         @endforeach
     </div>
 

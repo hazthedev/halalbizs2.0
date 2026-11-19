@@ -17,18 +17,24 @@
         </form>
     </x-ui.card>
 
+    <x-ui.table.search :placeholder="__('Search attribute name')" />
+
     {{-- List --}}
     <x-ui.card class="overflow-x-auto">
-        @if ($attributeList->isEmpty())
+        <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
+        @if ($attributeList->isEmpty() && $search !== '')
+            <x-ui.empty-state :title="__('No attributes match')" :message="__('Try searching for something else.')" />
+        @elseif ($attributeList->isEmpty())
             <x-ui.empty-state :title="__('No attributes yet')" :message="__('Attributes power the storefront filters — Material, Colour, Size.')" />
         @else
             <table class="w-full min-w-[640px] text-[13px]">
-                <thead>
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Name') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Slug') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Filterable') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Values') }}</th>
+                        <x-ui.table.sortable field="name" :sort="$sort" :direction="$direction">{{ __('Name') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="slug" :sort="$sort" :direction="$direction">{{ __('Slug') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="filterable" :sort="$sort" :direction="$direction">{{ __('Filterable') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="values" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Values') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -124,5 +130,8 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
+
+    <x-ui.table.footer :rows="$attributeList" />
 </div>

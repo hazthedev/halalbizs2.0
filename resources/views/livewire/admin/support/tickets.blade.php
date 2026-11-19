@@ -13,7 +13,7 @@
 
     <x-ui.section-heading :title="__('Support tickets')" as="h1" />
 
-    @if ($selected)
+    @if ($thread)
         {{-- ===== Thread view ===== --}}
         <x-ui.button variant="plain" type="button" wire:click="backToList"
                 class="inline-flex min-h-11 items-center gap-1.5 text-[13px] font-medium text-ink-soft transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
@@ -24,23 +24,23 @@
         <x-ui.card class="p-4">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <h2 class="font-display text-lg font-medium">{{ $selected->subject }}</h2>
+                    <h2 class="font-display text-lg font-medium">{{ $thread->subject }}</h2>
                     <p class="mt-1 text-[13px] text-ink-soft">
-                        <span class="font-mono">#{{ $selected->id }}</span>
-                        · {{ $selected->user->name }} ({{ $selected->user->email }})
-                        · {{ __('updated :time', ['time' => $selected->updated_at->diffForHumans()]) }}
+                        <span class="font-mono">#{{ $thread->id }}</span>
+                        · {{ $thread->user->name }} ({{ $thread->user->email }})
+                        · {{ __('updated :time', ['time' => $thread->updated_at->diffForHumans()]) }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
-                    @if ($selected->priority === TicketPriority::Urgent)
+                    @if ($thread->priority === TicketPriority::Urgent)
                         <x-ui.badge variant="danger">{{ __('Urgent') }}</x-ui.badge>
                     @endif
-                    <x-ui.badge :variant="$statusVariant($selected->status)">{{ $selected->status->label() }}</x-ui.badge>
+                    <x-ui.badge :variant="$statusVariant($thread->status)">{{ $thread->status->label() }}</x-ui.badge>
                 </div>
             </div>
 
             <div class="mt-4 space-y-3">
-                @foreach ($selected->replies as $ticketReply)
+                @foreach ($thread->replies as $ticketReply)
                     <div wire:key="reply-{{ $ticketReply->id }}"
                          class="rounded-[var(--radius-card)] border border-line p-3 {{ $ticketReply->isFromSupport() ? 'bg-surface' : 'bg-paper' }}">
                         <div class="flex items-baseline justify-between gap-3">
@@ -55,7 +55,7 @@
             </div>
 
             <div class="mt-4 border-t border-line pt-4">
-                @unless ($selected->isClosed())
+                @unless ($thread->isClosed())
                     <form wire:submit="reply" class="space-y-3">
                         <div>
                             <label for="admin-reply" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Reply') }}</label>
@@ -66,10 +66,10 @@
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
                             <x-ui.button type="submit" wire:loading.attr="disabled" target="reply">{{ __('Send reply') }}</x-ui.button>
-                            <x-ui.button variant="ghost" wire:click="togglePriority({{ $selected->id }})">
-                                {{ $selected->priority === TicketPriority::Urgent ? __('Mark normal') : __('Mark urgent') }}
+                            <x-ui.button variant="ghost" wire:click="togglePriority({{ $thread->id }})">
+                                {{ $thread->priority === TicketPriority::Urgent ? __('Mark normal') : __('Mark urgent') }}
                             </x-ui.button>
-                            <x-ui.button variant="danger" wire:click="close({{ $selected->id }})"
+                            <x-ui.button variant="danger" wire:click="close({{ $thread->id }})"
                                          wire:confirm="{{ __('Close this ticket? The buyer can no longer reply.') }}">
                                 {{ __('Close ticket') }}
                             </x-ui.button>
@@ -78,7 +78,7 @@
                 @else
                     <div class="flex items-center justify-between gap-3">
                         <p class="text-sm text-ink-soft">{{ __('This ticket is closed.') }}</p>
-                        <x-ui.button variant="secondary" wire:click="reopen({{ $selected->id }})">{{ __('Reopen ticket') }}</x-ui.button>
+                        <x-ui.button variant="secondary" wire:click="reopen({{ $thread->id }})">{{ __('Reopen ticket') }}</x-ui.button>
                     </div>
                 @endunless
             </div>
@@ -86,30 +86,31 @@
 
     @else
         {{-- ===== Queue tabs ===== --}}
-        <div class="flex gap-1 overflow-x-auto border-b border-line" role="tablist">
+        <nav class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Ticket status') }}">
             @foreach (TicketStatus::cases() as $status)
-                <x-ui.button variant="plain" type="button" role="tab" wire:click="setTab('{{ $status->value }}')" wire:target="setTab('{{ $status->value }}')"
-                        aria-selected="{{ $tab === $status->value ? 'true' : 'false' }}"
-                        class="flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-[13px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $status->value ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink' }}">
-                    {{ $status->label() }}
-                    <span class="rounded-full bg-emerald-tint px-2 py-0.5 text-[11px] font-medium text-emerald">{{ $counts[$status->value] }}</span>
-                </x-ui.button>
+                <x-ui.tab wire:click="setTab('{{ $status->value }}')" wire:target="setTab('{{ $status->value }}')" wire:key="tab-{{ $status->value }}" :active="$tab === $status->value" :count="$counts[$status->value]">{{ $status->label() }}</x-ui.tab>
             @endforeach
-        </div>
+        </nav>
+
+        <x-ui.table.search :placeholder="__('Search subject or buyer')" />
 
         <x-ui.card class="overflow-x-auto">
-            @if ($tickets->isEmpty())
+            <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
+            <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
+            @if ($tickets->isEmpty() && $search !== '')
+                <x-ui.empty-state :title="__('No tickets match')" :message="__('Try searching for something else.')" />
+            @elseif ($tickets->isEmpty())
                 <x-ui.empty-state :title="__('Queue clear')" :message="__('No :status tickets right now.', ['status' => (TicketStatus::tryFrom($tab) ?? TicketStatus::Open)->label()])" />
             @else
                 <table class="w-full min-w-[720px] text-[13px]">
-                    <thead>
+                    <thead class="sticky top-0 z-10 bg-surface">
                         <tr class="border-b border-line text-left text-ink-soft">
-                            <th scope="col" class="px-3 py-2.5 font-medium">#</th>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Subject') }}</th>
+                            <x-ui.table.sortable field="id" :sort="$sort" :direction="$direction">#</x-ui.table.sortable>
+                            <x-ui.table.sortable field="subject" :sort="$sort" :direction="$direction">{{ __('Subject') }}</x-ui.table.sortable>
                             <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Priority') }}</th>
-                            <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Messages') }}</th>
-                            <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Updated') }}</th>
+                            <x-ui.table.sortable field="priority" :sort="$sort" :direction="$direction">{{ __('Priority') }}</x-ui.table.sortable>
+                            <x-ui.table.sortable field="messages" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Messages') }}</x-ui.table.sortable>
+                            <x-ui.table.sortable field="updated" :sort="$sort" :direction="$direction">{{ __('Updated') }}</x-ui.table.sortable>
                             <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
@@ -134,18 +135,18 @@
                                 <td class="px-3 py-2 text-right font-mono tabular-nums">{{ $ticket->replies_count }}</td>
                                 <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">{{ $ticket->updated_at->diffForHumans() }}</td>
                                 <td class="px-3 py-2">
-                                    <div class="flex items-center justify-end gap-1">
+                                    <div class="flex items-center justify-end gap-2">
                                         <x-ui.button variant="plain" type="button" wire:click="togglePriority({{ $ticket->id }})"
-                                                class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-                                            {{ $ticket->priority === TicketPriority::Urgent ? __('Normal') : __('Urgent') }}
+                                                class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-line-strong px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">
+                                            {{ $ticket->priority === TicketPriority::Urgent ? __('Mark normal') : __('Mark urgent') }}
                                         </x-ui.button>
                                         @if ($ticket->isClosed())
                                             <x-ui.button variant="plain" type="button" wire:click="reopen({{ $ticket->id }})"
-                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-ink-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Reopen') }}</x-ui.button>
+                                                    class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-ink px-3 text-[13px] font-medium text-ink hover:bg-paper focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Reopen') }}</x-ui.button>
                                         @else
                                             <x-ui.button variant="plain" type="button" wire:click="close({{ $ticket->id }})"
                                                     wire:confirm="{{ __('Close this ticket? The buyer can no longer reply.') }}"
-                                                    class="inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-2 font-medium text-danger hover:bg-danger-tint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Close') }}</x-ui.button>
+                                                    class="inline-flex min-h-11 items-center whitespace-nowrap rounded-[var(--radius-control)] border border-danger px-3 text-[13px] font-medium text-danger hover:bg-danger-tint focus-visible:ring-2 focus-visible:ring-emerald">{{ __('Close') }}</x-ui.button>
                                         @endif
                                     </div>
                                 </td>
@@ -154,6 +155,9 @@
                     </tbody>
                 </table>
             @endif
+            </div>
         </x-ui.card>
+
+        <x-ui.table.footer :rows="$tickets" />
     @endif
 </div>

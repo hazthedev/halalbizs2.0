@@ -7,9 +7,9 @@ use App\Models\User;
 use App\Services\CoinService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Url;
+use App\Livewire\Concerns\WithTable;
+use App\Support\JsonSearch;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 /**
  * Admin Loyalty Coins economy (M2.1 oversight): circulation at a glance, the
@@ -19,23 +19,30 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Index extends Component
 {
-    use WithPagination;
+    use WithTable;
 
     public const PER_PAGE = 20;
 
-    #[Url(except: '')]
-    public string $search = '';
+    protected function tableFilters(): array
+    {
+        return [];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['balance' => 'balance', 'lifetime' => 'lifetime_earned'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['balance' => 'desc'];
+    }
 
     public ?int $adjustUserId = null;
 
     public string $adjustCoins = '';
 
     public string $adjustReason = '';
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
 
     public function openAdjust(int $userId): void
     {
@@ -66,13 +73,14 @@ class Index extends Component
 
     public function render(CoinService $coins): View
     {
-        $wallets = CoinWallet::query()
+        $term = JsonSearch::pattern($this->search);
+
+        $wallets = $this->sortTable(CoinWallet::query()
             ->with('user')
-            ->when($this->search !== '', fn ($q) => $q->whereHas('user', fn ($u) => $u
-                ->where('name', 'like', "%{$this->search}%")
-                ->orWhere('email', 'like', "%{$this->search}%")))
-            ->orderByDesc('balance')
-            ->paginate(self::PER_PAGE);
+            ->when(trim($this->search) !== '', fn ($q) => $q->whereHas('user', fn ($u) => $u
+                ->whereRaw(JsonSearch::clause('name'), [$term])
+                ->orWhereRaw(JsonSearch::clause('email'), [$term]))))
+            ->paginate($this->tablePageSize());
 
         return view('livewire.admin.coins.index', [
             'wallets' => $wallets,

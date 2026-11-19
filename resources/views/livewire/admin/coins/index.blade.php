@@ -1,45 +1,43 @@
 <div class="space-y-4">
-    <x-ui.section-heading :title="__('Loyalty Coins')" :subtitle="__('Economy overview and per-buyer grant / clawback (M2.1).')" as="h1" />
+    <x-ui.section-heading :title="__('Loyalty Coins')" :subtitle="__('Economy overview and per-buyer grant / clawback.')" as="h1" />
 
-    <div class="grid gap-4 sm:grid-cols-2">
-        <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
-            <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">{{ __('Coins in circulation') }}</p>
-            <p class="mt-1 font-display text-2xl font-medium tnum">{{ number_format($circulation) }}</p>
-        </div>
-        <div class="rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-soft">
-            <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-ink-faint">{{ __('Wallets') }}</p>
-            <p class="mt-1 font-display text-2xl font-medium tnum">{{ number_format($walletCount) }}</p>
-        </div>
+    <div class="grid gap-3 sm:grid-cols-2">
+        <x-ui.stat :label="__('Coins in circulation')" :value="number_format($circulation)" />
+        <x-ui.stat :label="__('Wallets')" :value="number_format($walletCount)" />
     </div>
 
-    <input type="search" wire:model.live.debounce.400ms="search" placeholder="{{ __('Search buyer by name or email…') }}"
-           class="block min-h-11 w-full max-w-md rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 text-sm">
+    <x-ui.table.search :placeholder="__('Search buyer by name or email')" />
 
-    <div class="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
-        <table class="w-full text-sm">
-            <thead class="border-b border-line text-left text-[11px] uppercase tracking-[0.06em] text-ink-faint">
-                <tr>
-                    <th class="px-4 py-3 font-medium">{{ __('Buyer') }}</th>
-                    <th class="px-4 py-3 text-right font-medium">{{ __('Balance') }}</th>
-                    <th class="px-4 py-3 text-right font-medium">{{ __('Lifetime') }}</th>
-                    <th class="px-4 py-3"></th>
+    <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
+        @if ($wallets->isEmpty())
+            <x-ui.empty-state :title="$search !== '' ? __('No wallets match') : __('No wallets yet')" :message="$search !== '' ? __('Try searching for something else.') : __('A buyer gets a wallet when they first earn coins.')" />
+        @else
+        <table class="w-full min-w-[640px] text-[13px]">
+            <thead class="sticky top-0 z-10 bg-surface">
+                <tr class="border-b border-line text-left text-ink-soft">
+                    <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Buyer') }}</th>
+                    <x-ui.table.sortable field="balance" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Balance') }}</x-ui.table.sortable>
+                    <x-ui.table.sortable field="lifetime" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Lifetime') }}</x-ui.table.sortable>
+                    <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-line">
-                @forelse ($wallets as $wallet)
-                    <tr wire:key="wallet-{{ $wallet->id }}">
-                        <td class="px-4 py-3">
+            <tbody>
+                @foreach ($wallets as $wallet)
+                    <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="wallet-{{ $wallet->id }}">
+                        <td class="px-3 py-2">
                             <p class="font-medium text-ink">{{ $wallet->user?->name }}</p>
-                            <p class="text-xs text-ink-faint">{{ $wallet->user?->email }}</p>
+                            <p class="text-[12px] text-ink-faint">{{ $wallet->user?->email }}</p>
                         </td>
-                        <td class="px-4 py-3 text-right font-medium tnum">{{ number_format($wallet->balance) }}</td>
-                        <td class="px-4 py-3 text-right text-ink-soft tnum">{{ number_format($wallet->lifetime_earned) }}</td>
-                        <td class="px-4 py-3 text-right">
-                            <x-ui.button variant="plain" type="button" wire:click="openAdjust({{ $wallet->user_id }})" class="text-[13px] font-medium text-emerald hover:text-emerald-deep">{{ __('Adjust') }}</x-ui.button>
+                        <td class="px-3 py-2 text-right font-mono font-medium tabular-nums">{{ number_format($wallet->balance) }}</td>
+                        <td class="px-3 py-2 text-right font-mono tabular-nums text-ink-soft">{{ number_format($wallet->lifetime_earned) }}</td>
+                        <td class="px-3 py-2 text-right">
+                            <x-ui.button variant="ghost" type="button" wire:click="openAdjust({{ $wallet->user_id }})">{{ __('Adjust') }}</x-ui.button>
                         </td>
                     </tr>
                     @if ($adjustUserId === $wallet->user_id)
-                        <tr class="bg-paper">
+                        <tr class="border-b border-line bg-paper" wire:key="adjust-{{ $wallet->id }}">
                             <td colspan="4" class="px-4 py-3">
                                 <form wire:submit="adjust" class="flex flex-wrap items-end gap-3">
                                     <div>
@@ -58,12 +56,12 @@
                             </td>
                         </tr>
                     @endif
-                @empty
-                    <tr><td colspan="4" class="px-4 py-10 text-center text-ink-soft">{{ __('No wallets yet.') }}</td></tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
-    </div>
+        @endif
+        </div>
+    </x-ui.card>
 
-    {{ $wallets->links() }}
+    <x-ui.table.footer :rows="$wallets" />
 </div>

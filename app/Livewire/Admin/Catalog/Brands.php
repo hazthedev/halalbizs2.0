@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Catalog;
 
+use App\Livewire\Concerns\WithTable;
 use App\Models\Brand;
+use App\Support\JsonSearch;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -13,6 +15,25 @@ use Livewire\Component;
 #[Layout('layouts.admin')]
 class Brands extends Component
 {
+    use WithTable;
+
+    public const PER_PAGE = 20;
+
+    protected function tableFilters(): array
+    {
+        return [];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['name' => 'name', 'slug' => 'slug', 'active' => 'is_active', 'products' => 'products_count'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['name' => 'asc'];
+    }
+
     public string $newName = '';
 
     public ?int $editingId = null;
@@ -74,6 +95,7 @@ class Brands extends Component
         // Explicit, not just FK behaviour — keeps SQLite/MySQL identical.
         $brand->products()->update(['brand_id' => null]);
         $brand->delete();
+        $this->resetPage();
 
         if ($this->editingId === $brandId) {
             $this->cancelEdit();
@@ -85,7 +107,11 @@ class Brands extends Component
     public function render()
     {
         return view('livewire.admin.catalog.brands', [
-            'brands' => Brand::query()->withCount('products')->orderBy('name')->get(),
+            'brands' => $this->sortTable(Brand::query()->withCount('products')
+                ->when(trim($this->search) !== '', fn ($q) => $q->where(function ($q) {
+                    $term = JsonSearch::pattern($this->search);
+                    $q->whereRaw(JsonSearch::clause('name'), [$term])->orWhereRaw(JsonSearch::clause('slug'), [$term]);
+                })))->paginate($this->tablePageSize()),
         ])->title(__('Brands'));
     }
 }

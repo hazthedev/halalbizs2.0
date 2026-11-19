@@ -5,23 +5,12 @@
 <div class="space-y-4" x-data="{ selected: $wire.entangle('selected') }">
 
     {{-- Header --}}
-    <x-ui.section-heading :title="__('Payouts')" :subtitle="__('Seller payout queue — approve requests, export the bank CSV, then mark them paid with the bank reference. Requests start arriving with M8.')" as="h1" />
+    <x-ui.section-heading :title="__('Payouts')" :subtitle="__('Seller payout queue — approve requests, export the bank CSV, then mark them paid with the bank reference.')" as="h1" />
 
     {{-- Status tabs --}}
     <nav class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Payout status') }}">
         @foreach (PayoutStatus::cases() as $statusCase)
-            <x-ui.button variant="plain"
-                type="button"
-                wire:click="$set('tab', '{{ $statusCase->value }}')"
-                wire:key="tab-{{ $statusCase->value }}"
-                aria-current="{{ $tab === $statusCase->value ? 'page' : 'false' }}"
-                class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $statusCase->value ? 'border-ink font-medium text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}"
-            >
-                {{ $statusCase->label() }}
-                @if ($counts[$statusCase->value] > 0)
-                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-emerald">{{ $counts[$statusCase->value] }}</span>
-                @endif
-            </x-ui.button>
+            <x-ui.tab wire:click="$set('tab', '{{ $statusCase->value }}')" wire:key="tab-{{ $statusCase->value }}" :active="$tab === $statusCase->value" :count="$counts[$statusCase->value]">{{ $statusCase->label() }}</x-ui.tab>
         @endforeach
     </nav>
 
@@ -96,7 +85,7 @@
                                 </td>
                             @endif
                             <td class="px-3 py-2 whitespace-nowrap font-mono font-medium">{{ $payout->payout_no }}</td>
-                            <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $payout->store->name }}</span></td>
+                            <td class="px-3 py-2">{{ $payout->store->name }}</td>
                             <td class="px-3 py-2 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($payout->amount_sen)</td>
                             <td class="px-3 py-2">
                                 <p class="font-medium">{{ $bank['bank_name'] ?? '—' }}</p>

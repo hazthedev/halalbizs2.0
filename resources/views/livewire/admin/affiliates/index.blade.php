@@ -1,11 +1,11 @@
 <div class="space-y-4">
-    <x-ui.section-heading :title="__('Affiliates')" :subtitle="__('Creator roster and the withdrawal approval queue (M2.5).')" as="h1" />
+    <x-ui.section-heading :title="__('Affiliates')" :subtitle="__('Creator roster and the withdrawal approval queue.')" as="h1" />
 
     {{-- Withdrawal queue --}}
-    <div class="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
-        <h2 class="border-b border-line px-4 py-3 font-medium">{{ __('Pending withdrawals') }} <span class="text-ink-faint">({{ $pending->count() }})</span></h2>
+    <x-ui.card class="overflow-hidden">
+        <h2 class="border-b border-line px-4 py-3 font-medium">{{ __('Pending withdrawals') }} @if ($pending->isNotEmpty())<span class="text-ink-faint">({{ $pending->count() }})</span>@endif</h2>
         @if ($pending->isEmpty())
-            <p class="px-4 py-8 text-center text-sm text-ink-soft">{{ __('No withdrawals awaiting action.') }}</p>
+            <x-ui.empty-state :title="__('No withdrawals awaiting action')" :message="__('Withdrawal requests from creators appear here for approval.')" />
         @else
             <ul class="divide-y divide-line">
                 @foreach ($pending as $payout)
@@ -40,35 +40,42 @@
                 @endforeach
             </ul>
         @endif
-    </div>
+    </x-ui.card>
 
     {{-- Roster --}}
-    <div class="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-soft">
-        <table class="w-full text-sm">
-            <thead class="border-b border-line text-left text-[11px] uppercase tracking-[0.06em] text-ink-faint">
-                <tr>
-                    <th class="px-4 py-3 font-medium">{{ __('Creator') }}</th>
-                    <th class="px-4 py-3 font-medium">{{ __('Code') }}</th>
-                    <th class="px-4 py-3 text-right font-medium">{{ __('Clicks') }}</th>
-                    <th class="px-4 py-3 text-right font-medium">{{ __('Referrals') }}</th>
-                    <th class="px-4 py-3 text-right font-medium">{{ __('Commission') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-line">
-                @forelse ($affiliates as $affiliate)
-                    <tr wire:key="aff-{{ $affiliate->id }}">
-                        <td class="px-4 py-3 font-medium text-ink">{{ $affiliate->user?->name }}</td>
-                        <td class="px-4 py-3 font-mono text-[13px]">{{ $affiliate->code }}</td>
-                        <td class="px-4 py-3 text-right tnum">{{ number_format($affiliate->clicks) }}</td>
-                        <td class="px-4 py-3 text-right tnum">{{ number_format($affiliate->referrals_count) }}</td>
-                        <td class="px-4 py-3 text-right font-medium tnum">@money((int) $affiliate->commission_sen_sum)</td>
-                    </tr>
-                @empty
-                    <tr><td colspan="5" class="px-4 py-10 text-center text-ink-soft">{{ __('No affiliates yet.') }}</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <x-ui.table.search :placeholder="__('Search creator or code')" />
 
-    {{ $affiliates->links() }}
+    <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, sortBy, perPage, gotoPage, nextPage, previousPage">
+        @if ($affiliates->isEmpty())
+            <x-ui.empty-state :title="$search !== '' ? __('No affiliates match') : __('No affiliates yet')" :message="$search !== '' ? __('Try searching for something else.') : __('Creators who join the affiliate programme appear here.')" />
+        @else
+            <table class="w-full min-w-[640px] text-[13px]">
+                <thead class="sticky top-0 z-10 bg-surface">
+                    <tr class="border-b border-line text-left text-ink-soft">
+                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Creator') }}</th>
+                        <x-ui.table.sortable field="code" :sort="$sort" :direction="$direction">{{ __('Code') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="clicks" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Clicks') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="referrals" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Referrals') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="commission" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Commission') }}</x-ui.table.sortable>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($affiliates as $affiliate)
+                        <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="aff-{{ $affiliate->id }}">
+                            <td class="px-3 py-2 font-medium text-ink">{{ $affiliate->user?->name }}</td>
+                            <td class="px-3 py-2 font-mono">{{ $affiliate->code }}</td>
+                            <td class="px-3 py-2 text-right font-mono tabular-nums">{{ number_format($affiliate->clicks) }}</td>
+                            <td class="px-3 py-2 text-right font-mono tabular-nums">{{ number_format($affiliate->referrals_count) }}</td>
+                            <td class="px-3 py-2 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money((int) $affiliate->commission_sen_sum)</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+        </div>
+    </x-ui.card>
+
+    <x-ui.table.footer :rows="$affiliates" />
 </div>

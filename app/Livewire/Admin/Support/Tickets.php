@@ -6,6 +6,8 @@ use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
 use App\Models\SupportTicket;
 use App\Notifications\TicketRepliedNotification;
+use App\Livewire\Concerns\WithTable;
+use App\Support\JsonSearch;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -17,6 +19,10 @@ use Livewire\Component;
 #[Layout('layouts.admin')]
 class Tickets extends Component
 {
+    use WithTable;
+
+    public const PER_PAGE = 20;
+
     #[Url]
     public string $tab = 'open';
 
@@ -25,6 +31,21 @@ class Tickets extends Component
 
     public string $replyBody = '';
 
+    protected function tableFilters(): array
+    {
+        return ['tab'];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['id' => 'id', 'subject' => 'subject', 'priority' => 'priority', 'messages' => 'replies_count', 'updated' => 'updated_at'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['updated_at' => 'desc'];
+    }
+
     public function setTab(string $tab): void
     {
         if (TicketStatus::tryFrom($tab) === null) {
@@ -32,6 +53,7 @@ class Tickets extends Component
         }
 
         $this->tab = $tab;
+        $this->resetPage();
         $this->selectedId = null;
         $this->replyBody = '';
         $this->resetErrorBag();
@@ -100,24 +122,37 @@ class Tickets extends Component
 
     public function render()
     {
-        $selected = $this->selectedId !== null
+        $thread = $this->selectedId !== null
             ? SupportTicket::with(['replies', 'user'])->find($this->selectedId)
             : null;
 
-        if ($this->selectedId !== null && $selected === null) {
+        if ($this->selectedId !== null && $thread === null) {
             $this->reset(['selectedId', 'replyBody']);
         }
 
         return view('livewire.admin.support.tickets', [
             'counts' => SupportTicket::statusCounts(),
-            'tickets' => SupportTicket::query()
-                ->status((TicketStatus::tryFrom($this->tab) ?? TicketStatus::Open))
-                ->with('user')
-                ->withCount('replies')
-                ->orderByRaw("case when priority = 'urgent' then 0 else 1 end")
-                ->latest('updated_at')
-                ->get(),
-            'selected' => $selected,
+            'tickets' => $this->results(),
+            'thread' => $thread,
         ])->title(__('Support tickets'));
+    }
+
+    private function results()
+    {
+        $term = JsonSearch::pattern($this->search);
+        $query = SupportTicket::query()
+            ->status(TicketStatus::tryFrom($this->tab) ?? TicketStatus::Open)
+            ->with('user')
+            ->withCount('replies')
+            ->when(trim($this->search) !== '', fn ($q) => $q->where(fn ($q) => $q
+                ->whereRaw(JsonSearch::clause('subject'), [$term])
+                ->orWhereHas('user', fn ($u) => $u->whereRaw(JsonSearch::clause('name'), [$term])->orWhereRaw(JsonSearch::clause('email'), [$term]))));
+
+        // Default view: urgent tickets first. Any chosen sort replaces that.
+        if (! array_key_exists($this->sort, $this->tableSorts())) {
+            $query->orderByRaw("case when priority = 'urgent' then 0 else 1 end");
+        }
+
+        return $this->sortTable($query)->paginate($this->tablePageSize());
     }
 }
