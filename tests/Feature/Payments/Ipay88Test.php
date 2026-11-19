@@ -288,6 +288,28 @@ test('expiry command rescues a late payment via requery', function () {
         ->and($order->fresh()->subOrders->first()->status)->toBe(SubOrderStatus::Confirmed);
 });
 
+test('expiry command skips the gateway requery while the simulator is on, and still expires', function () {
+    Notification::fake();
+    Http::fake(['*' => Http::response('00')]); // a requery, if made, would "rescue" the order
+
+    // Simulator: no credentials + the explicit opt-in (Ipay88Service::isMock).
+    $settings = app(Ipay88Settings::class);
+    $settings->merchant_code = '';
+    $settings->merchant_key = '';
+    $settings->save();
+    config(['services.ipay88.allow_mock' => true]);
+    expect(app(Ipay88Service::class)->isMock())->toBeTrue();
+
+    $order = placeIpay88Order();
+    $order->update(['expires_at' => now()->subMinute()]);
+
+    $this->artisan('orders:expire-unpaid')->assertSuccessful();
+
+    Http::assertNothingSent();
+    expect($order->fresh()->payment_status)->toBe(PaymentStatus::Expired)
+        ->and($order->fresh()->subOrders->first()->status)->toBe(SubOrderStatus::Cancelled);
+});
+
 test('auto-complete command completes delivered sub-orders past the window', function () {
     $order = placeIpay88Order();
     $subOrder = $order->subOrders->first();

@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Services\AffiliateService;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Route;
 
 beforeEach(fn () => $this->seed(RoleSeeder::class));
 
@@ -20,6 +21,15 @@ test('security headers are present on web responses', function () {
         ->toContain("frame-ancestors 'self'")
         ->toContain("form-action 'self' https://sandbox.ipay88.com.my https://payment.ipay88.com.my")
         ->toContain("object-src 'none'");
+});
+
+test('responses do not advertise the PHP version (X-Powered-By)', function () {
+    // PHP's own expose_php header never reaches the test client (CLI), so a
+    // route sets it the way a SAPI or package would; the response must drop it.
+    Route::get('/_test/powered-by', fn () => response('ok')->header('X-Powered-By', 'PHP/8.3.0'));
+
+    $this->get('/_test/powered-by')->assertOk()->assertHeaderMissing('X-Powered-By');
+    $this->get('/')->assertOk()->assertHeaderMissing('X-Powered-By');
 });
 
 test('security headers are present on a 404 response', function () {

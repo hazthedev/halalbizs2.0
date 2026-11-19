@@ -7,10 +7,12 @@ use App\Enums\PaymentMethod;
 use App\Jobs\ConfirmIpay88PaymentJob;
 use App\Models\Payment;
 use App\Services\Ipay88Service;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Activitylog\Models\Activity;
 use Throwable;
 
 /**
@@ -25,6 +27,9 @@ class Payments extends Component
     use WithPagination;
 
     public const PER_PAGE = 20;
+
+    /** Audit-log description of a manual portal settle (HB-G122). */
+    public const SETTLED_IN_PORTAL = 'payment refund settled in portal';
 
     #[Url(except: '')]
     public string $status = '';
@@ -85,6 +90,62 @@ class Payments extends Component
         $this->dispatch('toast', message: __('iPay88 answered: :result', ['result' => $result]), type: 'error');
     }
 
+    /**
+     * HB-G122: a human finished a refund the gateway did not perform (the
+     * "Needs portal refund" flag RefundService leaves). Clears the flag and
+     * keeps who, which payment and the portal reference in the audit log.
+     * The guard repeats the route's EnsureAdmin + can:orders.manage because
+     * this moves a money flag.
+     */
+    public function markRefundSettled(int $paymentId, ?string $reference = null): void
+    {
+        $user = auth()->user();
+        abort_unless($user?->hasRole('admin') && $user->can('orders.manage'), 403);
+
+        $reference = trim((string) $reference);
+
+        if (mb_strlen($reference) > 100) {
+            $this->dispatch('toast', message: __('The portal reference is too long (100 characters max).'), type: 'error');
+
+            return;
+        }
+
+        $payment = Payment::query()->findOrFail($paymentId);
+
+        // Conditional write: only a flagged row flips, so a double click or a
+        // stale page cannot write a second audit row. One transaction, so the
+        // flag never clears without its audit row.
+        $flipped = DB::transaction(function () use ($payment, $user, $reference) {
+            $flipped = Payment::query()->whereKey($payment->id)
+                ->where('gateway_refund_ok', false)
+                ->update(['gateway_refund_ok' => true]);
+
+            if ($flipped === 0) {
+                return 0;
+            }
+
+            activity()
+                ->causedBy($user)
+                ->performedOn($payment)
+                ->withProperties([
+                    'payment_id' => $payment->id,
+                    'reference' => $reference === '' ? null : $reference,
+                    // The audit-log screen renders old/attributes as its Diff.
+                    'old' => ['gateway_refund_ok' => false],
+                    'attributes' => ['gateway_refund_ok' => true],
+                ])
+                ->log(self::SETTLED_IN_PORTAL);
+
+            return $flipped;
+        });
+
+        if ($flipped === 0) {
+            return;
+        }
+
+        $this->dispatch('toast', message: __('Refund for :ref marked settled in the iPay88 portal.', ['ref' => $payment->ref_no]));
+    }
+
     public function render()
     {
         $payments = Payment::query()
@@ -96,8 +157,21 @@ class Payments extends Component
             ->latest('id')
             ->paginate(self::PER_PAGE);
 
+        // The flag has no "how" column: true means the gateway refunded OR a
+        // human settled it in the portal. The audit log tells them apart, so
+        // a manual settle never reads as "Gateway confirmed".
+        $clearedIds = $payments->getCollection()->where('gateway_refund_ok', true)->modelKeys();
+        $settledInPortal = $clearedIds === [] ? [] : Activity::query()
+            ->where('description', self::SETTLED_IN_PORTAL)
+            ->where('subject_type', (new Payment)->getMorphClass())
+            ->whereIn('subject_id', $clearedIds)
+            ->pluck('subject_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
         return view('livewire.admin.orders.payments', [
             'payments' => $payments,
+            'settledInPortal' => $settledInPortal,
             'statuses' => GatewayPaymentStatus::cases(),
         ])->title(__('Payments'));
     }

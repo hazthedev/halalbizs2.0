@@ -2861,5 +2861,11 @@
     "Opening a shop, listing products, halal certificates, orders and payouts.": "Membuka kedai, menyenaraikan produk, sijil halal, pesanan dan pembayaran keluar.",
     ":rate% of each sale": ":rate% daripada setiap jualan",
     ":min% to :max% of each sale, by category": ":min% hingga :max% daripada setiap jualan, mengikut kategori",
+    "Mark refund settled in portal": "Mark refund settled in portal",
+    "Only confirm once the money has been refunded in the iPay88 merchant portal.": "Only confirm once the money has been refunded in the iPay88 merchant portal.",
+    "Portal reference (optional)": "Portal reference (optional)",
+    "Confirm settled": "Confirm settled",
+    "The portal reference is too long (100 characters max).": "The portal reference is too long (100 characters max).",
+    "Refund for :ref marked settled in the iPay88 portal.": "Refund for :ref marked settled in the iPay88 portal.",
     "The group-buy price covers :max unit per member. Change :item to :max in your cart to check out.": "Harga pembelian berkumpulan meliputi :max unit bagi setiap ahli. Tukar :item kepada :max dalam troli anda untuk membuat pembayaran."
 }

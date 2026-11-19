@@ -45,7 +45,7 @@ function returnRequestedSubOrder(PaymentMethod $method = PaymentMethod::Ipay88):
     $buyer = User::factory()->create();
     $buyer->assignRole('buyer');
     $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor']);
-    $product = Product::factory()->create();
+    $product = Product::factory()->create(['cod_enabled' => true]); // factory default is random; COD callers need it
     $product->store->forceFill(['commission_rate' => 5.0])->save();
     $product->store->update(['shipping_mode' => 'flat', 'shipping_flat_fee_sen' => 500, 'free_shipping_over_sen' => null]);
     $product->variants->first()->update(['price_sen' => 10_000, 'sale_price_sen' => null, 'stock' => 10]);

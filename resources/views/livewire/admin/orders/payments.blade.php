@@ -93,6 +93,8 @@
                                          adjustment IS the refund and nothing is owed. --}}
                                     @if ($payment->gateway_refund_ok === false)
                                         <span class="mt-0.5 block text-[11px] font-sans font-medium text-danger">{{ __('Needs portal refund') }}</span>
+                                    @elseif ($payment->gateway_refund_ok === true && in_array($payment->id, $settledInPortal, true))
+                                        <span class="mt-0.5 block text-[11px] font-sans text-ink-soft">{{ __('Settled in portal') }}</span>
                                     @elseif ($payment->gateway_refund_ok === true)
                                         <span class="mt-0.5 block text-[11px] font-sans text-ink-soft">{{ __('Gateway confirmed') }}</span>
                                     @endif
@@ -116,7 +118,7 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $payment->paid_at?->display()->format('j M Y, g:ia') ?? '—' }}</td>
                             <td class="px-3 py-2">
-                                <div class="flex justify-end">
+                                <div class="flex flex-col items-end gap-2">
                                     @if ($canRequery)
                                         <x-ui.button variant="plain" type="button" wire:click="requery({{ $payment->id }})"
                                                 wire:loading.attr="disabled" wire:target="requery({{ $payment->id }})"
@@ -124,6 +126,31 @@
                                             <span wire:loading.remove wire:target="requery({{ $payment->id }})">{{ __('Requery') }}</span>
                                             <span wire:loading wire:target="requery({{ $payment->id }})">{{ __('Requerying…') }}</span>
                                         </x-ui.button>
+                                    @endif
+                                    {{-- HB-G122: clears "Needs portal refund" once a human has
+                                         refunded the money in the iPay88 portal. The confirm is
+                                         in the page (Alpine), not a browser confirm(). --}}
+                                    @if ($payment->gateway_refund_ok === false)
+                                        <div data-settle-control x-data="{ ask: false, ref: '' }" class="flex flex-col items-end gap-2">
+                                            <x-ui.button variant="secondary" type="button" x-show="! ask" x-on:click="ask = true" class="whitespace-nowrap">
+                                                {{ __('Mark refund settled in portal') }}
+                                            </x-ui.button>
+                                            <div x-show="ask" x-cloak class="flex w-64 flex-col gap-2 text-left">
+                                                <p class="text-[12px] text-ink">{{ __('Only confirm once the money has been refunded in the iPay88 merchant portal.') }}</p>
+                                                <label for="settle-ref-{{ $payment->id }}" class="text-[12px] font-medium text-ink-soft">{{ __('Portal reference (optional)') }}</label>
+                                                <input id="settle-ref-{{ $payment->id }}" type="text" maxlength="100" x-model="ref"
+                                                       class="block min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                                                <div class="flex justify-end gap-2">
+                                                    <x-ui.button variant="ghost" type="button" x-on:click="ask = false; ref = ''">
+                                                        {{ __('Cancel') }}
+                                                    </x-ui.button>
+                                                    <x-ui.button variant="primary" type="button" x-on:click="$wire.markRefundSettled({{ $payment->id }}, ref)"
+                                                            target="markRefundSettled" class="whitespace-nowrap">
+                                                        {{ __('Confirm settled') }}
+                                                    </x-ui.button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     @endif
                                 </div>
                             </td>
