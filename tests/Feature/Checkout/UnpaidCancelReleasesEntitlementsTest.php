@@ -127,7 +127,7 @@ test('expiry of an unpaid order gives back the same three, once', function () {
     expectReleased($buyer, $platform, $shop, $member);
 });
 
-test('a cancel after payment keeps the entitlements (refund path, not unpaid)', function () {
+test('a cancel after payment keeps the vouchers (refund path, not unpaid) but gives the seat back (HB-G003)', function () {
     [$order, $buyer, , $platform, $shop, $member] = entOrder();
     $order->update(['payment_status' => PaymentStatus::Paid]);
     $subOrder = $order->subOrders->first();
@@ -137,7 +137,7 @@ test('a cancel after payment keeps the entitlements (refund path, not unpaid)', 
 
     expect($platform->fresh()->used_count)->toBe(1)
         ->and(VoucherUsage::where('user_id', $buyer->id)->count())->toBe(2)
-        ->and($member->fresh()->status)->toBe(GroupBuyMemberStatus::Purchased);
+        ->and($member->fresh()->status)->toBe(GroupBuyMemberStatus::Joined);
 });
 
 test('cancel then a late expiry run gives back once and never touches another buyer\'s use', function () {

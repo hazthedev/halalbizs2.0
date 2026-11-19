@@ -28,6 +28,12 @@ use Illuminate\Support\Str;
  */
 class GroupBuyService
 {
+    /**
+     * HB-G003: units one member may buy at the team price. No per-deal field
+     * exists, so the team price covers one unit; checkout refuses more.
+     */
+    public const MAX_QTY_PER_MEMBER = 1;
+
     public function __construct(private GeneralSettings $generalSettings) {}
 
     public function enabled(): bool
@@ -164,6 +170,26 @@ class GroupBuyService
             'status' => GroupBuyMemberStatus::Purchased,
             'sub_order_id' => $subOrder->id,
         ])->save();
+    }
+
+    /**
+     * HB-G003: give back the seat a cancelled or fully refunded sub-order used,
+     * so the member can buy at the team price again. Only the membership is
+     * restored: the team keeps its status (an unlocked team stays unlocked, it
+     * is never reopened to forming) and a closed deal still refuses the price
+     * at checkout. Idempotent: the row is matched by this sub-order, so a
+     * replay finds nothing. Caller holds the order and sub-order locks.
+     */
+    public function releaseSeat(SubOrder $subOrder): void
+    {
+        GroupBuyMember::where('sub_order_id', $subOrder->id)
+            ->where('status', GroupBuyMemberStatus::Purchased)
+            ->lockForUpdate()
+            ->get()
+            ->each(fn (GroupBuyMember $member) => $member->forceFill([
+                'status' => GroupBuyMemberStatus::Joined,
+                'sub_order_id' => null,
+            ])->save());
     }
 
     /** Expire forming teams whose window has closed (scheduled). */

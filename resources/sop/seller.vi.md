@@ -108,6 +108,6 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 2. **Reviews**: chọn **Reply** dưới một đánh giá, viết câu trả lời và chọn **Post reply**. Bạn sửa được trong 24 giờ, sau đó bị khoá.
 3. **Questions**: câu hỏi **Unanswered** hiện trước. Chọn **Answer**, viết và **Post answer**. Dùng **Hide** cho câu hỏi không phù hợp.
 4. **Vouchers**: chọn **Add voucher**. Đặt **Code**, **Type** (số tiền, phần trăm hoặc miễn phí vận chuyển), **Minimum spend (RM)**, **Quota**, **Per-user limit**, **Starts at**, **Ends at**, và giữ **Active** bật. Chọn **Save voucher**. Voucher cửa hàng chỉ áp dụng cho sản phẩm của bạn.
-5. **Group buys**: chọn **Create deal**, chọn **Product** và **Variant**, đặt **Group price (RM)**, **People needed**, **Team window (hours)** và **Deal ends**, rồi **Save deal**. Chọn **End** để dừng.
+5. **Group buys**: chọn **Create deal**, chọn **Product** và **Variant**, đặt **Group price (RM)**, **People needed**, **Team window (hours)** và **Deal ends**, rồi **Save deal**. Chọn **End** để dừng. Mỗi thành viên mua được **1 sản phẩm** với giá nhóm. Nếu đơn mua theo nhóm của một thành viên bị huỷ hoặc được hoàn tiền toàn bộ trước khi hoàn tất, thành viên đó có thể mua lại 1 sản phẩm với giá nhóm khi ưu đãi còn chạy; nhóm vẫn giữ trạng thái đã mở khoá.
 6. **Live shopping**: chọn **New session**, rồi **Manage rail** để thêm sản phẩm, **Go live** và **End**.
 7. Dùng chuông (**Notifications**) để xem đơn mới, đổi trả và câu hỏi.
