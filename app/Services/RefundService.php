@@ -75,7 +75,13 @@ class RefundService
             //    integer math.
             if ($total > 0
                 && $subOrder->ledgerEntries()->where('type', LedgerEntryType::Sale)->exists()) {
-                $commissionReversal = intdiv((int) $subOrder->commission_sen * $amountSen + intdiv($total, 2), $total);
+                // Round the CUMULATIVE refunded share and reverse the step, so
+                // the reversals (and a net booking for a refund before
+                // completion, LedgerService) add up to the commission exactly.
+                // Rounding each partial alone can reverse 1 sen more than booked.
+                $commissionSen = (int) $subOrder->commission_sen;
+                $commissionReversal = intdiv($commissionSen * ($alreadyRefunded + $amountSen) + intdiv($total, 2), $total)
+                    - intdiv($commissionSen * $alreadyRefunded + intdiv($total, 2), $total);
 
                 $this->ledger->adjustment(
                     $subOrder->store,
