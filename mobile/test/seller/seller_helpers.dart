@@ -8,6 +8,7 @@ Map<String, dynamic> fakeSellerOrder({
   String status = 'confirmed',
   Map<String, dynamic>? returnRequest,
   bool detail = true,
+  String? buyerNote,
 }) =>
     {
       'id': id,
@@ -17,6 +18,7 @@ Map<String, dynamic> fakeSellerOrder({
       'status_label': status,
       'placed_at': '2026-11-07T07:52:17+00:00',
       'buyer': {'name': 'Lim Mei Ling', 'phone': '+60123456789'},
+      'buyer_note': buyerNote,
       'address': {
         'recipient_name': 'Lim Mei Ling',
         'phone': '+60123456789',

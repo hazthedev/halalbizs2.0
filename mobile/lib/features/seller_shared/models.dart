@@ -51,6 +51,7 @@ class SellerOrder {
   String get buyerName => asStr(asMap(json['buyer'])['name']) ?? '';
   String? get buyerPhone => asStr(asMap(json['buyer'])['phone']);
   Map<String, dynamic> get address => asMap(json['address']);
+  String? get buyerNote => asStr(json['buyer_note']);
   List<SellerOrderItem> get items => asMapList(json['items']).map(SellerOrderItem.new).toList();
   int get itemsCount => items.fold(0, (n, i) => n + i.qty);
   int get subtotalSen => asInt(json['subtotal_sen']) ?? 0;

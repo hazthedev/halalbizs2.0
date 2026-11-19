@@ -219,6 +219,12 @@ class _Body extends StatelessWidget {
         const SizedBox(height: SoukSpace.s2),
         box('seller-order-ship-to', addressLines),
       ],
+      if (o.buyerNote != null && o.buyerNote!.isNotEmpty) ...[
+        const SizedBox(height: SoukSpace.s5),
+        Text(l.sellerBuyerNote, style: SoukText.displayH3),
+        const SizedBox(height: SoukSpace.s2),
+        box('seller-order-buyer-note', [o.buyerNote!]),
+      ],
       const SizedBox(height: SoukSpace.s5),
       Text(l.sellerItems, style: SoukText.displayH3),
       const SizedBox(height: SoukSpace.s2),

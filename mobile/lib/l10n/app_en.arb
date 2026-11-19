@@ -234,6 +234,7 @@
   "sellerOrder": "Order",
   "sellerBuyer": "Buyer",
   "sellerShipTo": "Ship to",
+  "sellerBuyerNote": "Note from buyer",
   "sellerItems": "Items",
   "sellerSubtotal": "Subtotal",
   "sellerShippingFee": "Shipping",
