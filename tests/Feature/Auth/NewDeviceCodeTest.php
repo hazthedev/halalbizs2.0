@@ -216,3 +216,84 @@ test('google sign-in holds a new-device seller at the code page', function () {
     expect(auth()->check())->toBeFalse();
     Notification::assertSentTo($seller, TwoFactorCodeNotification::class);
 });
+
+test('a seller locked out by five wrong codes gets back in with a resent code', function () {
+    $seller = newDevUser('seller');
+    newDevKnowOther($seller);
+
+    newDevLogin($seller, 'seller')->assertRedirect(route('two-factor.challenge'));
+    $first = newDevLatestCode($seller);
+    $wrong = $first === '000000' ? '111111' : '000000';
+
+    $challenge = Livewire::test(TwoFactorChallenge::class);
+
+    foreach (range(1, 5) as $_) {
+        $challenge->set('code', $wrong)->call('verify')->assertHasErrors('code');
+    }
+
+    // The per-minute (user, IP) bucket and the one-send-per-minute cap both clear.
+    $this->travel(61)->seconds();
+
+    $challenge->call('resend')->assertHasNoErrors();
+    $fresh = newDevLatestCode($seller);
+
+    $challenge->set('code', $fresh)->call('verify')->assertHasNoErrors();
+
+    expect(auth()->id())->toBe($seller->id);
+});
+
+test('the held state cannot replay a Livewire action', function () {
+    $admin = newDevUser('admin');
+    $admin->forceFill(['email_verified_at' => now()])->save();
+
+    preg_match('/wire:snapshot="([^"]*)"/', $this->actingAs($admin)->get('/admin')->assertOk()->getContent(), $m);
+    $snapshot = html_entity_decode($m[1], ENT_QUOTES);
+
+    auth()->logout();
+    session()->put(['two_factor:user_id' => $admin->id, 'two_factor:new_device' => true]);
+
+    $status = $this->withHeader('X-Livewire', 'true')->postJson(route('default-livewire.update'), [
+        'components' => [['snapshot' => $snapshot, 'updates' => (object) [], 'calls' => [['path' => '', 'method' => '$refresh', 'params' => []]]]],
+    ])->status();
+
+    expect($status)->toBeIn([401, 302, 403])
+        ->and(auth()->check())->toBeFalse();
+});
+
+test('the app web sign-in link sends a new-device seller through the code first', function () {
+    $seller = newDevUser('seller');
+    newDevKnowOther($seller);
+
+    $url = $this->withToken($seller->createToken('phone')->plainTextToken)
+        ->postJson('/api/v1/me/web-sign-in-link', ['to' => 'seller-apply'])
+        ->assertOk()->json('data.url');
+    app('auth')->forgetGuards();
+    $this->withoutToken();
+
+    $this->post($url)->assertRedirect(route('two-factor.challenge'));
+    $this->assertGuest('web');
+    app('auth')->shouldUse('web'); // the API call above left sanctum as the default guard in this process
+
+    Livewire::test(TwoFactorChallenge::class)
+        ->set('code', newDevLatestCode($seller))
+        ->call('verify')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('seller.apply'));
+
+    expect(auth()->id())->toBe($seller->id);
+});
+
+test('the app web sign-in link signs a seller straight in on a known browser', function () {
+    $seller = newDevUser('seller');
+    newDevKnowHarness($seller);
+
+    $url = $this->withToken($seller->createToken('phone')->plainTextToken)
+        ->postJson('/api/v1/me/web-sign-in-link', ['to' => 'seller-apply'])
+        ->assertOk()->json('data.url');
+    app('auth')->forgetGuards();
+    $this->withoutToken();
+
+    $this->post($url)->assertRedirect(route('seller.apply'));
+    $this->assertAuthenticatedAs($seller, 'web');
+    Notification::assertNotSentTo($seller, TwoFactorCodeNotification::class);
+});
