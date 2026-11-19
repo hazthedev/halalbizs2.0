@@ -105,14 +105,17 @@ class GoogleAuthController extends Controller
         }
 
         // 2FA-enabled accounts still face the challenge — Google replaces
-        // the password step only.
-        if ($user->hasTwoFactor()) {
+        // the password step only. So do admins/sellers on a new device.
+        $newDevice = ! $user->hasTwoFactor() && app(DeviceGuard::class)->needsCode($user, request());
+
+        if ($newDevice || $user->hasTwoFactor()) {
             session()->put([
                 'two_factor:user_id' => $user->id,
                 'two_factor:remember' => false,
+                'two_factor:new_device' => $newDevice,
             ]);
 
-            if ($user->two_factor_method === TwoFactorMethod::Email) {
+            if ($newDevice || $user->two_factor_method === TwoFactorMethod::Email) {
                 $otp->issue($user, OtpService::PURPOSE_2FA_EMAIL);
             }
 
