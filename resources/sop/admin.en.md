@@ -22,7 +22,6 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 4. **System > Search insights** shows **Trending** searches and **Zero-result** searches (what buyers wanted and did not find).
 5. **System > Audit log** lists who changed what, with **Subject** and date filters and a **Diff** of changes.
 6. **Finance > Boosts** reports boost income. **Finance > Payouts** has **Export bank CSV**.
-<!-- CHECK: There is no menu item called "Reports" on origin/main. Reporting is split across Dashboard, Search insights, Audit log, Finance > Boosts and the exports. Confirm with Haze whether a Reports page is expected. -->
 
 ## 3. Sellers and applications
 

@@ -22,7 +22,6 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 4. **System > Search insights** hiện các tìm kiếm **Trending** và **Zero-result** (người mua muốn gì mà không thấy).
 5. **System > Audit log** liệt kê ai đã đổi gì, có bộ lọc **Subject** và ngày, và **Diff** các thay đổi.
 6. **Finance > Boosts** báo cáo thu nhập từ boost. **Finance > Payouts** có **Export bank CSV**.
-<!-- CHECK: There is no menu item called "Reports" on origin/main. Reporting is split across Dashboard, Search insights, Audit log, Finance > Boosts and the exports. Confirm with Haze whether a Reports page is expected. -->
 
 ## 3. Người bán và đơn đăng ký
 

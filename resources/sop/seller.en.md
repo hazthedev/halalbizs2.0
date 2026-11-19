@@ -7,7 +7,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 ## 1. Apply to become a seller
 
 1. Create a buyer account and verify your email (see the Buyer Guide). You can also start from **Open a shop** on the seller sign-in page, which asks you to create the account first.
-2. Select **Sell on HalalBizs** (top bar or footer). The page **Become a seller** says applications are reviewed within 2 to 3 business days. The **Commission** box shows what HalalBizs takes from each sale, for example "10% of each sale", or a range "by category" when categories have their own rates. <!-- SHOT: Become a seller form -->
+2. Select **Sell on HalalBizs** in the top bar to open **Become a seller**. The **Sell on HalalBizs** link in the footer opens the seller sign-in page instead: sign in there, or select **Open a shop** to create the account first, and you then land on **Become a seller**. The page says applications are reviewed within 2 to 3 business days. The **Commission** box shows what HalalBizs takes from each sale, for example "10% of each sale", or a range "by category" when categories have their own rates. <!-- SHOT: Become a seller form -->
 3. Under **Shop details** fill in **Shop name** (it must be unique, and the page shows your **Shop URL**), **Description** and **State**.
 4. Tick **My business is SST-registered** if it is, and enter the **SST registration number**.
 5. Under **Bank details** choose the **Bank**, enter the **Account holder name** and the **Account number** (8 to 17 digits, no spaces or dashes). Payouts go to this account.
@@ -54,7 +54,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 12. Select **Save as draft** to keep working, or **Publish**. If product approval is on, the button reads **Submit for review** and the marketplace team approves it first. A rejection comes by email with the reason, and the product returns to drafts.
 13. In the product list use **Edit**, **Duplicate**, **Boost**, **Delist** and **Relist**. Select products and use **Delist selected**, or **Delete drafts** (drafts only).
 14. **Bulk import**: select **Download template CSV**, fill it in, upload it and select **Import products**. Every product imports as a draft. Review each one, then publish.
-15. Boosts: open **Boosts**, choose a live product and **Days**, and select **Boost now**. The fee is taken from your available earnings and is not refunded if you cancel.
+15. Boosts: in the product list select **Boost** on a live product (Boosts is not in the menu). On the **Boosts** page check the **Product**, choose **Days** and select **Boost now**. The fee is taken from your available earnings and is not refunded if you cancel.
 
 ## 6. Halal certificates and the 2 December 2026 rule
 

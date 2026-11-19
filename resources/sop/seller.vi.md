@@ -7,7 +7,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 ## 1. Đăng ký làm người bán
 
 1. Tạo tài khoản người mua và xác minh email (xem Hướng dẫn dành cho người mua). Bạn cũng có thể bắt đầu từ **Mở cửa hàng** (**Open a shop**) ở trang đăng nhập người bán, trang này sẽ yêu cầu tạo tài khoản trước.
-2. Chọn **Bán hàng trên HalalBizs** (thanh trên cùng hoặc chân trang). Trang **Become a seller** cho biết đơn đăng ký được xét trong 2 đến 3 ngày làm việc. Ô **Commission** cho biết HalalBizs thu bao nhiêu trên mỗi đơn bán, ví dụ "10% trên mỗi đơn bán", hoặc một khoảng "tùy theo danh mục" khi các danh mục có mức riêng. <!-- SHOT: Become a seller form -->
+2. Chọn **Bán hàng trên HalalBizs** ở thanh trên cùng để mở trang **Become a seller**. Liên kết **Bán hàng trên HalalBizs** ở chân trang thì mở trang đăng nhập người bán: đăng nhập tại đó, hoặc chọn **Mở cửa hàng** để tạo tài khoản trước, sau đó bạn sẽ đến trang **Become a seller**. Trang này cho biết đơn đăng ký được xét trong 2 đến 3 ngày làm việc. Ô **Commission** cho biết HalalBizs thu bao nhiêu trên mỗi đơn bán, ví dụ "10% trên mỗi đơn bán", hoặc một khoảng "tùy theo danh mục" khi các danh mục có mức riêng. <!-- SHOT: Become a seller form -->
 3. Ở **Shop details** điền **Shop name** (phải là duy nhất, trang hiện **Shop URL** của bạn), **Description** và **State**.
 4. Đánh dấu **My business is SST-registered** nếu đúng, và nhập **SST registration number**.
 5. Ở **Bank details** chọn **Bank**, nhập **Account holder name** và **Account number** (8 đến 17 chữ số, không dấu cách hay gạch ngang). Tiền thanh toán sẽ chuyển vào tài khoản này.
@@ -54,7 +54,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 12. Chọn **Save as draft** để làm tiếp sau, hoặc **Publish**. Nếu duyệt sản phẩm đang bật, nút ghi **Submit for review** và đội của sàn duyệt trước. Nếu bị từ chối, bạn nhận email kèm lý do và sản phẩm quay về bản nháp.
 13. Trong danh sách sản phẩm dùng **Edit**, **Duplicate**, **Boost**, **Delist** và **Relist**. Chọn sản phẩm rồi dùng **Delist selected**, hoặc **Delete drafts** (chỉ xoá bản nháp).
 14. **Bulk import**: chọn **Download template CSV**, điền vào, tải lên và chọn **Import products**. Mọi sản phẩm được nhập thành bản nháp. Xem lại từng cái rồi xuất bản.
-15. Boost: mở **Boosts**, chọn một sản phẩm đang bán và số **Days**, rồi chọn **Boost now**. Phí được trừ từ thu nhập khả dụng và không hoàn lại nếu bạn huỷ.
+15. Boost: trong danh sách sản phẩm, chọn **Boost** ở một sản phẩm đang bán (Boosts không có trong menu). Ở trang **Boosts**, kiểm tra **Product**, chọn số **Days** rồi chọn **Boost now**. Phí được trừ từ thu nhập khả dụng và không hoàn lại nếu bạn huỷ.
 
 ## 6. Chứng nhận halal và quy định ngày 2 tháng 12 năm 2026
 
