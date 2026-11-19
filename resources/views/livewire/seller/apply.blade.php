@@ -4,6 +4,7 @@
         :title="__('Become a seller')"
         :subtitle="__('Tell us about your shop. Applications are reviewed within 2–3 business days.')"
     />
+    <a href="{{ route('help.guide', 'seller') }}" wire:navigate class="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-emerald underline hover:text-emerald-deep">{{ __('Read the seller guide first') }}</a>
 
     <x-ui.card class="mt-6 p-6">
         <h2 class="font-display text-lg font-medium">{{ __('Commission') }}</h2>

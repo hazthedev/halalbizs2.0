@@ -1,6 +1,20 @@
 <div class="mx-auto w-full max-w-3xl px-4 py-12 sm:py-16">
     <x-ui.section-heading as="h1" :title="__('Help centre')" :subtitle="__('Answers about ordering, payments, shipping, returns, and selling.')" />
 
+    {{-- HB-SOP: the step-by-step guides (resources/sop) --}}
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        @foreach ([
+            'buyer' => [__('Buyer guide'), __('Shopping, paying, tracking a parcel and returns, step by step.')],
+            'seller' => [__('Seller guide'), __('Opening a shop, listing products, halal certificates, orders and payouts.')],
+        ] as $slug => [$label, $blurb])
+            <a href="{{ route('help.guide', $slug) }}" wire:navigate
+               class="block rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-soft transition-colors duration-150 hover:bg-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                <span class="block font-display text-lg font-medium text-ink-head">{{ $label }}</span>
+                <span class="mt-1 block text-sm text-ink-soft">{{ $blurb }}</span>
+            </a>
+        @endforeach
+    </div>
+
     {{-- Search --}}
     <div class="relative mt-6">
         <svg class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>

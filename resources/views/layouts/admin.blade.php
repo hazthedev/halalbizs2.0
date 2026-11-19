@@ -87,6 +87,7 @@
                         __('Support') => [
                             ['admin.support.articles', __('Help articles'), 'admin.support.articles'],
                             ['admin.support.tickets', __('Tickets'), 'admin.support.tickets'],
+                            ['admin.help', __('Admin guide'), 'admin.help'],
                         ],
                         __('System') => [
                             ['admin.localization', __('Localization'), 'admin.localization'],

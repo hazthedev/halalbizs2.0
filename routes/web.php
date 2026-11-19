@@ -15,6 +15,7 @@ use App\Livewire\Seller\ApplicationStatus;
 use App\Livewire\Seller\Apply;
 use App\Livewire\Storefront;
 use App\Models\Order;
+use App\Support\SopGuide;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -143,6 +144,8 @@ Route::get('/r/{code}', [AffiliateReferralController::class, 'refer'])->middlewa
 // ===== Help center =====
 Route::get('/help', Storefront\Help\Index::class)->name('help.index');
 Route::get('/help/article/{article}', Storefront\Help\Article::class)->name('help.article');
+// HB-SOP user guides (resources/sop). Public, so applicants can read the seller guide before applying.
+Route::get('/help/{guide}', Storefront\Help\Guide::class)->whereIn('guide', SopGuide::PUBLIC)->name('help.guide');
 Route::get('/support', Storefront\Help\Tickets::class)->middleware('auth')->name('help.tickets');
 Route::get('/returns/{returnRequest}/photos/{media}', ReturnPhotoController::class)->middleware('auth')->name('returns.photo');
 

@@ -1,5 +1,5 @@
 <div class="space-y-4">
-    <x-ui.section-heading as="h1" :title="__('Dashboard')" />
+    <x-ui.section-heading as="h1" :title="__('Dashboard')" :href="route('help.guide', 'seller')" :link-label="__('Seller guide')" />
     @php
         $registration = \App\Services\Whip\WhipCertificate::normaliseRegistration(auth()->user()->store->registration_no);
     @endphp
