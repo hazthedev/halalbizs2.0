@@ -217,20 +217,42 @@ class CoinService
     }
 
     /**
+     * HB-G129: coins a completed sub-order earns once $refundedSen of its total
+     * is refunded: the refunded share of the items subtotal comes off first
+     * (rounded, the way RefundService scales commission), then the per-RM rate.
+     */
+    public function earnedCoinsFor(SubOrder $subOrder, int $refundedSen): int
+    {
+        $itemsSen = (int) $subOrder->items_subtotal_sen;
+        $totalSen = (int) $subOrder->total_sen;
+        $refundedSen = max(0, min($refundedSen, $totalSen));
+
+        $refundedItemsSen = $totalSen > 0 ? intdiv($itemsSen * $refundedSen + intdiv($totalSen, 2), $totalSen) : 0;
+
+        return intdiv(max(0, $itemsSen - $refundedItemsSen), 100) * (int) config('coins.earn_coins_per_rm', 1);
+    }
+
+    /**
      * HB-G004: take back the coins EARNED on a sub-order when it is refunded, pro
      * rata to the refund, bounded so cumulative take-backs never exceed what was
      * earned and never drive the wallet below zero (coins already spent stay
      * spent, same rule as an admin clawback). Written as an Adjustment that
      * references the sub-order, which is what makes the cap countable. Safe to
      * call inside RefundService's transaction (wallet lock comes last).
+     *
+     * HB-G129: the take-back is the gap between what was earned and what the
+     * sub-order still earns after this refund (earnedCoinsFor), not a share of
+     * the Earn row. An Earn booked after an earlier refund is already net of it,
+     * so a share of that row under-takes. $subOrder must be the locked row with
+     * refunded_sen NOT yet including $refundAmountSen (RefundService order).
      */
-    public function clawBackEarnedForRefund(SubOrder $subOrder, int $refundAmountSen, int $basisSen): int
+    public function clawBackEarnedForRefund(SubOrder $subOrder, int $refundAmountSen): int
     {
-        if (! $this->enabled() || $refundAmountSen <= 0 || $basisSen <= 0) {
+        if (! $this->enabled() || $refundAmountSen <= 0 || (int) $subOrder->total_sen <= 0) {
             return 0;
         }
 
-        return DB::transaction(function () use ($subOrder, $refundAmountSen, $basisSen) {
+        return DB::transaction(function () use ($subOrder, $refundAmountSen) {
             $earn = CoinTransaction::where('type', CoinTransactionType::Earn)
                 ->where('reference_type', $subOrder->getMorphClass())
                 ->where('reference_id', $subOrder->id)
@@ -249,8 +271,10 @@ class CoinService
                 ->where('reference_id', $subOrder->id)
                 ->sum('amount');
 
-            $proportional = intdiv($earned * min($refundAmountSen, $basisSen) + intdiv($basisSen, 2), $basisSen);
-            $coins = min($earned - $alreadyTaken, $proportional, (int) $wallet->balance);
+            // ponytail: reads today's earn rate; a rate change between earn and
+            //   refund shifts the take-back. Store the rate on the Earn row if that matters.
+            $stillEarned = $this->earnedCoinsFor($subOrder, (int) $subOrder->refunded_sen + $refundAmountSen);
+            $coins = min($earned - $alreadyTaken - $stillEarned, (int) $wallet->balance);
 
             if ($coins <= 0) {
                 return 0;

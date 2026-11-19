@@ -61,16 +61,36 @@ class LedgerService
             // pre-tax items subtotal only.
             $saleSen = $subOrder->items_subtotal_sen + $subOrder->shipping_fee_sen - $subOrder->shop_discount_sen + $subOrder->tax_sen;
 
+            // HB-G130: a refund before completion wrote no ledger reversal (no
+            // Sale yet), so book net of it: sale less what was refunded, and
+            // commission scaled exactly as RefundService scales a reversal. The
+            // snapshot below stays GROSS: later refunds scale from it. COD offset
+            // stays gross too, matching a post-completion refund (seller debited).
+            // A sub-order refunded in full before completion books nothing.
+            $totalSen = (int) $subOrder->total_sen;
+            $refundedSen = min((int) $subOrder->refunded_sen, $totalSen);
+
+            $fullyRefunded = $totalSen > 0 && $refundedSen >= $totalSen;
+
             $basis = $this->commissionSettings->basis();
             $commissionSen = $this->commissionSen($subOrder, $basis);
+            $commissionBookedSen = $refundedSen > 0
+                ? $commissionSen - intdiv($commissionSen * $refundedSen + intdiv($totalSen, 2), $totalSen)
+                : $commissionSen;
 
             // Snapshot the basis alongside the rate — hard rule #5. The setting
             // is flippable, so without this a historical commission cannot be
-            // explained after someone changes it.
+            // explained after someone changes it. HB-G134: stamped even when
+            // fully refunded (commission 0, nothing booked), so reports read a
+            // settled zero instead of null.
             $subOrder->forceFill([
-                'commission_sen' => $commissionSen,
+                'commission_sen' => $fullyRefunded ? 0 : $commissionSen,
                 'commission_basis' => $basis,
             ])->save();
+
+            if ($fullyRefunded) {
+                return;
+            }
 
             // H2 DB-level backstop: Sale/Commission are once-per-sub-order
             // settlement entries, so they carry a unique `settlement_key`
@@ -82,10 +102,10 @@ class LedgerService
             $holdUntil = $this->releaseAt($subOrder);
 
             try {
-                $this->write($subOrder->store_id, LedgerEntryType::Sale, $saleSen, $subOrder->id,
+                $this->write($subOrder->store_id, LedgerEntryType::Sale, $saleSen - $refundedSen, $subOrder->id,
                     __('Sale :no', ['no' => $subOrder->sub_order_no]), "sale:{$subOrder->id}", $holdUntil);
 
-                $this->write($subOrder->store_id, LedgerEntryType::Commission, -$commissionSen, $subOrder->id,
+                $this->write($subOrder->store_id, LedgerEntryType::Commission, -$commissionBookedSen, $subOrder->id,
                     __('Commission :rate% on :no', ['rate' => $subOrder->commission_rate, 'no' => $subOrder->sub_order_no]), "commission:{$subOrder->id}", $holdUntil);
             } catch (QueryException $e) {
                 if ($this->isUniqueViolation($e)) {

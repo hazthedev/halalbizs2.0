@@ -20,7 +20,8 @@ use Livewire\Component;
 /**
  * Second step of the login: the password passed, the user is parked in
  * the session ('two_factor:user_id') and stays a guest until the code
- * (email / TOTP / recovery) checks out.
+ * (email / TOTP / recovery) checks out. Also the new-device check for
+ * admins and sellers without 2FA ('two_factor:new_device'): an emailed code.
  */
 #[Layout('layouts.landing', ['variant' => 'light'])]
 class TwoFactorChallenge extends Component
@@ -93,15 +94,16 @@ class TwoFactorChallenge extends Component
 
         $remember = (bool) session('two_factor:remember', false);
         $context = AuthContext::fromValue(session('two_factor:context'));
-        session()->forget(['two_factor:user_id', 'two_factor:remember', 'two_factor:context']);
+        session()->forget(['two_factor:user_id', 'two_factor:remember', 'two_factor:context', 'two_factor:new_device']);
 
         Auth::loginUsingId($user->id, $remember);
         session()->regenerate();
 
         app(CartService::class)->mergeSessionCart($user);
 
-        // Unseen device? Record it and alert (silent on the first ever login).
-        app(DeviceGuard::class)->record($user, request());
+        // Unseen device? Record it and alert (silent on the first ever login;
+        // an admin/seller's emailed code already told them).
+        app(DeviceGuard::class)->record($user, request(), codeEmailed: $this->method($user) === TwoFactorMethod::Email);
 
         // If they asked, trust this device so the next login on it skips the
         // code. Runs after DeviceGuard::record so it reuses that same row.
@@ -151,7 +153,7 @@ class TwoFactorChallenge extends Component
             return;
         }
 
-        if ($user->two_factor_method !== TwoFactorMethod::Email) {
+        if ($this->method($user) !== TwoFactorMethod::Email) {
             return;
         }
 
@@ -199,7 +201,7 @@ class TwoFactorChallenge extends Component
 
         $user = User::find($id);
 
-        if ($user === null || ! $user->hasTwoFactor() || $user->isSuspended()) {
+        if ($user === null || $user->isSuspended() || (! $user->hasTwoFactor() && ! session('two_factor:new_device'))) {
             return null;
         }
 
@@ -208,7 +210,7 @@ class TwoFactorChallenge extends Component
 
     private function abandon(): void
     {
-        session()->forget(['two_factor:user_id', 'two_factor:remember']);
+        session()->forget(['two_factor:user_id', 'two_factor:remember', 'two_factor:context', 'two_factor:new_device']);
 
         $this->redirectRoute('login', navigate: true);
     }
@@ -218,9 +220,16 @@ class TwoFactorChallenge extends Component
         $user = $this->pendingUser();
 
         return view('livewire.storefront.auth.two-factor-challenge', [
-            'method' => $user?->two_factor_method,
+            'method' => $user ? $this->method($user) : null,
+            'newDevice' => $user !== null && ! $user->hasTwoFactor(),
             'maskedEmail' => $user ? $this->maskEmail($user->email) : '',
         ])->title(__('Two-factor check'));
+    }
+
+    /** No 2FA set up = the new-device check, which always emails its code. */
+    private function method(User $user): TwoFactorMethod
+    {
+        return $user->two_factor_method ?? TwoFactorMethod::Email;
     }
 
     private function maskEmail(string $email): string

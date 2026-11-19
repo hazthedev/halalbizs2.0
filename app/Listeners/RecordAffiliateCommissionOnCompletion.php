@@ -47,9 +47,9 @@ class RecordAffiliateCommissionOnCompletion implements ShouldQueue
         }
         $referral = $this->affiliates->recordCommission($event->subOrder);
 
-        if ($referral !== null) {
+        if ($referral !== null && $referral->payableSen() > 0) { // a slice refunded to zero is no news
             $referral->affiliate->user?->notify(
-                new AffiliateCommissionNotification($referral->commission_sen, $referral->locks_at),
+                new AffiliateCommissionNotification($referral->payableSen(), $referral->locks_at),
             );
         }
     }

@@ -119,7 +119,11 @@ class Login extends Component
         // the session and finish on the challenge screen — UNLESS this exact
         // device was trusted within the last 30 days, in which case the code
         // step is skipped (the password + the proven device stand in for it).
-        if ($user->hasTwoFactor() && ! app(DeviceTrust::class)->isTrusted($user, request())) {
+        // Admins and sellers without 2FA still face an emailed code when the
+        // device is new to them (DeviceGuard::needsCode), on the same screen.
+        $newDevice = ! $user->hasTwoFactor() && app(DeviceGuard::class)->needsCode($user, request());
+
+        if ($newDevice || ($user->hasTwoFactor() && ! app(DeviceTrust::class)->isTrusted($user, request()))) {
             Auth::logout();
 
             session()->put([
@@ -128,9 +132,10 @@ class Login extends Component
                 // Carry the entry context across the challenge redirect so the
                 // landing after 2FA matches the door they came through.
                 'two_factor:context' => $this->context,
+                'two_factor:new_device' => $newDevice,
             ]);
 
-            if ($user->two_factor_method === TwoFactorMethod::Email) {
+            if ($newDevice || $user->two_factor_method === TwoFactorMethod::Email) {
                 app(OtpService::class)->issue($user, OtpService::PURPOSE_2FA_EMAIL);
             }
 
