@@ -233,6 +233,7 @@
   "sellerOrder": "Pesanan",
   "sellerBuyer": "Pembeli",
   "sellerShipTo": "Hantar kepada",
+  "sellerBuyerNote": "Nota daripada pembeli",
   "sellerItems": "Item",
   "sellerSubtotal": "Subjumlah",
   "sellerShippingFee": "Penghantaran",

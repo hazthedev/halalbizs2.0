@@ -82,9 +82,12 @@
                 </table>
             </x-ui.card>
 
-            {{-- TODO(M4 follow-up): buyer's per-store note — CheckoutService::place() accepts
-                 $sellerNotes but does not persist them yet (do NOT modify the service here).
-                 Render the note card once checkout stores it. --}}
+            @if (filled($subOrder->buyer_note))
+                <x-ui.card class="p-4">
+                    <h2 class="text-sm font-medium">{{ __('Note from buyer') }}</h2>
+                    <p class="mt-2 text-[13px] text-ink-soft">{!! nl2br(e($subOrder->buyer_note)) !!}</p>
+                </x-ui.card>
+            @endif
 
             {{-- Return request (docs/09 §D) — accept / dispute while requested,
                  confirm receipt once accepted. All status moves via the service. --}}

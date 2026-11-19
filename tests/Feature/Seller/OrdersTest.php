@@ -311,3 +311,30 @@ test('seller order table pages selects and packs two own orders through the stat
     }
     expect($foreign->refresh()->status)->toBe(SubOrderStatus::Confirmed);
 });
+
+test('seller detail page shows the buyer note escaped, and nothing when there is none', function () {
+    $seller = ordersSeller();
+    $with = ordersSubOrderFor($seller);
+    $with->forceFill(['buyer_note' => "Leave at guard <b>house</b>\nCall first"])->save();
+    $without = ordersSubOrderFor($seller);
+
+    Livewire::actingAs($seller)
+        ->test(Detail::class, ['subOrder' => $with])
+        ->assertSee('Note from buyer')
+        ->assertSeeHtml('Leave at guard &lt;b&gt;house&lt;/b&gt;<br />')
+        ->assertDontSeeHtml('<b>house</b>');
+
+    Livewire::actingAs($seller)
+        ->test(Detail::class, ['subOrder' => $without])
+        ->assertDontSee('Note from buyer');
+});
+
+test('seller order api includes the buyer note', function () {
+    $seller = ordersSeller();
+    $subOrder = ordersSubOrderFor($seller);
+    $subOrder->forceFill(['buyer_note' => 'Call first'])->save();
+
+    $resource = (new App\Http\Resources\SellerOrderResource($subOrder->fresh()))->toArray(request());
+
+    expect($resource['buyer_note'])->toBe('Call first');
+});

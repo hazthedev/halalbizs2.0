@@ -38,6 +38,7 @@ class SellerOrderResource extends JsonResource
                 'phone' => $address['phone'] ?? $order?->user?->phone,
             ],
             'address' => $address,
+            'buyer_note' => $this->buyer_note,
             'items' => $this->whenLoaded('items', fn () => $this->items->map(fn (OrderItem $item) => [
                 'id' => $item->id,
                 'product_id' => $item->product_id,

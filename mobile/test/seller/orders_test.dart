@@ -95,6 +95,22 @@ void main() {
     expect(find.byKey(const Key('seller-order-pack')), findsNothing);
   });
 
+  testWidgets('buyer note card shows only when the order has a note', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      ...sellerBaseRoutes(),
+      'GET seller/orders/5': (_, _) => fakeSellerOrder(buyerNote: 'Leave at guard house'),
+      'GET seller/orders/6': (_, _) => fakeSellerOrder(id: 6),
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller/orders/5');
+    expect(find.byKey(const Key('seller-order-buyer-note')), findsOneWidget);
+    expect(find.text('Leave at guard house'), findsOneWidget);
+    h.router.go('/seller/orders/6');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('seller-order-buyer-note')), findsNothing);
+  });
+
   testWidgets('return block offers Accept / Dispute, then Confirm received once accepted', (tester) async {
     usePhone(tester);
     final api = FakeApi(routes: {

@@ -1160,6 +1160,12 @@ abstract class AppLocalizations {
   /// **'Ship to'**
   String get sellerShipTo;
 
+  /// No description provided for @sellerBuyerNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note from buyer'**
+  String get sellerBuyerNote;
+
   /// No description provided for @sellerItems.
   ///
   /// In en, this message translates to:

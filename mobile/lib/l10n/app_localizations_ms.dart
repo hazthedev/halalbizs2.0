@@ -583,6 +583,9 @@ class AppLocalizationsMs extends AppLocalizations {
   String get sellerShipTo => 'Hantar kepada';
 
   @override
+  String get sellerBuyerNote => 'Nota daripada pembeli';
+
+  @override
   String get sellerItems => 'Item';
 
   @override

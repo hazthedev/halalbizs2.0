@@ -576,6 +576,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellerShipTo => 'Ship to';
 
   @override
+  String get sellerBuyerNote => 'Note from buyer';
+
+  @override
   String get sellerItems => 'Items';
 
   @override
