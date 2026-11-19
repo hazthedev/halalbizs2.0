@@ -102,7 +102,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 6. **Footer & contact**: cập nhật **Email**, **Phone**, **WhatsApp**, **Address** và các liên kết mạng xã hội, rồi **Save contact**.
 7. **Content > Flash sales**: nhập **Title**, **Starts**, **Ends**, chọn **Create flash sale**, rồi **Add deal** với giá **Promo RM**, **Qty** và giới hạn **Per buyer**.
 8. **Support > Help articles** và **Support > Tickets**: trả lời bằng **Send reply**, **Mark urgent**, **Close ticket**, **Reopen ticket**.
-9. **System > Localization**: bật hoặc tắt ngôn ngữ và đặt tiền tệ và tỉ giá (chỉ để hiển thị, tiền thu vẫn bằng MYR).
+9. **System > Localization**: bật hoặc tắt ngôn ngữ và đặt tiền tệ và tỉ giá (chỉ để hiển thị, tiền thu vẫn bằng MYR). Với mỗi loại tiền, nhập **Rate** và **Margin %**, rồi chọn **Save rate**.
 
 ## 11. Cài đặt xu và voucher
 

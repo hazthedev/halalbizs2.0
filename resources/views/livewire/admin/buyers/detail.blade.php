@@ -1,22 +1,22 @@
 <div class="space-y-4">
 
     {{-- Header --}}
-    <div class="flex flex-wrap items-center gap-3">
-        <div class="min-w-0">
-            <div class="flex flex-wrap items-center gap-2">
-                <h1 class="font-display text-[22px] font-medium leading-tight">{{ $user->name }}</h1>
+    <div>
+        <a href="{{ route('admin.buyers.index') }}" wire:navigate
+       class="inline-flex min-h-11 items-center gap-1.5 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+        {{ __('Buyers') }}
+    </a>
+        <x-ui.section-heading as="h1" class="mt-1" :title="$user->name"
+            :subtitle="__('Joined :date', ['date' => $user->created_at->display()->format('j M Y')])">
+            <x-slot:actions>
                 @if ($user->isSuspended())
                     <x-ui.badge variant="danger">{{ __('Suspended') }}</x-ui.badge>
                 @else
                     <x-ui.badge variant="sale">{{ __('Active') }}</x-ui.badge>
                 @endif
-            </div>
-            <p class="text-[13px] text-ink-soft">{{ __('Joined :date', ['date' => $user->created_at->display()->format('j M Y')]) }}</p>
-        </div>
-        <a href="{{ route('admin.buyers.index') }}" wire:navigate
-           class="ml-auto inline-flex min-h-11 items-center rounded-[var(--radius-control)] px-3 text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-            {{ __('All buyers') }}
-        </a>
+            </x-slot:actions>
+        </x-ui.section-heading>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-3">
@@ -101,7 +101,6 @@
                 </div>
             @endif
 
-            <p class="mt-4 border-t border-line pt-3 text-[13px] text-ink-faint">{{ __('PDPA anonymization arrives in M8.') }}</p>
         </x-ui.card>
     </div>
 

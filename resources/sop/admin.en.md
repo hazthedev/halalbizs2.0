@@ -102,7 +102,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 6. **Footer & contact**: update **Email**, **Phone**, **WhatsApp**, **Address** and social links, then **Save contact**.
 7. **Content > Flash sales**: enter **Title**, **Starts**, **Ends**, select **Create flash sale**, then **Add deal** with a **Promo RM** price, **Qty** and **Per buyer** limit.
 8. **Support > Help articles** and **Support > Tickets**: reply with **Send reply**, **Mark urgent**, **Close ticket**, **Reopen ticket**.
-9. **System > Localization**: turn languages on or off and set currencies and exchange rates (display only, charges stay in MYR).
+9. **System > Localization**: turn languages on or off and set currencies and exchange rates (display only, charges stay in MYR). For each currency type the **Rate** and the **Margin %**, then select **Save rate**.
 
 ## 11. Coins and vouchers settings
 

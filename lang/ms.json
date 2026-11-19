@@ -2890,5 +2890,12 @@
     "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count baucar dipadam|[2,*]:count baucar dipadam",
     "Current banner image": "Imej sepanduk semasa",
     "Create one above, then add deals to it.": "Cipta satu di atas, kemudian tambah tawaran padanya.",
-    "Deals": "Tawaran"
+    "Deals": "Tawaran",
+    "No status changes yet.": "Belum ada perubahan status.",
+    ":n items": ":n item",
+    ":label: :n": ":label: :n",
+    "Pick a store and category to see the rate a new sub-order would get.": "Pilih kedai dan kategori untuk melihat kadar yang akan dikenakan pada sub-pesanan baharu.",
+    "Rates are set by hand. Saving writes a new row, and the history keeps the trail.": "Kadar ditetapkan secara manual. Setiap simpanan menulis baris baharu, dan sejarah menyimpan jejaknya.",
+    "This record or its file was not found. A document may not have been uploaded yet.": "Rekod ini atau failnya tidak ditemui. Dokumen mungkin belum dimuat naik.",
+    "Back to dashboard": "Kembali ke papan pemuka"
 }
