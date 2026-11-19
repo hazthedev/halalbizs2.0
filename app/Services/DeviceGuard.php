@@ -15,10 +15,14 @@ use Illuminate\Support\Str;
  *   lease renewal inside the same network doesn't re-alert.
  * - The very first device is recorded silently — the login right after
  *   sign-up must not greet the user with a security alert.
+ * - Admins and sellers on an unseen device must pass an emailed code before
+ *   the session starts (needsCode, Haze 2026-11-19); that code email stands
+ *   in for the alert, so they do not get both.
  */
 class DeviceGuard
 {
-    public function record(User $user, Request $request): void
+    /** $codeEmailed: this login was just confirmed by a code sent to the user's email. */
+    public function record(User $user, Request $request, bool $codeEmailed = false): void
     {
         $fingerprint = $this->fingerprint($request);
 
@@ -38,9 +42,25 @@ class DeviceGuard
             'last_seen_at' => now(),
         ]);
 
-        if (! $isFirstDevice) {
+        if (! $isFirstDevice && ! ($codeEmailed && $this->isGuarded($user))) {
             $user->notify(new NewDeviceLoginNotification($device->label, (string) $request->ip()));
         }
+    }
+
+    /**
+     * Admin or seller signing in from a device not yet known for them. The
+     * first ever device never needs a code, so sign-up's own login goes through.
+     */
+    public function needsCode(User $user, Request $request): bool
+    {
+        return $this->isGuarded($user)
+            && $user->knownDevices()->exists()
+            && ! $user->knownDevices()->where('fingerprint', $this->fingerprint($request))->exists();
+    }
+
+    private function isGuarded(User $user): bool
+    {
+        return $user->is_superadmin || $user->hasAnyRole(['admin', 'seller']);
     }
 
     public function fingerprint(Request $request): string
