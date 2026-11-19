@@ -434,7 +434,7 @@ test('moderation table sorts safely, combines search with filters, shows the cou
         ->set('sort', 'unknown')->set('direction', 'invalid')->assertSee('Alpha Dates')
         ->set('search', 'honey')->set('store', (string) $b->store_id)
         ->assertSee('Beta Honey')->assertDontSee('Alpha Dates')->assertSee('Showing 1 to 1 of 1')
-        ->set('store', (string) $a->store_id)->assertSee('Showing 0 to 0 of 0');
+        ->set('store', (string) $a->store_id)->assertDontSee('Showing 0 to 0')->assertSee('Queue clear');
 
     $table->set('search', '')->set('store', '')->set('selectPage', true)->assertCount('selected', 2)
         ->call('bulkApprove')->assertSet('selected', []);

@@ -2858,5 +2858,10 @@
     "Turn on selected": "Bật mục đã chọn",
     "{1}:count deal ended|[2,*]:count deals ended": "{1}:count ưu đãi đã kết thúc|[2,*]:count ưu đãi đã kết thúc",
     "{1}:count voucher updated|[2,*]:count vouchers updated": "{1}:count voucher đã cập nhật|[2,*]:count voucher đã cập nhật",
-    "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count voucher đã xóa|[2,*]:count voucher đã xóa"
+    "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count voucher đã xóa|[2,*]:count voucher đã xóa",
+    "Search order no., ref no. or trans ID": "Tìm theo mã đơn, mã tham chiếu hoặc mã giao dịch",
+    "Search payments": "Tìm thanh toán",
+    "Search who, event or description": "Tìm theo người thực hiện, sự kiện hoặc mô tả",
+    "No banned products": "Chưa có sản phẩm bị cấm",
+    "Products you ban from the queue above are listed here for reference.": "Các sản phẩm bạn cấm từ hàng chờ phía trên được liệt kê ở đây để tham khảo."
 }

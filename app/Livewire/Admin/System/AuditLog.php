@@ -14,7 +14,8 @@ use App\Models\SubOrder;
 use App\Support\DisplayTime;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\WithPagination;
+use App\Livewire\Concerns\WithTable;
+use App\Models\User;
 use Spatie\Activitylog\Models\Activity;
 
 /**
@@ -24,7 +25,9 @@ use Spatie\Activitylog\Models\Activity;
 #[Layout('layouts.admin')]
 class AuditLog extends Component
 {
-    use WithPagination;
+    use WithTable;
+
+    public const PER_PAGE = 20;
 
     public const SUBJECT_TYPES = [
         'Store' => Store::class,
@@ -47,24 +50,24 @@ class AuditLog extends Component
 
     public string $dateTo = '';
 
-    public function updatedSubjectType(): void
+    protected function tableFilters(): array
     {
-        $this->resetPage();
+        return ['subjectType', 'dateFrom', 'dateTo'];
     }
 
-    public function updatedDateFrom(): void
+    protected function tableSorts(): array
     {
-        $this->resetPage();
+        return ['when' => 'created_at'];
     }
 
-    public function updatedDateTo(): void
+    protected function tableDefaultOrder(): array
     {
-        $this->resetPage();
+        return ['created_at' => 'desc'];
     }
 
     public function clearFilters(): void
     {
-        $this->reset(['subjectType', 'dateFrom', 'dateTo']);
+        $this->reset(['search', 'subjectType', 'dateFrom', 'dateTo']);
         $this->resetPage();
     }
 
@@ -80,12 +83,20 @@ class AuditLog extends Component
             )
             ->when($this->isDay($this->dateFrom), fn ($query) => $query->where('created_at', '>=', DisplayTime::dayStart($this->dateFrom)))
             ->when($this->isDay($this->dateTo), fn ($query) => $query->where('created_at', '<=', DisplayTime::dayEnd($this->dateTo)))
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->paginate(25);
+            ->when(trim($this->search) !== '', fn ($query) => $query->where(fn ($q) => $q
+                ->where('description', 'like', $this->likeTerm())
+                ->orWhere('event', 'like', $this->likeTerm())
+                ->orWhereHasMorph('causer', [User::class], fn ($causer) => $causer->where('name', 'like', $this->likeTerm()))));
+
+        $activities = $this->sortTable($activities)->paginate($this->tablePageSize());
+
+        // Plain label for an order: its sub-order number, not "SubOrder #113".
+        $subOrderIds = $activities->getCollection()->where('subject_type', SubOrder::class)->pluck('subject_id')->all();
+        $subOrderNos = $subOrderIds === [] ? [] : SubOrder::query()->whereIn('id', $subOrderIds)->pluck('sub_order_no', 'id')->all();
 
         return view('livewire.admin.system.audit-log', [
             'activities' => $activities,
+            'subOrderNos' => $subOrderNos,
             'subjectTypes' => array_keys(self::SUBJECT_TYPES),
         ])->title(__('Audit log'));
     }

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
+use App\Livewire\Concerns\WithTable;
 use Spatie\Activitylog\Models\Activity;
 use Throwable;
 
@@ -24,7 +24,7 @@ use Throwable;
 #[Layout('layouts.admin')]
 class Payments extends Component
 {
-    use WithPagination;
+    use WithTable;
 
     public const PER_PAGE = 20;
 
@@ -46,11 +46,25 @@ class Payments extends Component
     #[Url(except: false)]
     public bool $needsPortalRefund = false;
 
-    public function updated(string $property): void
+    protected function tableFilters(): array
     {
-        if (in_array($property, ['status', 'mismatchesOnly', 'needsPortalRefund'], true)) {
-            $this->resetPage();
-        }
+        return ['status', 'mismatchesOnly', 'needsPortalRefund'];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['ref' => 'ref_no', 'amount' => 'amount_sen', 'status' => 'status', 'paid' => 'paid_at'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['created_at' => 'desc'];
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset('search', 'status', 'mismatchesOnly', 'needsPortalRefund');
+        $this->resetPage();
     }
 
     /**
@@ -153,9 +167,12 @@ class Payments extends Component
             ->when(GatewayPaymentStatus::tryFrom($this->status), fn ($query, $status) => $query->where('status', $status))
             ->when($this->mismatchesOnly, fn ($query) => $query->where('signature_valid', false))
             ->when($this->needsPortalRefund, fn ($query) => $query->where('gateway_refund_ok', false))
-            ->latest('created_at')
-            ->latest('id')
-            ->paginate(self::PER_PAGE);
+            ->when(trim($this->search) !== '', fn ($query) => $query->where(fn ($q) => $q
+                ->where('ref_no', 'like', $this->likeTerm())
+                ->orWhere('ipay88_trans_id', 'like', $this->likeTerm())
+                ->orWhereHas('order', fn ($order) => $order->where('order_no', 'like', $this->likeTerm()))));
+
+        $payments = $this->sortTable($payments)->paginate($this->tablePageSize());
 
         // The flag has no "how" column: true means the gateway refunded OR a
         // human settled it in the portal. The audit log tells them apart, so

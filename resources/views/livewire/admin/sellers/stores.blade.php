@@ -3,36 +3,48 @@
     <x-ui.section-heading :title="__('Stores')" as="h1" />
 
     {{-- Filters --}}
-    <div class="flex flex-wrap items-center gap-2">
-        <input type="search"
-               wire:model.live.debounce.300ms="search"
-               placeholder="{{ __('Search by store name or owner email') }}"
-               aria-label="{{ __('Search stores') }}"
-               class="min-h-11 w-full max-w-xs rounded-[var(--radius-control)] border border-line-strong bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-        <select wire:model.live="status"
-                aria-label="{{ __('Filter by status') }}"
-                class="min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
-            <option value="">{{ __('All statuses') }}</option>
-            @foreach ($statusOptions as $option)
-                <option value="{{ $option->value }}">{{ $option->label() }}</option>
-            @endforeach
-        </select>
-    </div>
+    <x-ui.card class="p-3">
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+            <div class="min-w-0 lg:col-span-3">
+                <label for="stores-search" class="sr-only">{{ __('Search stores') }}</label>
+                <input id="stores-search" type="search" wire:model.live.debounce.300ms="search"
+                       placeholder="{{ __('Search by store name or owner email') }}"
+                       class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald placeholder:text-ink-faint">
+            </div>
+            <div class="lg:col-span-2">
+                <label for="stores-status" class="sr-only">{{ __('Status') }}</label>
+                <select id="stores-status" wire:model.live="status" class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    <option value="">{{ __('All statuses') }}</option>
+                    @foreach ($statusOptions as $option)
+                        <option value="{{ $option->value }}">{{ $option->label() }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        @if ($search !== '' || $status !== '')
+            <button type="button" wire:click="resetFilters"
+                    class="mt-2 inline-flex min-h-11 items-center text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                {{ __('Clear filters') }}
+            </button>
+        @endif
+    </x-ui.card>
 
     <x-ui.card class="overflow-x-auto">
+        <x-ui.table-skeleton wire:loading wire:target="search, status, resetFilters, sortBy, perPage" />
+        <div wire:loading.remove wire:target="search, status, resetFilters, sortBy, perPage">
         @if ($stores->isEmpty())
             <x-ui.empty-state :title="__('No stores found')" :message="__('Approved, suspended and rejected stores appear here. Pending applications live in the queue.')" />
         @else
             <table class="w-full min-w-[860px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Store') }}</th>
+                        <x-ui.table.sortable field="store" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Store') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Owner') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('State') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Rating') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Live products') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Commission override') }}</th>
+                        <x-ui.table.sortable field="state" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('State') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="rating" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Rating') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="products" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Live products') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="commission" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Commission override') }}</x-ui.table.sortable>
                     </tr>
                 </thead>
                 <tbody>
@@ -61,9 +73,8 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
 
-    @if ($stores->hasPages())
-        <div>{{ $stores->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$stores" />
 </div>

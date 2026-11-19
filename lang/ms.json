@@ -2887,5 +2887,10 @@
     "Turn on selected": "Hidupkan yang dipilih",
     "{1}:count deal ended|[2,*]:count deals ended": "{1}:count tawaran ditamatkan|[2,*]:count tawaran ditamatkan",
     "{1}:count voucher updated|[2,*]:count vouchers updated": "{1}:count baucar dikemas kini|[2,*]:count baucar dikemas kini",
-    "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count baucar dipadam|[2,*]:count baucar dipadam"
+    "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count baucar dipadam|[2,*]:count baucar dipadam",
+    "Search order no., ref no. or trans ID": "Cari no. pesanan, no. rujukan atau ID transaksi",
+    "Search payments": "Cari pembayaran",
+    "Search who, event or description": "Cari pelaku, acara atau keterangan",
+    "No banned products": "Tiada produk dilarang",
+    "Products you ban from the queue above are listed here for reference.": "Produk yang anda larang daripada barisan di atas disenaraikan di sini untuk rujukan."
 }

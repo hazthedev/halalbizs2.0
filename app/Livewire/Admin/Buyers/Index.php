@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
+use App\Livewire\Concerns\WithTable;
 
 /**
  * Buyers management (docs/08 §C) — every non-admin account with search and
@@ -16,23 +16,31 @@ use Livewire\WithPagination;
 #[Layout('layouts.admin')]
 class Index extends Component
 {
-    use WithPagination;
+    use WithTable;
 
     public const PER_PAGE = 20;
 
     #[Url(except: '')]
-    public string $search = '';
-
-    #[Url(except: '')]
     public string $status = '';
 
-    public function updatedSearch(): void
+    protected function tableFilters(): array
     {
-        $this->resetPage();
+        return ['status'];
     }
 
-    public function updatedStatus(): void
+    protected function tableSorts(): array
     {
+        return ['name' => 'name', 'email' => 'email', 'orders' => 'orders_count', 'joined' => 'created_at', 'status' => 'status'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['created_at' => 'desc'];
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset('search', 'status');
         $this->resetPage();
     }
 
@@ -42,19 +50,17 @@ class Index extends Component
             ->whereDoesntHave('roles', fn (Builder $query) => $query->where('name', 'admin'))
             ->when(in_array($this->status, ['active', 'suspended'], true), fn (Builder $query) => $query->where('status', $this->status))
             ->when(trim($this->search) !== '', function (Builder $query) {
-                $term = '%'.trim($this->search).'%';
+                $term = $this->likeTerm();
 
                 $query->where(fn (Builder $query) => $query
                     ->where('name', 'like', $term)
                     ->orWhere('email', 'like', $term));
             })
             ->withCount('orders')
-            ->latest('created_at')
-            ->latest('id')
-            ->paginate(self::PER_PAGE);
+        ;
 
         return view('livewire.admin.buyers.index', [
-            'buyers' => $buyers,
+            'buyers' => $this->sortTable($buyers)->paginate($this->tablePageSize()),
         ])->title(__('Buyers'));
     }
 }

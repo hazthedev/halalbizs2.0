@@ -20,7 +20,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 2. **Pending queues** link straight to work waiting: applications, certificates, moderation, payouts, returns.
 3. Charts: **GMV — last 30 days**, **New buyers over time**, **Orders by status**, **Top categories by GMV**, **Top stores by GMV**.
 4. **System > Search insights** shows **Trending** searches and **Zero-result** searches (what buyers wanted and did not find).
-5. **System > Audit log** lists who changed what, with **Subject** and date filters and a **Diff** of changes.
+5. **System > Audit log** lists who changed what, with a search box (who, event, description), **Subject** and date filters, a **Diff** of changes, and **Rows per page** under the list.
 6. **Finance > Boosts** reports boost income. **Finance > Payouts** has **Export bank CSV**.
 
 ## 3. Sellers and applications
@@ -30,10 +30,10 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 3. For each document select **Verify**, or **Reject** (the applicant must provide it again). Add notes if needed.
 4. To accept, select **Approve store**. The owner gets seller access at once and an email.
 5. To decline, write the **Rejection reason** (required, emailed to the applicant) and select **Reject application**.
-6. **Sellers > Stores** lists every store. Search by store name or owner email, filter by status. Open a store to see **Live products**, **Sub-orders**, **GMV (completed)**.
+6. **Sellers > Stores** lists every store. Search by store name or owner email, filter by status, and sort by any column heading. Open a store to see **Live products**, **Sub-orders**, **GMV (completed)**.
 7. To suspend, write the **Suspension reason (emailed to the owner)** and select **Suspend store**. The shop leaves the storefront. **Reinstate store** brings it back.
 8. **Record settlement**: when a seller who owes money pays by bank transfer, enter **Amount (RM)**, **Bank reference** and a note, then select **Record settlement**.
-9. **Buyers**: search, open a buyer and use **Suspend account** (with a reason) or **Unsuspend account**.
+9. **Buyers**: search by name or email, filter by status, sort by any column heading, open a buyer and use **Suspend account** (with a reason) or **Unsuspend account**.
 
 ## 4. Halal certificates review
 
@@ -51,7 +51,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 3. Set **Halal certificate**: **Inherit from parent**, **Required to list** or **Not required**. Required means a seller cannot list there without an approved certificate covering the product.
 4. The gate starts on 2 December 2026. On live, the required categories are **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** and **Pharma & Supplements**.
 5. Select **Create category** or **Save changes**.
-6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (hide unsuitable reviews), and **Moderation**.
+6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (sort by **Rating** or **Posted**, hide unsuitable reviews), and **Moderation**.
 7. **Moderation**: when **New products need admin approval before going live** is on (System > Settings), new products wait here. Select **Approve**, or **Reject** with a reason (the product returns to drafts and the seller gets the reason), or **Ban** to remove it. You can bulk **Approve selected**, **Reject selected**, **Ban selected**.
 
 ## 6. Commission
@@ -69,7 +69,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 1. Open **Orders > All orders**. Search by order or sub-order number, and filter by **Status**, **Store**, **Payment method** and dates. <!-- SHOT: All orders -->
 2. Open a row to see items, **Timeline**, **Payment** (method, gateway reference and status) and **Totals**. Order data is a snapshot and is read-only.
 3. **Admin actions**: **Force cancel** with a **Cancellation reason** (stock returns, buyer is told, no undo). For an online order that was paid and must be refunded, first refund the money in the iPay88 merchant portal, then enter the **iPay88 portal reference** and select **Mark refunded**. For cash on delivery there is no gateway money to move.
-4. **Orders > Payments** is the reconciliation grid. It shows **Ref no.**, **Trans ID**, **Signature** (**Signature verified** or **Mismatch**), **Requery result** and **Needs portal refund**. Filter by **Mismatches only**. Select **Requery** on a stuck payment.
+4. **Orders > Payments** is the reconciliation grid. It shows **Ref no.**, **Trans ID**, **Signature** (**Signature verified** or **Mismatch**), **Requery result** and **Needs portal refund**. Search by order number, **Ref no.** or **Trans ID**, sort by **Ref no.**, **Amount**, **Status** or **Paid at**, and filter by **Mismatches only**. Select **Requery** on a stuck payment.
    - A row marked **Needs portal refund** means the gateway did not refund the money. Filter by **Needs portal refund** to list them. Refund the money in the iPay88 merchant portal first. Then select **Mark refund settled in portal** on that row, enter the **Portal reference (optional)** and select **Confirm settled**. The flag clears, the row then reads **Settled in portal**, and the action is kept in the audit log with your name and the reference. **Cancel** closes it without a change.
 5. While payment is in simulator mode, simulated payments show here too.
 6. **Orders > Subscriptions** lists recurring buyers by status.

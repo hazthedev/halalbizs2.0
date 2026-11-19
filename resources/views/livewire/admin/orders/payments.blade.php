@@ -7,6 +7,12 @@
 
     {{-- Filters --}}
     <x-ui.card class="flex flex-wrap items-center gap-3 p-3">
+        <div class="min-w-0 flex-1">
+            <label for="payments-search" class="sr-only">{{ __('Search payments') }}</label>
+            <input id="payments-search" type="search" wire:model.live.debounce.300ms="search"
+                   placeholder="{{ __('Search order no., ref no. or trans ID') }}"
+                   class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald font-mono placeholder:font-sans placeholder:text-ink-faint">
+        </div>
         <div>
             <label for="payments-status" class="sr-only">{{ __('Status') }}</label>
             <select id="payments-status" wire:model.live="status"
@@ -27,33 +33,39 @@
                    class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
             {{ __('Needs portal refund') }}
         </label>
+        @if ($search !== '' || $status !== '' || $mismatchesOnly || $needsPortalRefund)
+            <button type="button" wire:click="resetFilters"
+                    class="inline-flex min-h-11 items-center text-[13px] font-medium text-ink-soft hover:text-ink focus-visible:ring-2 focus-visible:ring-emerald">
+                {{ __('Clear filters') }}
+            </button>
+        @endif
     </x-ui.card>
 
     {{-- Table per design §6 --}}
     <x-ui.card class="overflow-x-auto">
         {{-- Row skeletons while the filters refresh the grid (design §6) --}}
-        <x-ui.table-skeleton wire:loading wire:target="status, mismatchesOnly" />
-        <div wire:loading.remove wire:target="status, mismatchesOnly">
+        <x-ui.table-skeleton wire:loading wire:target="search, status, mismatchesOnly, needsPortalRefund, resetFilters, sortBy, perPage" />
+        <div wire:loading.remove wire:target="search, status, mismatchesOnly, needsPortalRefund, resetFilters, sortBy, perPage">
         @if ($payments->isEmpty())
             <x-ui.empty-state :title="__('No payments match')" :message="__('Payment attempts appear here the moment a buyer reaches the gateway.')" />
         @else
             <table class="w-full min-w-[1000px] text-[13px]">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Ref no.') }}</th>
+                        <x-ui.table.sortable field="ref" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Ref no.') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Order') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Gateway') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Amount') }}</th>
+                        <x-ui.table.sortable field="amount" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Amount') }}</x-ui.table.sortable>
                         {{-- H-3: refunded_sen was written by RefundService and read by
                              nothing in the whole app, so a refund — including cash owed
                              on a cancelled-after-payment order — appeared on no
                              reconciliation surface. This grid is that surface. --}}
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Refunded') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Status') }}</th>
+                        <x-ui.table.sortable field="status" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Status') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Trans ID') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Signature') }}</th>
                         <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Requery result') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Paid at') }}</th>
+                        <x-ui.table.sortable field="paid" :sort="$sort" :direction="$direction" class="px-3 py-2.5 font-medium">{{ __('Paid at') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -162,7 +174,5 @@
         </div>
     </x-ui.card>
 
-    @if ($payments->hasPages())
-        <div>{{ $payments->links() }}</div>
-    @endif
+    <x-ui.table.footer :rows="$payments" />
 </div>

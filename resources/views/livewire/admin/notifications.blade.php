@@ -34,7 +34,9 @@
                 @endforeach
             </x-ui.card>
         @else
-            <x-ui.empty-state :title="__('No notifications')" :message="__('Operational alerts — applications, payouts, disputes — appear here.')" />
+            <x-ui.card>
+                <x-ui.empty-state :title="__('No notifications')" :message="__('Operational alerts — applications, payouts, disputes — appear here.')" />
+            </x-ui.card>
         @endif
     </div>
 </div>
