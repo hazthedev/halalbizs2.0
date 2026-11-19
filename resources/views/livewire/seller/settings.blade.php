@@ -1,6 +1,11 @@
 <div class="mx-auto max-w-3xl space-y-4">
     <x-ui.section-heading as="h1" :title="__('Shop settings')" />
 
+    <x-ui.card class="p-4 lg:p-6">
+        <h2 class="text-sm font-medium">{{ __('Commission') }}</h2>
+        <p class="mt-1 text-[13px] text-ink-soft">{{ $commission }}</p>
+    </x-ui.card>
+
     {{-- ===== Profile ===== --}}
     <x-ui.card class="p-4 lg:p-6">
         <h2 class="text-sm font-medium">{{ __('Profile') }}</h2>

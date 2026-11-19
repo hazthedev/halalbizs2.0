@@ -2850,5 +2850,7 @@
     "Submitted from": "Dihantar dari",
     "Submitted to": "Dihantar hingga",
     "Valid": "Sah",
-    "WHIP": "WHIP"
+    "WHIP": "WHIP",
+    ":rate% of each sale": ":rate% daripada setiap jualan",
+    ":min% to :max% of each sale, by category": ":min% hingga :max% daripada setiap jualan, mengikut kategori"
 }

@@ -65,10 +65,15 @@ class Commission extends Component
         );
 
         $settings = app(CommissionSettings::class);
+        $old = self::formatRate($settings->global_rate);
         $settings->global_rate = round((float) $this->globalRate, 2);
         $settings->save();
 
         $this->globalRate = self::formatRate($settings->global_rate);
+
+        activity('commission')->causedBy(auth()->user())
+            ->withProperties(['old' => $old, 'new' => $this->globalRate])
+            ->log('global commission rate changed');
 
         $this->dispatch('toast', message: __('Global commission rate saved.'));
     }

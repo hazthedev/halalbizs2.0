@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Catalog;
 
+use App\Livewire\Admin\Finance\Commission;
 use App\Models\Attribute;
 use App\Models\Category;
 use App\Support\ContentLocales;
@@ -149,7 +150,15 @@ class Categories extends Component
         ContentLocales::write($category, 'name', $this->name);
         ContentLocales::write($category, 'description', $this->description, englishRequired: false);
 
+        $rateChange = $category->isDirty('commission_rate') ? [$category->getOriginal('commission_rate'), $category->commission_rate] : null;
+
         $category->save();
+
+        if ($rateChange !== null) {
+            activity('commission')->causedBy(auth()->user())->performedOn($category)
+                ->withProperties(['old' => $rateChange[0] === null ? null : Commission::formatRate((float) $rateChange[0]), 'new' => $rateChange[1] === null ? null : Commission::formatRate((float) $rateChange[1])])
+                ->log('category commission rate changed');
+        }
 
         if ($this->image !== null) {
             $category->addMedia($this->image->getRealPath())

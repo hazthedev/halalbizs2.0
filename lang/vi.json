@@ -2821,5 +2821,7 @@
     "Submitted from": "Gửi từ",
     "Submitted to": "Gửi đến",
     "Valid": "Hiệu lực",
-    "WHIP": "WHIP"
+    "WHIP": "WHIP",
+    ":rate% of each sale": ":rate% trên mỗi đơn bán",
+    ":min% to :max% of each sale, by category": ":min% đến :max% trên mỗi đơn bán, tùy theo danh mục"
 }
