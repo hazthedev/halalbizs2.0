@@ -127,8 +127,21 @@ class Dashboard extends Component
             ->where('status', SubOrderStatus::Completed)
             ->where('completed_at', '>=', $start)
             ->whereNotNull('commission_sen');
-        $commissionKnown = $commissionQuery->clone()->exists();
-        $commissionSen = (int) $commissionQuery->sum('commission_sen');
+        $commissionTotals = $commissionQuery->clone()->toBase()
+            ->selectRaw('count(*) as n, coalesce(sum(commission_sen), 0) as gross_sen')
+            ->first();
+        $commissionKnown = (int) $commissionTotals->n > 0;
+        // HB-G136: commission_sen is the GROSS snapshot (later refunds scale
+        // from it), so take off each refunded share the way LedgerService and
+        // RefundService book it: round(commission x refunded / total), half up.
+        // Only partly refunded rows need PHP; the rest sums in SQL.
+        $commissionSen = (int) $commissionTotals->gross_sen
+            - (int) $commissionQuery->clone()
+                ->where('refunded_sen', '>', 0)
+                ->where('total_sen', '>', 0)
+                ->toBase()
+                ->get(['commission_sen', 'refunded_sen', 'total_sen'])
+                ->sum(fn ($row) => intdiv((int) $row->commission_sen * min((int) $row->refunded_sen, (int) $row->total_sen) + intdiv((int) $row->total_sen, 2), (int) $row->total_sen));
 
         // Boost revenue — Σ ProductBoost.amount_sen charged in the period.
         $boostRevenueSen = (int) ProductBoost::query()
