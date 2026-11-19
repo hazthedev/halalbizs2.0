@@ -96,9 +96,10 @@ class Messages extends Component
             ],
         );
 
-        // Context chip only ever points at a product of THIS store.
+        // Context chip only ever points at a LIVE product of THIS store, as the
+        // app API does: contextProductId is client-mutable (HB-G121).
         $context = $this->contextProductId !== null
-            ? Product::query()->where('store_id', $conversation->store_id)->find($this->contextProductId)
+            ? Product::query()->live()->where('store_id', $conversation->store_id)->find($this->contextProductId)
             : null;
 
         $chat->sendMessage($conversation, 'buyer', auth()->user(), $this->body, $context);

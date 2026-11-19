@@ -75,7 +75,13 @@ class RefundService
             //    integer math.
             if ($total > 0
                 && $subOrder->ledgerEntries()->where('type', LedgerEntryType::Sale)->exists()) {
-                $commissionReversal = intdiv((int) $subOrder->commission_sen * $amountSen + intdiv($total, 2), $total);
+                // Round the CUMULATIVE refunded share and reverse the step, so
+                // the reversals (and a net booking for a refund before
+                // completion, LedgerService) add up to the commission exactly.
+                // Rounding each partial alone can reverse 1 sen more than booked.
+                $commissionSen = (int) $subOrder->commission_sen;
+                $commissionReversal = intdiv($commissionSen * ($alreadyRefunded + $amountSen) + intdiv($total, 2), $total)
+                    - intdiv($commissionSen * $alreadyRefunded + intdiv($total, 2), $total);
 
                 $this->ledger->adjustment(
                     $subOrder->store,
@@ -95,7 +101,7 @@ class RefundService
             }
 
             // 1c. Take back the coins EARNED on this sub-order, same share (HB-G004).
-            $this->coins->clawBackEarnedForRefund($subOrder, $amountSen, $total);
+            $this->coins->clawBackEarnedForRefund($subOrder, $amountSen);
 
             // 2. Track on the payment + best-effort gateway refund. The buyer is
             //    only ever refunded the CASH they actually paid: order-level
