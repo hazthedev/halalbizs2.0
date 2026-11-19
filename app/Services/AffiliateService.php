@@ -71,8 +71,18 @@ class AffiliateService
         }
 
         return DB::transaction(function () use ($subOrder, $order, $affiliateId) {
-            if (AffiliateReferral::where('sub_order_id', $subOrder->id)->exists()) {
-                return null; // already booked
+            // HB-G133: a refund can land before completion, or after it but
+            // before this queued job runs (the event's sub-order is a snapshot).
+            // Re-read refunded_sen under the lock RefundService takes, so the
+            // refund either finds this referral and reduces it, or lands first
+            // and is netted out below. Fully refunded books nothing, as the ledger.
+            $subOrder = SubOrder::lockForUpdateWithOrder($subOrder)->first();
+            $totalSen = (int) $subOrder->total_sen;
+            $refundedSen = (int) $subOrder->refunded_sen;
+
+            if (AffiliateReferral::where('sub_order_id', $subOrder->id)->exists()
+                || ($totalSen > 0 && $refundedSen >= $totalSen)) {
+                return null; // already booked, or nothing left to earn on
             }
 
             $affiliate = Affiliate::whereKey($affiliateId)->lockForUpdate()->first();
@@ -84,7 +94,7 @@ class AffiliateService
             $itemsSubtotalSen = (int) $subOrder->items_subtotal_sen;
             $commissionSen = intdiv($itemsSubtotalSen * $affiliate->commission_rate_bp + 5000, 10000);
 
-            return AffiliateReferral::create([
+            $referral = AffiliateReferral::create([
                 'affiliate_id' => $affiliate->id,
                 'sub_order_id' => $subOrder->id,
                 'buyer_id' => $order->user_id,
@@ -95,6 +105,12 @@ class AffiliateService
                 'locks_at' => $this->locksAtFor($subOrder),
                 'created_at' => now(),
             ]);
+
+            // Commission stays gross (later refunds scale from it); the share
+            // already refunded is voided with the same formula a later refund uses.
+            $this->reduceForRefund($subOrder, $refundedSen);
+
+            return $referral->refresh();
         });
     }
 

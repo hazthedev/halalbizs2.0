@@ -70,9 +70,7 @@ class LedgerService
             $totalSen = (int) $subOrder->total_sen;
             $refundedSen = min((int) $subOrder->refunded_sen, $totalSen);
 
-            if ($totalSen > 0 && $refundedSen >= $totalSen) {
-                return;
-            }
+            $fullyRefunded = $totalSen > 0 && $refundedSen >= $totalSen;
 
             $basis = $this->commissionSettings->basis();
             $commissionSen = $this->commissionSen($subOrder, $basis);
@@ -82,11 +80,17 @@ class LedgerService
 
             // Snapshot the basis alongside the rate — hard rule #5. The setting
             // is flippable, so without this a historical commission cannot be
-            // explained after someone changes it.
+            // explained after someone changes it. HB-G134: stamped even when
+            // fully refunded (commission 0, nothing booked), so reports read a
+            // settled zero instead of null.
             $subOrder->forceFill([
-                'commission_sen' => $commissionSen,
+                'commission_sen' => $fullyRefunded ? 0 : $commissionSen,
                 'commission_basis' => $basis,
             ])->save();
+
+            if ($fullyRefunded) {
+                return;
+            }
 
             // H2 DB-level backstop: Sale/Commission are once-per-sub-order
             // settlement entries, so they carry a unique `settlement_key`
