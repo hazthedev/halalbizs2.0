@@ -12,18 +12,33 @@
         <div role="status" class="rounded-[var(--radius-control)] bg-emerald-tint px-4 py-3 text-sm text-emerald-deep">{{ session('status') }}</div>
     @endif
 
+    <x-ui.table.search :placeholder="__('Search title')">
+        <label for="articles-category" class="sr-only">{{ __('Category') }}</label>
+        <select id="articles-category" wire:model.live="category"
+                class="block min-h-11 rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+            <option value="">{{ __('All categories') }}</option>
+            @foreach ($categories as $categoryCase)
+                <option value="{{ $categoryCase->value }}">{{ $categoryCase->label() }}</option>
+            @endforeach
+        </select>
+    </x-ui.table.search>
+
     <x-ui.card class="overflow-x-auto">
-        @if ($articles->isEmpty())
+        <x-ui.table-skeleton wire:loading wire:target="search, category, sortBy, perPage, gotoPage, nextPage, previousPage" />
+        <div wire:loading.remove wire:target="search, category, sortBy, perPage, gotoPage, nextPage, previousPage">
+        @if ($articles->isEmpty() && ($search !== '' || $category !== ''))
+            <x-ui.empty-state :title="__('No articles match')" :message="__('Try searching for something else.')" />
+        @elseif ($articles->isEmpty())
             <x-ui.empty-state :title="__('No articles yet')" :message="__('Run the seeder for the starter set, or add one above.')" />
         @else
             <table class="w-full min-w-[720px] text-[13px]">
-                <thead>
+                <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-line text-left text-ink-soft">
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Category') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Title') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Position') }}</th>
-                        <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Views') }}</th>
-                        <th scope="col" class="px-3 py-2.5 font-medium">{{ __('Published') }}</th>
+                        <x-ui.table.sortable field="category" :sort="$sort" :direction="$direction">{{ __('Category') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="title" :sort="$sort" :direction="$direction">{{ __('Title') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="position" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Position') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="views" :sort="$sort" :direction="$direction" class="px-3 py-2.5 text-right font-medium">{{ __('Views') }}</x-ui.table.sortable>
+                        <x-ui.table.sortable field="published" :sort="$sort" :direction="$direction">{{ __('Published') }}</x-ui.table.sortable>
                         <th scope="col" class="px-3 py-2.5 text-right font-medium">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -65,5 +80,8 @@
                 </tbody>
             </table>
         @endif
+        </div>
     </x-ui.card>
+
+    <x-ui.table.footer :rows="$articles" />
 </div>

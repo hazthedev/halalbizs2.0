@@ -8,24 +8,12 @@
         :subtitle="__('Sellers submit the certificate a recognised body issued them. Nothing badges a product until it is approved here.')"
     />
 
-    {{-- Filter --}}
-    <div class="flex flex-wrap items-center gap-2">
-        <div class="inline-flex rounded-[var(--radius-control)] border border-line bg-surface p-0.5"
-             role="group" aria-label="{{ __('Filter by review state') }}">
-            @foreach (['pending' => __('Awaiting review'), 'approved' => __('Approved'), 'rejected' => __('Rejected'), 'all' => __('All')] as $key => $label)
-                <button type="button"
-                        wire:click="$set('filter', '{{ $key }}')"
-                        wire:key="filter-{{ $key }}"
-                        aria-pressed="{{ $filter === $key ? 'true' : 'false' }}"
-                        class="min-h-10 rounded-md px-3 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $filter === $key ? 'bg-emerald-night text-on-dark' : 'text-ink-soft hover:text-ink' }}">
-                    {{ $label }}
-                    @if ($key === 'pending' && $pendingCount > 0)
-                        <span class="ml-1 tabular-nums">{{ $pendingCount }}</span>
-                    @endif
-                </button>
-            @endforeach
-        </div>
-    </div>
+    {{-- Review state --}}
+    <nav class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Filter by review state') }}">
+        @foreach (['pending' => __('Awaiting review'), 'approved' => __('Approved'), 'rejected' => __('Rejected'), 'all' => __('All')] as $key => $label)
+            <x-ui.tab wire:click="$set('filter', '{{ $key }}')" wire:key="filter-{{ $key }}" :active="$filter === $key" :count="$key === 'pending' ? $pendingCount : 0">{{ $label }}</x-ui.tab>
+        @endforeach
+    </nav>
     @php $fieldClass = 'block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald'; @endphp
     <x-ui.card class="p-3">
         <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">

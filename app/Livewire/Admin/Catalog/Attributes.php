@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Admin\Catalog;
 
+use App\Livewire\Concerns\WithTable;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Support\ContentLocales;
+use App\Support\JsonSearch;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -15,6 +17,26 @@ use Livewire\Component;
 #[Layout('layouts.admin')]
 class Attributes extends Component
 {
+    use WithTable;
+
+    public const PER_PAGE = 20;
+
+    protected function tableFilters(): array
+    {
+        return [];
+    }
+
+    // Name sorts by slug: the slug is made from the English name and is a plain column.
+    protected function tableSorts(): array
+    {
+        return ['name' => 'slug', 'slug' => 'slug', 'filterable' => 'is_filterable', 'values' => 'values_count'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['slug' => 'asc'];
+    }
+
     // ── Create form ────────────────────────────────────────────────────
     /** @var array{en: string, ms: string, vi: string} */
     public array $name = ['en' => '', 'ms' => '', 'vi' => ''];
@@ -95,6 +117,7 @@ class Attributes extends Component
     public function deleteAttribute(int $attributeId): void
     {
         Attribute::query()->findOrFail($attributeId)->delete();
+        $this->resetPage();
 
         if ($this->managingId === $attributeId) {
             $this->reset(['managingId']);
@@ -167,7 +190,14 @@ class Attributes extends Component
     public function render()
     {
         return view('livewire.admin.catalog.attributes', [
-            'attributeList' => Attribute::query()->withCount('values')->orderBy('slug')->get(),
+            'attributeList' => $this->sortTable(Attribute::query()->withCount('values')
+                ->when(trim($this->search) !== '', fn ($q) => $q->where(function ($q) {
+                    $term = JsonSearch::pattern($this->search);
+                    $q->whereRaw(JsonSearch::clause('slug'), [$term])
+                        ->orWhereRaw(JsonSearch::clause('name->en'), [$term])
+                        ->orWhereRaw(JsonSearch::clause('name->ms'), [$term])
+                        ->orWhereRaw(JsonSearch::clause('name->vi'), [$term]);
+                })))->paginate($this->tablePageSize()),
             'managedValues' => $this->managingId !== null
                 ? AttributeValue::query()->where('attribute_id', $this->managingId)->orderBy('position')->orderBy('id')->get()
                 : collect(),

@@ -6,18 +6,7 @@
     {{-- Lifecycle tabs — the queue (disputed + escalated) is the work surface --}}
     <nav class="flex gap-1 overflow-x-auto border-b border-line" aria-label="{{ __('Return request status') }}">
         @foreach ($tabLabels as $key => $label)
-            <x-ui.button variant="plain"
-                type="button"
-                wire:click="$set('tab', '{{ $key }}')"
-                wire:key="tab-{{ $key }}"
-                aria-current="{{ $tab === $key ? 'page' : 'false' }}"
-                class="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $tab === $key ? 'border-ink font-medium text-ink' : 'border-transparent font-medium text-ink-soft hover:text-ink' }}"
-            >
-                {{ $label }}
-                @if ($counts[$key] > 0)
-                    <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-tint px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-emerald">{{ $counts[$key] }}</span>
-                @endif
-            </x-ui.button>
+            <x-ui.tab wire:click="$set('tab', '{{ $key }}')" wire:key="tab-{{ $key }}" :active="$tab === $key" :count="$counts[$key]">{{ $label }}</x-ui.tab>
         @endforeach
     </nav>
 
