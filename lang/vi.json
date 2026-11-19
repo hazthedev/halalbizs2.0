@@ -299,6 +299,7 @@
     "Codes use letters, numbers, and dashes only.": "Codes use letters, numbers, and dashes only.",
     "Coins (+ grant \/ − clawback)": "Coins (+ grant \/ − clawback)",
     "Coins earned on order :no": "Coins earned on order :no",
+    "Coins earned on order :no taken back after a refund": "Coins earned on order :no taken back after a refund",
     "Coins expired": "Coins expired",
     "Coins in circulation": "Coins in circulation",
     "Coins refunded for cancelled order :no": "Coins refunded for cancelled order :no",

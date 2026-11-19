@@ -94,6 +94,9 @@ class RefundService
                 $this->coins->reverseForRefund($order, $amountSen, $payableBasisSen);
             }
 
+            // 1c. Take back the coins EARNED on this sub-order, same share (HB-G004).
+            $this->coins->clawBackEarnedForRefund($subOrder, $amountSen, $total);
+
             // 2. Track on the payment + best-effort gateway refund. The buyer is
             //    only ever refunded the CASH they actually paid: order-level
             //    platform vouchers + coins lowered grand_total below the sum of the
