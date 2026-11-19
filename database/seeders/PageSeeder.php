@@ -321,7 +321,7 @@ class PageSeeder extends Seeder
             // creators have something binding to point at. If any of these
             // numbers change, they change in config first and here second:
             //
-            //   5%              config('affiliate.commission_rate_bp') = 500
+            //   2.5%            config('affiliate.max_rate_bp') = 250 (cap, HB-G159)
             //   30-day cookie   config('affiliate.cookie_days')
             //   14-day hold     OrderSettings::return_window_days (7)
             //                   + config('affiliate.lock_buffer_days') (7)
@@ -347,7 +347,7 @@ class PageSeeder extends Seeder
                 <p><strong>You cannot earn commission on your own purchases.</strong> An order placed by the same account that owns the share link earns nothing.</p>
 
                 <h3>3. What you earn</h3>
-                <p>5% of the value of the items in a referred order. Shipping, tax and any platform discounts are excluded. Commission is calculated per shop: an order split across two shops produces one commission per shop, and each follows its own delivery and return timeline.</p>
+                <p>2.5% of the value of the items in a referred order. Shipping, tax and any platform discounts are excluded. Commission is calculated per shop: an order split across two shops produces one commission per shop, and each follows its own delivery and return timeline.</p>
 
                 <p>Commission is earned when an order is completed, not when it is placed.</p>
 
@@ -388,7 +388,7 @@ class PageSeeder extends Seeder
                 <p><strong>Anda tidak boleh memperoleh komisen atas pembelian anda sendiri.</strong> Pesanan yang dibuat oleh akaun yang sama dengan pemilik pautan tidak memperoleh apa-apa.</p>
 
                 <h3>3. Apa yang anda peroleh</h3>
-                <p>5% daripada nilai barang dalam pesanan yang dirujuk. Penghantaran, cukai dan sebarang diskaun platform dikecualikan. Komisen dikira mengikut kedai: pesanan yang merangkumi dua kedai menghasilkan satu komisen bagi setiap kedai, dan setiap satu mengikut jadual penghantaran dan pemulangannya sendiri.</p>
+                <p>2.5% daripada nilai barang dalam pesanan yang dirujuk. Penghantaran, cukai dan sebarang diskaun platform dikecualikan. Komisen dikira mengikut kedai: pesanan yang merangkumi dua kedai menghasilkan satu komisen bagi setiap kedai, dan setiap satu mengikut jadual penghantaran dan pemulangannya sendiri.</p>
 
                 <p>Komisen diperoleh apabila pesanan selesai, bukan semasa ia dibuat.</p>
 

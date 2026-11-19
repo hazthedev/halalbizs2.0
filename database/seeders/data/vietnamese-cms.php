@@ -131,7 +131,7 @@ HTML,
 <p>Khi ai đó mở liên kết của bạn, chúng tôi lưu cookie giới thiệu trong 30 ngày. Nếu họ đặt hàng trong thời gian đó, giao dịch được ghi nhận cho bạn. Liên kết cuối cùng được ưu tiên: nếu người mua sau đó nhấp liên kết của nhà sáng tạo khác, người sau sẽ được ghi nhận. Việc ghi nhận được chốt khi đặt hàng và không thay đổi sau đó.</p>
 <p><strong>Bạn không thể nhận hoa hồng từ giao dịch mua của chính mình.</strong> Đơn do cùng tài khoản sở hữu liên kết chia sẻ đặt sẽ không tạo hoa hồng.</p>
 <h3>3. Mức hoa hồng</h3>
-<p>5% giá trị sản phẩm trong đơn hàng được giới thiệu. Phí giao hàng, thuế và mọi khoản giảm giá của nền tảng không được tính. Hoa hồng được tính theo từng cửa hàng: đơn chia cho hai cửa hàng tạo một khoản hoa hồng cho mỗi cửa hàng, mỗi khoản theo lịch giao và trả hàng riêng.</p>
+<p>2.5% giá trị sản phẩm trong đơn hàng được giới thiệu. Phí giao hàng, thuế và mọi khoản giảm giá của nền tảng không được tính. Hoa hồng được tính theo từng cửa hàng: đơn chia cho hai cửa hàng tạo một khoản hoa hồng cho mỗi cửa hàng, mỗi khoản theo lịch giao và trả hàng riêng.</p>
 <p>Hoa hồng được ghi nhận khi đơn hoàn tất, không phải khi vừa được đặt.</p>
 <h3>4. Thời gian tạm giữ</h3>
 <p>Hoa hồng mới có trạng thái <strong>Đang chờ</strong> và chưa thể rút. Khoản này khả dụng khoảng hai tuần sau khi giao hàng — sau khi thời hạn trả hàng của người mua kết thúc, cộng thêm một khoảng đệm ngắn cho tranh chấp muộn.</p>
