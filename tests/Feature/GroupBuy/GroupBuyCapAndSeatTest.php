@@ -162,6 +162,21 @@ test('a partial refund keeps the seat used', function () {
     expect(capMember($team, $buyer)->status)->toBe(GroupBuyMemberStatus::Purchased);
 });
 
+test('a full refund after completion keeps the seat used', function () {
+    [$buyer, $address, $deal, $team] = capSetup();
+    $subOrder = capPaidSubOrder($buyer, $address, $deal);
+    $status = app(SubOrderStatusService::class);
+
+    foreach ([SubOrderStatus::Processing, SubOrderStatus::Shipped, SubOrderStatus::Delivered, SubOrderStatus::Completed] as $to) {
+        $status->transition($subOrder->fresh(), $to, ActorType::System);
+    }
+
+    app(RefundService::class)->refund($subOrder->fresh(), (int) $subOrder->total_sen, ActorType::Admin, null, 'REF1', attemptGatewayRefund: false);
+
+    expect($subOrder->fresh()->refunded_sen)->toBe((int) $subOrder->total_sen)
+        ->and(capMember($team, $buyer)->status)->toBe(GroupBuyMemberStatus::Purchased);
+});
+
 test('a cancel never reopens a team that unlocked, and a closed deal stays closed', function () {
     [$buyer, $address, $deal, $team] = capSetup();
     $subOrder = capPaidSubOrder($buyer, $address, $deal);
