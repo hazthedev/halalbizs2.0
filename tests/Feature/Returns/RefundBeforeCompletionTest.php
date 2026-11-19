@@ -277,8 +277,10 @@ test('HB-G136: after a partial refund before completion, the admin dashboard and
     $admin = makeAdmin(User::factory()->create(['two_factor_method' => 'email']));
 
     // Platform commission 1000 (5% of 20000), half refunded: 500 earned, as booked in the ledger.
+    // Take-rate over net GMV (20500 - 10250): 500 / 10250 = 4.87%, not 2.43% over gross.
     Livewire::actingAs($admin)->test(Dashboard::class)
-        ->assertViewHas('commissionSen', 500);
+        ->assertViewHas('commissionSen', 500)
+        ->assertViewHas('takeRateBp', 487);
 
     // Affiliate commission 1000, half voided: 500 earned.
     $row = Livewire::actingAs($admin)->test(AdminAffiliates::class)->viewData('affiliates')->first();

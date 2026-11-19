@@ -172,10 +172,12 @@ class Dashboard extends Component
         $topStores = collect($topRows)->map(fn (array $row) => (object) ($row + ['store' => $stores->get($row['store_id'])]));
 
         // Take-rate = commission revenue as a share of completed GMV (M1.5).
+        // HB-G136: both net of refunds, so a partial refund does not read low.
+        // RefundService caps refunded_sen at total_sen, so the difference is >= 0.
         $completedGmvSen = (int) SubOrder::query()
             ->where('status', SubOrderStatus::Completed)
             ->where('completed_at', '>=', $start)
-            ->sum('total_sen');
+            ->sum(DB::raw('total_sen - refunded_sen'));
         $takeRateBp = $completedGmvSen > 0 ? intdiv($commissionSen * 10000, $completedGmvSen) : 0;
 
         return view('livewire.admin.dashboard', [
