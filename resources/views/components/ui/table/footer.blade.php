@@ -12,6 +12,6 @@
         </label>
     </div>
     @if ($rows->hasPages())
-        {{ $rows->links() }}
+        {{ $rows->links('pagination.table') }}
     @endif
 </div>
