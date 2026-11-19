@@ -9,7 +9,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 1. Mở trang đăng nhập admin (/admin/login). Nhập **Email** và **Password** rồi chọn **Log in**. Ở đây không có đăng ký: trang ghi "Admin access is granted by an existing administrator."
 2. Nếu tài khoản bật đăng nhập hai bước, trang **Two-factor check** hỏi mã 6 chữ số. Nhập mã và chọn **Verify and log in**. Chọn **Email me a new code** nếu mã hết hạn.
 3. Email của bạn phải được xác minh. Hiện tại hai bước cho admin là tuỳ chọn.
-4. Khi bạn đăng nhập từ một thiết bị chúng tôi chưa thấy, một email "New login to your HalalBizs account" được gửi. Quản trị viên và người bán sẽ được hỏi mã khi dùng thiết bị lạ. <!-- CHECK: Ruled 19 Nov 2026 (HB-DEC-1119b), branch hb-newdevice-2fa, NOT on origin/main fcfe366. Today only the alert email exists. Rewrite with the real screen text after that branch is merged. -->
+4. Khi bạn đăng nhập từ thiết bị mới mà chưa bật đăng nhập hai bước, trang **Two-factor check** ghi "You're signing in from a new device. Enter the code we emailed to confirm it's you." Nhập mã 6 chữ số trong email "Your login code" (hết hạn sau 10 phút) và chọn **Verify and log in**. Thiết bị chỉ được ghi nhớ sau khi mã đúng. Thiết bị đầu tiên bạn dùng không cần mã.
 5. Menu gồm: **Dashboard**, **Sellers**, **Buyers**, **Catalog**, **Orders**, **Finance**, **Content**, **Support**, **System**. Mục nào bạn không có quyền sẽ bị ẩn hoặc bị chặn. <!-- SHOT: admin menu -->
 6. Chọn **View storefront** để xem trang công khai và **Log out** để thoát.
 7. Để thêm admin: **System > Staff & roles**, chọn **Invite admin**, nhập **Name** và **Email**, đánh dấu các **Permissions** và chọn **Invite admin**. Hệ thống tạo mật khẩu tạm để bạn chuyển cho họ. **Edit permissions**, **Make superadmin** và **Remove admin** nằm trên cùng danh sách.
@@ -63,7 +63,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 4. Dùng **Effective-rate tester**: chọn một **Store** và một **Category** để xem mức một đơn mới sẽ tính.
 5. Mức theo danh mục đặt ở **Catalog > Categories** (**Commission rate (%)**, để trống là kế thừa). Mức theo cửa hàng đặt ở **Sellers > Stores > (cửa hàng) > Commission override** với **Save override**.
 6. Đổi mức chỉ ảnh hưởng đơn mới. Đơn đã đặt giữ mức của nó.
-7. Người bán thấy mức này ở mỗi trang đơn hàng ("Platform commission rate"). <!-- CHECK: HB-G118 (show sellers their rate and record rate changes in the audit log) is decided but not confirmed on main. -->
+7. Người bán thấy mức của mình trên form **Become a seller** và trong **Shop settings** ("10% trên mỗi đơn bán", hoặc một khoảng "tùy theo danh mục"), và ở mỗi trang đơn hàng ("Platform commission rate"). Mỗi lần đổi mức toàn sàn hoặc mức danh mục được ghi vào **System > Audit log** với mức cũ và mức mới.
 
 ## 7. Đơn hàng, thanh toán và hoàn tiền
 

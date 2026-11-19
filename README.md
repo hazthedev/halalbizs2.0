@@ -68,6 +68,16 @@ discard, delete, toggles and ordering stay on the list. All fields, uploads,
 translations, sanitization and voucher payloads keep their existing behavior.
 Coverage: `FormPagesTest` and `FormPagePayloadTest`, plus the existing content suites.
 
+### User guides (HB-SOP)
+
+The buyer, seller and admin guides live in `resources/sop/{buyer,seller,admin}.{en,vi}.md`
+(Vietnamese has its own files; every other locale reads English). `/help/buyer` and
+`/help/seller` are public, with two cards on the `/help` hub; `/admin/help` is for any
+admin (Support > Admin guide). `App\Support\SopGuide` renders them with
+`Str::markdown` and raw HTML stripped, so the reviewers' `<!-- CHECK -->` and
+`<!-- SHOT -->` comments never reach the page. Edit a guide by editing its file.
+Coverage: `tests/Feature/Help/SopGuideTest.php`.
+
 ## Docs
 
 - `CLAUDE.md` — stack, architecture conventions, and the hard rules (money in

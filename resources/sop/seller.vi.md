@@ -7,7 +7,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 ## 1. Đăng ký làm người bán
 
 1. Tạo tài khoản người mua và xác minh email (xem Hướng dẫn dành cho người mua). Bạn cũng có thể bắt đầu từ **Mở cửa hàng** (**Open a shop**) ở trang đăng nhập người bán, trang này sẽ yêu cầu tạo tài khoản trước.
-2. Chọn **Bán hàng trên HalalBizs** (thanh trên cùng hoặc chân trang). Trang **Become a seller** cho biết đơn đăng ký được xét trong 2 đến 3 ngày làm việc. <!-- SHOT: Become a seller form -->
+2. Chọn **Bán hàng trên HalalBizs** (thanh trên cùng hoặc chân trang). Trang **Become a seller** cho biết đơn đăng ký được xét trong 2 đến 3 ngày làm việc. Ô **Commission** cho biết HalalBizs thu bao nhiêu trên mỗi đơn bán, ví dụ "10% trên mỗi đơn bán", hoặc một khoảng "tùy theo danh mục" khi các danh mục có mức riêng. <!-- SHOT: Become a seller form -->
 3. Ở **Shop details** điền **Shop name** (phải là duy nhất, trang hiện **Shop URL** của bạn), **Description** và **State**.
 4. Đánh dấu **My business is SST-registered** nếu đúng, và nhập **SST registration number**.
 5. Ở **Bank details** chọn **Bank**, nhập **Account holder name** và **Account number** (8 đến 17 chữ số, không dấu cách hay gạch ngang). Tiền thanh toán sẽ chuyển vào tài khoản này.
@@ -17,14 +17,13 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 9. Nếu trang ghi **Application rejected**, đọc **Reason**, sửa lỗi và chọn **Re-apply**. Đăng ký lại sẽ xoá đơn cũ và tài liệu của nó, nên bạn làm lại từ đầu.
 10. Nếu trang ghi **Your shop is suspended**, người mua không thấy sản phẩm của bạn và bạn không vào được Trung tâm người bán. Hãy liên hệ hỗ trợ.
 11. Khi được duyệt, **Trung tâm người bán** (**Seller centre**) xuất hiện trong menu tài khoản. Bạn cũng đăng nhập được ở trang đăng nhập người bán.
-<!-- CHECK: The commission rate is not shown on the Become a seller form on origin/main (fcfe366). HB-G118 ("show sellers their commission rate") was decided on 19 Nov 2026. Today the rate shows only on each order page as "Platform commission rate: :rate%". Re-check once HB-G118 is merged. -->
 
 ## 2. Đăng nhập và kiểm tra thiết bị mới
 
 1. Mở trang đăng nhập người bán, nhập **Email** và **Mật khẩu**, rồi chọn **Đăng nhập**.
 2. Nếu bạn đã bật đăng nhập hai bước ở **Tài khoản của tôi > Hồ sơ > Bảo mật**, trang **Kiểm tra hai bước** hỏi mã 6 chữ số từ email hoặc ứng dụng xác thực. Nhập mã và chọn **Xác minh và đăng nhập**. Chỉ đánh dấu **Tin cậy thiết bị này trong 30 ngày** trên thiết bị của riêng bạn.
 3. Khi bạn đăng nhập từ một thiết bị HalalBizs chưa thấy, email "New login to your HalalBizs account" cho bạn biết thiết bị, IP và thời gian. Nếu không phải bạn, hãy đổi mật khẩu và chọn **Đăng xuất các thiết bị khác**.
-4. Người bán và quản trị viên sẽ được hỏi mã đăng nhập khi dùng thiết bị lạ, chứ không chỉ nhận cảnh báo. <!-- CHECK: This was ruled by Haze on 19 Nov 2026 (HB-DEC-1119b) and is being built on branch hb-newdevice-2fa. It is NOT on origin/main fcfe366. Today a new device only gets the alert email. Rewrite this step with the real screen text once that branch is merged. -->
+4. Khi bạn đăng nhập từ thiết bị mới và chưa bật đăng nhập hai bước, HalalBizs hỏi mã trước khi cho vào. Trang **Kiểm tra hai bước** ghi "Bạn đang đăng nhập từ một thiết bị mới. Nhập mã chúng tôi đã gửi qua email để xác nhận đó là bạn." Mở email "Mã đăng nhập của bạn", nhập mã 6 chữ số (hết hạn sau 10 phút) và chọn **Xác minh và đăng nhập**. Chọn **Gửi cho tôi mã mới qua email** nếu mã hết hạn. Email mã này thay cho email cảnh báo ở bước 3. Thiết bị đầu tiên bạn dùng không cần mã.
 
 ## 3. Menu Trung tâm người bán
 
@@ -34,7 +33,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 
 ## 4. Cài đặt cửa hàng
 
-1. Mở **Shop settings**. Ở **Profile** đổi **Logo**, **Banner**, **Description** và **State**, rồi chọn **Save profile**. Muốn đổi tên cửa hàng, hãy liên hệ hỗ trợ.
+1. Mở **Shop settings**. Ô **Commission** ở trên cùng cho biết mức hoa hồng của bạn. Mỗi trang đơn hàng cũng hiện mức đã tính cho đơn đó (**Platform commission rate**). Ở **Profile** đổi **Logo**, **Banner**, **Description** và **State**, rồi chọn **Save profile**. Muốn đổi tên cửa hàng, hãy liên hệ hỗ trợ.
 2. **Holiday mode**: bật để tạm dừng nhận đơn. Sản phẩm vẫn hiển thị nhưng không mua được. Tắt khi bạn quay lại.
 3. Ở **Shipping** chọn **Shipping fee mode**: **Flat fee for all of Malaysia** hoặc **Per-state fees**. Nhập **Shipping fee (RM)**, hoặc phí theo từng **State** (**Apply to all** chép một mức phí cho tất cả). **Free shipping over (RM, optional)** giúp đơn lớn hơn được miễn phí vận chuyển. Chọn **Save shipping**.
 4. Ở **Bank details** đổi **Bank**, **Account holder name** và **Account number**, rồi chọn **Save bank details**. Mỗi lần rút tiền sao chép thông tin tại thời điểm bạn yêu cầu.

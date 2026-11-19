@@ -7,7 +7,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 ## 1. Apply to become a seller
 
 1. Create a buyer account and verify your email (see the Buyer Guide). You can also start from **Open a shop** on the seller sign-in page, which asks you to create the account first.
-2. Select **Sell on HalalBizs** (top bar or footer). The page **Become a seller** says applications are reviewed within 2 to 3 business days. <!-- SHOT: Become a seller form -->
+2. Select **Sell on HalalBizs** (top bar or footer). The page **Become a seller** says applications are reviewed within 2 to 3 business days. The **Commission** box shows what HalalBizs takes from each sale, for example "10% of each sale", or a range "by category" when categories have their own rates. <!-- SHOT: Become a seller form -->
 3. Under **Shop details** fill in **Shop name** (it must be unique, and the page shows your **Shop URL**), **Description** and **State**.
 4. Tick **My business is SST-registered** if it is, and enter the **SST registration number**.
 5. Under **Bank details** choose the **Bank**, enter the **Account holder name** and the **Account number** (8 to 17 digits, no spaces or dashes). Payouts go to this account.
@@ -17,14 +17,13 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 9. If the page says **Application rejected**, read the **Reason**, fix the issue and select **Re-apply**. Re-applying deletes the old application and its documents, so you start fresh.
 10. If the page says **Your shop is suspended**, buyers cannot see your products and you cannot use the Seller Centre. Contact support.
 11. When approved, **Seller centre** appears in your account menu. You can also sign in at the seller sign-in page.
-<!-- CHECK: The commission rate is not shown on the Become a seller form on origin/main (fcfe366). HB-G118 ("show sellers their commission rate") was decided on 19 Nov 2026. Today the rate shows only on each order page as "Platform commission rate: :rate%". Re-check once HB-G118 is merged. -->
 
 ## 2. Sign in and the new-device check
 
 1. Open the seller sign-in page, enter **Email** and **Password**, and select **Log in**.
 2. If you have turned on two-factor sign-in under **My account > Profile > Security**, the **Two-factor check** page asks for a 6-digit code from your email or authenticator app. Enter it and select **Verify and log in**. Tick **Trust this device for 30 days** only on your own device.
 3. When you sign in from a device HalalBizs has not seen, an email "New login to your HalalBizs account" tells you the device, IP and time. If it was not you, change your password and select **Log out other devices**.
-4. Sellers and admins are to be asked for a sign-in code on an unknown device, not only an alert. <!-- CHECK: This was ruled by Haze on 19 Nov 2026 (HB-DEC-1119b) and is being built on branch hb-newdevice-2fa. It is NOT on origin/main fcfe366. Today a new device only gets the alert email. Rewrite this step with the real screen text once that branch is merged. -->
+4. When you sign in from a new device and two-factor sign-in is off, HalalBizs asks for a code before letting you in. The **Two-factor check** page says "You're signing in from a new device. Enter the code we emailed to confirm it's you." Open the email "Your login code", enter the 6-digit code (it expires in 10 minutes) and select **Verify and log in**. Select **Email me a new code** if it expired. This code email replaces the alert in step 3. The first device you ever use does not need a code.
 
 ## 3. Seller Centre menu
 
@@ -34,7 +33,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 
 ## 4. Shop settings
 
-1. Open **Shop settings**. Under **Profile** change **Logo**, **Banner**, **Description** and **State**, then select **Save profile**. To rename the shop, contact support.
+1. Open **Shop settings**. The **Commission** box at the top shows your rate. Each order page also shows the rate it was charged (**Platform commission rate**). Under **Profile** change **Logo**, **Banner**, **Description** and **State**, then select **Save profile**. To rename the shop, contact support.
 2. **Holiday mode**: turn it on to pause orders. Products stay visible but cannot be bought. Turn it off when you return.
 3. Under **Shipping** choose **Shipping fee mode**: **Flat fee for all of Malaysia** or **Per-state fees**. Enter **Shipping fee (RM)**, or fees per **State** (**Apply to all** copies one fee). **Free shipping over (RM, optional)** makes bigger orders ship free. Select **Save shipping**.
 4. Under **Bank details** change the **Bank**, **Account holder name** and **Account number**, then select **Save bank details**. Each payout copies the details at the time you request it.

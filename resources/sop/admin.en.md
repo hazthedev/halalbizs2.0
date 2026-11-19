@@ -9,7 +9,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 1. Open the admin sign-in page (/admin/login). Enter **Email** and **Password** and select **Log in**. There is no sign-up here: the page says "Admin access is granted by an existing administrator."
 2. If two-factor sign-in is on for your account, the **Two-factor check** page asks for a 6-digit code. Enter it and select **Verify and log in**. Select **Email me a new code** if it expired.
 3. Your email must be verified. Admin two-factor is optional today.
-4. When you sign in from a device we have not seen, an email "New login to your HalalBizs account" is sent. Admins and sellers are to be asked for a code on an unknown device. <!-- CHECK: Ruled 19 Nov 2026 (HB-DEC-1119b), branch hb-newdevice-2fa, NOT on origin/main fcfe366. Today only the alert email exists. Rewrite with the real screen text after that branch is merged. -->
+4. When you sign in from a new device without two-factor sign-in, the **Two-factor check** page says "You're signing in from a new device. Enter the code we emailed to confirm it's you." Enter the 6-digit code from the email "Your login code" (it expires in 10 minutes) and select **Verify and log in**. The device is remembered only after the code passes. The first device you ever use does not need a code.
 5. The menu has: **Dashboard**, **Sellers**, **Buyers**, **Catalog**, **Orders**, **Finance**, **Content**, **Support**, **System**. A section you do not have permission for is missing or blocked. <!-- SHOT: admin menu -->
 6. Select **View storefront** to see the public site and **Log out** to leave.
 7. To add an admin: **System > Staff & roles**, select **Invite admin**, enter **Name** and **Email**, tick the **Permissions** and select **Invite admin**. A temporary password is generated for you to share. **Edit permissions**, **Make superadmin** and **Remove admin** are on the same list.
@@ -63,7 +63,7 @@ This guide is for HalalBizs staff who run the marketplace: approving sellers and
 4. Use **Effective-rate tester**: pick a **Store** and a **Category** to see the rate a new order would take.
 5. Category rates are set in **Catalog > Categories** (**Commission rate (%)**, empty means inherit). Store rates are set in **Sellers > Stores > (store) > Commission override** with **Save override**.
 6. A rate change affects only new orders. Placed orders keep their rate.
-7. Sellers see the rate on each order page ("Platform commission rate"). <!-- CHECK: HB-G118 (show sellers their rate and record rate changes in the audit log) is decided but not confirmed on main. -->
+7. Sellers see their rate on the **Become a seller** form and in **Shop settings** ("10% of each sale", or a range "by category"), and on each order page ("Platform commission rate"). A change to the global rate or a category rate is recorded in **System > Audit log** with the old and new rate.
 
 ## 7. Orders, payments and refunds
 
