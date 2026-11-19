@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Content;
 
+use App\Livewire\Concerns\WithTable;
 use App\Models\FlashSale;
 use App\Models\FlashSaleItem;
 use App\Models\ProductVariant;
@@ -21,6 +22,10 @@ use Livewire\Component;
 #[Layout('layouts.admin')]
 class FlashSales extends Component
 {
+    use WithTable;
+
+    public const PER_PAGE = 20;
+
     // Create-sale form.
     public string $title = '';
 
@@ -112,13 +117,30 @@ class FlashSales extends Component
         $this->dispatch('toast', message: __('Flash sale removed.'));
     }
 
+    protected function tableFilters(): array
+    {
+        return [];
+    }
+
+    protected function tableSorts(): array
+    {
+        return ['title' => 'title', 'starts' => 'starts_at', 'ends' => 'ends_at'];
+    }
+
+    protected function tableDefaultOrder(): array
+    {
+        return ['starts_at' => 'desc'];
+    }
+
+    protected function results()
+    {
+        return $this->sortTable(FlashSale::query()->with(['items.variant.product']))->paginate($this->tablePageSize());
+    }
+
     public function render(): View
     {
         return view('livewire.admin.content.flash-sales', [
-            'sales' => FlashSale::query()
-                ->with(['items.variant.product'])
-                ->orderByDesc('starts_at')
-                ->get(),
+            'sales' => $this->results(),
             'variantPick' => ProductVariant::query()
                 ->with('product')
                 ->latest('id')

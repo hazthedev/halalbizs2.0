@@ -4,7 +4,7 @@
         <form wire:submit="save" class="space-y-4">
             
 
-            {{-- EN / BM title tabs --}}
+            {{-- EN / BM / VI tabs: every translated field --}}
             <div x-data="{ tab: 'en' }">
                 <div class="flex gap-1 border-b border-line" role="tablist">
                     <button type="button" role="tab" x-on:click="tab = 'en'"
@@ -28,30 +28,22 @@
                 </div>
 
                 <div class="pt-3">
-                    <div x-show="tab === 'en'">
+                    <div x-show="tab === 'en'" class="space-y-4">
                         <x-ui.input :label="__('Title (English)')" wire:model="title.en" :error="$errors->first('title.en')" />
+                        <x-ui.input :label="__('Supporting line (English)')" wire:model="subtitle.en" :error="$errors->first('subtitle.en')" :hint="__('Optional — one sentence under the headline.')" />
+                        <x-ui.input :label="__('Button text (English)')" wire:model="ctaLabel.en" :error="$errors->first('ctaLabel.en')" :hint="__('Optional — e.g. Shop Drinks. Hidden when empty.')" />
                     </div>
-                    <div x-show="tab === 'ms'" x-cloak>
+                    <div x-show="tab === 'ms'" x-cloak class="space-y-4">
                         <x-ui.input :label="__('Title (Bahasa Melayu)')" wire:model="title.ms" :error="$errors->first('title.ms')" :hint="__('Optional — English is shown when empty.')" />
+                        <x-ui.input :label="__('Supporting line (Bahasa Melayu)')" wire:model="subtitle.ms" :error="$errors->first('subtitle.ms')" :hint="__('Optional — English is shown when empty.')" />
+                        <x-ui.input :label="__('Button text (Bahasa Melayu)')" wire:model="ctaLabel.ms" :error="$errors->first('ctaLabel.ms')" :hint="__('Optional — English is shown when empty.')" />
                     </div>
-                    <div x-show="tab === 'vi'" x-cloak>
+                    <div x-show="tab === 'vi'" x-cloak class="space-y-4">
                         <x-ui.input :label="__('Title (Vietnamese)')" wire:model="title.vi" :error="$errors->first('title.vi')" :hint="__('Optional — English is shown when empty.')" />
+                        <x-ui.input :label="__('Supporting line (Vietnamese)')" wire:model="subtitle.vi" :error="$errors->first('subtitle.vi')" :hint="__('Optional — English is shown when empty.')" />
+                        <x-ui.input :label="__('Button text (Vietnamese)')" wire:model="ctaLabel.vi" :error="$errors->first('ctaLabel.vi')" :hint="__('Optional — English is shown when empty.')" />
                     </div>
                 </div>
-            </div>
-
-            {{-- Supporting line + call to action. A headline alone names a
-                 category; these are what actually sell the marketplace. --}}
-            <div class="grid gap-4 lg:grid-cols-3">
-                <x-ui.input :label="__('Supporting line (English)')" wire:model="subtitle.en" :error="$errors->first('subtitle.en')" :hint="__('Optional — one sentence under the headline.')" />
-                <x-ui.input :label="__('Supporting line (Bahasa Melayu)')" wire:model="subtitle.ms" :error="$errors->first('subtitle.ms')" :hint="__('Optional — English is shown when empty.')" />
-                <x-ui.input :label="__('Supporting line (Vietnamese)')" wire:model="subtitle.vi" :error="$errors->first('subtitle.vi')" :hint="__('Optional — English is shown when empty.')" />
-            </div>
-
-            <div class="grid gap-4 lg:grid-cols-3">
-                <x-ui.input :label="__('Button text (English)')" wire:model="ctaLabel.en" :error="$errors->first('ctaLabel.en')" :hint="__('Optional — e.g. Shop Drinks. Hidden when empty.')" />
-                <x-ui.input :label="__('Button text (Bahasa Melayu)')" wire:model="ctaLabel.ms" :error="$errors->first('ctaLabel.ms')" :hint="__('Optional — English is shown when empty.')" />
-                <x-ui.input :label="__('Button text (Vietnamese)')" wire:model="ctaLabel.vi" :error="$errors->first('ctaLabel.vi')" :hint="__('Optional — English is shown when empty.')" />
             </div>
 
             {{-- Where the banner goes: picked from a list so the same choice
@@ -132,6 +124,8 @@
                 <div wire:loading wire:target="image" class="mt-1.5 text-[13px] text-ink-soft">{{ __('Uploading…') }}</div>
                 @if ($image)
                     <img src="{{ $image->temporaryUrl() }}" alt="{{ __('Banner preview') }}" class="mt-2 h-24 rounded-[var(--radius-card)] border border-line object-cover">
+                @elseif ($editing && ($mainImage = $editing->getFirstMediaUrl('image', 'card')))
+                    <img src="{{ $mainImage }}" alt="{{ __('Current banner image') }}" class="mt-2 h-24 rounded-[var(--radius-card)] border border-line object-cover">
                 @endif
             </div>
 

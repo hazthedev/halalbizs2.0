@@ -2887,5 +2887,8 @@
     "Turn on selected": "Hidupkan yang dipilih",
     "{1}:count deal ended|[2,*]:count deals ended": "{1}:count tawaran ditamatkan|[2,*]:count tawaran ditamatkan",
     "{1}:count voucher updated|[2,*]:count vouchers updated": "{1}:count baucar dikemas kini|[2,*]:count baucar dikemas kini",
-    "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count baucar dipadam|[2,*]:count baucar dipadam"
+    "{1}:count voucher deleted|[2,*]:count vouchers deleted": "{1}:count baucar dipadam|[2,*]:count baucar dipadam",
+    "Current banner image": "Imej sepanduk semasa",
+    "Create one above, then add deals to it.": "Cipta satu di atas, kemudian tambah tawaran padanya.",
+    "Deals": "Tawaran"
 }
