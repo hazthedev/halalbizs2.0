@@ -1,10 +1,20 @@
 @extends('errors.branded')
 
+@php $adminArea = request()->is('admin', 'admin/*'); @endphp
+
 @section('code', '404')
 @section('title', __('Page not found.'))
-@section('message', __('The link may be old, or the product may have been delisted — search for it instead.'))
+@section('message', $adminArea
+    ? __('This record or its file was not found. A document may not have been uploaded yet.')
+    : __('The link may be old, or the product may have been delisted — search for it instead.'))
 
 @section('actions')
+@if ($adminArea)
+    <a href="{{ route('admin.dashboard') }}"
+       class="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white transition-colors duration-150 hover:bg-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
+        {{ __('Back to dashboard') }}
+    </a>
+@else
     <form method="GET" action="{{ url('/search') }}" class="mt-6 flex gap-2">
         <label for="error-search" class="sr-only">{{ __('Search products') }}</label>
         <input id="error-search" type="search" name="q" placeholder="{{ __('Search products, stores…') }}"
@@ -18,4 +28,5 @@
        class="mt-3 inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-emerald px-5 text-sm font-medium text-white transition-colors duration-150 hover:bg-emerald-deep focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2">
         {{ __('Browse home') }}
     </a>
+@endif
 @endsection

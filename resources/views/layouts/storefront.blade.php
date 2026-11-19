@@ -387,7 +387,7 @@
     @if ($purchasingEnabled)
         <livewire:storefront.layout.mini-cart />
     @endif
-    @if (config('services.concierge.enabled', true) && ! $bareChrome)
+    @if (config('services.concierge.enabled', true) && ! $bareChrome && ! app(\App\Services\ContentDrafts::class)->previewing)
         <livewire:storefront.shop-assistant />
     @endif
 
