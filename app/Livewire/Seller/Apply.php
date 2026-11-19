@@ -7,6 +7,7 @@ use App\Enums\StoreStatus;
 use App\Models\Store;
 use App\Models\StoreDocument;
 use App\Notifications\SellerApplicationReceived;
+use App\Services\CommissionResolver;
 use App\Services\Turnstile;
 use App\Support\MalaysianBanks;
 use App\Support\MalaysianStates;
@@ -160,6 +161,7 @@ class Apply extends Component
         return view('livewire.seller.apply', [
             'states' => MalaysianStates::ALL,
             'banks' => MalaysianBanks::ALL,
+            'commission' => app(CommissionResolver::class)->summary(),
         ])->title(__('Become a seller'));
     }
 }

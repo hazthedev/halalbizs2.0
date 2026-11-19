@@ -5,7 +5,12 @@
         :subtitle="__('Tell us about your shop. Applications are reviewed within 2–3 business days.')"
     />
 
-    <form wire:submit="submit" class="mt-6 space-y-4">
+    <x-ui.card class="mt-6 p-6">
+        <h2 class="font-display text-lg font-medium">{{ __('Commission') }}</h2>
+        <p class="mt-1 text-sm text-ink-soft">{{ $commission }}</p>
+    </x-ui.card>
+
+    <form wire:submit="submit" class="mt-4 space-y-4">
         {{-- ===== Shop details ===== --}}
         <x-ui.card class="p-6">
             <h2 class="font-display text-lg font-medium">{{ __('Shop details') }}</h2>
