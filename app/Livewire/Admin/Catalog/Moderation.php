@@ -16,6 +16,7 @@ use App\Models\Store;
 use App\Support\DisplayTime;
 use App\Support\JsonSearch;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -73,7 +74,8 @@ class Moderation extends Component
     // ── Reject modal ───────────────────────────────────────────────────
     public bool $rejectOpen = false;
 
-    /** @var array<int, int> products the reject reason applies to */
+    /** @var array<int, int> products the reject reason applies to; server-set from selectedIds(), client cannot rewrite it (HB-G173) */
+    #[Locked]
     public array $rejectIds = [];
 
     public string $rejectReason = '';
