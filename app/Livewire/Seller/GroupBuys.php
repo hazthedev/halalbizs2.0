@@ -56,7 +56,7 @@ class GroupBuys extends Component
     {
         $count = GroupBuy::where('store_id', $this->currentStore()->id)
             ->where('status', GroupBuyStatus::Active)
-            ->whereIn('id', array_map(intval(...), $this->selected))
+            ->whereIn('id', $this->selectedIds())
             ->update(['status' => GroupBuyStatus::Ended]);
 
         $this->clearSelection();

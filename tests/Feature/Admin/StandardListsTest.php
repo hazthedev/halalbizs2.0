@@ -178,7 +178,8 @@ test('payouts show the full store name and the same tab style, no roadmap text',
         'bank_snapshot' => ['bank_name' => 'Maybank', 'account_name' => 'A', 'account_number' => '1'], 'requested_at' => now()]);
 
     $html = Livewire::test(Payouts::class)->html();
-    expect($html)->toContain('Graham, Gutmann and Sons Trading Company')->not->toContain('line-clamp-1 max-w-44')->not->toContain('M8')
+    expect(strip_tags($html))->not->toContain('M8'); // visible text only: random Livewire ids can contain "M8" (HB-G172)
+    expect($html)->toContain('Graham, Gutmann and Sons Trading Company')->not->toContain('line-clamp-1 max-w-44')
         ->toContain('aria-current=')->toContain('border-b-2');
 });
 

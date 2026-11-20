@@ -94,6 +94,20 @@ trait WithTable
         return '%'.addcslashes(trim($this->search), '%_\\').'%';
     }
 
+    /**
+     * Ticked ids as ints. Client input: anything that is not a plain integer
+     * ("12x", arrays, objects) is dropped, never cast (HB-G173).
+     *
+     * @return list<int>
+     */
+    protected function selectedIds(): array
+    {
+        return array_values(array_map(intval(...), array_filter(
+            $this->selected,
+            fn ($id) => is_int($id) || (is_string($id) && ctype_digit($id)),
+        )));
+    }
+
     protected function clearSelection(): void
     {
         $this->selected = [];

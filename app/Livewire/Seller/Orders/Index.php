@@ -64,7 +64,7 @@ class Index extends Component
     public function bulkConfirmAndPack(): void
     {
         $ids = SubOrder::query()->where('store_id', $this->currentStore()->id)
-            ->where('status', SubOrderStatus::Confirmed)->whereIn('id', $this->selected)->pluck('id');
+            ->where('status', SubOrderStatus::Confirmed)->whereIn('id', $this->selectedIds())->pluck('id');
 
         foreach ($ids as $id) {
             $this->confirmAndPack($id);

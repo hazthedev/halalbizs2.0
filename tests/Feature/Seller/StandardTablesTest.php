@@ -142,3 +142,14 @@ test('select all on the page ticks only this store rows (group buys and vouchers
     stdVoucher(Store::factory()->approved()->create(), 'THEIRS');
     Livewire::test(Vouchers::class)->set('selectPage', true)->assertSet('selected', [(string) $v->id]);
 });
+
+test('bulk actions drop non-numeric ticked ids instead of casting them (HB-G173)', function () {
+    $x = stdDeal($this->store, 5000);
+    $ok = stdDeal($this->store, 6000);
+    Livewire::test(GroupBuys::class)->set('selected', [$x->id.'x', [$x->id], (string) $ok->id])->call('bulkEnd');
+    expect($x->fresh()->status)->toBe(GroupBuyStatus::Active)->and($ok->fresh()->status)->toBe(GroupBuyStatus::Ended);
+
+    $v = stdVoucher($this->store, 'CASTME');
+    Livewire::test(Vouchers::class)->set('selected', [$v->id.'x'])->call('bulkDisable');
+    expect($v->fresh()->is_active)->toBeTrue();
+});
