@@ -90,7 +90,7 @@ Every list works the same way: the search box and filters sit at the top, **Rows
 
 1. Open **Finance > Payouts**. Tabs: **Requested**, **Approved**, **Paid**, **Rejected**.
 2. Check the store and bank details against the verified documents. Select **Approve**, or **Reject** with a **Rejection reason** (the money returns to the seller's available balance).
-3. Select **Export bank CSV** for the approved payouts and run them at the bank.
+3. On **Approved**, tick the payouts to pay and select **Export bank CSV**, then run the file at the bank. The box in the header ticks only the rows on screen: this page, after any search. Rows on other pages or hidden by the search are never ticked, and changing the search, sort, rows per page, page or tab clears the ticks. The line above the table shows how many payouts the export will include. Only payouts still approved are exported.
 4. When the transfer is done, select **Mark paid** and enter the **Bank reference**. This is final.
 5. **Finance > Affiliates** lists creators and **Pending withdrawals** with **Mark paid** (bank transfer reference) and **Reject**. Creator commission is 2.5% of the referred items' value; the system caps it at 2.5% even if a higher rate is configured, so a referred sale always leaves the platform its own commission. The creator list has a search box, sortable column headers and a footer with the number of rows per page.
 

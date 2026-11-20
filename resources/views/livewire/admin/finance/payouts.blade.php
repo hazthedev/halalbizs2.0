@@ -56,11 +56,12 @@
                     <tr class="border-b border-line text-left text-ink-soft">
                         @if ($tab === PayoutStatus::Approved->value)
                             <th scope="col" class="w-10 px-3 py-6.5">
+                                {{-- HB-G168: the rows on screen only (this page, after search) — never every approved payout. --}}
                                 <input type="checkbox"
-                                       data-ids="{{ json_encode($approvedIds) }}"
+                                       data-ids="{{ json_encode($payouts->pluck('id')->map(fn ($id) => (string) $id)->all()) }}"
                                        x-bind:checked="selected.length > 0 && selected.length === JSON.parse($el.dataset.ids).length"
                                        x-on:change="selected = $event.target.checked ? JSON.parse($el.dataset.ids) : []"
-                                       aria-label="{{ __('Select all approved payouts') }}"
+                                       aria-label="{{ __('Select all on this page') }}"
                                        class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
                             </th>
                         @endif

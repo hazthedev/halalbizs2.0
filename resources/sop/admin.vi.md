@@ -90,7 +90,7 @@ Mọi danh sách hoạt động giống nhau: ô tìm kiếm và bộ lọc ở 
 
 1. Mở **Finance > Payouts**. Các thẻ: **Requested**, **Approved**, **Paid**, **Rejected**.
 2. Đối chiếu cửa hàng và thông tin ngân hàng với tài liệu đã xác minh. Chọn **Approve**, hoặc **Reject** kèm **Rejection reason** (tiền quay lại số dư khả dụng của người bán).
-3. Chọn **Export bank CSV** cho các lệnh đã duyệt và chạy chúng tại ngân hàng.
+3. Ở thẻ **Approved**, đánh dấu các lệnh cần trả rồi chọn **Export bank CSV**, sau đó chạy tệp tại ngân hàng. Ô ở tiêu đề bảng chỉ đánh dấu các hàng đang hiện trên màn hình: trang này, sau khi tìm kiếm. Hàng ở trang khác hoặc bị ẩn bởi tìm kiếm không bao giờ được đánh dấu, và khi đổi tìm kiếm, sắp xếp, số dòng mỗi trang, trang hoặc thẻ thì các dấu chọn bị xoá. Dòng phía trên bảng cho biết tệp xuất sẽ gồm bao nhiêu lệnh. Chỉ các lệnh vẫn đang ở trạng thái đã duyệt mới được xuất.
 4. Khi chuyển khoản xong, chọn **Mark paid** và nhập **Bank reference**. Đây là trạng thái cuối.
 5. **Finance > Affiliates** liệt kê người sáng tạo và **Pending withdrawals** với **Mark paid** (mã tham chiếu chuyển khoản) và **Reject**. Hoa hồng người sáng tạo là 2.5% giá trị sản phẩm được giới thiệu; hệ thống giới hạn ở 2.5% kể cả khi cấu hình mức cao hơn, nên đơn được giới thiệu luôn để lại hoa hồng của nền tảng. Danh sách người sáng tạo có ô tìm kiếm, tiêu đề cột có thể sắp xếp và chân bảng cho số dòng mỗi trang.
 

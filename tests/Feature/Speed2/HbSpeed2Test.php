@@ -312,7 +312,8 @@ it('payout checkboxes select in the browser and the selection still reaches the 
     expect($html)->not->toContain('wire:model.live="selected"')
         ->and($html)->not->toContain('wire:model.live="selectAll"')
         ->and($html)->toContain('x-model="selected"')
-        ->and($html)->toContain(e(json_encode([(string) $a->id, (string) $b->id])));
+        // HB-G168: the header box carries the rows on screen, in table order (same requested_at → id desc).
+        ->and($html)->toContain(e(json_encode([(string) $b->id, (string) $a->id])));
 
     // The browser sends `selected` with the export call; only that selection is exported.
     $csv = base64_decode((string) data_get(

@@ -19,17 +19,17 @@ trait WithTable
     #[Url(except: 'asc')]
     public string $direction = 'asc';
 
+    /**
+     * Default = the list's own PER_PAGE, set once by PHP. Never reset it in a
+     * hook: initialize* runs on every request after the snapshot is restored,
+     * so a chosen 50 snapped back to the default on the next click (HB-G168).
+     */
     #[Url]
-    public int $perPage = 20;
+    public int $perPage = self::PER_PAGE;
 
     public array $selected = [];
 
     public bool $selectPage = false;
-
-    public function initializeWithTable(): void
-    {
-        $this->perPage = self::PER_PAGE;
-    }
 
     public function updatedWithTable(string $property): void
     {
@@ -44,9 +44,14 @@ trait WithTable
         $this->clearSelection();
     }
 
+    /**
+     * Header "select all" = the rows on screen: the current page of the same
+     * query the table renders (search, filters, sort applied). A list with no
+     * results() has no tick boxes, so a forced flag selects nothing (HB-G168).
+     */
     public function updatedSelectPage(bool $value): void
     {
-        $this->selected = $value
+        $this->selected = $value && method_exists($this, 'results')
             ? $this->results()->pluck('id')->map(fn ($id) => (string) $id)->all()
             : [];
     }
