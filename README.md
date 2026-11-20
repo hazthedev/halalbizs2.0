@@ -37,12 +37,23 @@ gitignored).
 Production is cPanel, deployed by `deploy.sh` (interactive or via the
 `public/deploy.php` webhook). What it actually does, in order:
 
+0. Holds (`DEPLOY HELD: load <n>`, exit 1, nothing touched) when the 1-minute
+   load in `/proc/loadavg` is above 17. Override from a terminal only:
+   `DEPLOY_IGNORE_LOAD=1 bash deploy.sh`.
 1. Aborts if `APP_ENV=production` and `APP_DEBUG=true` (would leak errors).
 2. `git fetch origin && git reset --hard origin/main` — a hard reset, always.
+   Prints `now at <new> (was <previous>)`: keep the previous sha, it is the
+   way back.
 3. Clears caches, then `composer install --no-dev --optimize-autoloader` —
    **only if a `composer` binary is on PATH**; otherwise it skips this step
    and assumes `vendor/` is already current (no new deps that deploy).
-4. `php artisan migrate --force`.
+4. `php artisan migrate --force`. **A failed migrate stops the deploy**: the
+   seeders are skipped, the caches are rebuilt for the code on disk (so the
+   site does not run uncached), and the script exits 1 with
+   `DEPLOY STOPPED at <sha>`. The code at `<sha>` is live against a schema
+   that may be part-way — read the error, then fix forward or roll back
+   (below). A benign "table already exists" (out-of-sync migrations record)
+   stops too: fix the record by hand (`php artisan migrate:status`), re-run.
 5. Seeds idempotent reference data every deploy: `RoleSeeder`, `CurrencySeeder`,
    `PageSeeder` (create-only, never overwrites an edited page).
 6. `DemoReviewsSeeder` runs only when `APP_ENV != production`.
@@ -52,6 +63,42 @@ Production is cPanel, deployed by `deploy.sh` (interactive or via the
 8. `VietnameseContentSeeder` backfills missing `vi` translations without
    touching admin-authored content.
 9. Rebuilds config/route/event/view caches.
+
+The **last line** is the result: `DEPLOYED <sha>` (all steps ok),
+`DEPLOY STOPPED at <sha>` (a step failed, any step) or `DEPLOY HELD: load <n>`.
+A caller compares `<sha>` with `origin/main`; anything else is not a deploy.
+A change to `deploy.sh` itself needs the webhook triggered **twice** (bash runs
+the old in-memory copy on the first pass).
+
+### Rollback (the way back)
+
+Not yet tried on the testing copy (OPS-23): these are written steps, not a
+tested drill. Haze decides a rollback on production.
+
+1. **Find the previous sha**: the `now at <new> (was <previous>)` line of the
+   deploy output, or `git reflog -5` in the cPanel Terminal.
+2. **Normal way back = revert on `main`, then deploy.** The webhook always
+   resets to `origin/main`, so a manual reset on the server is undone by the
+   next deploy. `git revert <bad merge sha>` → PR → merge → trigger the
+   webhook. Use this whenever the site still works well enough to wait for a PR.
+3. **Emergency (site broken now), cPanel Terminal only:**
+   ```bash
+   cd ~/<site folder>
+   git reset --hard <previous sha>
+   php artisan optimize:clear
+   php artisan config:cache && php artisan route:cache && php artisan event:cache && php artisan view:cache
+   ```
+   Do **not** run `deploy.sh` afterwards — it resets back to `origin/main`.
+   Follow up with step 2 so `main` matches what is live.
+4. **Migrations.** Code rollback leaves the schema as it is, and that is the
+   default: an additive migration (new table, new nullable column, new index)
+   works with the older code, so leave it in place. Run
+   `php artisan migrate:rollback --step=<n>` only when ALL of these hold:
+   the migration has a written `down()`, it only added things, and no real
+   rows were written into what it added (rollback deletes them). It is
+   **not safe** when the migration dropped or renamed a column or table,
+   changed a column type, or moved/rewrote data — `down()` cannot bring the
+   old values back. Take a `mysqldump` of the database before any rollback.
 
 Frontend assets (`public/build/`) are **committed to the repo** and built
 locally with `npm run build` — the deploy script does not build them. This is

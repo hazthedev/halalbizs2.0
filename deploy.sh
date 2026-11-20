@@ -4,10 +4,20 @@
 #
 # Usage:
 #   bash deploy.sh                 # interactive (cPanel Terminal)
-#   public/deploy.php?token=...    # HTTPS webhook (LiteSpeed web user)
+#   curl -H 'X-Deploy-Token: ...' https://<host>/deploy.php   # HTTPS webhook (LiteSpeed web user; header only, M-5)
 #
-# Performs: sync to origin/main, dep sync, migrations, reference seeds, cache rebuild.
-# Safe to re-run (idempotent).
+# Performs: load guard, sync to origin/main, dep sync, migrations, reference
+# seeds, cache rebuild. Safe to re-run (idempotent).
+#
+# Result line (OPS-24/OPS-20/HOST-08, 2026-11-20) — the LAST line tells a caller
+# what happened; the Mac ship script greps it and compares the sha:
+#   DEPLOYED <sha>           every step succeeded, the code at <sha> is live
+#   DEPLOY STOPPED at <sha>  a step failed (a failed migrate included); see above
+#   DEPLOY HELD: load <n>    1-min load above 17, nothing was touched
+#                            (override from a terminal: DEPLOY_IGNORE_LOAD=1)
+# Way back to a previous sha: README.md, "Rollback".
+# A change to THIS file needs the webhook triggered TWICE: bash runs the old
+# in-memory copy on the first pass.
 #
 # NOTE: when triggered by the deploy.php webhook this runs as the LiteSpeed
 # web user with a minimal PATH — git is found but composer/php may not be, so
@@ -33,7 +43,23 @@
 #
 set -e
 
+# OPS-20: the shared host also serves other sites; a deploy (composer, migrate,
+# four cache builds) on an overloaded box is what tips it over. Halal sites
+# limit = 17 (Haze 2026-11-18). Checked before anything is touched. A box
+# without /proc/loadavg (not Linux) skips the guard and says so.
+LOAD1="$(cut -d' ' -f1 /proc/loadavg 2>/dev/null || true)"
+if [ -z "$LOAD1" ]; then
+    echo "  ! load guard skipped: /proc/loadavg unreadable"
+elif [ "${DEPLOY_IGNORE_LOAD:-0}" != "1" ] && awk -v l="$LOAD1" 'BEGIN { exit !(l > 17) }'; then
+    echo "DEPLOY HELD: load $LOAD1"
+    exit 1
+fi
+
 cd "$(dirname "$0")"
+
+# Any command that stops the script under `set -e` prints the result line too,
+# so a caller never has to guess from a missing "DEPLOYED".
+trap 'echo "DEPLOY STOPPED at $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"' ERR
 
 export PATH="/usr/local/bin:/opt/cpanel/composer/bin:/usr/local/sbin:/usr/bin:/bin:$HOME/bin:$PATH"
 # The webhook runs with no HOME; composer refuses to start without HOME or
@@ -73,13 +99,15 @@ echo "→ environment: $APP_ENV (debug=${APP_DEBUG:-unset})"
 if [ "$APP_ENV" = "production" ] && [ "$APP_DEBUG" = "true" ]; then
     echo "✗ ABORT: APP_ENV=production but APP_DEBUG=true — refusing to deploy (would leak errors)."
     echo "  Set APP_DEBUG=false in the server .env, then re-run."
+    echo "DEPLOY STOPPED at $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
     exit 1
 fi
 
 echo "→ sync to origin/main"
+PREV_SHA="$(git rev-parse --short HEAD)"
 git fetch origin
 git reset --hard origin/main
-echo "  now at $(git rev-parse --short HEAD)"
+echo "  now at $(git rev-parse --short HEAD) (was $PREV_SHA — the way back, README \"Rollback\")"
 
 # M-26: clear the caches HERE, before migrate and the seeders — not after them.
 # LoadEnvironmentVariables returns early when the config is cached, so every
@@ -99,13 +127,28 @@ else
 fi
 
 echo "→ php artisan migrate --force"
-# Non-fatal: a benign "table already exists" (out-of-sync migrations record)
-# must not block the cache rebuild below. Real errors still print above.
-MIGRATE_FAILED=0
 # M-27: seeder failures were swallowed — nine `|| echo … continuing` lines with
 # nothing recording that they happened, so the deploy printed ✓ over them.
 STEP_FAILED=0
-"$PHP_BIN" artisan migrate --force || { MIGRATE_FAILED=1; echo "  ! migrate reported errors (see above) — continuing to cache rebuild"; }
+# OPS-24 (2026-11-20): a failed migrate STOPS the deploy. It used to continue
+# (#1, #104) so that a benign "table already exists" (out-of-sync migrations
+# record) could not block the cache rebuild — but that also ran every seeder
+# against a schema that may be part-way, and a real failure read as a finished
+# deploy. The one real need behind it is kept: optimize:clear above already
+# dropped the caches (M-26), so they are rebuilt for the code now on disk
+# before stopping; the site is never left running uncached. The seeders are
+# NOT run: they assume the new schema. This script never uses maintenance
+# mode (`artisan down`), so there is nothing to bring back `up`.
+# The benign case now stops too: fix the migrations record by hand
+# (`artisan migrate:status`), then re-run.
+if ! "$PHP_BIN" artisan migrate --force; then
+    echo "DEPLOY STOPPED: migrate failed (see above) — seeders skipped, caches rebuilt for the current code"
+    for c in config:cache route:cache event:cache view:cache; do
+        "$PHP_BIN" artisan "$c" || echo "  ! $c failed"
+    done
+    echo "DEPLOY STOPPED at $(git rev-parse --short HEAD) (was $PREV_SHA)"
+    exit 1
+fi
 
 echo "→ seed idempotent reference data"
 # Only idempotent seeders belong here, safe to re-run every deploy. NOT the full
@@ -182,16 +225,10 @@ echo "→ rebuild caches"
 "$PHP_BIN" artisan view:cache
 
 echo
-if [ "$STEP_FAILED" = "1" ] && [ "$MIGRATE_FAILED" = "0" ]; then
+if [ "$STEP_FAILED" = "1" ]; then
     echo "⚠ deploy finished WITH SEED/INDEX ERRORS — scroll up; the code is live but its data steps did not all succeed"
-    exit 1
-fi
-
-if [ "$MIGRATE_FAILED" = "1" ]; then
-    # The benign case (out-of-sync migrations record, "table already exists")
-    # still finishes the deploy above — but the last line must not say ✓ when
-    # the schema step reported errors, or a real failure reads as success.
-    echo "⚠ deploy finished WITH MIGRATE ERRORS — scroll up to the migrate step; the schema may be behind the code"
+    echo "DEPLOY STOPPED at $(git rev-parse --short HEAD)"
     exit 1
 fi
 echo "✓ deploy done — hard-refresh your browser (Ctrl+F5) to bust old CSS / JS"
+echo "DEPLOYED $(git rev-parse --short HEAD)"
