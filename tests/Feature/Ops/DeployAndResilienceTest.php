@@ -35,12 +35,26 @@ test('a seeder failure cannot be reported as a successful deploy', function () {
     $sh = deployScript();
 
     // Every `|| echo … continuing` must now also record that it happened.
-    preg_match_all('/\|\| \{? ?STEP_FAILED=1;/', $sh, $recorded);
-    preg_match_all('/\|\| echo "  ! /', $sh, $unrecorded);
+    // The migrate-failed branch is exempt: it exits 1 right after its cache
+    // rebuild, so nothing it swallows can end in DEPLOYED (OPS-24).
+    $main = preg_replace('/^if ! "\$PHP_BIN" artisan migrate --force; then$.*?^fi$/ms', '', $sh);
+    preg_match_all('/\|\| \{? ?STEP_FAILED=1;/', $main, $recorded);
+    preg_match_all('/\|\| echo "  ! /', $main, $unrecorded);
 
     expect($recorded[0])->not->toBeEmpty()
         ->and($unrecorded[0])->toBeEmpty()
         ->and($sh)->toContain('WITH SEED/INDEX ERRORS');
+});
+
+// ── OPS-24 · a failed migrate ran every seeder and could read as done ─────
+test('a failed migrate stops the deploy before the seeders', function () {
+    $sh = deployScript();
+
+    preg_match('/^if ! "\$PHP_BIN" artisan migrate --force; then$(.*?)^fi$/ms', $sh, $block);
+
+    expect($block[1] ?? '')->toContain('exit 1')->not->toContain('db:seed')
+        ->and(strpos($sh, 'artisan migrate --force; then'))->toBeLessThan(strpos($sh, 'artisan db:seed'))
+        ->and($sh)->toContain('echo "DEPLOYED $(git rev-parse --short HEAD)"');
 });
 
 // ── M-28 · the two readers disagreed with phpdotenv ──────────────────────
