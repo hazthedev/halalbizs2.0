@@ -302,6 +302,15 @@ test('approving a pending product makes it live, stamps published_at, and notifi
     );
 });
 
+test('the reject modal ids are server-set: the client cannot rewrite them (HB-G173)', function () {
+    $product = catalogPendingProduct();
+
+    Livewire::actingAs(catalogAdmin())
+        ->test(ModerationComponent::class)
+        ->call('startReject', $product->id)
+        ->set('rejectIds', [$product->id.'x']);
+})->throws(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
+
 test('rejecting requires a reason, then moves the product to draft and notifies the owner', function () {
     Notification::fake();
 

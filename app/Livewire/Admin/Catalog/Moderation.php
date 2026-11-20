@@ -16,6 +16,7 @@ use App\Models\Store;
 use App\Support\DisplayTime;
 use App\Support\JsonSearch;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -73,7 +74,8 @@ class Moderation extends Component
     // ── Reject modal ───────────────────────────────────────────────────
     public bool $rejectOpen = false;
 
-    /** @var array<int, int> products the reject reason applies to */
+    /** @var array<int, int> products the reject reason applies to; server-set from selectedIds(), client cannot rewrite it (HB-G173) */
+    #[Locked]
     public array $rejectIds = [];
 
     public string $rejectReason = '';
@@ -89,7 +91,7 @@ class Moderation extends Component
 
     public function bulkApprove(): void
     {
-        $count = $this->approveProducts($this->pendingByIds(array_map(intval(...), $this->selected)));
+        $count = $this->approveProducts($this->pendingByIds($this->selectedIds()));
         $this->clearSelection();
 
         $this->dispatch('toast', message: trans_choice('{0}Nothing to approve.|{1}:count product approved|[2,*]:count products approved', $count, ['count' => $count]));
@@ -104,7 +106,7 @@ class Moderation extends Component
 
     public function startBulkReject(): void
     {
-        $ids = array_map(intval(...), $this->selected);
+        $ids = $this->selectedIds();
 
         if ($ids === []) {
             return;
@@ -153,7 +155,7 @@ class Moderation extends Component
 
     public function bulkBan(): void
     {
-        $count = $this->banProducts($this->pendingByIds(array_map(intval(...), $this->selected)));
+        $count = $this->banProducts($this->pendingByIds($this->selectedIds()));
         $this->clearSelection();
 
         $this->dispatch('toast', message: trans_choice('{0}Nothing to ban.|{1}:count product banned|[2,*]:count products banned', $count, ['count' => $count]));

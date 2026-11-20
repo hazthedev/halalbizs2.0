@@ -93,7 +93,7 @@ class Index extends Component
     {
         return Voucher::where('scope', VoucherScope::Shop)
             ->where('store_id', $this->currentStore()->id)
-            ->whereIn('id', array_map(intval(...), $this->selected));
+            ->whereIn('id', $this->selectedIds());
     }
 
     public function render()

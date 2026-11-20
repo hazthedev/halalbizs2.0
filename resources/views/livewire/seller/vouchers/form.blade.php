@@ -3,7 +3,7 @@
         <x-ui.card class="p-4">
             <form wire:submit="save" class="space-y-4">
                 <div class="grid gap-4 sm:grid-cols-2">
-                    <x-ui.input :label="__('Code')" wire:model="code" placeholder="SHOP10" :error="$errors->first('code')" :hint="__('Stored in UPPERCASE — what buyers type at checkout. Unique within your shop.')" class="font-mono" />
+                    <x-ui.input :label="__('Code')" wire:model="code" placeholder="SHOP10" :error="$errors->first('code')" :hint="__('Stored in UPPERCASE — what buyers type at checkout. Unique within your shop.')" input-class="font-mono" />
                     <div>
                         <label for="voucher-type" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Type') }}</label>
                         <select id="voucher-type" wire:model.live="type"

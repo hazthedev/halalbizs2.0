@@ -240,7 +240,7 @@ class Index extends Component
     {
         return Product::query()
             ->where('store_id', $this->currentStore()->id)
-            ->whereIn('id', array_map(intval(...), $this->selected));
+            ->whereIn('id', $this->selectedIds());
     }
 
     /** @return array<int, string> flattened 3-level tree with depth markers */
