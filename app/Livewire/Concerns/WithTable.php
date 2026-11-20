@@ -19,17 +19,17 @@ trait WithTable
     #[Url(except: 'asc')]
     public string $direction = 'asc';
 
+    /**
+     * Default = the list's own PER_PAGE, set once by PHP. Never reset it in a
+     * hook: initialize* runs on every request after the snapshot is restored,
+     * so a chosen 50 snapped back to the default on the next click (HB-G168).
+     */
     #[Url]
-    public int $perPage = 20;
+    public int $perPage = self::PER_PAGE;
 
     public array $selected = [];
 
     public bool $selectPage = false;
-
-    public function initializeWithTable(): void
-    {
-        $this->perPage = self::PER_PAGE;
-    }
 
     public function updatedWithTable(string $property): void
     {

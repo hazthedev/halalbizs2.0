@@ -195,3 +195,25 @@ test('HB-G168: a forced select-all flag on a list without tick boxes selects not
 
     Livewire::test(Brands::class)->set('selectPage', true)->assertSet('selected', []);
 });
+
+test('HB-G168: a chosen rows-per-page survives later requests and a reload with ?perPage', function () {
+    foreach (range(1, 3) as $i) {
+        Brand::create(['name' => "Brand {$i}", 'is_active' => true]);
+    }
+
+    // The default is each list's own PER_PAGE, not the trait's 20.
+    Livewire::test(\App\Livewire\Admin\Catalog\Reviews::class)->assertSet('perPage', \App\Livewire\Admin\Catalog\Reviews::PER_PAGE);
+
+    // Each set/call below is its own Livewire request (hydrate from the snapshot).
+    Livewire::test(Brands::class)
+        ->assertSet('perPage', Brands::PER_PAGE)
+        ->set('perPage', 50)
+        ->call('sortBy', 'name')->assertSet('perPage', 50)
+        ->set('search', 'Brand')->assertSet('perPage', 50)
+        ->call('gotoPage', 2)->assertSet('perPage', 50)
+        ->set('search', '')->assertSet('perPage', 50);
+
+    Livewire::withQueryParams(['perPage' => 50])->test(Brands::class)
+        ->assertSet('perPage', 50)
+        ->call('sortBy', 'name')->assertSet('perPage', 50);
+});
