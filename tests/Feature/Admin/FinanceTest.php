@@ -163,3 +163,102 @@ test('bank CSV export streams selected approved payouts with integer-math RM amo
         ->toContain('Maybank')
         ->not->toContain($requested->payout_no);
 });
+
+/** Ids the approved tab's header "select all" box would tick (its data-ids attribute). */
+function payoutSelectAllIds($component): array
+{
+    preg_match('/data-ids="([^"]*)"/', $component->html(), $m);
+
+    return array_map('intval', json_decode(html_entity_decode($m[1] ?? 'null'), true) ?? []);
+}
+
+function payoutCsv($component): string
+{
+    return base64_decode((string) data_get($component->effects, 'download.content'));
+}
+
+test('HB-G168: select all under a search picks only the payout the search shows, and the export acts on it alone', function () {
+    $admin = financeAdmin();
+    $shown = financePayout(PayoutStatus::Approved);
+    $hiddenA = financePayout(PayoutStatus::Approved);
+    $hiddenB = financePayout(PayoutStatus::Approved);
+
+    $component = Livewire::actingAs($admin)
+        ->test(Payouts::class)
+        ->set('tab', PayoutStatus::Approved->value)
+        ->set('search', $shown->payout_no);
+
+    $ids = payoutSelectAllIds($component);
+    expect($ids)->toBe([$shown->id]);
+
+    $component->set('selected', array_map('strval', $ids))
+        ->assertSee('1 payout selected')
+        ->call('exportBankCsv')
+        ->assertFileDownloaded();
+
+    expect(payoutCsv($component))->toContain($shown->payout_no)
+        ->not->toContain($hiddenA->payout_no)
+        ->not->toContain($hiddenB->payout_no);
+});
+
+test('HB-G168: select all on page 1 of 2 picks only the page-1 payouts', function () {
+    $admin = financeAdmin();
+    // Default order is requested_at asc: the 20 oldest are page 1 at the default 20 per page.
+    $payouts = collect(range(1, 21))->map(fn (int $i) => financePayout(PayoutStatus::Approved, ['requested_at' => now()->subDays(30 - $i)]));
+
+    $component = Livewire::actingAs($admin)
+        ->test(Payouts::class)
+        ->set('tab', PayoutStatus::Approved->value);
+
+    expect(payoutSelectAllIds($component))->toBe($payouts->take(20)->pluck('id')->all());
+
+    $component->set('selected', array_map('strval', payoutSelectAllIds($component)))
+        ->assertSee('20 payouts selected')
+        ->call('exportBankCsv');
+
+    expect(payoutCsv($component))->not->toContain($payouts->last()->payout_no)
+        ->toContain($payouts->first()->payout_no);
+
+    // Turning the page clears the ticks; page 2's box carries only page 2's row.
+    $component->call('nextPage')->assertSet('selected', []);
+    expect(payoutSelectAllIds($component))->toBe([$payouts->last()->id]);
+});
+
+test('HB-G168: a forged selection is checked id by id — bad ids are skipped, valid approved ids still export', function () {
+    $admin = financeAdmin();
+    $approved = financePayout(PayoutStatus::Approved);
+    $other = financePayout(PayoutStatus::Approved);
+    $requested = financePayout();
+    $paid = financePayout(PayoutStatus::Paid);
+
+    $component = Livewire::actingAs($admin)
+        ->test(Payouts::class)
+        ->set('tab', PayoutStatus::Approved->value)
+        ->set('selected', [(string) $approved->id, (string) $requested->id, (string) $paid->id, '999999999', $other->id.'x'])
+        ->call('exportBankCsv')
+        ->assertFileDownloaded();
+
+    expect(payoutCsv($component))->toContain($approved->payout_no)
+        ->not->toContain($requested->payout_no)
+        ->not->toContain($paid->payout_no)
+        ->not->toContain($other->payout_no); // "<id>x" is not an id, never read as one
+
+    // Status is untouched by the export: it is a read, nothing is written.
+    expect($requested->refresh()->status)->toBe(PayoutStatus::Requested)
+        ->and($paid->refresh()->status)->toBe(PayoutStatus::Paid);
+});
+
+test('HB-G168: a forged select-all flag cannot select payouts the screen does not show', function () {
+    $admin = financeAdmin();
+    $shown = financePayout(PayoutStatus::Approved);
+    financePayout(PayoutStatus::Approved);
+
+    $component = Livewire::actingAs($admin)
+        ->test(Payouts::class)
+        ->set('tab', PayoutStatus::Approved->value)
+        ->set('search', $shown->payout_no)
+        ->set('selectPage', true);
+
+    expect($component->get('selected'))->toBe([(string) $shown->id]);
+    expect(fn () => $component->set('selectAll', true))->toThrow(Exception::class);
+});

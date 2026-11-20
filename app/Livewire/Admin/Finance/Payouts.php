@@ -48,8 +48,6 @@ class Payouts extends Component
     /** @var list<string> selected payout ids (approved tab — bank CSV batch) */
     public array $selected = [];
 
-    public bool $selectAll = false;
-
     public ?int $rejectingId = null;
 
     public string $rejectReason = '';
@@ -71,17 +69,9 @@ class Payouts extends Component
             $this->tab = PayoutStatus::Requested->value;
         }
 
-        $this->reset('selected', 'selectAll', 'rejectingId', 'rejectReason', 'payingId', 'paidReference');
+        $this->reset('selected', 'rejectingId', 'rejectReason', 'payingId', 'paidReference');
         $this->resetValidation();
         $this->resetPage();
-    }
-
-    /** Header checkbox — selects every approved payout (the export batch). */
-    public function updatedSelectAll(bool $value): void
-    {
-        $this->selected = $value
-            ? Payout::query()->where('status', PayoutStatus::Approved)->pluck('id')->map(fn (int $id) => (string) $id)->all()
-            : [];
     }
 
     public function approve(int $payoutId): void
@@ -184,12 +174,19 @@ class Payouts extends Component
      * Bank CSV for the selected approved payouts — one file per run
      * (docs/08 §F): account number, account name, bank, amount in RM,
      * payout_no. Amount is built with integer math only (hard rule 1).
+     *
+     * `selected` is client input (HB-G168): each id is re-checked here —
+     * a non-id ("12x", an array) is dropped, never cast, and the query keeps
+     * only payouts still approved. Bad ids are skipped; valid ones export.
+     * Read-only (no status or ledger write), so no lock is needed.
      */
     public function exportBankCsv()
     {
+        $ids = array_filter($this->selected, fn ($id) => is_int($id) || (is_string($id) && ctype_digit($id)));
+
         $payouts = Payout::query()
             ->where('status', PayoutStatus::Approved)
-            ->whereIn('id', array_map('intval', $this->selected))
+            ->whereIn('id', $ids)
             ->orderBy('payout_no')
             ->get();
 
@@ -227,10 +224,6 @@ class Payouts extends Component
         return view('livewire.admin.finance.payouts', [
             'payouts' => $this->results(),
             'counts' => $this->counts(),
-            // Header "select all" works in the browser, so it needs the ids up front.
-            'approvedIds' => $this->tab === PayoutStatus::Approved->value
-                ? Payout::query()->where('status', PayoutStatus::Approved)->pluck('id')->map(fn (int $id) => (string) $id)->all()
-                : [],
         ])->title(__('Payouts'));
     }
 

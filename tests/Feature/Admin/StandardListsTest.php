@@ -189,3 +189,9 @@ test('returns tabs and boosts tiles use the shared components', function () {
     $tiles = Livewire::test(Boosts::class)->html();
     expect($tiles)->toContain('font-mono text-[20px]')->not->toContain('font-display text-xl font-medium tabular-nums');
 });
+
+test('HB-G168: a forced select-all flag on a list without tick boxes selects nothing and does not error', function () {
+    Brand::create(['name' => 'Brand 1', 'is_active' => true]);
+
+    Livewire::test(Brands::class)->set('selectPage', true)->assertSet('selected', []);
+});

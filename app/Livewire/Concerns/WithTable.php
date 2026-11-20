@@ -44,9 +44,14 @@ trait WithTable
         $this->clearSelection();
     }
 
+    /**
+     * Header "select all" = the rows on screen: the current page of the same
+     * query the table renders (search, filters, sort applied). A list with no
+     * results() has no tick boxes, so a forced flag selects nothing (HB-G168).
+     */
     public function updatedSelectPage(bool $value): void
     {
-        $this->selected = $value
+        $this->selected = $value && method_exists($this, 'results')
             ? $this->results()->pluck('id')->map(fn ($id) => (string) $id)->all()
             : [];
     }
