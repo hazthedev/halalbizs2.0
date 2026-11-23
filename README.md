@@ -115,6 +115,32 @@ discard, delete, toggles and ordering stay on the list. All fields, uploads,
 translations, sanitization and voucher payloads keep their existing behavior.
 Coverage: `FormPagesTest` and `FormPagePayloadTest`, plus the existing content suites.
 
+### Photo privacy: EXIF/GPS (HB-B2)
+
+A phone photo can carry the GPS position it was taken at. Every upload that
+goes through medialibrary (reviews, returns, product and variant images, store
+logo and banner, KYC and certificate images, CMS images) is rewritten on save
+by `App\Listeners\StripPhotoMetadata`: JPEG, PNG and WebP originals are turned
+upright from their EXIF orientation and re-encoded by GD without EXIF, XMP or
+IPTC (JPEG keeps its colour profile). File name, disk, path and media row stay
+the same; only `media.size` changes. PDFs, videos, GIF and BMP are untouched.
+HEIC is never accepted by an upload rule.
+
+**Cleaning files stored before the fix** (`php artisan media:strip-exif`):
+
+1. Dry run first (the default, writes nothing): `php artisan media:strip-exif`.
+   It prints counts only, per model/collection: files, images, with EXIF,
+   with GPS, errors. No paths, no names. Show the counts to the owner.
+2. Only after the owner's OK: `php artisan media:strip-exif --apply`. It
+   rewrites each image that has metadata in place and lists the rewritten
+   paths in `storage/logs/media-strip-exif-<stamp>.log`. Images without
+   metadata are skipped, so a re-run is safe; a second run shows 0 with EXIF.
+3. Take a file backup of `storage/app` before `--apply` on production (the
+   rewrite is not reversible). Conversions (thumbnails) are GD copies and
+   already carry no EXIF.
+
+Coverage: `tests/Feature/Security/StripPhotoMetadataTest.php`.
+
 ### User guides (HB-SOP)
 
 The buyer, seller and admin guides live in `resources/sop/{buyer,seller,admin}.{en,vi}.md`
