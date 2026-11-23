@@ -78,6 +78,69 @@
         </form>
     </x-ui.card>
 
+    {{-- ===== Seller details (HB-LAW-14) ===== --}}
+    <x-ui.card class="p-4 lg:p-6">
+        <h2 class="text-sm font-medium">{{ __('Seller details') }}</h2>
+        <p class="mt-1 text-[13px] text-ink-soft">{{ __('Optional. Buyers see only the details you fill, on your shop page under About. Leave out anything you do not want public, such as a home address.') }}</p>
+
+        <form wire:submit="saveSellerDetails" class="mt-4 space-y-4">
+            <div class="grid gap-4 sm:grid-cols-2">
+                <x-ui.input
+                    :label="__('Business name')"
+                    name="sellerBusinessName"
+                    wire:model="sellerDetails.business_name"
+                    maxlength="120"
+                    :error="$errors->first('sellerDetails.business_name')"
+                />
+
+                <x-ui.input
+                    :label="__('Registration no.')"
+                    name="sellerRegistrationNo"
+                    wire:model="sellerDetails.registration_no"
+                    maxlength="40"
+                    :disabled="filled($store->registration_no)"
+                    :error="$errors->first('sellerDetails.registration_no')"
+                    :hint="$errors->first('sellerDetails.registration_no') ? null : (filled($store->registration_no) ? __('Contact support to change your registration number.') : __('Your SSM or company registration number.'))"
+                />
+            </div>
+
+            <div>
+                <label for="sellerBusinessAddress" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Business address') }}</label>
+                <textarea id="sellerBusinessAddress" wire:model="sellerDetails.business_address" rows="3" maxlength="300"
+                          class="block w-full rounded-[var(--radius-control)] border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald {{ $errors->has('sellerDetails.business_address') ? 'border-danger' : 'border-line-strong' }}"></textarea>
+                @error('sellerDetails.business_address')
+                    <p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <x-ui.input
+                    :label="__('Phone')"
+                    name="sellerContactPhone"
+                    type="tel"
+                    wire:model="sellerDetails.contact_phone"
+                    inputmode="tel"
+                    maxlength="20"
+                    placeholder="+60 12 345 6789"
+                    :error="$errors->first('sellerDetails.contact_phone')"
+                />
+
+                <x-ui.input
+                    :label="__('Email')"
+                    name="sellerContactEmail"
+                    type="email"
+                    wire:model="sellerDetails.contact_email"
+                    maxlength="120"
+                    :error="$errors->first('sellerDetails.contact_email')"
+                />
+            </div>
+
+            <div class="flex justify-end border-t border-line pt-4">
+                <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="saveSellerDetails">{{ __('Save seller details') }}</x-ui.button>
+            </div>
+        </form>
+    </x-ui.card>
+
     {{-- ===== Holiday mode ===== --}}
     <x-ui.card class="p-4 lg:p-6">
         <div class="flex items-start justify-between gap-4">

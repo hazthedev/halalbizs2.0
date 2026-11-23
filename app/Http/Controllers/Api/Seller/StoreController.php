@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Seller;
 
 use App\Http\Api\ApiResponse;
 use App\Http\Resources\StoreResource;
+use App\Models\Store;
 use App\Notifications\BankDetailsChanged;
 use App\Support\MalaysianBanks;
 use App\Support\MalaysianStates;
@@ -11,6 +12,7 @@ use App\Support\UploadName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Shop settings (docs/07 §A5) for the app: the same profile, shipping and
@@ -39,8 +41,11 @@ class StoreController extends SellerController
             'bank.bank_name' => ['required_with:bank', Rule::in(MalaysianBanks::ALL)],
             'bank.account_name' => ['required_with:bank', 'string', 'max:120'],
             'bank.account_number' => ['required_with:bank', 'regex:/^[0-9]{8,17}$/'],
+            // HB-LAW-14: optional seller details, same rules as Seller\Settings.
+            ...array_map(fn (array $rule) => ['sometimes', ...$rule], Store::sellerDetailRules()),
         ], [
             'bank.account_number.regex' => __('Enter the account number as 8–17 digits, no spaces or dashes.'),
+            'contact_phone.regex' => __('Use digits and spaces only, with an optional + at the start.'),
         ]);
 
         if (isset($data['shipping_matrix'])) {
@@ -54,6 +59,15 @@ class StoreController extends SellerController
         }
 
         $store = $this->currentStore($request);
+
+        // registration_no is also the WHIP certificate key: settable only while
+        // blank, the same rule as the web settings and certificate forms.
+        if (array_key_exists('registration_no', $data) && filled($store->registration_no)) {
+            if ($data['registration_no'] !== $store->registration_no) {
+                throw ValidationException::withMessages(['registration_no' => __('Contact support to change your registration number.')]);
+            }
+            unset($data['registration_no']);
+        }
 
         $bankChanged = false;
 

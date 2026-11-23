@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller;
 
 use App\Livewire\Concerns\CurrentStore;
+use App\Models\Store;
 use App\Notifications\BankDetailsChanged;
 use App\Services\CommissionResolver;
 use App\Support\MalaysianBanks;
@@ -32,6 +33,10 @@ class Settings extends Component
     public ?TemporaryUploadedFile $logo = null;
 
     public ?TemporaryUploadedFile $banner = null;
+
+    // ----- Seller details (HB-LAW-14, all optional, shown on the shop page) -----
+    /** @var array<string, string> keyed by stores column, see Store::sellerDetailRules(). */
+    public array $sellerDetails = [];
 
     // ----- Holiday mode -----
     public bool $holidayMode = false;
@@ -65,6 +70,7 @@ class Settings extends Component
         $this->description = (string) $store->description;
         $this->state = (string) $store->state;
         $this->holidayMode = $store->holiday_mode;
+        $this->sellerDetails = array_map('strval', $store->only(array_keys(Store::sellerDetailRules())));
 
         $this->shippingMode = $store->shipping_mode ?? 'flat';
         $this->flatFee = RinggitInput::fromSen($store->shipping_flat_fee_sen);
@@ -111,6 +117,38 @@ class Settings extends Component
         ]);
 
         $this->reset('logo', 'banner');
+        $this->dispatch('toast', message: __('Saved'));
+    }
+
+    public function saveSellerDetails(): void
+    {
+        $rules = Store::sellerDetailRules();
+        $this->sellerDetails = array_map(fn ($v) => is_string($v) ? trim($v) : $v, array_intersect_key($this->sellerDetails, $rules));
+
+        $this->validate(
+            array_combine(array_map(fn ($k) => "sellerDetails.$k", array_keys($rules)), $rules),
+            ['sellerDetails.contact_phone.regex' => __('Use digits and spaces only, with an optional + at the start.')],
+            [
+                'sellerDetails.business_name' => __('business name'),
+                'sellerDetails.registration_no' => __('registration no.'),
+                'sellerDetails.business_address' => __('business address'),
+                'sellerDetails.contact_phone' => __('phone'),
+                'sellerDetails.contact_email' => __('email'),
+            ],
+        );
+
+        $store = $this->currentStore();
+        $updates = array_map(fn ($v) => blank($v) ? null : $v, $this->sellerDetails);
+
+        // registration_no is also the WHIP certificate key: settable here only
+        // while blank, the same rule as the certificate forms.
+        if (filled($store->registration_no)) {
+            unset($updates['registration_no']);
+            $this->sellerDetails['registration_no'] = (string) $store->registration_no;
+        }
+
+        $store->update($updates);
+
         $this->dispatch('toast', message: __('Saved'));
     }
 

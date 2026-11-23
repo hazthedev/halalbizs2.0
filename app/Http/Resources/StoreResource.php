@@ -43,6 +43,8 @@ class StoreResource extends JsonResource
                 'account_name' => $bank['account_name'] ?? null,
                 'account_no' => $accountNo === '' ? null : Str::mask($accountNo, '*', 0, -4),
             ],
+            // HB-LAW-14: optional, shown on the public shop page when filled.
+            'seller_details' => $this->resource->only(array_keys(Store::sellerDetailRules())),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
