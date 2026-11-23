@@ -99,6 +99,7 @@
                     wire:model="sellerDetails.registration_no"
                     maxlength="40"
                     :disabled="filled($store->registration_no)"
+                    input-class="disabled:cursor-not-allowed disabled:opacity-50"
                     :error="$errors->first('sellerDetails.registration_no')"
                     :hint="$errors->first('sellerDetails.registration_no') ? null : (filled($store->registration_no) ? __('Contact support to change your registration number.') : __('Your SSM or company registration number.'))"
                 />

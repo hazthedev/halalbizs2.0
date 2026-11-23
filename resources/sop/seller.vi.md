@@ -34,9 +34,10 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 ## 4. Cài đặt cửa hàng
 
 1. Mở **Shop settings**. Ô **Commission** ở trên cùng cho biết mức hoa hồng của bạn. Mỗi trang đơn hàng cũng hiện mức đã tính cho đơn đó (**Platform commission rate**). Ở **Profile** đổi **Logo**, **Banner**, **Description** và **State**, rồi chọn **Save profile**. Muốn đổi tên cửa hàng, hãy liên hệ hỗ trợ.
-2. **Holiday mode**: bật để tạm dừng nhận đơn. Sản phẩm vẫn hiển thị nhưng không mua được. Tắt khi bạn quay lại.
-3. Ở **Shipping** chọn **Shipping fee mode**: **Flat fee for all of Malaysia** hoặc **Per-state fees**. Nhập **Shipping fee (RM)**, hoặc phí theo từng **State** (**Apply to all** chép một mức phí cho tất cả). **Free shipping over (RM, optional)** giúp đơn lớn hơn được miễn phí vận chuyển. Chọn **Save shipping**.
-4. Ở **Bank details** đổi **Bank**, **Account holder name** và **Account number**, rồi chọn **Save bank details**. Mỗi lần rút tiền sao chép thông tin tại thời điểm bạn yêu cầu.
+2. Ở **Seller details** (không bắt buộc) điền bất kỳ mục nào trong **Business name**, **Registration no.**, **Business address**, **Phone** và **Email**, rồi chọn **Save seller details**. Người mua chỉ thấy những thông tin bạn điền, trên trang cửa hàng của bạn trong mục **About**. Bỏ trống những gì bạn không muốn công khai, chẳng hạn như địa chỉ nhà. Khi đã lưu, số đăng ký bị khóa vì nó cũng liên kết các chứng chỉ WHIP của bạn; muốn đổi, hãy liên hệ hỗ trợ.
+3. **Holiday mode**: bật để tạm dừng nhận đơn. Sản phẩm vẫn hiển thị nhưng không mua được. Tắt khi bạn quay lại.
+4. Ở **Shipping** chọn **Shipping fee mode**: **Flat fee for all of Malaysia** hoặc **Per-state fees**. Nhập **Shipping fee (RM)**, hoặc phí theo từng **State** (**Apply to all** chép một mức phí cho tất cả). **Free shipping over (RM, optional)** giúp đơn lớn hơn được miễn phí vận chuyển. Chọn **Save shipping**.
+5. Ở **Bank details** đổi **Bank**, **Account holder name** và **Account number**, rồi chọn **Save bank details**. Mỗi lần rút tiền sao chép thông tin tại thời điểm bạn yêu cầu.
 
 ## 5. Thêm sản phẩm và biến thể
 
