@@ -10,7 +10,7 @@ The features that turn a working shop into a marketplace people trust. Order wit
 - COD orders additionally `− cod_offset` = sale amount (seller already holds the cash) → net ledger effect = commission owed; platform recovers it from future online-payment balance (negative available balance allowed; payout blocked while negative).
 - Increment product/variant `sold_count` here (not at checkout — completion is the truth).
 **Post-completion refunds** = admin `adjustment` entries (signed, reason required).
-**Payout flow**: seller requests (min RM50 setting, ≤ available) → entries earmarked `payout_id` → admin approve → batch CSV → mark paid (`paid_out` status). Reject releases earmark. Pest: full lifecycle math, COD math, negative-balance block, concurrent request guard.
+**Payout flow**: seller requests (min RM50 setting, ≤ available) → entries earmarked `payout_id` → admin approve → batch CSV → mark paid (`paid_out` status). Reject releases earmark by booking a positive `payout_reversal` entry against the same payout; the original `payout` row is never deleted (PAY-08). Pest: full lifecycle math, COD math, negative-balance block, concurrent request guard.
 
 ## B. Voucher engine (replaces `voucher_lite`)
 

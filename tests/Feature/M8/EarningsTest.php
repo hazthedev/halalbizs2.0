@@ -160,7 +160,7 @@ test('admin rejection releases the earmark back to the available balance', funct
     expect($payout->status)->toBe(PayoutStatus::Rejected)
         ->and($payout->reference)->toBe('Bank details do not match the verified documents')
         ->and($payout->processed_by)->toBe($admin->id)
-        ->and($payout->ledgerEntries()->count())->toBe(0) // earmark entry deleted
+        ->and($payout->ledgerEntries()->count())->toBe(2) // earmark kept + reversal booked (PAY-08)
         ->and($store->availableBalanceSen())->toBe(19500); // balance restored
 });
 

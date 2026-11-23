@@ -2923,5 +2923,7 @@
     "If you did not make this change, change your password now and contact us before your next payout.": "Nếu bạn không thực hiện thay đổi này, hãy đổi mật khẩu ngay và liên hệ với chúng tôi trước lần thanh toán tiếp theo.",
     "Review shop settings": "Xem lại cài đặt cửa hàng",
     "Payout bank account changed — :bank :account": "Đã thay đổi tài khoản ngân hàng nhận thanh toán — :bank :account",
-    "Needed to change the bank account. We email you after every change.": "Cần thiết để thay đổi tài khoản ngân hàng. Chúng tôi sẽ gửi email cho bạn sau mỗi lần thay đổi."
+    "Needed to change the bank account. We email you after every change.": "Cần thiết để thay đổi tài khoản ngân hàng. Chúng tôi sẽ gửi email cho bạn sau mỗi lần thay đổi.",
+    "Payout reversal": "Hoàn tác rút tiền",
+    "Payout :no rejected — amount returned to your balance": "Yêu cầu rút tiền :no bị từ chối — số tiền đã được hoàn về số dư của bạn"
 }
