@@ -56,11 +56,36 @@ test('configured google sign-in shows the button and redirects to Google', funct
         ->assertRedirectContains('accounts.google.com');
 });
 
-test('google callback creates a verified buyer and logs them in', function () {
+test('a new google user is not created until they tick consent', function () {
     enableGoogle();
     mockGoogleUser();
 
     $this->get(route('auth.google.callback').'?code=fake&state=fake')
+        ->assertRedirect(route('auth.google.consent'));
+
+    expect(User::count())->toBe(0);
+    $this->assertGuest();
+
+    $this->get(route('auth.google.consent'))
+        ->assertOk()
+        ->assertSee('aisha@example.com')
+        ->assertSee(__('privacy policy'));
+
+    // No tick: still no account.
+    $this->post(route('auth.google.consent.store'))
+        ->assertSessionHasErrors('terms');
+
+    expect(User::count())->toBe(0);
+    $this->assertGuest();
+});
+
+test('a new google user who ticks consent gets a verified buyer account with consent proof', function () {
+    enableGoogle();
+    mockGoogleUser();
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake');
+
+    $this->post(route('auth.google.consent.store'), ['terms' => '1'])
         ->assertRedirect(route('home'));
 
     $user = User::where('email', 'aisha@example.com')->first();
@@ -69,8 +94,38 @@ test('google callback creates a verified buyer and logs them in', function () {
         ->and($user->name)->toBe('Aisha binti Ali')
         ->and($user->google_id)->toBe('google-123')
         ->and($user->hasVerifiedEmail())->toBeTrue()
-        ->and($user->hasRole('buyer'))->toBeTrue();
+        ->and($user->hasRole('buyer'))->toBeTrue()
+        ->and($user->privacy_consented_at)->not->toBeNull()
+        ->and($user->privacy_notice_version)->toBe(config('app.privacy_notice_version'))
+        ->and(session()->has('google_signup'))->toBeFalse();
 
+    $this->assertAuthenticatedAs($user);
+});
+
+test('the consent page without a pending google sign-up creates nothing', function () {
+    enableGoogle();
+
+    $this->get(route('auth.google.consent'))->assertRedirect(route('login'));
+    $this->post(route('auth.google.consent.store'), ['terms' => '1'])->assertRedirect(route('login'));
+
+    expect(User::count())->toBe(0);
+    $this->assertGuest();
+});
+
+test('an account made for the google email while consent was open is signed into, not duplicated', function () {
+    enableGoogle();
+    mockGoogleUser();
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake');
+
+    $user = User::factory()->create(['email' => 'aisha@example.com']);
+    $user->assignRole('buyer');
+
+    $this->post(route('auth.google.consent.store'), ['terms' => '1'])
+        ->assertRedirect(route('home'));
+
+    expect(User::count())->toBe(1)
+        ->and($user->fresh()->google_id)->toBe('google-123');
     $this->assertAuthenticatedAs($user);
 });
 
@@ -86,7 +141,10 @@ test('google callback links an existing account by email', function () {
         ->assertRedirect(route('home'));
 
     expect(User::count())->toBe(1)
-        ->and($user->fresh()->google_id)->toBe('google-123');
+        ->and($user->fresh()->google_id)->toBe('google-123')
+        // Existing accounts get no consent step and keep their consent fields as they were.
+        ->and($user->fresh()->privacy_consented_at)->toBeNull()
+        ->and($user->fresh()->privacy_notice_version)->toBeNull();
 
     $this->assertAuthenticatedAs($user);
 });

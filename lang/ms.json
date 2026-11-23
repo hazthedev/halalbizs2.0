@@ -2954,5 +2954,6 @@
     "Payout bank account changed — :bank :account": "Akaun bank pembayaran ditukar — :bank :account",
     "Needed to change the bank account. We email you after every change.": "Diperlukan untuk menukar akaun bank. Kami akan menghantar e-mel kepada anda selepas setiap perubahan.",
     "Payout reversal": "Pembalikan pembayaran",
-    "Payout :no rejected — amount returned to your balance": "Pembayaran :no ditolak — jumlah dikembalikan ke baki anda"
+    "Payout :no rejected — amount returned to your balance": "Pembayaran :no ditolak — jumlah dikembalikan ke baki anda",
+    "Signing up with Google as :email.": "Mendaftar dengan Google sebagai :email."
 }
