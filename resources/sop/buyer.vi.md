@@ -11,6 +11,7 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 1. Chọn **Đăng ký** ở thanh trên cùng. <!-- SHOT: header with Log in and Sign up -->
 2. Điền **Tên**, **Email**, **Điện thoại (không bắt buộc)**, **Mật khẩu** (ít nhất 8 ký tự) và **Xác nhận mật khẩu**.
 3. Đánh dấu ô đồng ý với điều khoản & điều kiện và chính sách bảo mật, rồi chọn **Tạo tài khoản**.
+   Hoặc chọn **Tiếp tục với Google**. Nếu là tài khoản mới, bạn sẽ thấy trang **Tạo tài khoản** với cùng ô đồng ý: đánh dấu ô rồi chọn **Tạo tài khoản**. Tài khoản chỉ được tạo sau khi bạn đánh dấu ô. Tài khoản đã có sẽ đăng nhập ngay.
 4. Mở email chúng tôi gửi và chọn liên kết xác minh. Nếu chưa nhận được, chọn **Gửi lại email xác minh** ở trang **Xác minh email của bạn**. Bạn phải xác minh email trước khi thanh toán.
 5. Lần sau, chọn **Đăng nhập**, nhập **Email** và **Mật khẩu**, rồi chọn **Đăng nhập**. Chỉ đánh dấu **Duy trì đăng nhập** trên thiết bị của riêng bạn.
 6. Nếu quên mật khẩu, chọn **Quên mật khẩu?**, nhập email, chọn **Gửi liên kết đặt lại** và làm theo liên kết trong email.

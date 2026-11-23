@@ -2925,5 +2925,6 @@
     "Payout bank account changed — :bank :account": "Đã thay đổi tài khoản ngân hàng nhận thanh toán — :bank :account",
     "Needed to change the bank account. We email you after every change.": "Cần thiết để thay đổi tài khoản ngân hàng. Chúng tôi sẽ gửi email cho bạn sau mỗi lần thay đổi.",
     "Payout reversal": "Hoàn tác rút tiền",
-    "Payout :no rejected — amount returned to your balance": "Yêu cầu rút tiền :no bị từ chối — số tiền đã được hoàn về số dư của bạn"
+    "Payout :no rejected — amount returned to your balance": "Yêu cầu rút tiền :no bị từ chối — số tiền đã được hoàn về số dư của bạn",
+    "Signing up with Google as :email.": "Đăng ký bằng Google với :email."
 }

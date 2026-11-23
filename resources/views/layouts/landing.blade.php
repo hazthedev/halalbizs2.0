@@ -53,7 +53,7 @@
                     </form>
                 @endguest
 
-                @unless (request()->routeIs('seller.apply', 'seller.status', 'login', 'register', 'admin.login'))
+                @unless (request()->routeIs('seller.apply', 'seller.status', 'login', 'register', 'admin.login', 'auth.google.consent'))
                     <x-ui.button variant="brass" :href="route('seller.apply')">
                         {{ __('Start Selling') }}
                     </x-ui.button>
