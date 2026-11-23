@@ -82,6 +82,8 @@ class Register extends Component
             'email' => $this->email,
             'password' => $this->password,
             'phone' => $this->phone ?: null,
+            'privacy_consented_at' => now(),
+            'privacy_notice_version' => config('app.privacy_notice_version'),
         ]);
 
         $user->assignRole('buyer');

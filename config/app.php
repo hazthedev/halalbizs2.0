@@ -134,6 +134,19 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Privacy Notice Version
+    |--------------------------------------------------------------------------
+    |
+    | Stored on every new account with the sign-up consent time (PDPA proof,
+    | LAW-02). Use the date the /page/privacy text last changed; raise it (or
+    | set PRIVACY_NOTICE_VERSION) whenever that text changes.
+    |
+    */
+
+    'privacy_notice_version' => env('PRIVACY_NOTICE_VERSION', '2026-06-24'),
+
     'key' => env('APP_KEY'),
 
     'previous_keys' => [
