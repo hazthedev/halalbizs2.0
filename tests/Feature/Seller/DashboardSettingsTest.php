@@ -351,3 +351,22 @@ test('a registration no already on the store cannot be changed from settings', f
     expect($store->registration_no)->toBe('202301012345')
         ->and($store->business_name)->toBe('Pak Mat Enterprise');
 });
+
+// HB-LAW-14b (HB-DEC-1123c): a phone written with dashes is accepted.
+test('seller details accept a phone with dashes and still refuse letters', function () {
+    $seller = makeApprovedSeller();
+
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->set('sellerDetails.contact_phone', '012-345 6789')
+        ->call('saveSellerDetails')
+        ->assertHasNoErrors();
+
+    expect($seller->store->fresh()->contact_phone)->toBe('012-345 6789');
+
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->set('sellerDetails.contact_phone', 'abc')
+        ->call('saveSellerDetails')
+        ->assertHasErrors(['sellerDetails.contact_phone']);
+});

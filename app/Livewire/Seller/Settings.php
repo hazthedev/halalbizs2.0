@@ -127,7 +127,7 @@ class Settings extends Component
 
         $this->validate(
             array_combine(array_map(fn ($k) => "sellerDetails.$k", array_keys($rules)), $rules),
-            ['sellerDetails.contact_phone.regex' => __('Use digits and spaces only, with an optional + at the start.')],
+            ['sellerDetails.contact_phone.regex' => __('Use digits, spaces and dashes only, with an optional + at the start.')],
             [
                 'sellerDetails.business_name' => __('business name'),
                 'sellerDetails.registration_no' => __('registration no.'),

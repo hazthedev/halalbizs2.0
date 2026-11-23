@@ -150,3 +150,31 @@ it('escapes seller details on the shop page', function () {
         ->assertDontSee('<img src=x onerror=alert(2)>', false)
         ->assertSee('&lt;script&gt;alert(1)&lt;/script&gt;', false);
 });
+
+/*
+ * HB-LAW-14b (Haze 2026-11-23, HB-DEC-1123c option B): the card shows only when
+ * the seller filled one of the four new fields. A registration no. saved
+ * earlier for WHIP certificates alone must not publish a card.
+ */
+it('shows no seller details card when only the registration no is filled', function () {
+    $store = Store::factory()->approved()->create(['registration_no' => '202301012345']);
+
+    $this->get('/s/'.$store->slug)
+        ->assertOk()
+        ->assertDontSee(__('Seller details'))
+        ->assertDontSee('202301012345');
+});
+
+it('shows the registration no inside the card once a new field is filled', function () {
+    $store = Store::factory()->approved()->create([
+        'registration_no' => '202301012345',
+        'contact_phone' => '012-345 6789',
+    ]);
+
+    $this->get('/s/'.$store->slug)
+        ->assertOk()
+        ->assertSee(__('Seller details'))
+        ->assertSee('202301012345')
+        ->assertSee('012-345 6789')
+        ->assertSee('href="tel:0123456789"', false);
+});

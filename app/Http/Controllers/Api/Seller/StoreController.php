@@ -45,7 +45,7 @@ class StoreController extends SellerController
             ...array_map(fn (array $rule) => ['sometimes', ...$rule], Store::sellerDetailRules()),
         ], [
             'bank.account_number.regex' => __('Enter the account number as 8–17 digits, no spaces or dashes.'),
-            'contact_phone.regex' => __('Use digits and spaces only, with an optional + at the start.'),
+            'contact_phone.regex' => __('Use digits, spaces and dashes only, with an optional + at the start.'),
         ]);
 
         if (isset($data['shipping_matrix'])) {

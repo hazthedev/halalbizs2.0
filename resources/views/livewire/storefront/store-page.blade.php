@@ -141,12 +141,14 @@
             @endif
 
             {{-- HB-LAW-14 (HB-DEC-1123b): seller identity for the e-trade rules.
-                 Every field is optional; only filled ones render, and no block
-                 at all when none are. Same dl pattern as product Traceability. --}}
+                 Every field is optional; only filled ones render. HB-DEC-1123c:
+                 the card shows only once one of the four new fields is filled;
+                 a registration no. saved earlier for WHIP certificates alone
+                 never publishes a card. Same dl pattern as product Traceability. --}}
             @php
                 $sellerDetails = array_filter($store->only(['business_name', 'registration_no', 'business_address', 'contact_phone', 'contact_email']), 'filled');
             @endphp
-            @if ($sellerDetails !== [])
+            @if (array_diff_key($sellerDetails, ['registration_no' => true]) !== [])
                 <x-ui.card class="mt-6 max-w-prose p-4 lg:p-6">
                     <h2 class="text-sm font-medium text-ink">{{ __('Seller details') }}</h2>
                     <dl class="mt-4 space-y-3">
@@ -161,7 +163,7 @@
                                 } }}</dt>
                                 <dd class="min-w-0 flex-1 break-words text-sm text-ink">
                                     @if ($field === 'contact_phone')
-                                        <a href="tel:{{ str_replace(' ', '', $value) }}" class="underline underline-offset-2 hover:text-emerald">{{ $value }}</a>
+                                        <a href="tel:{{ preg_replace('/(?!^\+)\D/', '', $value) }}" class="underline underline-offset-2 hover:text-emerald">{{ $value }}</a>
                                     @elseif ($field === 'contact_email')
                                         <a href="mailto:{{ $value }}" class="underline underline-offset-2 hover:text-emerald">{{ $value }}</a>
                                     @else
