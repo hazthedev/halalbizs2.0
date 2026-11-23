@@ -46,7 +46,7 @@ Two-column desktop, stacked mobile:
 - Records product ID into recently-viewed localStorage. JSON-LD Product schema in head.
 
 ### B5. Store page `/s/{store:slug}`
-Banner + logo header (ink-tinted overlay for text contrast), name, ★ rating, joined date, state, products count. Holiday-mode notice banner when active. Tabs: Products (listing engine scoped to store, with store-category filter) · About (description). Follow button = parked (P4).
+Banner + logo header (ink-tinted overlay for text contrast), name, ★ rating, joined date, state, products count. Holiday-mode notice banner when active. Tabs: Products (listing engine scoped to store, with store-category filter) · About (description, then a "Seller details" card with only the filled seller details; the card shows only once business name, address, phone or email is filled, registration no. alone = no card; HB-LAW-14, HB-DEC-1123c). Follow button = parked (P4).
 
 ### B6. Cart `/cart`
 - Groups by seller (store header row with name + link). Item rows: thumb, title, variant label, unit price, qty stepper (`wire:model.live`), line total, remove (optimistic + Undo toast).

@@ -38,6 +38,7 @@ class Store extends Model implements HasMedia
         'bank_details', 'approved_at',
         'shipping_mode', 'shipping_flat_fee_sen', 'shipping_matrix', 'free_shipping_over_sen',
         'shipping_origin_postcode',
+        'business_name', 'business_address', 'contact_phone', 'contact_email',
     ];
 
     protected function casts(): array
@@ -54,6 +55,25 @@ class Store extends Model implements HasMedia
             'shipping_flat_fee_sen' => 'integer',
             'shipping_matrix' => 'array',
             'free_shipping_over_sen' => 'integer',
+        ];
+    }
+
+    /**
+     * HB-LAW-14: optional seller details shown on the public shop page. One
+     * rule set for web settings and the API. registration_no is also the WHIP
+     * certificate key, so callers let a seller set it only while it is blank.
+     * Phone: digits, spaces and dashes, one optional leading + (HB-DEC-1123c).
+     *
+     * @return array<string, array<int, string>>
+     */
+    public static function sellerDetailRules(): array
+    {
+        return [
+            'business_name' => ['nullable', 'string', 'max:120'],
+            'registration_no' => ['nullable', 'string', 'max:40'],
+            'business_address' => ['nullable', 'string', 'max:300'],
+            'contact_phone' => ['nullable', 'string', 'min:7', 'max:20', 'regex:/^\+?[0-9][0-9 -]*$/'],
+            'contact_email' => ['nullable', 'email', 'max:120'],
         ];
     }
 

@@ -277,3 +277,96 @@ test('the shop name is not editable from settings', function () {
 
     expect($seller->store->fresh()->name)->toBe($originalName);
 });
+
+// ===== Seller details (HB-LAW-14) =====
+
+test('seller details save optional business name, registration no, address, phone and email', function () {
+    $seller = makeApprovedSeller();
+
+    $this->actingAs($seller)->get('/seller/settings')->assertOk()->assertSee(__('Seller details'));
+
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->set('sellerDetails.business_name', '  Pak Mat Enterprise ')
+        ->set('sellerDetails.registration_no', '202301012345')
+        ->set('sellerDetails.business_address', "12 Jalan Bunga\n43000 Kajang")
+        ->set('sellerDetails.contact_phone', '+60 12 345 6789')
+        ->set('sellerDetails.contact_email', 'hello@pakmat.test')
+        ->call('saveSellerDetails')
+        ->assertHasNoErrors()
+        ->assertDispatched('toast');
+
+    $store = $seller->store->fresh();
+
+    expect($store->business_name)->toBe('Pak Mat Enterprise')
+        ->and($store->registration_no)->toBe('202301012345')
+        ->and($store->business_address)->toBe("12 Jalan Bunga\n43000 Kajang")
+        ->and($store->contact_phone)->toBe('+60 12 345 6789')
+        ->and($store->contact_email)->toBe('hello@pakmat.test');
+
+    // All optional: clearing a field stores null, and no password is asked.
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->set('sellerDetails.business_address', '')
+        ->set('sellerDetails.contact_phone', ' ')
+        ->call('saveSellerDetails')
+        ->assertHasNoErrors();
+
+    $store->refresh();
+    expect($store->business_address)->toBeNull()
+        ->and($store->contact_phone)->toBeNull()
+        ->and($store->business_name)->toBe('Pak Mat Enterprise');
+});
+
+test('seller details reject a bad email, a phone with letters and over-long values', function () {
+    $seller = makeApprovedSeller();
+
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->set('sellerDetails.contact_email', 'not-an-email')
+        ->set('sellerDetails.contact_phone', '012-CALL-ME')
+        ->set('sellerDetails.business_name', str_repeat('a', 121))
+        ->set('sellerDetails.business_address', str_repeat('a', 301))
+        ->call('saveSellerDetails')
+        ->assertHasErrors(['sellerDetails.contact_email', 'sellerDetails.contact_phone', 'sellerDetails.business_name', 'sellerDetails.business_address']);
+
+    expect($seller->store->fresh()->contact_email)->toBeNull();
+});
+
+// registration_no is also the WHIP certificate key (Certificates flow): once
+// set, settings must not let a seller swap it for another company's number.
+test('a registration no already on the store cannot be changed from settings', function () {
+    $seller = makeApprovedSeller();
+    $seller->store->forceFill(['registration_no' => '202301012345'])->save();
+
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->assertSet('sellerDetails.registration_no', '202301012345')
+        ->set('sellerDetails.registration_no', '999999999999')
+        ->set('sellerDetails.business_name', 'Pak Mat Enterprise')
+        ->call('saveSellerDetails')
+        ->assertHasNoErrors();
+
+    $store = $seller->store->fresh();
+    expect($store->registration_no)->toBe('202301012345')
+        ->and($store->business_name)->toBe('Pak Mat Enterprise');
+});
+
+// HB-LAW-14b (HB-DEC-1123c): a phone written with dashes is accepted.
+test('seller details accept a phone with dashes and still refuse letters', function () {
+    $seller = makeApprovedSeller();
+
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->set('sellerDetails.contact_phone', '012-345 6789')
+        ->call('saveSellerDetails')
+        ->assertHasNoErrors();
+
+    expect($seller->store->fresh()->contact_phone)->toBe('012-345 6789');
+
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->set('sellerDetails.contact_phone', 'abc')
+        ->call('saveSellerDetails')
+        ->assertHasErrors(['sellerDetails.contact_phone']);
+});

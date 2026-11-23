@@ -2926,5 +2926,18 @@
     "Needed to change the bank account. We email you after every change.": "Cần thiết để thay đổi tài khoản ngân hàng. Chúng tôi sẽ gửi email cho bạn sau mỗi lần thay đổi.",
     "Payout reversal": "Hoàn tác rút tiền",
     "Payout :no rejected — amount returned to your balance": "Yêu cầu rút tiền :no bị từ chối — số tiền đã được hoàn về số dư của bạn",
+    "Seller details": "Thông tin người bán",
+    "Business name": "Tên doanh nghiệp",
+    "Registration no.": "Số đăng ký",
+    "Business address": "Địa chỉ doanh nghiệp",
+    "Save seller details": "Lưu thông tin người bán",
+    "business name": "tên doanh nghiệp",
+    "registration no.": "số đăng ký",
+    "business address": "địa chỉ doanh nghiệp",
+    "phone": "số điện thoại",
+    "Contact support to change your registration number.": "Liên hệ bộ phận hỗ trợ để thay đổi số đăng ký của bạn.",
+    "Your SSM or company registration number.": "Số SSM hoặc số đăng ký công ty của bạn.",
+    "Optional. Buyers see only the details you fill, on your shop page under About. Leave out anything you do not want public, such as a home address.": "Không bắt buộc. Người mua chỉ thấy những thông tin bạn điền, trên trang cửa hàng của bạn trong mục Giới thiệu. Bỏ trống những gì bạn không muốn công khai, chẳng hạn như địa chỉ nhà.",
+    "Use digits, spaces and dashes only, with an optional + at the start.": "Chỉ dùng chữ số, khoảng trắng và dấu gạch ngang, có thể thêm dấu + ở đầu.",
     "Signing up with Google as :email.": "Đăng ký bằng Google với :email."
 }

@@ -148,3 +148,48 @@ test('a seller upload is stored under the detected image extension, never the cl
 
     expect($seller->store->fresh()->getFirstMedia('logo')->file_name)->toBe('logo-x.png');
 });
+
+// HB-LAW-14: same optional seller details and rules as the web settings page.
+test('PATCH seller/store saves the optional seller details with the settings rules', function () {
+    Notification::fake();
+    $seller = sellerApiUser();
+
+    sellerApiAs($seller)->patchJson('/api/v1/seller/store', [
+        'business_name' => 'Pak Mat Enterprise',
+        'registration_no' => '202301012345',
+        'business_address' => "12 Jalan Bunga\n43000 Kajang",
+        'contact_phone' => '+60 12 345 6789',
+        'contact_email' => 'hello@pakmat.test',
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.seller_details.business_name', 'Pak Mat Enterprise')
+        ->assertJsonPath('data.seller_details.registration_no', '202301012345')
+        ->assertJsonPath('data.seller_details.business_address', "12 Jalan Bunga\n43000 Kajang")
+        ->assertJsonPath('data.seller_details.contact_phone', '+60 12 345 6789')
+        ->assertJsonPath('data.seller_details.contact_email', 'hello@pakmat.test');
+
+    // No password needed (only bank changes need one), and a blank clears a field.
+    sellerApiAs($seller)->patchJson('/api/v1/seller/store', ['business_address' => ''])
+        ->assertOk()
+        ->assertJsonPath('data.seller_details.business_address', null)
+        ->assertJsonPath('data.seller_details.business_name', 'Pak Mat Enterprise');
+
+    sellerApiAs($seller)->patchJson('/api/v1/seller/store', [
+        'contact_email' => 'not-an-email',
+        'contact_phone' => '012-CALL-ME',
+        'business_name' => str_repeat('a', 121),
+    ])
+        ->assertStatus(422)
+        ->assertJsonStructure(['error' => ['fields' => ['contact_email', 'contact_phone', 'business_name']]]);
+
+    // registration_no is the WHIP certificate key: once set, the app cannot swap it.
+    sellerApiAs($seller)->patchJson('/api/v1/seller/store', ['registration_no' => '999999999999'])
+        ->assertStatus(422)
+        ->assertJsonStructure(['error' => ['fields' => ['registration_no']]]);
+
+    sellerApiAs($seller)->patchJson('/api/v1/seller/store', ['registration_no' => '202301012345', 'holiday_mode' => true])
+        ->assertOk();
+
+    expect($seller->store->fresh()->registration_no)->toBe('202301012345');
+    Notification::assertNothingSent();
+});
