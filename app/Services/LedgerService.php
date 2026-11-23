@@ -37,12 +37,15 @@ class LedgerService
 
     /**
      * When completion money comes off hold: the same instant ReturnService
-     * closes the return window (delivered_at + return_window_days). A
-     * sub-order with no delivered_at (defensive) holds from now.
+     * closes the return window: return_closes_at, fixed on delivery day
+     * (HB-DEC-1123d). A sub-order delivered before that column existed (NULL)
+     * uses delivered_at + the current return_window_days; one with no
+     * delivered_at (defensive) holds from now.
      */
     public function releaseAt(SubOrder $subOrder): CarbonInterface
     {
-        return ($subOrder->delivered_at ?? now())->copy()->addDays($this->orderSettings->return_window_days);
+        return $subOrder->return_closes_at
+            ?? ($subOrder->delivered_at ?? now())->copy()->addDays($this->orderSettings->return_window_days);
     }
 
     /**
@@ -390,6 +393,31 @@ class LedgerService
             }
 
             $payout->setRawAttributes($locked->getAttributes(), true);
+        });
+    }
+
+    /**
+     * Approve / mark paid (HB-G224): status bookkeeping only, the ledger is
+     * untouched (the earmark written at request time stays). Locked and
+     * re-checked like rejectPayout, so an approve or mark-paid racing a reject
+     * can never leave a payout approved or paid after its money was returned.
+     * Returns false (nothing written) when the payout is no longer at $from.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function advancePayout(Payout $payout, PayoutStatus $from, array $attributes): bool
+    {
+        return DB::transaction(function () use ($payout, $from, $attributes) {
+            $locked = Payout::whereKey($payout->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->status !== $from) {
+                return false;
+            }
+
+            $locked->update($attributes);
+            $payout->setRawAttributes($locked->getAttributes(), true);
+
+            return true;
         });
     }
 

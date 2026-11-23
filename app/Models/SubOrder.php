@@ -66,6 +66,7 @@ class SubOrder extends Model
             'commission_basis' => CommissionBasis::class,
             'shipped_at' => 'datetime',
             'delivered_at' => 'datetime',
+            'return_closes_at' => 'datetime',
             'completed_at' => 'datetime',
             'auto_complete_at' => 'datetime',
             'cancelled_at' => 'datetime',

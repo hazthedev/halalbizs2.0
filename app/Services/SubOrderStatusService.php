@@ -118,6 +118,9 @@ class SubOrderStatusService
             SubOrderStatus::Shipped => ['shipped_at' => $now],
             SubOrderStatus::Delivered => [
                 'delivered_at' => $now,
+                // HB-DEC-1123d: the window is fixed on delivery day; a later
+                // settings change applies only to orders delivered after it.
+                'return_closes_at' => $now->copy()->addDays($this->orderSettings->return_window_days),
                 'auto_complete_at' => $now->copy()->addDays($this->orderSettings->auto_complete_days),
             ],
             SubOrderStatus::Completed => ['completed_at' => $now],
