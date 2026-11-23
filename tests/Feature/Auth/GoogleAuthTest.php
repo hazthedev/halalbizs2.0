@@ -244,3 +244,64 @@ test('google linking an already verified account keeps its app sign-ins', functi
 
     expect($user->tokens()->count())->toBe(1);
 });
+
+test('a new google user with an unverified google email is not marked verified (HB-G227)', function () {
+    enableGoogle();
+    mockGoogleUser(emailVerified: false);
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake');
+    $this->post(route('auth.google.consent.store'), ['terms' => '1']);
+
+    $user = User::where('email', 'aisha@example.com')->sole();
+
+    expect($user->hasVerifiedEmail())->toBeFalse()
+        ->and($user->google_id)->toBe('google-123');
+});
+
+test('an unverified google user signing in again keeps their sign-ins and stays unverified', function () {
+    // Matched by google_id, not email: Google still does not vouch for the
+    // address, so nothing is "proven" and nobody's credentials are dropped.
+    enableGoogle();
+
+    $user = User::factory()->unverified()->create([
+        'email' => 'aisha@example.com',
+        'google_id' => 'google-123',
+        'password' => 'own-password',
+    ]);
+    $user->assignRole('buyer');
+    $user->createToken('mobile');
+
+    mockGoogleUser(emailVerified: false);
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake')
+        ->assertRedirect(route('home'));
+
+    $user->refresh();
+    expect($user->email_verified_at)->toBeNull()
+        ->and($user->tokens()->count())->toBe(1)
+        ->and(Hash::check('own-password', $user->password))->toBeTrue();
+});
+
+test('a squatter google account on the owner email loses its google link once the verified owner signs in', function () {
+    enableGoogle();
+
+    // First callback: a squatter whose Google email is NOT verified.
+    // Second callback: the real owner, Google vouches for the same address.
+    $googleUser = fn (string $id, bool $verified) => (new SocialiteUser)
+        ->setRaw(['email_verified' => $verified])
+        ->map(['id' => $id, 'email' => 'aisha@example.com', 'name' => 'Aisha binti Ali', 'nickname' => null]);
+    $provider = Mockery::mock(Provider::class);
+    $provider->shouldReceive('user')->andReturn($googleUser('google-squatter', false), $googleUser('google-owner', true));
+    Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake');
+    $this->post(route('auth.google.consent.store'), ['terms' => '1']);
+    auth()->logout();
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake')
+        ->assertRedirect(route('home'));
+
+    $user = User::where('email', 'aisha@example.com')->sole();
+    expect($user->google_id)->toBe('google-owner')
+        ->and($user->hasVerifiedEmail())->toBeTrue();
+});

@@ -9,6 +9,7 @@ use App\Services\DeviceGuard;
 use App\Services\DeviceTrust;
 use App\Services\OtpService;
 use App\Settings\SecuritySettings;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -125,10 +126,15 @@ class GoogleAuthController extends Controller
                 'privacy_notice_version' => config('app.privacy_notice_version'),
             ]);
 
-            // Google already verified this address.
-            $user->forceFill(['email_verified_at' => now()])->save();
-
             $user->assignRole('buyer');
+
+            // Verified only when Google itself says so (HB-G227); otherwise
+            // the normal verification email goes out, as on web register.
+            if ($google['email_verified']) {
+                $user->forceFill(['email_verified_at' => now()])->save();
+            } else {
+                event(new Registered($user));
+            }
         } else {
             if ($user->isSuspended()) {
                 return redirect()->route('login')
@@ -137,9 +143,11 @@ class GoogleAuthController extends Controller
 
             // Never-verified account: whoever registered it may not own the
             // email (API register hands out a token first). Google just proved
-            // the owner, so drop every credential the earlier registrant holds.
-            if ($user->email_verified_at === null) {
+            // the owner, so drop every credential the earlier registrant holds,
+            // their Google link included (it is set to this Google id below).
+            if ($user->email_verified_at === null && $google['email_verified']) {
                 $user->forceFill([
+                    'google_id' => null,
                     'password' => Str::password(40),
                     'two_factor_method' => null,
                     'two_factor_secret' => null,
@@ -157,7 +165,7 @@ class GoogleAuthController extends Controller
 
             $user->forceFill([
                 'google_id' => $user->google_id ?? $google['id'],
-                'email_verified_at' => $user->email_verified_at ?? now(),
+                'email_verified_at' => $user->email_verified_at ?? ($google['email_verified'] ? now() : null),
             ])->save();
         }
 

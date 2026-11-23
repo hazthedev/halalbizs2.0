@@ -12,7 +12,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 4. Khi bạn đăng nhập từ thiết bị mới mà chưa bật đăng nhập hai bước, trang **Two-factor check** ghi "You're signing in from a new device. Enter the code we emailed to confirm it's you." Nhập mã 6 chữ số trong email "Your login code" (hết hạn sau 10 phút) và chọn **Verify and log in**. Thiết bị chỉ được ghi nhớ sau khi mã đúng. Thiết bị đầu tiên bạn dùng không cần mã.
 5. Menu gồm: **Dashboard**, **Sellers**, **Buyers**, **Catalog**, **Orders**, **Finance**, **Content**, **Support**, **System**. Mục nào bạn không có quyền sẽ bị ẩn hoặc bị chặn. <!-- SHOT: admin menu -->
 6. Chọn **View storefront** để xem trang công khai và **Log out** để thoát.
-7. Để thêm admin: **System > Staff & roles**, chọn **Invite admin**, nhập **Name** và **Email**, đánh dấu các **Permissions** và chọn **Invite admin**. Hệ thống tạo mật khẩu tạm để bạn chuyển cho họ. **Edit permissions**, **Make superadmin** và **Remove admin** nằm trên cùng danh sách.
+7. Để thêm admin: **System > Staff & roles**, chọn **Invite admin**, nhập **Name** và **Email**, đánh dấu các **Permissions** và chọn **Invite admin**. Admin mới nhận email để tự đặt mật khẩu. Bạn chỉ có thể cấp các quyền mà chính bạn đang có. **Edit permissions**, **Make superadmin** và **Remove admin** nằm trên cùng danh sách. Chỉ superadmin mới có thể cấp, gỡ hoặc xóa quyền superadmin, và luôn còn ít nhất một superadmin. Mỗi thao tác này được ghi vào **System > Audit log**.
 
 ## 2. Dashboard và báo cáo
 
