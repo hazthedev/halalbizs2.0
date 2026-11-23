@@ -38,7 +38,9 @@ class ReturnService
     {
         return in_array($subOrder->status, [SubOrderStatus::Delivered, SubOrderStatus::Completed], true)
             && $subOrder->delivered_at !== null
-            && now()->lte($subOrder->delivered_at->copy()->addDays($this->settings->return_window_days))
+            // return_closes_at = window fixed on delivery day (HB-DEC-1123d);
+            // NULL = delivered before it existed, so today's setting applies.
+            && now()->lte($subOrder->return_closes_at ?? $subOrder->delivered_at->copy()->addDays($this->settings->return_window_days))
             && $subOrder->returnRequest === null;
     }
 

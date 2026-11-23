@@ -262,3 +262,109 @@ test('HB-G168: a forged select-all flag cannot select payouts the screen does no
     expect($component->get('selected'))->toBe([(string) $shown->id]);
     expect(fn () => $component->set('selectAll', true))->toThrow(Exception::class);
 });
+
+/**
+ * HB-G224 race: a second admin acts between this admin's read and write.
+ * The first time [$payout] is loaded, [$other] runs (as the other admin
+ * would) before the approve/mark-paid write lands.
+ */
+function payoutRaceOnFirstRead(Payout $payout, Closure $other): void
+{
+    $fired = false;
+
+    Payout::retrieved(function (Payout $loaded) use ($payout, $other, &$fired) {
+        if ($fired || $loaded->id !== $payout->id) {
+            return;
+        }
+
+        $fired = true;
+        $other();
+    });
+}
+
+test('HB-G224: approve refuses a payout another admin rejected after it was read — the reversal stays, status stays rejected', function () {
+    $admin = financeAdmin();
+    $payout = financePayout();
+    $payout->ledgerEntries()->create([
+        'store_id' => $payout->store_id,
+        'type' => \App\Enums\LedgerEntryType::Payout,
+        'amount_sen' => -1250,
+        'status' => \App\Enums\LedgerEntryStatus::Available,
+        'description' => 'Payout earmark',
+    ]);
+
+    $component = Livewire::actingAs($admin)->test(Payouts::class);
+
+    payoutRaceOnFirstRead($payout, fn () => app(\App\Services\LedgerService::class)->rejectPayout(Payout::find($payout->id), 'Other admin'));
+
+    $component->call('approve', $payout->id)
+        ->assertDispatched('toast', type: 'error');
+
+    $payout->refresh();
+    expect($payout->status)->toBe(PayoutStatus::Rejected)
+        ->and($payout->approved_at)->toBeNull()
+        ->and((int) $payout->ledgerEntries()->sum('amount_sen'))->toBe(0);
+});
+
+test('HB-G224: mark paid refuses a payout another admin rejected after it was read', function () {
+    $admin = financeAdmin();
+    $payout = financePayout(PayoutStatus::Approved);
+
+    $component = Livewire::actingAs($admin)->test(Payouts::class)
+        ->set('tab', PayoutStatus::Approved->value)
+        ->call('openMarkPaid', $payout->id)
+        ->set('paidReference', 'MBB-RACE-001');
+
+    payoutRaceOnFirstRead($payout, fn () => app(\App\Services\LedgerService::class)->rejectPayout(Payout::find($payout->id), 'Other admin'));
+
+    $component->call('markPaid')->assertDispatched('toast', type: 'error');
+
+    $payout->refresh();
+    expect($payout->status)->toBe(PayoutStatus::Rejected)
+        ->and($payout->paid_at)->toBeNull()
+        ->and($payout->reference)->toBe('Other admin');
+});
+
+test('HB-G224: approve and mark paid on a payout no longer in the right status change nothing', function () {
+    $admin = financeAdmin();
+    $rejected = financePayout(PayoutStatus::Rejected);
+    $requested = financePayout();
+
+    Livewire::actingAs($admin)->test(Payouts::class)
+        ->call('approve', $rejected->id)
+        ->assertDispatched('toast', type: 'error')
+        ->call('openMarkPaid', $requested->id)
+        ->set('paidReference', 'MBB-NOPE-001')
+        ->call('markPaid')
+        ->assertDispatched('toast', type: 'error');
+
+    expect($rejected->refresh()->status)->toBe(PayoutStatus::Rejected)
+        ->and($rejected->approved_at)->toBeNull()
+        ->and($requested->refresh()->status)->toBe(PayoutStatus::Requested)
+        ->and($requested->paid_at)->toBeNull();
+});
+
+test('HB-G224: reject refuses a payout another admin paid after it was read — no success toast, processed_by kept', function () {
+    $admin = financeAdmin();
+    $other = financeAdmin();
+    $payout = financePayout();
+
+    $component = Livewire::actingAs($admin)->test(Payouts::class)
+        ->call('openReject', $payout->id)
+        ->set('rejectReason', 'Bank details do not match');
+
+    payoutRaceOnFirstRead($payout, fn () => Payout::whereKey($payout->id)->update([
+        'status' => PayoutStatus::Paid,
+        'paid_at' => now(),
+        'reference' => 'MBB-PAID-001',
+        'processed_by' => $other->id,
+    ]));
+
+    $component->call('reject')->assertDispatched('toast', type: 'error');
+
+    $payout->refresh();
+    expect($payout->status)->toBe(PayoutStatus::Paid)
+        ->and($payout->processed_by)->toBe($other->id)
+        ->and($payout->reference)->toBe('MBB-PAID-001')
+        ->and($payout->ledgerEntries()->count())->toBe(0);
+});

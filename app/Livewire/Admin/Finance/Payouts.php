@@ -75,19 +75,20 @@ class Payouts extends Component
         $this->resetPage();
     }
 
-    public function approve(int $payoutId): void
+    public function approve(int $payoutId, LedgerService $ledger): void
     {
         $payout = Payout::query()->findOrFail($payoutId);
 
-        if ($payout->status !== PayoutStatus::Requested) {
-            return;
-        }
-
-        $payout->update([
+        // HB-G224: locked + re-checked in the service, like reject.
+        if (! $ledger->advancePayout($payout, PayoutStatus::Requested, [
             'status' => PayoutStatus::Approved,
             'approved_at' => now(),
             'processed_by' => auth()->id(),
-        ]);
+        ])) {
+            $this->dispatch('toast', message: __(':no can no longer be approved from its current status.', ['no' => $payout->payout_no]), type: 'error');
+
+            return;
+        }
 
         // Ledger: nothing to do — the negative payout entry written at
         // request time stays earmarked against this payout through approval.
@@ -121,7 +122,12 @@ class Payouts extends Component
         // and the Payout activity log records it), and books a positive
         // `payout_reversal` entry against the payout's negative one —
         // releasing the earmark back to the store's available balance.
-        $ledger->rejectPayout($payout, trim($this->rejectReason));
+        if (! $ledger->rejectPayout($payout, trim($this->rejectReason))) {
+            $this->reset('rejectingId', 'rejectReason');
+            $this->dispatch('toast', message: __(':no can no longer be rejected from its current status.', ['no' => $payout->payout_no]), type: 'error');
+
+            return;
+        }
 
         $payout->update(['processed_by' => auth()->id()]);
 
@@ -137,7 +143,7 @@ class Payouts extends Component
         $this->resetValidation();
     }
 
-    public function markPaid(): void
+    public function markPaid(LedgerService $ledger): void
     {
         $this->validate(
             ['paidReference' => ['required', 'string', 'min:3', 'max:100']],
@@ -147,16 +153,18 @@ class Payouts extends Component
 
         $payout = Payout::query()->findOrFail($this->payingId);
 
-        if ($payout->status !== PayoutStatus::Approved) {
-            return;
-        }
-
-        $payout->update([
+        // HB-G224: locked + re-checked in the service, like reject.
+        if (! $ledger->advancePayout($payout, PayoutStatus::Approved, [
             'status' => PayoutStatus::Paid,
             'paid_at' => now(),
             'reference' => trim($this->paidReference),
             'processed_by' => auth()->id(),
-        ]);
+        ])) {
+            $this->reset('payingId', 'paidReference');
+            $this->dispatch('toast', message: __(':no can no longer be marked paid from its current status.', ['no' => $payout->payout_no]), type: 'error');
+
+            return;
+        }
 
         // Ledger: intentionally untouched. Per the accounting model
         // (docs/09 §A) the payout request already wrote the negative
