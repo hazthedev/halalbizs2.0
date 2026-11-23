@@ -153,6 +153,8 @@ Route::get('/returns/{returnRequest}/photos/{media}', ReturnPhotoController::cla
 Route::get('/two-factor-challenge', Storefront\Auth\TwoFactorChallenge::class)->name('two-factor.challenge');
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->middleware('guest')->name('auth.google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('guest')->name('auth.google.callback');
+Route::get('/auth/google/consent', [GoogleAuthController::class, 'consent'])->middleware('guest')->name('auth.google.consent');
+Route::post('/auth/google/consent', [GoogleAuthController::class, 'storeConsent'])->middleware('guest')->name('auth.google.consent.store');
 
 // ===== Buyer account =====
 Route::middleware(['auth'])->prefix('account')->name('account.')->group(function () {

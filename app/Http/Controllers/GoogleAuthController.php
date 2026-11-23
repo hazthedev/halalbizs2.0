@@ -9,6 +9,7 @@ use App\Services\DeviceGuard;
 use App\Services\DeviceTrust;
 use App\Services\OtpService;
 use App\Settings\SecuritySettings;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -43,16 +44,64 @@ class GoogleAuthController extends Controller
                 ->with('status', __('Google sign-in didn\'t complete — try again or log in with your password.'));
         }
 
-        $user = User::query()->where('google_id', $googleUser->getId())->first();
+        return $this->signIn([
+            'id' => $googleUser->getId(),
+            'email' => $googleUser->getEmail(),
+            'name' => $googleUser->getName() ?: ($googleUser->getNickname() ?: __('HalalBizs shopper')),
+            'email_verified' => ($googleUser->user['email_verified'] ?? false) === true,
+        ], consented: false, cart: $cart, otp: $otp);
+    }
+
+    /**
+     * Consent step for a NEW Google account (PDPA, HB-G221): nothing is created
+     * until the person ticks the same terms + privacy box as web register.
+     * The verified Google profile waits in the session meanwhile.
+     */
+    public function consent(SecuritySettings $settings)
+    {
+        abort_unless($settings->googleEnabled(), 404);
+
+        $pending = session('google_signup');
+
+        if (! is_array($pending)) {
+            return redirect()->route('login');
+        }
+
+        return view('auth.google-consent', ['email' => $pending['email']]);
+    }
+
+    public function storeConsent(Request $request, SecuritySettings $settings, CartService $cart, OtpService $otp)
+    {
+        abort_unless($settings->googleEnabled(), 404);
+
+        if (! is_array(session('google_signup'))) {
+            return redirect()->route('login');
+        }
+
+        $request->validate(['terms' => ['accepted']], [
+            'terms.accepted' => __('Please agree to the terms and privacy policy to create an account.'),
+        ]);
+
+        return $this->signIn(session()->pull('google_signup'), consented: true, cart: $cart, otp: $otp);
+    }
+
+    /**
+     * @param  array{id: string, email: string, name: string, email_verified: bool}  $google
+     */
+    private function signIn(array $google, bool $consented, CartService $cart, OtpService $otp)
+    {
+        // Re-run on the consent POST too: an account may have appeared for this
+        // email meanwhile, and it is linked exactly as the callback would.
+        $user = User::query()->where('google_id', $google['id'])->first();
 
         // No google_id match yet — fall back to an email match, but ONLY when
         // Google itself vouches the address is verified. Without that check,
         // anyone who registers an unverified Google account on someone else's
         // email address silently takes over that existing HalalBizs account.
-        if ($user === null && ($googleUser->user['email_verified'] ?? false) === true) {
-            $user = User::query()->where('email', $googleUser->getEmail())->first();
+        if ($user === null && $google['email_verified']) {
+            $user = User::query()->where('email', $google['email'])->first();
         } elseif ($user === null) {
-            $existing = User::query()->where('email', $googleUser->getEmail())->first();
+            $existing = User::query()->where('email', $google['email'])->first();
 
             if ($existing !== null) {
                 return redirect()->route('login')
@@ -60,12 +109,20 @@ class GoogleAuthController extends Controller
             }
         }
 
+        if ($user === null && ! $consented) {
+            session()->put('google_signup', $google);
+
+            return redirect()->route('auth.google.consent');
+        }
+
         if ($user === null) {
             $user = User::create([
-                'name' => $googleUser->getName() ?: ($googleUser->getNickname() ?: __('HalalBizs shopper')),
-                'email' => $googleUser->getEmail(),
+                'name' => $google['name'],
+                'email' => $google['email'],
                 'password' => Str::password(40),
-                'google_id' => $googleUser->getId(),
+                'google_id' => $google['id'],
+                'privacy_consented_at' => now(),
+                'privacy_notice_version' => config('app.privacy_notice_version'),
             ]);
 
             // Google already verified this address.
@@ -99,7 +156,7 @@ class GoogleAuthController extends Controller
             }
 
             $user->forceFill([
-                'google_id' => $user->google_id ?? $googleUser->getId(),
+                'google_id' => $user->google_id ?? $google['id'],
                 'email_verified_at' => $user->email_verified_at ?? now(),
             ])->save();
         }

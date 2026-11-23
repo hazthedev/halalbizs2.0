@@ -11,6 +11,7 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 1. Select **Sign up** in the top bar. <!-- SHOT: header with Log in and Sign up -->
 2. Fill in **Name**, **Email**, **Phone (optional)**, **Password** (at least 8 characters) and **Confirm password**.
 3. Tick **I agree to the terms & conditions and consent to my personal data being processed under the privacy policy**, then select **Create account**.
+   Or select **Continue with Google**. If this is a new account, you then see **Create account** with the same tick box: tick it and select **Create account**. No account is made until you tick it. An existing account signs in straight away.
 4. Open the email we send you and select the verification link. If you did not get it, select **Resend verification email** on the **Verify your email** page. You must verify your email before you can check out.
 5. To sign in later, select **Log in**, enter **Email** and **Password**, and select **Log in**. Tick **Keep me logged in** only on your own device.
 6. If you forgot your password, select **Forgot password?**, enter your email, select **Send reset link**, and follow the link in the email.
