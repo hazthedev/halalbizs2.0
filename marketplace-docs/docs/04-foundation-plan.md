@@ -72,7 +72,7 @@ Config notes:
 | `VoucherScope` | platform, shop |
 | `VoucherType` | fixed, percent, free_shipping |
 | `DocumentStatus` | pending, verified, rejected |
-| `LedgerEntryType` | sale, commission, shipping, adjustment, payout, cod_offset |
+| `LedgerEntryType` | sale, commission, shipping, adjustment, payout, payout_reversal (PAY-08), cod_offset, boost, settlement |
 | `LedgerEntryStatus` | available, paid_out |
 | `PayoutStatus` | requested, approved, paid, rejected |
 | `ActorType` | buyer, seller, admin, system |

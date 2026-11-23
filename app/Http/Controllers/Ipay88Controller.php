@@ -252,6 +252,13 @@ class Ipay88Controller extends Controller
                 'expected_currency' => $payment->currency,
             ]);
 
+            // Shown in the admin Payments grid's "Requery result" column, so the
+            // review is findable without the log. Conditional: never relabel a
+            // payment a concurrent callback already settled.
+            Payment::whereKey($payment->id)
+                ->where('status', GatewayPaymentStatus::Pending)
+                ->update(['requery_result' => mb_substr('AMOUNT_MISMATCH: posted '.($payload['Amount'] ?? '').' '.($payload['Currency'] ?? ''), 0, 120)]);
+
             return response('RECEIVEOK');
         }
 

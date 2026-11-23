@@ -157,6 +157,23 @@ test('payout rejection keeps the earmark row and books a linked reversal', funct
         ->and($store->availableBalanceSen())->toBe(19500);
 });
 
+// PAY-08: the status re-check reads the locked row, so even a stale in-memory
+// copy (still "requested") cannot reverse a payout the bank already paid.
+test('a paid payout cannot be rejected, even from a stale copy', function () {
+    $subOrder = completedSubOrder(PaymentMethod::Ipay88);
+    $store = $subOrder->store;
+    $ledger = app(LedgerService::class);
+
+    $payout = $ledger->requestPayout($store, 15000);
+    $payout->newQuery()->whereKey($payout->id)->update(['status' => PayoutStatus::Paid]);
+
+    $ledger->rejectPayout($payout, 'too late');
+
+    expect($payout->fresh()->status)->toBe(PayoutStatus::Paid)
+        ->and($payout->ledgerEntries()->count())->toBe(1)
+        ->and($store->availableBalanceSen())->toBe(4500);
+});
+
 test('negative balance blocks payout requests', function () {
     $subOrder = completedSubOrder(PaymentMethod::Cod); // balance −1000
     $store = $subOrder->store;

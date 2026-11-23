@@ -190,6 +190,7 @@ test('a signed callback whose amount or currency differs from the payment is not
 
     expect($payment->fresh()->status)->toBe(GatewayPaymentStatus::Pending)
         ->and($payment->fresh()->paid_at)->toBeNull()
+        ->and($payment->fresh()->requery_result)->toBe("AMOUNT_MISMATCH: posted {$amount} {$currency}") // admin Payments grid
         ->and($order->fresh()->payment_status)->toBe(PaymentStatus::Pending)
         ->and($order->fresh()->subOrders->first()->status)->toBe(SubOrderStatus::PendingPayment);
 })->with([
