@@ -29,6 +29,8 @@ class User extends Authenticatable implements MustVerifyEmail
         // suspension moves only through explicit forceFill in the admin path.
         'google_id',
         'tin',
+        'privacy_consented_at',
+        'privacy_notice_version',
     ];
 
     protected $hidden = [
@@ -43,6 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
+            'privacy_consented_at' => 'datetime',
             'password' => 'hashed',
             'is_superadmin' => 'boolean',
             'two_factor_method' => TwoFactorMethod::class,

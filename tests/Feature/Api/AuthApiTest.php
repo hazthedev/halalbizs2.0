@@ -48,6 +48,7 @@ test('register creates a buyer, sends the verification email and returns a token
         'password' => 'correct-horse-battery',
         'password_confirmation' => 'correct-horse-battery',
         'device_name' => 'pest-phone',
+        'terms' => true,
     ]);
 
     $response->assertCreated()
@@ -62,6 +63,44 @@ test('register creates a buyer, sends the verification email and returns a token
         ->and($user->tokens()->where('name', 'pest-phone')->count())->toBe(1);
 
     Notification::assertSentTo($user, VerifyEmail::class);
+});
+
+test('register stores when the buyer agreed and which privacy notice they saw (PDPA proof)', function () {
+    Notification::fake();
+    Http::fake();
+    config(['app.privacy_notice_version' => '2026-06-24']);
+    $this->travelTo('2026-11-23 10:15:00');
+
+    $this->postJson('/api/v1/auth/register', [
+        'name' => 'Aisha binti Ali',
+        'email' => 'aisha@example.com',
+        'password' => 'correct-horse-battery',
+        'password_confirmation' => 'correct-horse-battery',
+        'device_name' => 'pest-phone',
+        'terms' => true,
+    ])->assertCreated();
+
+    $user = User::where('email', 'aisha@example.com')->firstOrFail();
+
+    expect($user->privacy_consented_at?->toDateTimeString())->toBe('2026-11-23 10:15:00')
+        ->and($user->privacy_notice_version)->toBe('2026-06-24');
+});
+
+test('register without consent is refused with a terms field error', function () {
+    Http::fake();
+
+    $this->postJson('/api/v1/auth/register', [
+        'name' => 'Aisha binti Ali',
+        'email' => 'aisha@example.com',
+        'password' => 'correct-horse-battery',
+        'password_confirmation' => 'correct-horse-battery',
+        'device_name' => 'pest-phone',
+    ])
+        ->assertStatus(422)
+        ->assertJsonPath('error.code', 'validation_failed')
+        ->assertJsonPath('error.fields.terms.0', 'Please agree to the terms and privacy policy to create an account.');
+
+    expect(User::where('email', 'aisha@example.com')->exists())->toBeFalse();
 });
 
 test('register rejects a weak password with the validation envelope', function () {

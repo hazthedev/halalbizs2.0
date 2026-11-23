@@ -90,6 +90,26 @@ test('reset password refuses a password that has appeared in a breach', function
     expect(Hash::check('12345678', $user->fresh()->password))->toBeFalse();
 });
 
+test('register stores when the buyer agreed and which privacy notice they saw (PDPA proof)', function () {
+    Notification::fake();
+    config(['app.privacy_notice_version' => '2026-06-24']);
+    $this->travelTo('2026-11-23 10:15:00');
+
+    Livewire::test(Register::class)
+        ->set('name', 'Aisha binti Ali')
+        ->set('email', 'aisha@example.com')
+        ->set('password', 'kx7-mangosteen-quay-2026')
+        ->set('password_confirmation', 'kx7-mangosteen-quay-2026')
+        ->set('terms', true)
+        ->call('register')
+        ->assertHasNoErrors();
+
+    $user = User::where('email', 'aisha@example.com')->firstOrFail();
+
+    expect($user->privacy_consented_at?->toDateTimeString())->toBe('2026-11-23 10:15:00')
+        ->and($user->privacy_notice_version)->toBe('2026-06-24');
+});
+
 test('register requires ToS consent', function () {
     Livewire::test(Register::class)
         ->set('name', 'Aisha binti Ali')

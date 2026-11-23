@@ -40,7 +40,9 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', PasswordRule::defaults()],
             'phone' => ['nullable', 'string', 'max:30'],
             'device_name' => ['required', 'string', 'max:100'],
+            'terms' => ['accepted'],
         ], [
+            'terms.accepted' => __('Please agree to the terms and privacy policy to create an account.'),
             'password.confirmed' => __('Both password fields need to match.'),
             'email.unique' => __('That email already has an account — log in instead.'),
         ]);
@@ -50,6 +52,8 @@ class AuthController extends Controller
             'email' => $data['email'],
             'password' => $data['password'],
             'phone' => $data['phone'] ?? null,
+            'privacy_consented_at' => now(),
+            'privacy_notice_version' => config('app.privacy_notice_version'),
         ]);
 
         $user->assignRole('buyer');
