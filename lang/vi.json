@@ -2916,5 +2916,12 @@
     "Search store or owner email": "Tìm cửa hàng hoặc email chủ cửa hàng",
     "No applications match": "Không có đơn đăng ký nào khớp",
     "Search flash sale title": "Tìm tiêu đề ưu đãi chớp nhoáng",
-    "No flash sales match": "Không có ưu đãi chớp nhoáng nào khớp"
+    "No flash sales match": "Không có ưu đãi chớp nhoáng nào khớp",
+    "Your payout bank account was changed — :store": "Tài khoản ngân hàng nhận thanh toán của bạn đã được thay đổi — :store",
+    "The payout bank account for :store was changed on :time.": "Tài khoản ngân hàng nhận thanh toán của :store đã được thay đổi lúc :time.",
+    "New account: :bank · :account": "Tài khoản mới: :bank · :account",
+    "If you did not make this change, change your password now and contact us before your next payout.": "Nếu bạn không thực hiện thay đổi này, hãy đổi mật khẩu ngay và liên hệ với chúng tôi trước lần thanh toán tiếp theo.",
+    "Review shop settings": "Xem lại cài đặt cửa hàng",
+    "Payout bank account changed — :bank :account": "Đã thay đổi tài khoản ngân hàng nhận thanh toán — :bank :account",
+    "Needed to change the bank account. We email you after every change.": "Cần thiết để thay đổi tài khoản ngân hàng. Chúng tôi sẽ gửi email cho bạn sau mỗi lần thay đổi."
 }

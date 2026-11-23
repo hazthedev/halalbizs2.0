@@ -228,6 +228,16 @@
                 :hint="$errors->first('accountNumber') ? null : __('8–17 digits, no spaces or dashes.')"
             />
 
+            <x-ui.input
+                :label="__('Current password')"
+                name="bankPassword"
+                type="password"
+                wire:model="bankPassword"
+                autocomplete="current-password"
+                :error="$errors->first('bankPassword')"
+                :hint="$errors->first('bankPassword') ? null : __('Needed to change the bank account. We email you after every change.')"
+            />
+
             <div class="flex justify-end border-t border-line pt-4">
                 <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="saveBank">{{ __('Save bank details') }}</x-ui.button>
             </div>

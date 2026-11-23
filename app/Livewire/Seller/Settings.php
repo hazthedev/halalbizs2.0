@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller;
 
 use App\Livewire\Concerns\CurrentStore;
+use App\Notifications\BankDetailsChanged;
 use App\Services\CommissionResolver;
 use App\Support\MalaysianBanks;
 use App\Support\MalaysianStates;
@@ -53,6 +54,9 @@ class Settings extends Component
     public string $accountName = '';
 
     public string $accountNumber = '';
+
+    /** PAY-20: current password, asked only when the bank fields change. */
+    public string $bankPassword = '';
 
     public function mount(): void
     {
@@ -207,13 +211,26 @@ class Settings extends Component
             'accountNumber.regex' => __('Enter the account number as 8–17 digits, no spaces or dashes.'),
         ]);
 
-        $this->currentStore()->update([
-            'bank_details' => [
-                'bank_name' => $this->bankName,
-                'account_name' => $this->accountName,
-                'account_number' => $this->accountNumber,
-            ],
-        ]);
+        $store = $this->currentStore();
+        $bank = [
+            'bank_name' => $this->bankName,
+            'account_name' => $this->accountName,
+            'account_number' => $this->accountNumber,
+        ];
+
+        // PAY-20: payouts go to this account — a change needs the password
+        // and tells the owner, so a hijacked session can't quietly redirect money.
+        if ($store->bankDetailsDiffer($bank)) {
+            $this->validate(
+                ['bankPassword' => ['required', 'current_password']],
+                ['bankPassword.current_password' => __('That doesn\'t match your current password — try again.')],
+            );
+
+            $store->update(['bank_details' => $bank]);
+            $store->user->notify(new BankDetailsChanged($store));
+        }
+
+        $this->reset('bankPassword');
 
         $this->dispatch('toast', message: __('Saved'));
     }

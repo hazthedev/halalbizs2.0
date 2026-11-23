@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Seller;
 
 use App\Http\Api\ApiResponse;
 use App\Http\Resources\StoreResource;
+use App\Notifications\BankDetailsChanged;
 use App\Support\MalaysianBanks;
 use App\Support\MalaysianStates;
 use App\Support\UploadName;
@@ -54,12 +55,27 @@ class StoreController extends SellerController
 
         $store = $this->currentStore($request);
 
+        $bankChanged = false;
+
         if (isset($data['bank'])) {
+            // PAY-20: same rule as Seller\Settings — a real change needs the
+            // current password; resending the saved details does not.
+            if ($bankChanged = $store->bankDetailsDiffer($data['bank'])) {
+                $request->validate(
+                    ['current_password' => ['required', 'current_password']],
+                    ['current_password.current_password' => __('That doesn\'t match your current password — try again.')],
+                );
+            }
+
             $data['bank_details'] = $data['bank'];
             unset($data['bank']);
         }
 
         $store->update($data);
+
+        if ($bankChanged) {
+            $store->user->notify(new BankDetailsChanged($store));
+        }
 
         return ApiResponse::ok(new StoreResource($store->fresh()));
     }
