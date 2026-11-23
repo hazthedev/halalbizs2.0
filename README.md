@@ -122,7 +122,11 @@ goes through medialibrary (reviews, returns, product and variant images, store
 logo and banner, KYC and certificate images, CMS images) is rewritten on save
 by `App\Listeners\StripPhotoMetadata`: JPEG, PNG and WebP originals are turned
 upright from their EXIF orientation and re-encoded by GD without EXIF, XMP or
-IPTC (JPEG keeps its colour profile). File name, disk, path and media row stay
+IPTC (JPEG keeps its colour profile). A JPEG too big to decode within
+`memory_limit` (or one GD cannot read) is not re-encoded: its EXIF/XMP/IPTC
+blocks are cut from the bytes and only the Orientation tag is put back. An
+image GD cannot read in another format (animated WebP) is kept as uploaded
+and the error is logged. File name, disk, path and media row stay
 the same; only `media.size` changes. PDFs, videos, GIF and BMP are untouched.
 HEIC is never accepted by an upload rule.
 

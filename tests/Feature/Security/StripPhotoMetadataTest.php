@@ -14,6 +14,7 @@ use App\Services\ReviewService;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use App\Support\PhotoMetadata;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /*
@@ -30,9 +31,9 @@ beforeEach(function () {
 });
 
 /** Path to a temp JPEG carrying GPS + orientation EXIF. */
-function gpsJpeg(int $orientation = 6): string
+function gpsJpeg(int $orientation = 6, int $width = 40, int $height = 20): string
 {
-    $img = imagecreatetruecolor(40, 20);
+    $img = imagecreatetruecolor($width, $height);
     imagefill($img, 0, 0, imagecolorallocate($img, 0, 0, 255));
     imagefilledrectangle($img, 0, 0, 9, 9, imagecolorallocate($img, 255, 0, 0));
     ob_start();
@@ -178,3 +179,42 @@ test('media:strip-exif dry run touches nothing; --apply strips; a re-run finds n
         )
         ->assertSuccessful();
 });
+
+test('a JPEG too big to decode in memory still loses its GPS and keeps its orientation', function () {
+    $path = gpsJpeg(6, 2000, 1500); // decoding + turning it needs ~30 MB; the limit below leaves 8 MB
+    $limit = ini_get('memory_limit');
+    ini_set('memory_limit', (string) (memory_get_usage(true) + 8 * 1024 * 1024));
+    try {
+        $stripped = PhotoMetadata::strip($path);
+    } finally {
+        ini_set('memory_limit', $limit);
+    }
+
+    $exif = exif_read_data($path);
+    expect($stripped)->toBeTrue()
+        ->and(isset($exif['GPSLatitude']))->toBeFalse()
+        ->and($exif['Orientation'])->toBe(6) // not re-encoded: the tag keeps it upright on screen
+        ->and(getimagesize($path)[0])->toBe(2000)
+        ->and(imagecreatefromjpeg($path))->toBeInstanceOf(GdImage::class);
+});
+
+test('hostile metadata blocks end fast without a fatal', function (string $bytes) {
+    $path = tempnam(sys_get_temp_dir(), 'bad');
+    file_put_contents($path, $bytes);
+    $start = microtime(true);
+
+    try {
+        PhotoMetadata::strip($path);
+    } catch (RuntimeException) {
+        // undecodable: the listener logs it
+    }
+
+    expect(microtime(true) - $start)->toBeLessThan(1.0);
+})->with([
+    'APP1 longer than the file' => ["\xFF\xD8\xFF\xE1\xFF\xFFExif\0\0II*\0\x08\0\0\0"],
+    'segment length 0' => ["\xFF\xD8\xFF\xE1\x00\x00Exif\0\0".str_repeat("\xFF", 64)],
+    // IFD0 says 65535 entries and its GPS pointer points back at IFD0 itself
+    'IFD loop, 65535 entries' => ["\xFF\xD8\xFF\xE1\x00\x22Exif\0\0II*\0\x08\0\0\0\xFF\xFF\x25\x88\x04\0\x01\0\0\0\x08\0\0\0\0\0\0\0\xFF\xDA"],
+    'PNG chunk length 0xFFFFFFFF' => ["\x89PNG\r\n\x1A\n\xFF\xFF\xFF\xFFeXIfII*\0"],
+    'WebP chunk length 0xFFFFFFFF' => ["RIFF\0\0\0\0WEBPEXIF\xFF\xFF\xFF\xFFExif\0\0MM\0*"],
+]);

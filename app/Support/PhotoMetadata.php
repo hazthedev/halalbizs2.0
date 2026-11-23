@@ -21,13 +21,14 @@ final class PhotoMetadata
     private const QUALITY = 88;
 
     /**
-     * @return array{type: string, meta: bool, gps: bool, orientation: int, icc: list<string>}|null
+     * @return array{type: string, meta: bool, gps: bool, orientation: int, icc: list<string>, blocks: list<array{int, int}>, sos: ?int}|null
      *                                                                                              null = not a JPEG/PNG/WebP
      */
     public static function inspect(string $path): ?array
     {
         $b = (string) @file_get_contents($path);
-        $tiffs = $other = $icc = [];
+        $tiffs = $other = $icc = $blocks = [];
+        $sos = null;
 
         if (str_starts_with($b, "\xFF\xD8")) {
             $type = 'jpeg';
@@ -38,10 +39,12 @@ final class PhotoMetadata
 
                     continue;
                 }
-                if ($m === 0xDA || $m === 0xD9) { // image data starts: no metadata after it
+                $len = unpack('n', substr($b, $i + 2, 2))[1];
+                if ($m === 0xDA || $m === 0xD9 || $len < 2) { // image data starts (no metadata after it), or a broken length
+                    $sos = $m === 0xDA ? $i : null;
+
                     break;
                 }
-                $len = unpack('n', substr($b, $i + 2, 2))[1];
                 $data = substr($b, $i + 4, $len - 2);
                 match (true) {
                     $m === 0xE1 && str_starts_with($data, "Exif\0\0") => $tiffs[] = substr($data, 6),
@@ -49,6 +52,9 @@ final class PhotoMetadata
                     $m === 0xE2 && str_starts_with($data, "ICC_PROFILE\0") => $icc[] = substr($b, $i, $len + 2),
                     default => null,
                 };
+                if ($m === 0xE1 || $m === 0xED) {
+                    $blocks[] = [$i, $len + 2]; // where stripJpegBytes() cuts
+                }
                 $i += 2 + $len;
             }
         } elseif (str_starts_with($b, "\x89PNG\r\n\x1A\n")) {
@@ -96,7 +102,7 @@ final class PhotoMetadata
             $gps = $gps || str_contains($data, 'GPSLatitude');
         }
 
-        return ['type' => $type, 'meta' => $tiffs !== [] || $other !== [], 'gps' => $gps, 'orientation' => $orientation, 'icc' => $icc];
+        return ['type' => $type, 'meta' => $tiffs !== [] || $other !== [], 'gps' => $gps, 'orientation' => $orientation, 'icc' => $icc, 'blocks' => $blocks, 'sos' => $sos];
     }
 
     /** Rewrite the file without metadata, upright. False = nothing to strip (or not a JPEG/PNG/WebP). */
@@ -107,9 +113,12 @@ final class PhotoMetadata
             return false;
         }
 
-        $img = @imagecreatefromstring((string) file_get_contents($path));
+        $img = self::fitsInMemory($path, $info['orientation']) ? @imagecreatefromstring((string) file_get_contents($path)) : false;
+        if ($img === false && $info['type'] === 'jpeg' && $info['sos'] !== null) {
+            return self::stripJpegBytes($path, $info);
+        }
         if ($img === false) {
-            throw new RuntimeException('GD cannot decode this image (animated WebP?)');
+            throw new RuntimeException('GD cannot decode this image (animated WebP?) or it is too big to decode');
         }
         imagepalettetotruecolor($img);
         imagealphablending($img, false);
@@ -128,13 +137,52 @@ final class PhotoMetadata
         }
 
         // ponytail: ICC kept for JPEG only (phone photos); PNG/WebP lose theirs, add when colours look off.
-        if ($info['icc'] !== []) {
+        if ($info['icc'] !== [] && substr($info['icc'][0], 34, 4) === 'RGB ') { // a CMYK/grey profile would mis-colour GD's RGB output
             $out = (string) file_get_contents($tmp);
             $at = substr($out, 2, 2) === "\xFF\xE0" ? 4 + unpack('n', substr($out, 4, 2))[1] : 2; // after JFIF APP0
             file_put_contents($tmp, substr($out, 0, $at).implode('', $info['icc']).substr($out, $at));
         }
 
+        @chmod($tmp, fileperms($path) & 0777);
         rename($tmp, $path); // same directory: atomic, never a half-written original
+
+        return true;
+    }
+
+    /**
+     * GD holds 4 bytes a pixel, twice while turning upright. Running out of
+     * memory_limit is a fatal error no catch can stop (a 24 MP iPhone photo
+     * needs about 220 MB), so a photo that would not fit is not decoded.
+     */
+    private static function fitsInMemory(string $path, int $orientation): bool
+    {
+        $limit = ini_parse_quantity((string) ini_get('memory_limit'));
+        [$w, $h] = @getimagesize($path) ?: [0, 0];
+
+        return $limit <= 0 || memory_get_usage() + $w * $h * (in_array($orientation, [3, 5, 6, 7, 8], true) ? 10 : 5) + filesize($path) * 2 < $limit;
+    }
+
+    /**
+     * JPEG too big (or too odd) for GD: cut the EXIF/XMP/IPTC blocks out of the
+     * bytes, no re-encode. Only an Orientation tag goes back in, so the photo
+     * still shows upright; anything after the image's end marker (phone
+     * extras such as depth maps, which carry their own EXIF) is dropped.
+     */
+    private static function stripJpegBytes(string $path, array $info): bool
+    {
+        $b = (string) file_get_contents($path);
+        $end = strpos($b, "\xFF\xD9", $info['sos']);
+        $b = substr($b, 0, $end === false ? null : $end + 2);
+        foreach (array_reverse($info['blocks']) as [$at, $len]) {
+            $b = substr_replace($b, '', $at, $len);
+        }
+        $app1 = $info['orientation'] === 1 ? '' // TIFF: one IFD with one SHORT entry, Orientation
+            : "\xFF\xE1\x00\x22Exif\0\0II*\0\x08\0\0\0\x01\0\x12\x01\x03\0\x01\0\0\0".pack('v', $info['orientation'])."\0\0\0\0\0\0";
+
+        $tmp = $path.'.strip';
+        file_put_contents($tmp, "\xFF\xD8".$app1.substr($b, 2));
+        @chmod($tmp, fileperms($path) & 0777);
+        rename($tmp, $path);
 
         return true;
     }
