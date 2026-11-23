@@ -88,6 +88,7 @@ wildcard DNS + a wildcard TLS cert (docs/10).
 - Enums in `App\Enums` — string-backed, with `label()`. No DB enum columns.
 - Middleware: `SetLocale`, `SetDisplayCurrency`, `EnsureSeller` (role + approved store), `EnsureAdmin`.
 - Time: storage and `app.timezone` are UTC; users see and type Malaysia time (`config('app.display_timezone')`). Render a stored time with `$t->display()->format(...)`; read typed input with `DisplayTime::parse()`; "today"/day filters use `DisplayTime::dayStart()/dayEnd()/today()` (`App\Support\DisplayTime`). `tests/Feature/Ops/DisplayTimeTest.php` guards the views.
+- Uploads: store every user file with medialibrary `addMedia()` (never `Storage::put` an uploaded image). `App\Listeners\StripPhotoMetadata` runs on every added media and rewrites JPEG/PNG/WebP originals upright and without EXIF/XMP/GPS (`App\Support\PhotoMetadata`); a path that bypasses medialibrary bypasses the strip. Guard: `tests/Feature/Security/StripPhotoMetadataTest.php`.
 - Money formatting: `@money($sen)` Blade directive (plain MYR) and `@price($sen)` (display-currency conversion).
 
 ## Definition of done (per task)
