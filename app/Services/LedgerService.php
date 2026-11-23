@@ -25,7 +25,8 @@ use Illuminate\Support\Facades\DB;
  * Seller escrow ledger (docs/09 §A). All amounts are SIGNED integer sen.
  * Balance = SUM(amount_sen) of available entries — payout requests write a
  * negative `payout` entry referencing the payout row, so the balance math
- * stays a single SUM and rejection simply deletes that entry.
+ * stays a single SUM. Rows are never deleted: rejection books a positive
+ * `payout_reversal` entry against the same payout (PAY-08).
  */
 class LedgerService
 {
@@ -357,12 +358,38 @@ class LedgerService
         });
     }
 
-    /** Rejection releases the earmark by deleting the payout entry. */
+    /**
+     * Rejection releases the earmark with a reversal entry (PAY-08): the
+     * original negative `payout` row stays for the audit trail and an equal
+     * positive `payout_reversal` row, linked to the same payout, cancels it —
+     * the available balance ends exactly where deleting the row used to leave
+     * it. Locked + status-checked so a repeat reject never credits twice.
+     */
     public function rejectPayout(Payout $payout, ?string $reason = null): void
     {
         DB::transaction(function () use ($payout, $reason) {
-            $payout->update(['status' => PayoutStatus::Rejected, 'reference' => $reason]);
-            $payout->ledgerEntries()->delete();
+            Store::whereKey($payout->store_id)->lockForUpdate()->first();
+            $locked = Payout::whereKey($payout->id)->lockForUpdate()->firstOrFail();
+
+            if (! in_array($locked->status, [PayoutStatus::Requested, PayoutStatus::Approved], true)) {
+                return;
+            }
+
+            $locked->update(['status' => PayoutStatus::Rejected, 'reference' => $reason]);
+
+            $earmarkSen = (int) $locked->ledgerEntries()->sum('amount_sen');
+
+            if ($earmarkSen !== 0) {
+                $locked->ledgerEntries()->create([
+                    'store_id' => $locked->store_id,
+                    'type' => LedgerEntryType::PayoutReversal,
+                    'amount_sen' => -$earmarkSen,
+                    'status' => LedgerEntryStatus::Available,
+                    'description' => __('Payout :no rejected — amount returned to your balance', ['no' => $locked->payout_no]),
+                ]);
+            }
+
+            $payout->setRawAttributes($locked->getAttributes(), true);
         });
     }
 

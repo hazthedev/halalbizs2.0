@@ -17,8 +17,9 @@ use Livewire\Component;
  * bank CSV → mark paid (+ref), or reject with a reason. The money side is
  * the ledger's: the payout request already wrote a NEGATIVE `payout` entry
  * (the earmark), so approve/mark-paid are pure status bookkeeping and only
- * reject touches the ledger — LedgerService::rejectPayout deletes the
- * earmark entry, restoring the store's available balance.
+ * reject touches the ledger — LedgerService::rejectPayout books a reversal
+ * entry against the earmark (never deletes it), restoring the store's
+ * available balance.
  */
 #[Layout('layouts.admin')]
 class Payouts extends Component
@@ -117,9 +118,9 @@ class Payouts extends Component
 
         // The service flips the status, stores the reason in `reference`
         // (no dedicated rejection_reason column — it's unused on this path
-        // and the Payout activity log records it), and DELETES the payout's
-        // negative ledger entry — releasing the earmark back to the store's
-        // available balance.
+        // and the Payout activity log records it), and books a positive
+        // `payout_reversal` entry against the payout's negative one —
+        // releasing the earmark back to the store's available balance.
         $ledger->rejectPayout($payout, trim($this->rejectReason));
 
         $payout->update(['processed_by' => auth()->id()]);

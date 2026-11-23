@@ -162,6 +162,56 @@ test('requery mismatch leaves the payment pending for admin review', function ()
         ->and($order->fresh()->payment_status)->toBe(PaymentStatus::Pending);
 });
 
+// PAY-03: a correctly signed post for the wrong amount or currency never settles.
+function signedPayload(Payment $payment, string $amount, string $currency): array
+{
+    $payload = backendPayload($payment);
+    $payload['Amount'] = $amount;
+    $payload['Currency'] = $currency;
+    $payload['Signature'] = app(Ipay88Service::class)->responseSignature('2', $payment->ref_no, Ipay88Service::amountToSen($amount), $currency, '1');
+
+    return $payload;
+}
+
+test('a signed callback whose amount or currency differs from the payment is not marked paid', function (string $amountCase, string $currency) {
+    Http::fake(['*' => Http::response('00')]);
+
+    $order = placeIpay88Order();
+    $payment = $order->payment;
+    $amount = match ($amountCase) {
+        'short' => Ipay88Service::formatAmount($payment->amount_sen - 1),
+        'rm1' => '1.00',
+        'same' => Ipay88Service::formatAmount($payment->amount_sen),
+    };
+
+    $this->post('/payments/ipay88/backend', signedPayload($payment, $amount, $currency))
+        ->assertOk()
+        ->assertSee('RECEIVEOK');
+
+    expect($payment->fresh()->status)->toBe(GatewayPaymentStatus::Pending)
+        ->and($payment->fresh()->paid_at)->toBeNull()
+        ->and($payment->fresh()->requery_result)->toBe("AMOUNT_MISMATCH: posted {$amount} {$currency}") // admin Payments grid
+        ->and($order->fresh()->payment_status)->toBe(PaymentStatus::Pending)
+        ->and($order->fresh()->subOrders->first()->status)->toBe(SubOrderStatus::PendingPayment);
+})->with([
+    'one sen short' => ['short', 'MYR'],
+    'RM1 instead' => ['rm1', 'MYR'],
+    'other currency' => ['same', 'USD'],
+]);
+
+test('a matching callback written with a thousands separator still settles', function () {
+    Http::fake(['*' => Http::response('00')]);
+
+    $order = placeIpay88Order();
+    $payment = $order->payment;
+    $payment->update(['amount_sen' => 123450]);
+
+    $this->post('/payments/ipay88/backend', signedPayload($payment->fresh(), '1,234.50', 'MYR'))->assertOk();
+
+    expect($payment->fresh()->status)->toBe(GatewayPaymentStatus::Success)
+        ->and($order->fresh()->payment_status)->toBe(PaymentStatus::Paid);
+});
+
 // ── M2/M3/M4/M5 hardening ───────────────────────────────────────────────────
 
 test('two near-simultaneous confirm callbacks do not double-fulfil (M2 row lock)', function () {

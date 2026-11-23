@@ -1,8 +1,10 @@
 <?php
 
+use App\Notifications\BankDetailsChanged;
 use App\Support\MalaysianStates;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 require_once __DIR__.'/SellerApiHelpers.php';
@@ -40,6 +42,7 @@ test('PATCH seller/store saves profile, shipping and bank with the settings rule
         'shipping_flat_fee_sen' => 650,
         'free_shipping_over_sen' => 8000,
         'bank' => ['bank_name' => 'CIMB', 'account_name' => 'Nur Aisyah', 'account_number' => '87654321'],
+        'current_password' => 'password',
         'name' => 'Not editable',
     ])
         ->assertOk()
@@ -69,6 +72,40 @@ test('PATCH seller/store saves profile, shipping and bank with the settings rule
         ->assertOk()
         ->assertJsonPath('data.shipping.mode', 'matrix')
         ->assertJsonPath('data.shipping.matrix.Sabah', 900);
+});
+
+// PAY-20: same rule as the web settings page.
+test('PATCH seller/store refuses a bank change without the current password and mails the owner after one', function () {
+    Notification::fake();
+    $seller = sellerApiUser();
+    $seller->store->update(['bank_details' => ['bank_name' => 'Maybank', 'account_name' => 'Kedai Nyet', 'account_number' => '1234567890123']]);
+    $bank = ['bank_name' => 'CIMB', 'account_name' => 'Someone Else', 'account_number' => '87654321'];
+
+    sellerApiAs($seller)->patchJson('/api/v1/seller/store', ['bank' => $bank])
+        ->assertStatus(422)
+        ->assertJsonStructure(['error' => ['fields' => ['current_password']]]);
+
+    sellerApiAs($seller)->patchJson('/api/v1/seller/store', ['bank' => $bank, 'current_password' => 'wrong-password'])
+        ->assertStatus(422)
+        ->assertJsonStructure(['error' => ['fields' => ['current_password']]]);
+
+    expect($seller->store->fresh()->bank_details['account_number'])->toBe('1234567890123');
+    Notification::assertNothingSent();
+
+    // Unchanged bank fields (an app that always sends the whole form) need no password.
+    sellerApiAs($seller)->patchJson('/api/v1/seller/store', ['bank' => $seller->store->fresh()->bank_details, 'holiday_mode' => true])
+        ->assertOk();
+    Notification::assertNothingSent();
+
+    sellerApiAs($seller)->patchJson('/api/v1/seller/store', ['bank' => $bank, 'current_password' => 'password'])
+        ->assertOk()
+        ->assertJsonPath('data.bank.account_no', '****4321');
+
+    Notification::assertSentTo($seller, BankDetailsChanged::class, function (BankDetailsChanged $n) use ($seller) {
+        $mail = implode("\n", $n->toMail($seller)->introLines);
+
+        return str_contains($mail, '****4321') && ! str_contains($mail, '87654321');
+    });
 });
 
 test('POST seller/store/logo and /banner replace the single-file collections', function () {

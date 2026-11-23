@@ -6,7 +6,9 @@ use App\Livewire\Seller\Settings;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
+use App\Notifications\BankDetailsChanged;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -180,6 +182,7 @@ test('bank details update is saved to the bank_details json', function () {
         ->set('bankName', 'Hong Leong')
         ->set('accountName', 'Kedai Pak Ali Enterprise')
         ->set('accountNumber', '12345678901234')
+        ->set('bankPassword', 'password')
         ->call('saveBank')
         ->assertHasNoErrors();
 
@@ -188,6 +191,63 @@ test('bank details update is saved to the bank_details json', function () {
         'account_name' => 'Kedai Pak Ali Enterprise',
         'account_number' => '12345678901234',
     ]);
+});
+
+// PAY-20: a bank change is a payout-redirect risk — password first, owner mailed after.
+test('a bank details change without the current password is refused and nothing is mailed', function () {
+    Notification::fake();
+    $seller = makeApprovedSeller();
+    $before = $seller->store->bank_details;
+
+    foreach (['', 'wrong-password'] as $password) {
+        Livewire::actingAs($seller)
+            ->test(Settings::class)
+            ->set('bankName', 'Hong Leong')
+            ->set('accountName', 'Someone Else')
+            ->set('accountNumber', '99998888777766')
+            ->set('bankPassword', $password)
+            ->call('saveBank')
+            ->assertHasErrors('bankPassword');
+    }
+
+    expect($seller->store->fresh()->bank_details)->toBe($before);
+    Notification::assertNothingSent();
+});
+
+test('a bank details change with the password mails the owner the masked account number', function () {
+    Notification::fake();
+    $seller = makeApprovedSeller();
+
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->set('bankName', 'Hong Leong')
+        ->set('accountName', 'Kedai Pak Ali Enterprise')
+        ->set('accountNumber', '12345678901234')
+        ->set('bankPassword', 'password')
+        ->call('saveBank')
+        ->assertHasNoErrors()
+        ->assertSet('bankPassword', '');
+
+    Notification::assertSentTo($seller, BankDetailsChanged::class, function (BankDetailsChanged $n) use ($seller) {
+        $mail = implode("\n", $n->toMail($seller)->introLines);
+
+        return in_array('mail', $n->via($seller), true)
+            && str_contains($mail, '**********1234')
+            && ! str_contains($mail, '12345678901234');
+    });
+});
+
+test('saving unchanged bank details needs no password and mails nobody', function () {
+    Notification::fake();
+    $seller = makeApprovedSeller();
+    $seller->store->update(['bank_details' => ['bank_name' => 'Hong Leong', 'account_name' => 'Kedai', 'account_number' => '12345678']]);
+
+    Livewire::actingAs($seller)
+        ->test(Settings::class)
+        ->call('saveBank')
+        ->assertHasNoErrors();
+
+    Notification::assertNothingSent();
 });
 
 test('profile saves description and state', function () {

@@ -18,7 +18,7 @@ Route prefix `/seller`, guard `EnsureSeller` (role + store `approved`). Same des
 5. **Shipping**: weight g, dims mm, COD toggle.
 6. Save as **Draft** / **Publish** (→ `live`, or `pending_review` when `require_product_approval` on — banner explains). Server validation mirrors every client rule.
 
-**A5. Shop settings**: profile (logo/banner crops, description language tabs, state), **holiday mode** (with "buyers can't order while on" warning), **shipping settings** — mode flat (one fee_sen) | state matrix (16 MY states + free-over-threshold optional), bank details update (re-snapshot on payout request only).
+**A5. Shop settings**: profile (logo/banner crops, description language tabs, state), **holiday mode** (with "buyers can't order while on" warning), **shipping settings** — mode flat (one fee_sen) | state matrix (16 MY states + free-over-threshold optional), bank details update (re-snapshot on payout request only; a change needs the current password — web and `PATCH /api/v1/seller/store` `current_password` — and emails the owner the new account masked to its last 4 digits, PAY-20).
 
 ## B. M4/M6 — Orders & fulfilment
 Tabs: New (confirmed — act fast indicator showing hours since paid) · To Ship (processing) · Shipped · Delivered · Completed · Cancelled · Returns (M8). Detail: items, buyer note, address (print packing slip PDF), timeline. Actions: **Confirm & pack** (confirmed→processing) · **Arrange shipment** modal (courier select from settings list + tracking_no, mono input) → shipped · cancel (pre-ship, reason) → restock via service. All transitions through SubOrderStatusService. New paid order → database+mail notification with sound-free badge bump (`wire:poll.30s` on counts).

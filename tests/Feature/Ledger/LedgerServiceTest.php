@@ -127,6 +127,53 @@ test('payout rejection releases the earmark', function () {
         ->and($store->availableBalanceSen())->toBe(19500);
 });
 
+// PAY-08: the ledger is append-only — rejection books a reversal, never deletes.
+test('payout rejection keeps the earmark row and books a linked reversal', function () {
+    $subOrder = completedSubOrder(PaymentMethod::Ipay88);
+    $store = $subOrder->store;
+    $ledger = app(LedgerService::class);
+
+    $payout = $ledger->requestPayout($store, 15000);
+    $earmarkId = $payout->ledgerEntries()->sole()->id;
+
+    $ledger->rejectPayout($payout, 'Bank details mismatch');
+
+    $rows = $payout->ledgerEntries()->orderBy('id')->get();
+
+    expect($rows)->toHaveCount(2)
+        ->and($rows[0]->id)->toBe($earmarkId)
+        ->and($rows[0]->type)->toBe(LedgerEntryType::Payout)
+        ->and($rows[0]->amount_sen)->toBe(-15000)
+        ->and($rows[1]->type)->toBe(LedgerEntryType::PayoutReversal)
+        ->and($rows[1]->amount_sen)->toBe(15000)
+        ->and($rows[1]->store_id)->toBe($store->id)
+        ->and($rows[1]->description)->toContain($payout->payout_no)
+        ->and($store->availableBalanceSen())->toBe(19500);
+
+    // A repeat reject (double click, retry) must not credit the seller twice.
+    $ledger->rejectPayout($payout->fresh(), 'again');
+
+    expect($payout->ledgerEntries()->count())->toBe(2)
+        ->and($store->availableBalanceSen())->toBe(19500);
+});
+
+// PAY-08: the status re-check reads the locked row, so even a stale in-memory
+// copy (still "requested") cannot reverse a payout the bank already paid.
+test('a paid payout cannot be rejected, even from a stale copy', function () {
+    $subOrder = completedSubOrder(PaymentMethod::Ipay88);
+    $store = $subOrder->store;
+    $ledger = app(LedgerService::class);
+
+    $payout = $ledger->requestPayout($store, 15000);
+    $payout->newQuery()->whereKey($payout->id)->update(['status' => PayoutStatus::Paid]);
+
+    $ledger->rejectPayout($payout, 'too late');
+
+    expect($payout->fresh()->status)->toBe(PayoutStatus::Paid)
+        ->and($payout->ledgerEntries()->count())->toBe(1)
+        ->and($store->availableBalanceSen())->toBe(4500);
+});
+
 test('negative balance blocks payout requests', function () {
     $subOrder = completedSubOrder(PaymentMethod::Cod); // balance −1000
     $store = $subOrder->store;

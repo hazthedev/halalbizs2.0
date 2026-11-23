@@ -120,6 +120,18 @@ class Ipay88Service implements PaymentGateway
     }
 
     /**
+     * PAY-03: does a gateway post carry exactly our payment's amount and
+     * currency? A valid signature only proves iPay88 signed WHAT it posted —
+     * never settle a payment for a different amount or currency than we asked.
+     * Compared in sen: "1,234.50" → 123450.
+     */
+    public function payloadMatchesPayment(array $payload, Payment $payment): bool
+    {
+        return self::amountToSen((string) ($payload['Amount'] ?? '')) === (int) $payment->amount_sen
+            && strtoupper(trim((string) ($payload['Currency'] ?? ''))) === strtoupper((string) $payment->currency);
+    }
+
+    /**
      * POST fields for the auto-submitting bridge form (docs/06 §D1).
      */
     public function entryFields(Order $order, Payment $payment, ?string $responseUrl = null): array

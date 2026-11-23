@@ -22,7 +22,7 @@ All sub_orders datagrid (filters: status, store, method, date; search order_no �
 
 ## F. Finance
 - **Commission settings**: global rate, category overrides summary (links to category form), store overrides summary. Effective-rate tester widget (pick store+category → shows resolver result — uses CommissionResolver, doubles as living documentation).
-- **Payouts queue** (M8 activation): requested → review (store ledger drill-down) → approve → batch **Export bank CSV** (one file per run: account, name, amount RM, payout_no) → mark paid (+reference). Reject with reason returns funds to available.
+- **Payouts queue** (M8 activation): requested → review (store ledger drill-down) → approve → batch **Export bank CSV** (one file per run: account, name, amount RM, payout_no) → mark paid (+reference). Reject with reason returns funds to available (a `payout_reversal` ledger entry; the earmark row stays, PAY-08).
 - Ledger explorer per store; platform earnings report (commission by period).
 
 ## G. Promotions & content

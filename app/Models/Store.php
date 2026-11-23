@@ -124,6 +124,26 @@ class Store extends Model implements HasMedia
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * PAY-20: do these submitted bank fields differ from the saved ones?
+     * Strict string compare per field — a loose `!=` would call "0123…" and
+     * "123…" the same account.
+     *
+     * @param  array<string, mixed>  $bank
+     */
+    public function bankDetailsDiffer(array $bank): bool
+    {
+        $saved = $this->bank_details ?? [];
+
+        foreach (['bank_name', 'account_name', 'account_number'] as $key) {
+            if ((string) ($saved[$key] ?? '') !== (string) ($bank[$key] ?? '')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

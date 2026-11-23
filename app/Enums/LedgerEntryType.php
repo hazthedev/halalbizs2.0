@@ -9,6 +9,7 @@ enum LedgerEntryType: string
     case Shipping = 'shipping';
     case Adjustment = 'adjustment';
     case Payout = 'payout';
+    case PayoutReversal = 'payout_reversal';
     case CodOffset = 'cod_offset';
     case Boost = 'boost';
     case Settlement = 'settlement';
@@ -21,6 +22,7 @@ enum LedgerEntryType: string
             self::Shipping => __('Shipping'),
             self::Adjustment => __('Adjustment'),
             self::Payout => __('Payout'),
+            self::PayoutReversal => __('Payout reversal'),
             self::CodOffset => __('COD offset'),
             self::Boost => __('Boost'),
             self::Settlement => __('Settlement'),

@@ -2945,5 +2945,14 @@
     "Search store or owner email": "Cari kedai atau e-mel pemilik",
     "No applications match": "Tiada permohonan yang sepadan",
     "Search flash sale title": "Cari tajuk jualan kilat",
-    "No flash sales match": "Tiada jualan kilat yang sepadan"
+    "No flash sales match": "Tiada jualan kilat yang sepadan",
+    "Your payout bank account was changed — :store": "Akaun bank pembayaran anda telah ditukar — :store",
+    "The payout bank account for :store was changed on :time.": "Akaun bank pembayaran untuk :store telah ditukar pada :time.",
+    "New account: :bank · :account": "Akaun baharu: :bank · :account",
+    "If you did not make this change, change your password now and contact us before your next payout.": "Jika anda tidak membuat perubahan ini, tukar kata laluan anda sekarang dan hubungi kami sebelum pembayaran anda yang seterusnya.",
+    "Review shop settings": "Semak tetapan kedai",
+    "Payout bank account changed — :bank :account": "Akaun bank pembayaran ditukar — :bank :account",
+    "Needed to change the bank account. We email you after every change.": "Diperlukan untuk menukar akaun bank. Kami akan menghantar e-mel kepada anda selepas setiap perubahan.",
+    "Payout reversal": "Pembalikan pembayaran",
+    "Payout :no rejected — amount returned to your balance": "Pembayaran :no ditolak — jumlah dikembalikan ke baki anda"
 }

@@ -240,6 +240,28 @@ class Ipay88Controller extends Controller
             return response('RECEIVEOK');
         }
 
+        // PAY-03: signed, but not for what we charged — never settle, leave
+        // the payment pending for admin review, still ack the gateway.
+        if (! $ipay88->payloadMatchesPayment($payload, $payment)) {
+            Log::warning('iPay88 backend callback amount/currency MISMATCH — not marked paid, manual review required.', [
+                'payment_id' => $payment->id,
+                'ref_no' => $refNo,
+                'posted_amount' => $payload['Amount'] ?? null,
+                'posted_currency' => $payload['Currency'] ?? null,
+                'expected_amount_sen' => $payment->amount_sen,
+                'expected_currency' => $payment->currency,
+            ]);
+
+            // Shown in the admin Payments grid's "Requery result" column, so the
+            // review is findable without the log. Conditional: never relabel a
+            // payment a concurrent callback already settled.
+            Payment::whereKey($payment->id)
+                ->where('status', GatewayPaymentStatus::Pending)
+                ->update(['requery_result' => mb_substr('AMOUNT_MISMATCH: posted '.($payload['Amount'] ?? '').' '.($payload['Currency'] ?? ''), 0, 120)]);
+
+            return response('RECEIVEOK');
+        }
+
         // Serialize callback writes with confirmation: a failure that read
         // Pending before settlement must never overwrite terminal Success.
         $confirm = DB::transaction(function () use ($payment, $payload) {

@@ -119,7 +119,7 @@
                             $chip = match ($entry->type) {
                                 LedgerEntryType::Sale => 'sale',
                                 LedgerEntryType::Adjustment, LedgerEntryType::Settlement => 'warn',
-                                default => 'neutral', // commission, cod_offset, payout, shipping
+                                default => 'neutral', // commission, cod_offset, payout, payout_reversal, shipping
                             };
                         @endphp
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="entry-{{ $entry->id }}">
