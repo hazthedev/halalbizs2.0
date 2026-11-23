@@ -343,3 +343,28 @@ test('HB-G224: approve and mark paid on a payout no longer in the right status c
         ->and($requested->refresh()->status)->toBe(PayoutStatus::Requested)
         ->and($requested->paid_at)->toBeNull();
 });
+
+test('HB-G224: reject refuses a payout another admin paid after it was read — no success toast, processed_by kept', function () {
+    $admin = financeAdmin();
+    $other = financeAdmin();
+    $payout = financePayout();
+
+    $component = Livewire::actingAs($admin)->test(Payouts::class)
+        ->call('openReject', $payout->id)
+        ->set('rejectReason', 'Bank details do not match');
+
+    payoutRaceOnFirstRead($payout, fn () => Payout::whereKey($payout->id)->update([
+        'status' => PayoutStatus::Paid,
+        'paid_at' => now(),
+        'reference' => 'MBB-PAID-001',
+        'processed_by' => $other->id,
+    ]));
+
+    $component->call('reject')->assertDispatched('toast', type: 'error');
+
+    $payout->refresh();
+    expect($payout->status)->toBe(PayoutStatus::Paid)
+        ->and($payout->processed_by)->toBe($other->id)
+        ->and($payout->reference)->toBe('MBB-PAID-001')
+        ->and($payout->ledgerEntries()->count())->toBe(0);
+});

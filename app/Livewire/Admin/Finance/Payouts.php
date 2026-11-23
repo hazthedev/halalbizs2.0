@@ -122,7 +122,12 @@ class Payouts extends Component
         // and the Payout activity log records it), and books a positive
         // `payout_reversal` entry against the payout's negative one —
         // releasing the earmark back to the store's available balance.
-        $ledger->rejectPayout($payout, trim($this->rejectReason));
+        if (! $ledger->rejectPayout($payout, trim($this->rejectReason))) {
+            $this->reset('rejectingId', 'rejectReason');
+            $this->dispatch('toast', message: __(':no can no longer be rejected from its current status.', ['no' => $payout->payout_no]), type: 'error');
+
+            return;
+        }
 
         $payout->update(['processed_by' => auth()->id()]);
 

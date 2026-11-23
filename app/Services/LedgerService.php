@@ -367,15 +367,17 @@ class LedgerService
      * positive `payout_reversal` row, linked to the same payout, cancels it —
      * the available balance ends exactly where deleting the row used to leave
      * it. Locked + status-checked so a repeat reject never credits twice.
+     * Returns false (nothing written) when the payout is no longer requested
+     * or approved.
      */
-    public function rejectPayout(Payout $payout, ?string $reason = null): void
+    public function rejectPayout(Payout $payout, ?string $reason = null): bool
     {
-        DB::transaction(function () use ($payout, $reason) {
+        return DB::transaction(function () use ($payout, $reason) {
             Store::whereKey($payout->store_id)->lockForUpdate()->first();
             $locked = Payout::whereKey($payout->id)->lockForUpdate()->firstOrFail();
 
             if (! in_array($locked->status, [PayoutStatus::Requested, PayoutStatus::Approved], true)) {
-                return;
+                return false;
             }
 
             $locked->update(['status' => PayoutStatus::Rejected, 'reference' => $reason]);
@@ -393,6 +395,8 @@ class LedgerService
             }
 
             $payout->setRawAttributes($locked->getAttributes(), true);
+
+            return true;
         });
     }
 
