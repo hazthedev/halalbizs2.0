@@ -183,17 +183,20 @@ Coverage: `tests/Feature/Orders/CancelUnshippedOrdersTest.php`.
   `curl -sI https://www.halalbizs.com/x?y=1 | grep -i location`, both
   `https://halalbizs.com/x?y=1`.
 - **Counted on success** (HB-G240): the chat and ticket limits take a slot with
-  one atomic increment (`App\Support\SendLimit`) and give it back when the
-  save fails, so a failed send never uses up the allowance and two sends at the
-  same moment cannot both slip past the last slot.
+  one increment under a cache lock (`App\Support\SendLimit`) and give it back
+  when the save fails, so a failed send never uses up the allowance and two
+  sends at the same moment cannot both slip past the last slot. The lock is
+  needed because the file cache store increments as a read then a write; a
+  lock not had within 2 seconds is a refusal.
 - **Product attribute ticks** (HB-G238): at most 100 per product
   (`Form::MAX_ATTRIBUTE_VALUES`); over that the list is refused before any
   per-id lookup. "Generate copy" checks the ticks on their own and leaves the
   form's other errors in place (HB-G239).
 - **Webhook pinning** (HB-G243): delivery connects only to the addresses the
   URL check approved (`CURLOPT_RESOLVE`), so a DNS answer that changes between
-  check and connect is never used. Multicast (224.0.0.0/4, ff00::/8) and NAT64
-  (64:ff9b::/96) are refused with the private ranges.
+  check and connect is never used. Multicast (224.0.0.0/4, ff00::/8), NAT64
+  (64:ff9b::/96, 64:ff9b:1::/48) and the old site-local fec0::/10 are refused
+  with the private ranges.
 - **HSTS** (HB-G242, `SecurityHeaders`): `Strict-Transport-Security:
   max-age=31536000` on https requests to `halalbizs.com` only. No
   `includeSubDomains` (store subdomains are dropped, HB-DEC-1124e) and no

@@ -27,8 +27,10 @@ use App\Models\WebhookDelivery;
 use App\Models\WebhookSubscription;
 use App\Services\ChatService;
 use App\Settings\ThemeSettings;
+use App\Support\SendLimit;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -484,6 +486,8 @@ test('HB-G243: multicast and NAT64 targets are refused', function (string $url) 
     'https://[ff0e::1]/x',
     'https://[64:ff9b::a00:5]/x',
     'https://[64:ff9b::808:808]/x',
+    'https://[64:ff9b:1::a00:5]/x',
+    'https://[fec0::1]/x',
     'https://nat64.example/x',
     'https://multicast.example/x',
 ]);
@@ -502,4 +506,22 @@ test('HB-G243: delivery connects to the address that was checked, not a fresh DN
 
     (new SendWebhookJob(1, 'http://hooks.example:8080/paid', 's', 'order.paid', ['x' => 1]))->handle();
     expect($pinned)->toBe(['hooks.example:8080:93.184.215.14,[2606:2800:21f:cb07:6820:80da:af6b:8b2c]']);
+});
+
+test('HB-G240: the count changes only under the send-limit lock, so two sends cannot read the same count', function () {
+    // The file cache store (live) increments as a read then a write. While
+    // another request holds the lock, this send waits, then is refused.
+    $other = Cache::lock('send-limit:chat-send:1:1', 5);
+    expect($other->get())->toBeTrue();
+    $saved = false;
+
+    expect(SendLimit::attempt('chat-send:1:1', 10, 60, function () use (&$saved) {
+        $saved = true;
+    }))->toBeFalse()->and($saved)->toBeFalse();
+
+    $other->release();
+
+    expect(SendLimit::attempt('chat-send:1:1', 10, 60, function () use (&$saved) {
+        $saved = true;
+    }))->toBeTrue()->and($saved)->toBeTrue();
 });

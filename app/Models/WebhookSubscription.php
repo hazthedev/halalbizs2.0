@@ -91,12 +91,16 @@ class WebhookSubscription extends Model
             }
 
             // The flags above let these through: multicast (224.0.0.0/4,
-            // ff00::/8) and NAT64 64:ff9b::/96, which reaches any IPv4
-            // address, private ones included, through a NAT64 gateway.
+            // ff00::/8), NAT64 64:ff9b::/96 and its local-use 64:ff9b:1::/48
+            // (RFC 8215), which reach any IPv4 address, private ones included,
+            // through a NAT64 gateway, and the old site-local fec0::/10.
             $bin = inet_pton($ip);
 
             if ((strlen($bin) === 4 && (ord($bin[0]) & 0xF0) === 0xE0)
-                || (strlen($bin) === 16 && ($bin[0] === "\xff" || str_starts_with($bin, substr(inet_pton('64:ff9b::'), 0, 12))))) {
+                || (strlen($bin) === 16 && ($bin[0] === "\xff"
+                    || ($bin[0] === "\xfe" && (ord($bin[1]) & 0xC0) === 0xC0)
+                    || str_starts_with($bin, substr(inet_pton('64:ff9b::'), 0, 12))
+                    || str_starts_with($bin, substr(inet_pton('64:ff9b:1::'), 0, 6))))) {
                 return null;
             }
         }
