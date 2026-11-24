@@ -140,5 +140,7 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 
 1. Mở **Trung tâm trợ giúp** ở chân trang để đọc bài viết. Chân trang cũng có **Câu hỏi thường gặp**, **Chính sách hoàn tiền**, **Điều khoản & điều kiện** và **Chính sách bảo mật**.
 2. Khi gặp vấn đề, hãy đăng nhập, mở **Hỗ trợ**, chọn **Phiếu mới**, viết **Chủ đề** và **Tin nhắn** (ít nhất 20 ký tự, kèm mã đơn hàng), rồi chọn **Tạo phiếu hỗ trợ**.
-3. Trả lời trong phiếu bằng **Gửi trả lời**. Chọn **Đóng phiếu hỗ trợ** khi đã xong.
+3. Để báo cáo một sản phẩm, chọn **Báo cáo sản phẩm này** bên dưới sản phẩm (đăng nhập trước). Phiếu mở ra với danh mục **Báo cáo một sản phẩm** và đường dẫn sản phẩm đã điền sẵn; hãy ghi thêm vấn đề rồi chọn **Tạo phiếu hỗ trợ**. Sản phẩm ghi halal mà không có chứng chỉ được duyệt cũng được đội ngũ của chúng tôi xem xét.
+4. Với yêu cầu về dữ liệu cá nhân, mở **Phiếu mới**, đặt **Danh mục** là **Yêu cầu về quyền riêng tin** và mô tả yêu cầu.
+5. Trả lời trong phiếu bằng **Gửi trả lời**. Chọn **Đóng phiếu hỗ trợ** khi đã xong.
 4. Muốn bán hàng trên HalalBizs, xem Hướng dẫn dành cho người bán. Bắt đầu từ **Bán hàng trên HalalBizs** ở chân trang.

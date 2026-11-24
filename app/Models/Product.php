@@ -227,6 +227,25 @@ class Product extends Model implements HasMedia
     }
 
     /**
+     * HB-LAW-18: name or description says "halal" (also حلال) but no approved,
+     * in-force certificate is bound. Computed, not stored; for admin review only.
+     */
+    #[Scope]
+    protected function halalWordingUnverified(Builder $query): void
+    {
+        $query->where(function (Builder $words): void {
+            foreach (['name', 'description'] as $column) {
+                foreach (['halal', 'حلال'] as $word) {
+                    $words->orWhereRaw(JsonSearch::clause($column), [JsonSearch::pattern($word)]);
+                }
+            }
+        })->whereDoesntHave('halalCertificate', function (Builder $cert): void {
+            $today = DisplayTime::today();
+            $cert->approved()->where('valid_from', '<=', $today)->where('valid_to', '>=', $today);
+        });
+    }
+
+    /**
      * Buyer-visible catalogue: a live SKU on an approved store. The store
      * clause is here, not on each screen, so suspending a store takes its
      * goods off every read path at once (PDP, listing, search, cart, checkout)

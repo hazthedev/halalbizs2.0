@@ -81,7 +81,7 @@
     {{-- ===== Seller details (HB-LAW-14) ===== --}}
     <x-ui.card class="p-4 lg:p-6">
         <h2 class="text-sm font-medium">{{ __('Seller details') }}</h2>
-        <p class="mt-1 text-[13px] text-ink-soft">{{ __('Optional. Buyers see only the details you fill, on your shop page under About. Leave out anything you do not want public, such as a home address.') }}</p>
+        <p class="mt-1 text-[13px] text-ink-soft">{{ __('Optional. These details stay on file with us and are not shown on your public shop page.') }}</p>
 
         <form wire:submit="saveSellerDetails" class="mt-4 space-y-4">
             <div class="grid gap-4 sm:grid-cols-2">

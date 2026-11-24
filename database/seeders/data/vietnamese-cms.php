@@ -60,6 +60,8 @@ HTML,
 <p>Hàng dễ hỏng, hàng mang tính riêng tư và sản phẩm làm theo yêu cầu có thể không được trả lại, trừ khi bị lỗi.</p>
 <h3>5. Thanh toán khi nhận hàng</h3>
 <p>Tiền hoàn cho đơn COD được chuyển khoản ngân hàng hoặc ghi có vào cửa hàng sau khi việc trả hàng được xác minh.</p>
+<h3>6. Chi phí giao lại</h3>
+<p>Nếu hàng bị lỗi hoặc giao sai, người bán chịu phí giao lại. Nếu bạn đổi ý, bạn chịu phí.</p>
 <p><em>Đây là nội dung cơ sở, đang chờ luật sư Malaysia đủ chuyên môn rà soát.</em></p>
 HTML,
         ],

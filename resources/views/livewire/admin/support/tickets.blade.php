@@ -94,6 +94,17 @@
 
         <x-ui.table.search :placeholder="__('Search subject or buyer')" />
 
+        <div>
+            <label for="ticket-category-filter" class="sr-only">{{ __('Category') }}</label>
+            <select id="ticket-category-filter" wire:model.live="category"
+                    class="block min-h-11 w-full max-w-xs rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-[13px] text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                <option value="">{{ __('All categories') }}</option>
+                @foreach (\App\Enums\TicketCategory::cases() as $option)
+                    <option value="{{ $option->value }}">{{ $option->label() }}</option>
+                @endforeach
+            </select>
+        </div>
+
         <x-ui.table.per-page />
 
         <x-ui.card class="overflow-x-auto">
@@ -125,6 +136,9 @@
                                             class="inline-flex min-h-11 items-center text-left font-medium text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
                                         {{ $ticket->subject }}
                                     </x-ui.button>
+                                    @if ($ticket->category !== 'general')
+                                        <x-ui.badge variant="neutral">{{ \App\Enums\TicketCategory::from($ticket->category)->label() }}</x-ui.badge>
+                                    @endif
                                 </td>
                                 <td class="px-3 py-2 text-ink-soft">{{ $ticket->user->name }}</td>
                                 <td class="px-3 py-2">

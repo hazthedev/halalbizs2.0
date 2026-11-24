@@ -140,41 +140,7 @@
                 <p class="text-sm text-ink-soft">{{ __('This shop has not written a description yet.') }}</p>
             @endif
 
-            {{-- HB-LAW-14 (HB-DEC-1123b): seller identity for the e-trade rules.
-                 Every field is optional; only filled ones render. HB-DEC-1123c:
-                 the card shows only once one of the four new fields is filled;
-                 a registration no. saved earlier for WHIP certificates alone
-                 never publishes a card. Same dl pattern as product Traceability. --}}
-            @php
-                $sellerDetails = array_filter($store->only(['business_name', 'registration_no', 'business_address', 'contact_phone', 'contact_email']), 'filled');
-            @endphp
-            @if (array_diff_key($sellerDetails, ['registration_no' => true]) !== [])
-                <x-ui.card class="mt-6 max-w-prose p-4 lg:p-6">
-                    <h2 class="text-sm font-medium text-ink">{{ __('Seller details') }}</h2>
-                    <dl class="mt-4 space-y-3">
-                        @foreach ($sellerDetails as $field => $value)
-                            <div class="flex flex-wrap gap-x-6 gap-y-1">
-                                <dt class="w-28 shrink-0 font-mono text-[length:var(--text-nano)] uppercase tracking-[var(--tracking-label-xl)] text-ink-faint">{{ match ($field) {
-                                    'business_name' => __('Business name'),
-                                    'registration_no' => __('Registration no.'),
-                                    'business_address' => __('Business address'),
-                                    'contact_phone' => __('Phone'),
-                                    'contact_email' => __('Email'),
-                                } }}</dt>
-                                <dd class="min-w-0 flex-1 break-words text-sm text-ink">
-                                    @if ($field === 'contact_phone')
-                                        <a href="tel:{{ preg_replace('/(?!^\+)\D/', '', $value) }}" class="underline underline-offset-2 hover:text-emerald">{{ $value }}</a>
-                                    @elseif ($field === 'contact_email')
-                                        <a href="mailto:{{ $value }}" class="underline underline-offset-2 hover:text-emerald">{{ $value }}</a>
-                                    @else
-                                        <span class="whitespace-pre-line">{{ $value }}</span>
-                                    @endif
-                                </dd>
-                            </div>
-                        @endforeach
-                    </dl>
-                </x-ui.card>
-            @endif
+            {{-- HB-LAW-21 (HB-DEC-1124f): seller name, phone, email and address are never public. --}}
         </div>
     </div>
 </div>
