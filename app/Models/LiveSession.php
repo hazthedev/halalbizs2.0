@@ -23,6 +23,8 @@ class LiveSession extends Model
     protected function casts(): array
     {
         return [
+            'store_id' => 'integer',
+            'featured_product_id' => 'integer',
             'status' => LiveSessionStatus::class,
             'scheduled_for' => 'datetime',
             'started_at' => 'datetime',

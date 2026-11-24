@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\ScheduleFailureAlert;
 use Illuminate\Support\Facades\Schedule;
 
 // Scheduler — single source of truth, keep in sync with docs/10.
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('orders:expire-unpaid')->everyMinute()->withoutOverlapping(5);
 Schedule::command('orders:auto-complete')->hourly();
 // PAY-14 (HB-DEC-1124d): day 5 seller warning, day 7 not shipped → cancelled.
-Schedule::command('orders:cancel-unshipped')->hourly()->withoutOverlapping(30);
+Schedule::command('orders:cancel-unshipped')->hourly()->withoutOverlapping(30)->onFailure(ScheduleFailureAlert::for('orders:cancel-unshipped'));
 Schedule::command('sitemap:generate')->dailyAt('03:00');
 Schedule::command('returns:auto-escalate')->hourly();
 Schedule::command('boosts:expire')->hourly();
@@ -28,7 +29,7 @@ Schedule::command('tracking:register-open')->everyFifteenMinutes()->withoutOverl
 // restore them on renewal, nudge manual-certificate sellers 90 days out. Early, before the day's
 // trading — a product must not be on sale under a lapsed certificate for a
 // working day because the job runs at noon.
-Schedule::command('certificates:watch-expiry')->dailyAt('00:20');
+Schedule::command('certificates:watch-expiry')->dailyAt('00:20')->onFailure(ScheduleFailureAlert::for('certificates:watch-expiry'));
 // Follow WHIP (read-only) for certificates it vouches for. Every 4 h, so the
 // 24 h freshness rule on the badge has five tries before it drops.
 Schedule::command('certificates:sync-whip')->everyFourHours()->withoutOverlapping(30);
@@ -39,7 +40,7 @@ Schedule::command('certificates:remind-whip-expiry')->dailyAt('08:00')->timezone
 // dashboard is true within the hour rather than up to a day late.
 Schedule::command('affiliates:lock-commissions')->hourly();
 // Seller money comes off hold once the return window closes.
-Schedule::command('ledger:release-holds')->hourly();
+Schedule::command('ledger:release-holds')->hourly()->onFailure(ScheduleFailureAlert::for('ledger:release-holds'));
 // COD commission debt: monthly statement to stores with a negative balance.
 Schedule::command('ledger:send-statements')->monthlyOn(1, '09:00');
 // M2.6 — close group-buy teams whose recruiting window lapsed.
@@ -47,7 +48,7 @@ Schedule::command('group-buy:expire')->everyFifteenMinutes();
 // M2.8 — place orders for due subscribe-and-save schedules.
 Schedule::command('subscriptions:process')->hourly();
 // Ops — daily database + .env backup, then prune old ones (docs/10).
-Schedule::command('backup:run')->dailyAt('02:00');
+Schedule::command('backup:run')->dailyAt('02:00')->onFailure(ScheduleFailureAlert::for('backup:run'));
 Schedule::command('backup:clean')->dailyAt('02:30');
 // Mobile API — expired bearer tokens (config/sanctum.php `expiration`) are
 // already refused; this just deletes the rows a day after they lapse.

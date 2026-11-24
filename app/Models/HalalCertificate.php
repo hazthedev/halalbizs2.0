@@ -74,6 +74,7 @@ class HalalCertificate extends Model implements HasMedia
     protected function casts(): array
     {
         return [
+            'store_id' => 'integer',
             'whip_reminders' => 'array',
             'whip_synced_at' => 'datetime',
             'whip_unmatched_product_ids' => 'array',

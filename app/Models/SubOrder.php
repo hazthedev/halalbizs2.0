@@ -53,6 +53,7 @@ class SubOrder extends Model
     protected function casts(): array
     {
         return [
+            'store_id' => 'integer',
             'status' => SubOrderStatus::class,
             'items_subtotal_sen' => 'integer',
             'shipping_fee_sen' => 'integer',

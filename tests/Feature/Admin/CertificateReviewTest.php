@@ -185,3 +185,17 @@ test('certificate table pages and resets the page when a filter changes', functi
         ->set('filter', 'all')->assertSee('Showing 1 to 15 of 16')
         ->set('perPage', 50)->assertSee('Showing 1 to 16 of 16');
 });
+
+// HB-G232: the walkthrough's "click on Review does nothing" was the first text match
+// for "Review": the "Awaiting review" tab above the table (it only sets the filter).
+// Each row's button now names its certificate, so the two cannot be mistaken.
+test('the row button names its certificate and opens the panel', function () {
+    $admin = certAdmin();
+    $cert = submittedCert();
+
+    Livewire::actingAs($admin)->test(Certificates::class)
+        ->assertSeeHtml('aria-label="Review '.$cert->number.'"')
+        ->call('review', $cert->id)
+        ->assertSet('reviewing', $cert->id)
+        ->assertSeeHtml('aria-label="Close '.$cert->number.'"');
+});
