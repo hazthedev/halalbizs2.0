@@ -1,13 +1,16 @@
 <?php
 
+use App\Livewire\Storefront\Auth\ResetPassword;
 use App\Models\User;
 use App\Settings\SecuritySettings;
 use App\Support\Totp;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -304,4 +307,45 @@ test('a squatter google account on the owner email loses its google link once th
     $user = User::where('email', 'aisha@example.com')->sole();
     expect($user->google_id)->toBe('google-owner')
         ->and($user->hasVerifiedEmail())->toBeTrue();
+});
+
+test('HB-G235: after the owner resets the password, the squatter\'s unverified Google link no longer signs in', function () {
+    enableGoogle();
+
+    // The squatter signed up first with a Google account whose email Google
+    // never verified: the account is unverified and carries their google_id.
+    $user = User::factory()->unverified()->create([
+        'email' => 'aisha@example.com',
+        'google_id' => 'google-squatter',
+    ]);
+    $user->assignRole('buyer');
+
+    // The real owner proves the inbox with a reset link.
+    Livewire::test(ResetPassword::class, ['token' => Password::createToken($user)])
+        ->set('email', 'aisha@example.com')
+        ->set('password', 'owner-new-password-1')
+        ->set('password_confirmation', 'owner-new-password-1')
+        ->call('resetPassword')
+        ->assertHasNoErrors();
+
+    mockGoogleUser(id: 'google-squatter', emailVerified: false);
+
+    $this->get(route('auth.google.callback').'?code=fake&state=fake')
+        ->assertRedirect(route('login'));
+
+    $this->assertGuest();
+    expect($user->fresh()->google_id)->toBeNull();
+});
+
+test('HB-G235: a reset keeps the Google link of an account Google verified', function () {
+    $user = User::factory()->create(['google_id' => 'google-owner']);
+
+    Livewire::test(ResetPassword::class, ['token' => Password::createToken($user)])
+        ->set('email', $user->email)
+        ->set('password', 'owner-new-password-1')
+        ->set('password_confirmation', 'owner-new-password-1')
+        ->call('resetPassword')
+        ->assertHasNoErrors();
+
+    expect($user->fresh()->google_id)->toBe('google-owner');
 });

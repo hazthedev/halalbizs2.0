@@ -29,6 +29,7 @@ use App\Services\ChatService;
 use App\Settings\ThemeSettings;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -376,4 +377,129 @@ test('HB-G178 / ENV-11: .htaccess sends www and plain http on the live host to h
         ->and($rules)->toContain('RewriteCond %{HTTP:X-Forwarded-Proto} !=https [NC]')
         ->and(substr_count($rules, 'RewriteRule ^ https://halalbizs.com%{REQUEST_URI} [L,R=301]'))->toBe(2)
         ->and(substr_count($rules, 'RewriteCond %{REQUEST_URI} !^/\\.well-known/'))->toBe(2);
+});
+
+// ── HB-B5A follow-ups ────────────────────────────────────────────────────
+
+test('HB-G238: more than 100 attribute ids is refused before any per-id lookup', function () {
+    $seller = b3bSeller();
+    [$category] = b3bFacetCategory();
+    $lookups = 0;
+    DB::listen(function ($query) use (&$lookups) {
+        if (str_contains($query->sql, 'attribute_values') && str_contains($query->sql, 'count(*)')) {
+            $lookups++;
+        }
+    });
+
+    b3bProductForm($seller, $category)
+        ->set('attributeValueIds', range(1, 101))
+        ->call('saveDraft')
+        ->assertHasErrors('attributeValueIds');
+
+    expect($lookups)->toBe(0)
+        ->and(Product::query()->where('store_id', $seller->store->id)->exists())->toBeFalse();
+});
+
+test('HB-G239: generating copy keeps the errors already on the form', function () {
+    $seller = b3bSeller();
+    [$category, $red] = b3bFacetCategory();
+
+    $form = b3bProductForm($seller, $category)
+        ->set('price', '')
+        ->call('saveDraft')
+        ->assertHasErrors('price');
+
+    // Valid attributes: copy is generated, the price error stays.
+    $form->set('attributeValueIds', [(string) $red->id])
+        ->call('generateCopy')
+        ->assertHasErrors('price')
+        ->assertSet('description.en', fn ($value) => str_contains((string) $value, 'Dates'));
+
+    // A bad attribute id adds its own error, the price error still stays.
+    $form->set('attributeValueIds', ['abc'])
+        ->call('generateCopy')
+        ->assertHasErrors(['price', 'attributeValueIds.0']);
+});
+
+test('HB-G240: a chat message that fails to save does not use up the allowance', function (string $side) {
+    $seller = b3bSeller();
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $conversation = app(ChatService::class)->openConversation($buyer, $seller->store);
+    [$actor, $screenClass] = $side === 'buyer' ? [$buyer, BuyerMessages::class] : [$seller, SellerMessages::class];
+
+    $failNext = true;
+    Message::creating(function () use (&$failNext) {
+        if ($failNext) {
+            $failNext = false;
+            throw new RuntimeException('database went away');
+        }
+    });
+
+    expect(fn () => Livewire::actingAs($actor)->test($screenClass)->call('openConversation', $conversation->id)
+        ->set('body', 'Lost message')->call('send'))->toThrow(RuntimeException::class);
+
+    $screen = Livewire::actingAs($actor)->test($screenClass)->call('openConversation', $conversation->id);
+
+    foreach (range(1, 10) as $n) {
+        $screen->set('body', "Message {$n}")->call('send')->assertHasNoErrors();
+    }
+
+    expect(Message::where('conversation_id', $conversation->id)->count())->toBe(10);
+})->with(['buyer', 'seller']);
+
+test('HB-G240: a support ticket that fails to save does not use up the allowance', function () {
+    $user = User::factory()->create();
+
+    $failNext = true;
+    SupportTicket::creating(function () use (&$failNext) {
+        if ($failNext) {
+            $failNext = false;
+            throw new RuntimeException('database went away');
+        }
+    });
+
+    $open = fn (int $n) => Livewire::actingAs($user)->test(Tickets::class)->call('startTicket')
+        ->set('subject', "Order MP12{$n} never arrived")
+        ->set('body', 'It was marked delivered three days ago but nothing came. Please help.')
+        ->call('create');
+
+    expect(fn () => $open(0))->toThrow(RuntimeException::class);
+
+    foreach (range(1, 5) as $n) {
+        $open($n)->assertHasNoErrors();
+    }
+
+    expect(SupportTicket::where('user_id', $user->id)->count())->toBe(5);
+});
+
+test('HB-G243: multicast and NAT64 targets are refused', function (string $url) {
+    fakeHostResolver(['nat64.example' => ['64:ff9b::808:808'], 'multicast.example' => ['239.255.255.250']]);
+
+    expect(WebhookSubscription::isUrlSafe($url))->toBeFalse();
+})->with([
+    'https://224.0.0.1/x',
+    'https://239.255.255.250/x',
+    'https://[ff02::1]/x',
+    'https://[ff0e::1]/x',
+    'https://[64:ff9b::a00:5]/x',
+    'https://[64:ff9b::808:808]/x',
+    'https://nat64.example/x',
+    'https://multicast.example/x',
+]);
+
+test('HB-G243: delivery connects to the address that was checked, not a fresh DNS answer', function () {
+    fakeHostResolver(['hooks.example' => ['93.184.215.14', '2606:2800:21f:cb07:6820:80da:af6b:8b2c']]);
+    $pinned = null;
+    Http::fake(function ($request, array $options) use (&$pinned) {
+        $pinned = $options['curl'][CURLOPT_RESOLVE] ?? null;
+
+        return Http::response('ok', 200);
+    });
+
+    (new SendWebhookJob(1, 'https://hooks.example/paid', 's', 'order.paid', ['x' => 1]))->handle();
+    expect($pinned)->toBe(['hooks.example:443:93.184.215.14,[2606:2800:21f:cb07:6820:80da:af6b:8b2c]']);
+
+    (new SendWebhookJob(1, 'http://hooks.example:8080/paid', 's', 'order.paid', ['x' => 1]))->handle();
+    expect($pinned)->toBe(['hooks.example:8080:93.184.215.14,[2606:2800:21f:cb07:6820:80da:af6b:8b2c]']);
 });

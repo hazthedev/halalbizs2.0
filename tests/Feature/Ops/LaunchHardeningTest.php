@@ -19,15 +19,17 @@ test('the public API applies a rate limit', function () {
         ->assertHeader('X-RateLimit-Limit', '60');
 });
 
-test('SecurityHeaders adds HSTS on a secure request only', function () {
+test('SecurityHeaders adds a minimal HSTS on the live host over https only (HB-G242)', function () {
     $middleware = new SecurityHeaders;
     $next = fn () => new Response('ok');
+    $hsts = fn (string $url) => $middleware->handle(Request::create($url, 'GET'), $next)->headers->get('Strict-Transport-Security');
 
-    $secure = $middleware->handle(Request::create('https://halalbizs.test/', 'GET'), $next);
-    $plain = $middleware->handle(Request::create('http://halalbizs.test/', 'GET'), $next);
-
-    expect($secure->headers->get('Strict-Transport-Security'))->not->toBeNull()
-        ->and($plain->headers->get('Strict-Transport-Security'))->toBeNull();
+    // No includeSubDomains, no preload: store subdomains are dropped
+    // (HB-DEC-1124e) and a preload listing is hard to undo.
+    expect($hsts('https://halalbizs.com/'))->toBe('max-age=31536000')
+        ->and($hsts('http://halalbizs.com/'))->toBeNull()
+        ->and($hsts('https://halalbizs2.0.weststar-dev.com/'))->toBeNull()
+        ->and($hsts('https://halalbizs.test/'))->toBeNull();
 });
 
 test('backup:clean removes only backups older than the retention window', function () {

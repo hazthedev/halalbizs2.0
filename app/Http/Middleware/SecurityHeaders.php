@@ -84,9 +84,12 @@ class SecurityHeaders
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
         // HSTS only over HTTPS (docs/10) — never on local HTTP, so dev/tests
-        // and plain-HTTP health checks are unaffected.
-        if ($request->secure()) {
-            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+        // and plain-HTTP health checks are unaffected. HB-G242: live host
+        // only (same host test as public/.htaccess), and minimal: store
+        // subdomains are dropped (HB-DEC-1124e), so no includeSubDomains, and
+        // no preload (a browser preload listing is slow to undo).
+        if ($request->secure() && strcasecmp($request->getHost(), 'halalbizs.com') === 0) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000');
         }
 
         return $response;

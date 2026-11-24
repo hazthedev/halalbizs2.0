@@ -82,11 +82,9 @@ class MeController extends Controller
 
         $user = $request->user();
 
-        if (($blocker = $deletion->blocker($user)) !== null) {
+        if (($blocker = $deletion->deleteUnlessBlocked($user)) !== null) {
             return ApiResponse::error('account_deletion_blocked', $blocker, 409);
         }
-
-        $deletion->delete($user);
 
         return ApiResponse::ok(null);
     }
