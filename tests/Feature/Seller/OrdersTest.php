@@ -12,7 +12,6 @@ use App\Models\Product;
 use App\Models\Store;
 use App\Models\SubOrder;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -138,8 +137,8 @@ test('confirm & pack cannot touch another store\'s sub-order', function () {
     $seller = ordersSeller();
     $foreign = ordersSubOrderFor(ordersSeller(), SubOrderStatus::Confirmed);
 
-    expect(fn () => Livewire::actingAs($seller)->test(Index::class)->call('confirmAndPack', $foreign->id))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::actingAs($seller)->test(Index::class)->call('confirmAndPack', $foreign->id)
+        ->assertNotFound();
 
     expect($foreign->refresh()->status)->toBe(SubOrderStatus::Confirmed);
 });

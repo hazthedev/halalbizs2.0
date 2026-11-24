@@ -8,7 +8,6 @@ use App\Models\SupportTicket;
 use App\Models\User;
 use App\Notifications\TicketRepliedNotification;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
@@ -175,16 +174,16 @@ test('users never see another user\'s tickets', function () {
     $this->actingAs($bob)->get('/support?ticket='.$ticket->id)->assertNotFound();
 
     // Selecting it directly throws a 404 model lookup.
-    expect(fn () => Livewire::actingAs($bob)->test(Tickets::class)->call('select', $ticket->id))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::actingAs($bob)->test(Tickets::class)->call('select', $ticket->id)
+        ->assertNotFound();
 
     // Replying into it is impossible too.
-    expect(fn () => Livewire::actingAs($bob)
+    Livewire::actingAs($bob)
         ->test(Tickets::class)
         ->set('selectedId', $ticket->id)
         ->set('replyBody', 'Trying to sneak into another thread here.')
-        ->call('reply'))
-        ->toThrow(ModelNotFoundException::class);
+        ->call('reply')
+        ->assertNotFound();
 
     expect($ticket->refresh()->replies)->toHaveCount(1);
 });

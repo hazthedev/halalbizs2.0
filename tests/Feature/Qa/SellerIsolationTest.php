@@ -39,7 +39,6 @@ use App\Models\Store;
 use App\Models\SubOrder;
 use App\Models\User;
 use App\Models\Voucher;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -102,13 +101,13 @@ test('(b) ship() refuses a foreign sub-order id written onto the unlocked shippi
     $foreign = sisoSubOrder($victim, SubOrderStatus::Processing);
     $own = sisoSubOrder($attacker, SubOrderStatus::Processing);
 
-    expect(fn () => Livewire::actingAs($attacker)
+    Livewire::actingAs($attacker)
         ->test(Detail::class, ['subOrder' => $own])
         ->set('shippingSubOrderId', $foreign->id)
         ->set('courier', 'J&T Express')
         ->set('trackingNo', 'JT1234567890MY')
-        ->call('ship'))
-        ->toThrow(ModelNotFoundException::class);
+        ->call('ship')
+        ->assertNotFound();
 
     $foreign->refresh();
     expect($foreign->status)->toBe(SubOrderStatus::Processing)
@@ -122,10 +121,10 @@ test('(b) openShipModal() refuses a foreign sub-order id passed as a method argu
     $foreign = sisoSubOrder($victim, SubOrderStatus::Processing);
     $own = sisoSubOrder($attacker, SubOrderStatus::Processing);
 
-    expect(fn () => Livewire::actingAs($attacker)
+    Livewire::actingAs($attacker)
         ->test(Detail::class, ['subOrder' => $own])
-        ->call('openShipModal', $foreign->id))
-        ->toThrow(ModelNotFoundException::class);
+        ->call('openShipModal', $foreign->id)
+        ->assertNotFound();
 });
 
 test('cancelOrder() accepts a cancellation reason an admin has DEACTIVATED', function () {
@@ -446,10 +445,10 @@ test('Products delist() cannot delist another store\'s live product', function (
         'status' => ProductStatus::Live,
     ]);
 
-    expect(fn () => Livewire::actingAs($attacker)
+    Livewire::actingAs($attacker)
         ->test(App\Livewire\Seller\Products\Index::class)
-        ->call('delist', $foreign->id))
-        ->toThrow(ModelNotFoundException::class);
+        ->call('delist', $foreign->id)
+        ->assertNotFound();
 
     expect($foreign->refresh()->status)->toBe(ProductStatus::Live);
 });

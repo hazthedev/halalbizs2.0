@@ -7,7 +7,6 @@ use App\Models\HalalCertificate;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
@@ -169,8 +168,8 @@ test('a seller cannot see or edit another store certificate', function () {
 
     // Scoped through the store's own relation, so an id from another
     // store finds nothing rather than loading it.
-    expect(fn () => Livewire::actingAs($seller)->test(Form::class, ['certificate' => $theirs]))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::actingAs($seller)->test(Form::class, ['certificate' => $theirs])
+        ->assertNotFound();
 });
 
 function tableCert(User $seller, string $number, array $attrs = []): HalalCertificate

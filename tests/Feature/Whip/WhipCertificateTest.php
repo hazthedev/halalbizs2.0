@@ -20,7 +20,6 @@ use App\Services\Whip\WhipDirectory;
 use App\Settings\ModerationSettings;
 use App\Support\DisplayTime;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Queue\Events\JobQueueing;
@@ -239,9 +238,9 @@ test('product import rejects another store certificate and an unconfirmed WHIP r
     Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
     $certificate = whipRow();
     $category = Category::factory()->create(['is_active' => true]);
-    expect(fn () => Livewire::actingAs(whipSeller('999999-X'))->test(Certificates::class)
-        ->set('importCategoryId', $category->id)->call('importWhipProducts', $certificate->id))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::actingAs(whipSeller('999999-X'))->test(Certificates::class)
+        ->set('importCategoryId', $category->id)->call('importWhipProducts', $certificate->id)
+        ->assertNotFound();
     DB::connection('whip')->table('halal_applications')->where('id', $app)->update(['status' => 'revoked']);
     Livewire::actingAs($seller)->test(Certificates::class)
         ->set('importCategoryId', $category->id)->call('importWhipProducts', $certificate->id)->assertHasErrors('whip');

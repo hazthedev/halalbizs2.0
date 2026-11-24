@@ -6,7 +6,6 @@ use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Settings\ModerationSettings;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -175,8 +174,8 @@ test('row actions cannot touch another store\'s product', function () {
     $seller = productIndexSeller();
     $foreign = Product::factory()->create(['status' => ProductStatus::Live]);
 
-    expect(fn () => Livewire::actingAs($seller)->test(Index::class)->call('delist', $foreign->id))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::actingAs($seller)->test(Index::class)->call('delist', $foreign->id)
+        ->assertNotFound();
 
     expect($foreign->refresh()->status)->toBe(ProductStatus::Live);
 });
