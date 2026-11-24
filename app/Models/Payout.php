@@ -25,7 +25,7 @@ class Payout extends Model
         return [
             'status' => PayoutStatus::class,
             'amount_sen' => 'integer',
-            'bank_snapshot' => 'array',
+            'bank_snapshot' => 'encrypted:array', // HB-G198
             'requested_at' => 'datetime',
             'approved_at' => 'datetime',
             'paid_at' => 'datetime',

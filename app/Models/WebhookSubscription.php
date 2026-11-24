@@ -15,6 +15,7 @@ class WebhookSubscription extends Model
     {
         return [
             'events' => 'array',
+            'secret' => 'encrypted', // HB-G198
             'is_active' => 'boolean',
         ];
     }

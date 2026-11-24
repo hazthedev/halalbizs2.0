@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookSubscription;
 use App\Support\HostResolver;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Http;
@@ -15,7 +16,8 @@ use Illuminate\Support\Str;
  * Delivers one signed webhook (M1.7). The body is HMAC-SHA256 signed with the
  * subscription secret (X-Webhook-Signature) so receivers can verify authenticity.
  */
-class SendWebhookJob implements ShouldQueue
+// HB-G198: the payload carries the signing secret, so the queued row is encrypted too.
+class SendWebhookJob implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
 

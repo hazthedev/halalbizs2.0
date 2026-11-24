@@ -231,3 +231,35 @@ test('certificate create and edit open on their own pages', function () {
 
     certForm(Livewire::actingAs($seller)->test(Form::class))->call('save')->assertRedirect(route('seller.certificates'));
 });
+
+// HB-G141 (HB-DEC-1124f item 7): ESMA is not on JAKIM's 21 Aug 2026 list of
+// recognised foreign bodies, so a new certificate cannot name it.
+test('the certificate form no longer offers or accepts ESMA', function () {
+    $seller = certSeller();
+
+    certForm(Livewire::actingAs($seller)->test(Form::class))
+        ->assertDontSeeHtml('value="ESMA"')
+        ->set('issuingBody', 'ESMA')
+        ->call('save')
+        ->assertHasErrors(['issuingBody']);
+
+    expect(HalalCertificate::count())->toBe(0);
+});
+
+test('an existing ESMA certificate keeps its body as a read-only label and can still be renewed', function () {
+    $seller = certSeller();
+    certForm(Livewire::actingAs($seller)->test(Form::class))->call('save');
+    $certificate = HalalCertificate::first();
+    $certificate->forceFill(['issuing_body' => 'ESMA', 'issuing_body_name' => 'Emirates Authority for Standardization and Metrology'])->save();
+
+    Livewire::actingAs($seller)->test(Form::class, ['certificate' => $certificate])
+        ->assertSee('Emirates Authority for Standardization and Metrology')
+        ->assertSee('No longer accepted for new certificates.')
+        ->assertDontSeeHtml('<select id="issuingBody"')
+        ->set('validTo', now()->addYears(2)->toDateString())
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($certificate->fresh()->issuing_body)->toBe('ESMA')
+        ->and($certificate->fresh()->issuing_body_name)->toBe('Emirates Authority for Standardization and Metrology');
+});

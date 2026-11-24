@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 /**
  * M2.1 — expires lapsed coin lots (FIFO) and writes the offsetting ledger
  * entries. Idempotent: only lots with remaining > 0 past expiry are touched.
+ * BIZ-04: then reminds buyers once per lot, 30 days before it lapses.
  */
 class ExpireCoins extends Command
 {
@@ -19,7 +20,9 @@ class ExpireCoins extends Command
     {
         $expired = $coins->expireDue();
 
-        $this->info("Expired {$expired} coins.");
+        $reminded = $coins->remindExpiring();
+
+        $this->info("Expired {$expired} coins. Reminded {$reminded} buyers.");
 
         return self::SUCCESS;
     }

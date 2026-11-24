@@ -112,7 +112,9 @@ class Form extends Component
             // printed number IS globally unique, so a collision means either a
             // typo or someone else's certificate — say which, don't 500.
             'number' => ['required', 'string', 'max:60', Rule::unique('halal_certificates', 'number')->ignore($certificate?->id)],
-            'issuingBody' => ['required', Rule::in(array_keys(HalalCertificate::BODIES))],
+            // A retired body (HB-G141) is accepted only on the certificate that already names it.
+            'issuingBody' => ['required', Rule::in([...array_keys(HalalCertificate::BODIES),
+                ...(isset(HalalCertificate::RETIRED_BODIES[$certificate?->issuing_body]) ? [$certificate->issuing_body] : [])])],
             'holderName' => ['required', 'string', 'max:150'],
             'registrationNo' => ['nullable', 'string', 'max:40'],
             'scheme' => ['nullable', 'string', 'max:60'],
@@ -167,7 +169,7 @@ class Form extends Component
             $certificate->fill([
                 'number' => $data['number'],
                 'issuing_body' => $data['issuingBody'],
-                'issuing_body_name' => HalalCertificate::BODIES[$data['issuingBody']]['name'],
+                'issuing_body_name' => (HalalCertificate::BODIES + HalalCertificate::RETIRED_BODIES)[$data['issuingBody']]['name'],
                 'holder_name' => $data['holderName'],
                 'scheme' => $data['scheme'] ?: null,
                 'scope_note' => $data['scopeNote'] ?: null,
@@ -250,6 +252,7 @@ class Form extends Component
         return view('livewire.seller.certificates.form', [
             'products' => $this->storeProducts()->orderBy('name')->get(['id', 'name', 'halal_certificate_id']),
             'bodies' => HalalCertificate::BODIES,
+            'retiredBody' => $this->editing !== null ? (HalalCertificate::RETIRED_BODIES[$this->issuingBody] ?? null) : null,
         ])->title($this->editing !== null ? __('Renew or correct this certificate') : __('Register a certificate'));
     }
 }

@@ -29,6 +29,7 @@ class CoinTransaction extends Model
             'remaining' => 'integer',
             'sen' => 'integer',
             'expires_at' => 'datetime',
+            'expiry_reminded_at' => 'datetime',
             'created_at' => 'datetime',
         ];
     }
