@@ -7,7 +7,6 @@ use App\Livewire\Seller\Vouchers\Index;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\Voucher;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -109,14 +108,14 @@ test('a seller cannot edit, toggle, or delete another store\'s voucher', functio
     $seller = sellerVouchersSeller();
     $foreign = sellerVouchersVoucher(Store::factory()->approved()->create(), ['code' => 'FOREIGN']);
 
-    expect(fn () => Livewire::actingAs($seller)->test(Form::class, ['voucher' => $foreign]))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::actingAs($seller)->test(Form::class, ['voucher' => $foreign])
+        ->assertNotFound();
 
-    expect(fn () => Livewire::actingAs($seller)->test(Index::class)->call('toggleActive', $foreign->id))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::actingAs($seller)->test(Index::class)->call('toggleActive', $foreign->id)
+        ->assertNotFound();
 
-    expect(fn () => Livewire::actingAs($seller)->test(Index::class)->call('delete', $foreign->id))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::actingAs($seller)->test(Index::class)->call('delete', $foreign->id)
+        ->assertNotFound();
 
     expect($foreign->fresh())->not->toBeNull();
 });

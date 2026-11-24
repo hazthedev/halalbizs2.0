@@ -38,7 +38,6 @@ use App\Services\CheckoutService;
 use App\Services\OrderService;
 use App\Services\SubOrderStatusService;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
@@ -152,12 +151,12 @@ test('A4 Orders component id-taking actions are scoped to the caller', function 
 
     $as = fn () => Livewire::actingAs($attacker)->test(Orders::class);
 
-    expect(fn () => $as()->call('confirmReceived', $delivered->id))
-        ->toThrow(ModelNotFoundException::class);
-    expect(fn () => $as()->call('buyAgain', $delivered->id))
-        ->toThrow(ModelNotFoundException::class);
-    expect(fn () => $as()->call('cancelUnpaidOrder', $unpaid->id))
-        ->toThrow(ModelNotFoundException::class);
+    $as()->call('confirmReceived', $delivered->id)
+        ->assertNotFound();
+    $as()->call('buyAgain', $delivered->id)
+        ->assertNotFound();
+    $as()->call('cancelUnpaidOrder', $unpaid->id)
+        ->assertNotFound();
 
     expect($delivered->fresh()->status)->toBe(SubOrderStatus::Delivered)
         ->and($unpaid->subOrders()->first()->status)->toBe(SubOrderStatus::PendingPayment);
@@ -171,8 +170,8 @@ test('A5 Addresses id-taking actions are scoped to the caller', function () {
     $as = fn () => Livewire::actingAs($attacker)->test(Addresses::class);
 
     foreach (['edit', 'setDefault', 'delete'] as $method) {
-        expect(fn () => $as()->call($method, $address->id))
-            ->toThrow(ModelNotFoundException::class);
+        $as()->call($method, $address->id)
+            ->assertNotFound();
     }
 
     expect(Address::whereKey($address->id)->exists())->toBeTrue()
@@ -251,10 +250,10 @@ test('A9 ReviewOrder refuses another buyer at mount and at submit', function () 
         'line_total_sen' => 2500,
     ]);
 
-    expect(fn () => Livewire::actingAs($attacker)
+    Livewire::actingAs($attacker)
         ->test(ReviewOrder::class, ['subOrder' => $attackerSubOrder])
-        ->call('submit', $victimItem->id))
-        ->toThrow(ModelNotFoundException::class);
+        ->call('submit', $victimItem->id)
+        ->assertNotFound();
 
     expect(Review::query()->count())->toBe(0);
 });
