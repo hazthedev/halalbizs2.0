@@ -187,12 +187,30 @@ test('every staff action writes an audit line with causer, subject and old/new a
         'admin removed',
     ])
         ->and($lines->pluck('causer_id')->unique()->all())->toBe([$super->id])
-        ->and($lines[0]->properties['new'])->toBe(['cms.manage'])
-        ->and($lines[1]->properties['old'])->toBe(['cms.manage'])
-        ->and($lines[1]->properties['new'])->toBe(['cms.manage', 'products.moderate'])
-        ->and($lines[2]->properties->all())->toBe(['old' => false, 'new' => true])
-        ->and($lines[3]->properties->all())->toBe(['old' => true, 'new' => false])
-        ->and($lines[4]->properties['old'])->toBe(['cms.manage', 'products.moderate']);
+        ->and($lines[0]->properties['attributes'])->toBe(['permissions' => ['cms.manage']])
+        ->and($lines[1]->properties['old'])->toBe(['permissions' => ['cms.manage']])
+        ->and($lines[1]->properties['attributes'])->toBe(['permissions' => ['cms.manage', 'products.moderate']])
+        ->and($lines[2]->properties->all())->toBe(['old' => ['is_superadmin' => false], 'attributes' => ['is_superadmin' => true]])
+        ->and($lines[3]->properties->all())->toBe(['old' => ['is_superadmin' => true], 'attributes' => ['is_superadmin' => false]])
+        ->and($lines[4]->properties['old'])->toBe(['permissions' => ['cms.manage', 'products.moderate'], 'is_superadmin' => false]);
+});
+
+test('staff audit lines render in the audit log screen with their old to new diff', function () {
+    $super = superadmin();
+    $staff = scopedAdmin(['cms.manage']);
+
+    Livewire::actingAs($super)->test(Staff::class)
+        ->call('startEditPermissions', $staff->id)
+        ->set('editPermissions', ['cms.manage', 'products.moderate'])
+        ->call('savePermissions');
+    Livewire::actingAs($super)->test(Staff::class)->call('toggleSuperadmin', $staff->id);
+
+    Livewire::actingAs($super)->test(\App\Livewire\Admin\System\AuditLog::class)
+        ->assertOk()
+        ->assertSee('superadmin granted')
+        ->assertSee('is_superadmin:')
+        ->assertSee('permissions:')
+        ->assertSee('["cms.manage","products.moderate"]');
 });
 
 test('a refused staff action writes no audit line', function () {
