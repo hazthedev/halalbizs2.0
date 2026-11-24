@@ -9,8 +9,11 @@ use App\Models\Store;
 use App\Models\User;
 use App\Settings\SecuritySettings;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
@@ -188,5 +191,91 @@ test('GET me tells the app whether a password is set', function () {
             ->getJson('/api/v1/me')
             ->assertOk()
             ->assertJsonPath('data.password_set', $expected);
+    }
+});
+
+// ── Reset while signed in (the routes are no longer guest-only) ──────────────
+
+test('a signed-in user who resets their own password is signed out and sent to log in', function () {
+    $user = psaSeller(passwordSet: false);
+    $token = app('auth.password.broker')->createToken($user);
+
+    Livewire::actingAs($user)->test(ResetPassword::class, ['token' => $token])
+        ->set('email', $user->email)
+        ->set('password', 'Str0ng!Passw0rd#2026')
+        ->set('password_confirmation', 'Str0ng!Passw0rd#2026')
+        ->call('resetPassword')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('login'));
+
+    $this->assertGuest();
+    expect(session('status'))->toBe(__('Password updated — log in with your new password.'));
+    expect($user->fresh()->password_set_at)->not->toBeNull();
+});
+
+test('a reset link for another account signs the current user out and never signs in as that account', function () {
+    $signedIn = User::factory()->create();
+    $other = User::factory()->create(['password_set_at' => null]);
+    $token = app('auth.password.broker')->createToken($other);
+
+    Livewire::actingAs($signedIn)->test(ResetPassword::class, ['token' => $token])
+        ->set('email', $other->email)
+        ->set('password', 'Str0ng!Passw0rd#2026')
+        ->set('password_confirmation', 'Str0ng!Passw0rd#2026')
+        ->call('resetPassword')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('login'));
+
+    $this->assertGuest();
+    expect(Hash::check('Str0ng!Passw0rd#2026', $other->fresh()->password))->toBeTrue();
+    expect(Hash::check('password', $signedIn->fresh()->password))->toBeTrue();
+});
+
+test('a wrong reset token keeps a signed-in user signed in and changes nothing', function () {
+    $user = psaSeller(passwordSet: false);
+
+    Livewire::actingAs($user)->test(ResetPassword::class, ['token' => 'not-a-real-token'])
+        ->set('email', $user->email)
+        ->set('password', 'Str0ng!Passw0rd#2026')
+        ->set('password_confirmation', 'Str0ng!Passw0rd#2026')
+        ->call('resetPassword')
+        ->assertHasErrors('email');
+
+    $this->assertAuthenticatedAs($user);
+    expect($user->fresh()->password_set_at)->toBeNull();
+});
+
+// ── Backfill migration ───────────────────────────────────────────────────────
+
+test('the backfill marks password sign-ups set and google sign-ups unset, and rolls back', function () {
+    // DDL commits a MariaDB transaction, so run the migration on a throwaway
+    // in-memory SQLite users table instead of the shared test schema.
+    config(['database.connections.psa_mem' => ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '']]);
+    $default = config('database.default');
+    config(['database.default' => 'psa_mem']);
+
+    try {
+        Schema::create('users', function ($table) {
+            $table->id();
+            $table->string('google_id')->nullable();
+            $table->timestamps();
+        });
+        DB::table('users')->insert([
+            ['id' => 1, 'google_id' => null, 'created_at' => '2026-01-02 03:04:05'],
+            ['id' => 2, 'google_id' => 'g-2', 'created_at' => '2026-01-02 03:04:05'],
+        ]);
+
+        $migration = require database_path('migrations/2026_11_24_150000_add_password_set_at_to_users.php');
+        $migration->up();
+
+        expect(DB::table('users')->where('id', 1)->value('password_set_at'))->toBe('2026-01-02 03:04:05')
+            ->and(DB::table('users')->where('id', 2)->value('password_set_at'))->toBeNull();
+
+        $migration->down();
+        expect(Schema::hasColumn('users', 'password_set_at'))->toBeFalse()
+            ->and(DB::table('users')->count())->toBe(2);
+    } finally {
+        config(['database.default' => $default]);
+        DB::purge('psa_mem');
     }
 });

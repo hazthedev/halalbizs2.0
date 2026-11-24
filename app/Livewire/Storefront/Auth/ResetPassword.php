@@ -92,6 +92,16 @@ class ResetPassword extends Component
             return;
         }
 
+        // HB-G226: this page is open to signed-in users (the bank-form hint
+        // sends Google sign-ups here). A reset never signs anyone in; it signs
+        // this browser out, whoever it was, and starts a fresh guest session
+        // so the message below reaches the login page.
+        if (auth()->check()) {
+            auth()->logout();
+            session()->invalidate();
+            session()->regenerateToken();
+        }
+
         session()->flash('status', __('Password updated — log in with your new password.'));
 
         $this->redirectRoute('login', navigate: true);
