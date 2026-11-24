@@ -263,3 +263,16 @@ test('an existing ESMA certificate keeps its body as a read-only label and can s
     expect($certificate->fresh()->issuing_body)->toBe('ESMA')
         ->and($certificate->fresh()->issuing_body_name)->toBe('Emirates Authority for Standardization and Metrology');
 });
+
+test('a certificate that does not name ESMA cannot be switched to it on edit', function () {
+    $seller = certSeller();
+    certForm(Livewire::actingAs($seller)->test(Form::class))->call('save');
+    $certificate = HalalCertificate::first();
+
+    Livewire::actingAs($seller)->test(Form::class, ['certificate' => $certificate])
+        ->set('issuingBody', 'ESMA')
+        ->call('save')
+        ->assertHasErrors(['issuingBody']);
+
+    expect($certificate->fresh()->issuing_body)->not->toBe('ESMA');
+});
