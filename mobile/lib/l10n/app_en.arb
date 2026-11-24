@@ -929,5 +929,10 @@
   "liveOnPlatform": "This live is on {platform}",
   "@liveOnPlatform": {"placeholders": {"platform": {"type": "String"}}},
   "liveWatchOn": "Watch on {platform}",
-  "@liveWatchOn": {"placeholders": {"platform": {"type": "String"}}}
+  "@liveWatchOn": {"placeholders": {"platform": {"type": "String"}}},
+  "registerConsent": "I agree to the terms & conditions and consent to my personal data being processed under the privacy policy.",
+  "registerTermsLink": "Terms & conditions",
+  "registerPrivacyLink": "Privacy policy",
+  "registerConsentRequired": "Please agree to the terms and privacy policy to create an account.",
+  "sellerBankPasswordHelp": "Changing bank details needs your current password."
 }

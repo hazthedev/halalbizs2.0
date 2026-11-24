@@ -2078,4 +2078,22 @@ class AppLocalizationsMs extends AppLocalizations {
   String liveWatchOn(String platform) {
     return 'Tonton di $platform';
   }
+
+  @override
+  String get registerConsent =>
+      'Saya bersetuju dengan terma dan syarat dan bersetuju data peribadi saya diproses di bawah dasar privasi.';
+
+  @override
+  String get registerTermsLink => 'Terma dan syarat';
+
+  @override
+  String get registerPrivacyLink => 'Dasar privasi';
+
+  @override
+  String get registerConsentRequired =>
+      'Sila bersetuju dengan terma dan dasar privasi untuk mencipta akaun.';
+
+  @override
+  String get sellerBankPasswordHelp =>
+      'Menukar butiran bank memerlukan kata laluan semasa anda.';
 }

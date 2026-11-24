@@ -2083,4 +2083,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String liveWatchOn(String platform) {
     return 'Watch on $platform';
   }
+
+  @override
+  String get registerConsent =>
+      'I agree to the terms & conditions and consent to my personal data being processed under the privacy policy.';
+
+  @override
+  String get registerTermsLink => 'Terms & conditions';
+
+  @override
+  String get registerPrivacyLink => 'Privacy policy';
+
+  @override
+  String get registerConsentRequired =>
+      'Please agree to the terms and privacy policy to create an account.';
+
+  @override
+  String get sellerBankPasswordHelp =>
+      'Changing bank details needs your current password.';
 }

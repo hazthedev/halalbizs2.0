@@ -77,8 +77,9 @@ the app.
 ## Built so far
 
 Slice 4: theme + fonts, the kit, api / auth / db / offline core, the router
-with both shells, auth screens (`/login`, `/register`, `/two-factor`,
-`/forgot-password`, `/verify-email`), home, search, category, product and
+with both shells, auth screens (`/login`, `/register` with the terms +
+privacy tick sent as `terms`, `/two-factor`, `/forgot-password`,
+`/verify-email`), home, search, category, product and
 store pages, l10n en + ms, the Account tab root and the Language page.
 
 Slice 5 (buyer): cart (`features/cart`, `AsyncNotifier` over `GET cart`; the
