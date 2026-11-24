@@ -249,6 +249,40 @@ admin (Support > Admin guide). `App\Support\SopGuide` renders them with
 `<!-- SHOT -->` comments never reach the page. Edit a guide by editing its file.
 Coverage: `tests/Feature/Help/SopGuideTest.php`.
 
+## Hosting runbook
+
+**PHP on the host (HOST-01), read 2026-11-20 on the live account:** PHP 8.4.28
+CLI (`/opt/alt/php84`, supported to 31 Dec 2028). Extensions the app needs, all
+present: `bcmath ctype curl dom fileinfo gd intl mbstring openssl pdo_mysql
+tokenizer xml zip`. Re-read with `php -v` and `php -m` after any host PHP change
+and update this line with the new date. The web side runs lsphp; its version and
+limits are in the host panel (CloudLinux selector), not visible from the shell.
+
+**Cron (OPS-05).** One scheduler line per site runs `php artisan schedule:run`
+every minute; everything in `routes/console.php` hangs off it (the queue worker
+too). Live `halalbizs.com` has 2 lines of the account crontab; the testing copy
+has none. The account crontab holds other sites' lines and tokens, so never
+print it whole. Edit it in six steps, never with a pipe into `crontab -`
+(a failed filter installs an empty table):
+
+1. `crontab -l > ~/backups/crontab-<date>-<why>` (the way back).
+2. `cp` that file to `/tmp/crontab.new`.
+3. Edit the copy only.
+4. `diff` backup against the copy: only the intended line may differ.
+5. `crontab /tmp/crontab.new`.
+6. `crontab -l > /tmp/crontab.after; cmp /tmp/crontab.after /tmp/crontab.new`,
+   then count the job lines against the count before.
+
+The account line count is logged daily (21 lines on 2026-11-20 to 2026-11-23);
+the old alert said 25 expected, and the owner has not yet said which count is
+right. Until that is closed, treat 21 as the current record and do not "repair"
+the table up to 25.
+
+Failed scheduled tasks (`backup:run`, `certificates:watch-expiry`,
+`ledger:release-holds`, `orders:cancel-unshipped`) send one mail to
+`OPS_ALERT_EMAIL` (falls back to `ADMIN_EMAIL`); with neither set, or when the
+mail cannot be sent, the admin bell gets the alert instead. Test: `tests/Feature/Ops/ScheduleFailureAlertTest.php`.
+
 ## Docs
 
 - `CLAUDE.md` — stack, architecture conventions, and the hard rules (money in

@@ -91,7 +91,7 @@
                             <td class="px-3 py-2 text-right tabular-nums">{{ $certificate->products_count }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $certificate->submitted_at?->diffForHumans() ?? '—' }}</td>
                             <td class="px-3 py-2 text-right">
-                                <x-ui.button variant="ghost" wire:click="review({{ $certificate->id }})">
+                                <x-ui.button variant="ghost" wire:click="review({{ $certificate->id }})" aria-label="{{ ($reviewing === $certificate->id ? __('Close') : __('Review')).' '.$certificate->number }}">
                                     {{ $reviewing === $certificate->id ? __('Close') : __('Review') }}
                                 </x-ui.button>
                             </td>

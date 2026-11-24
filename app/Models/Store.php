@@ -44,6 +44,7 @@ class Store extends Model implements HasMedia
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
             'status' => StoreStatus::class,
             'holiday_mode' => 'boolean',
             'sst_registered' => 'boolean',
