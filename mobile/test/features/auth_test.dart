@@ -196,6 +196,7 @@ void main() {
 
     await tester.tap(tick);
     await tester.pump();
+    expect(find.byKey(const Key('register-terms-error')), findsNothing); // ticking clears it
     await tapRegister(tester);
     expect((sent! as Map)['terms'], isTrue);
     expect(h.container.read(sessionProvider), isA<SignedIn>());

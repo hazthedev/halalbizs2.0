@@ -331,7 +331,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             CheckboxListTile(
               key: const Key('register-terms'),
               value: _terms,
-              onChanged: _busy ? null : (v) => setState(() => _terms = v ?? false),
+              // Ticking answers the local "please agree" message at once.
+              onChanged: _busy
+                  ? null
+                  : (v) => setState(() {
+                        _terms = v ?? false;
+                        if (_terms) _termsError = null;
+                      }),
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
               activeColor: SoukColors.emerald,
