@@ -128,7 +128,7 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 2. **Addresses**: select **Add address**, fill in recipient, phone, address, postcode, city and state, then **Save address**. Use **Set as default**, **Edit** or **Delete**.
 3. **Profile**: update details and select **Save changes**. Change your password with **Update password**.
 4. Under **Security**, turn on **Two-factor authentication** with **Use email codes** or **Use an authenticator app**. Save your recovery codes when shown. **Regenerate recovery codes** replaces them. Turn it off with **Turn off 2FA**.
-5. Under **Active sessions**, you see where you are signed in. Enter your password and select **Log out other devices** to sign out everywhere else.
+5. Under **Active sessions**, you see where you are signed in. Enter your password and select **Log out other devices** to sign out everywhere else, including the HalalBizs app on your phone (it stops sending you notifications until you log in again).
 6. New-device email: when you sign in from a device we have not seen before, we email "New login to your HalalBizs account" with the device, IP and time, and add a notice in **Notifications**. If it was you, do nothing. If not, change your password and use **Review account security**. The first device you use is recorded without an email. Buyers get this alert only, not a code.
 7. Under **Privacy**, **Download my data** gives a file of your profile, addresses and orders. **Delete my account** asks you to type DELETE and your password. Order records are kept for legal reasons.
 8. The bell shows **Notifications**. Select **Mark all read** when done.

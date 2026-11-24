@@ -22,7 +22,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 
 1. Open the seller sign-in page, enter **Email** and **Password**, and select **Log in**.
 2. If you have turned on two-factor sign-in under **My account > Profile > Security**, the **Two-factor check** page asks for a 6-digit code from your email or authenticator app. Enter it and select **Verify and log in**. Tick **Trust this device for 30 days** only on your own device.
-3. When you sign in from a device HalalBizs has not seen, an email "New login to your HalalBizs account" tells you the device, IP and time. If it was not you, change your password and select **Log out other devices**.
+3. When you sign in from a device HalalBizs has not seen, an email "New login to your HalalBizs account" tells you the device, IP and time. If it was not you, change your password and select **Log out other devices**. This also signs out the HalalBizs app on every phone.
 4. When you sign in from a new device and two-factor sign-in is off, HalalBizs asks for a code before letting you in. The **Two-factor check** page says "You're signing in from a new device. Enter the code we emailed to confirm it's you." Open the email "Your login code", enter the 6-digit code (it expires in 10 minutes) and select **Verify and log in**. Select **Email me a new code** if it expired. This code email replaces the alert in step 3. The first device you ever use does not need a code.
 
 ## 3. Seller Centre menu

@@ -307,6 +307,11 @@ class Profile extends Component
             ->where('id', '!=', session()->getId())
             ->delete();
 
+        // The mobile app signs in with API tokens, not sessions: end those too,
+        // with their push registrations, or a lost phone stays signed in
+        // (HB-DEC-1123d). This browser keeps its session.
+        $user->revokeAppAccess();
+
         $this->reset('logout_others_password');
         $this->dispatch('toast', message: __('All other devices have been logged out.'));
     }
