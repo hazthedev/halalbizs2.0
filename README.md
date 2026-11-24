@@ -156,12 +156,14 @@ Coverage: `tests/Feature/Security/StripPhotoMetadataTest.php`.
   name + extension from the detected type), `UploadName::unguessable()` or a
   fixed name; the extension is always the detected one, never the client's.
 - **Webhook URLs** (`WebhookSubscription::isUrlSafe`): every A and AAAA answer
-  must be public; a name that does not resolve is refused; delivery never
-  follows a redirect (a 3xx fails the job, no retries). Tests never use real
+  must be public; a name that does not resolve is refused (nothing is sent;
+  the job retries with its backoff, in case it was a resolver hiccup);
+  delivery never follows a redirect (a 3xx fails the job, no retries). Tests never use real
   DNS: call `fakeHostResolver([...])` from `tests/Pest.php`.
 - **https and www** (`public/.htaccess`, live host only): `www.halalbizs.com`
   301s to `https://halalbizs.com` (any scheme), then plain
-  `http://halalbizs.com` 301s to https. Local `*.test` and the testing copy are
+  `http://halalbizs.com` 301s to https. `/.well-known/` is never redirected
+  (AutoSSL / ACME checks). Local `*.test` and the testing copy are
   untouched. Check after a deploy:
   `curl -sI http://halalbizs.com/x?y=1 | grep -i location` and
   `curl -sI https://www.halalbizs.com/x?y=1 | grep -i location`, both

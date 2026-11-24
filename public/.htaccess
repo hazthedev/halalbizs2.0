@@ -15,6 +15,10 @@
     # HB-G178: www is not a store. routes/web.php's {store:slug} subdomain
     # route would take "www" as a slug and 404, so send it to the bare host
     # first (one hop, http or https). Query string carries over by default.
+    # /.well-known/ is never redirected: AutoSSL / ACME http-01 checks read
+    # their token over plain http on each host, and must work even when the
+    # certificate has lapsed.
+    RewriteCond %{REQUEST_URI} !^/\.well-known/
     RewriteCond %{HTTP_HOST} ^www\.halalbizs\.com(:\d+)?$ [NC]
     RewriteRule ^ https://halalbizs.com%{REQUEST_URI} [L,R=301]
 
@@ -22,6 +26,7 @@
     # guard keeps local (*.test) and the testing copy untouched. TLS ends in
     # LiteSpeed itself today (HTTPS=on); the X-Forwarded-Proto guard stops a
     # loop if a TLS proxy is ever put in front.
+    RewriteCond %{REQUEST_URI} !^/\.well-known/
     RewriteCond %{HTTP_HOST} ^halalbizs\.com(:\d+)?$ [NC]
     RewriteCond %{HTTPS} !=on
     RewriteCond %{HTTP:X-Forwarded-Proto} !=https [NC]

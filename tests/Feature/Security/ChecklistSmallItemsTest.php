@@ -277,7 +277,31 @@ test('SEC-46: private, loopback, link-local and reserved targets are refused, IP
     'https://[fd00::1]/x',
     'https://[fe80::1]/x',
     'https://[::ffff:127.0.0.1]/x',
+    'https://[::ffff:7f00:1]/x',
+    'https://0.0.0.0/x',
+    'https://[fc00::1]/x',
+    'https://[::]/x',
 ]);
+
+test('SEC-46: a hostname answering an IPv4-mapped loopback is refused', function () {
+    fakeHostResolver(['mapped.example' => ['::ffff:127.0.0.1']]);
+
+    expect(WebhookSubscription::isUrlSafe('https://mapped.example/hook'))->toBeFalse();
+});
+
+test('SEC-46: an unresolvable host sends nothing and is retried; a private answer is not', function () {
+    Http::fake();
+    fakeHostResolver(['private.example' => ['10.0.0.5']]);
+
+    $job = fn (string $url) => new SendWebhookJob(1, $url, 's', 'order.paid', ['x' => 1]);
+
+    expect(fn () => $job('https://nowhere.invalid/hook')->handle())
+        ->toThrow(RuntimeException::class, 'did not resolve');
+
+    $job('https://private.example/hook')->handle(); // fails at once, no throw to retry
+
+    Http::assertNothingSent();
+});
 
 test('SEC-46: a hostname is refused when any A or AAAA answer is private', function () {
     fakeHostResolver(['mixed.example' => ['93.184.215.14', 'fd00::1'], 'v6only.example' => ['::1']]);
@@ -321,7 +345,19 @@ test('SEC-46: a delivery answered with a redirect is not followed and not record
 // ── HB-G178 ──────────────────────────────────────────────────────────────
 
 test('HB-G178: www is never read as a store slug, so www serves the home page', function () {
+    expect(config('app.store_subdomain_base'))->not->toBeEmpty(); // else the route is not registered and this proves nothing
+
     $this->get('http://www.'.config('app.store_subdomain_base').'/')->assertOk();
+});
+
+test('HB-G178: a store slug that only starts with www still resolves on its subdomain', function () {
+    $store = Store::factory()->approved()->create(['name' => 'Www Kedai']);
+
+    expect($store->slug)->toStartWith('www');
+
+    $this->get('http://'.$store->slug.'.'.config('app.store_subdomain_base'))
+        ->assertOk()
+        ->assertSee('Www Kedai');
 });
 
 test('HB-G178 / ENV-11: .htaccess sends www and plain http on the live host to https, before the front controller', function () {
@@ -338,5 +374,6 @@ test('HB-G178 / ENV-11: .htaccess sends www and plain http on the live host to h
         ->and($slash)->toBeLessThan($front)
         ->and($rules)->toContain('RewriteCond %{HTTPS} !=on')
         ->and($rules)->toContain('RewriteCond %{HTTP:X-Forwarded-Proto} !=https [NC]')
-        ->and(substr_count($rules, 'RewriteRule ^ https://halalbizs.com%{REQUEST_URI} [L,R=301]'))->toBe(2);
+        ->and(substr_count($rules, 'RewriteRule ^ https://halalbizs.com%{REQUEST_URI} [L,R=301]'))->toBe(2)
+        ->and(substr_count($rules, 'RewriteCond %{REQUEST_URI} !^/\\.well-known/'))->toBe(2);
 });

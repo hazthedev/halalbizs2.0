@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\WebhookDelivery;
 use App\Models\WebhookSubscription;
+use App\Support\HostResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Http;
@@ -48,6 +49,15 @@ class SendWebhookJob implements ShouldQueue
         // created — DNS can be re-pointed after the fact, and this is the
         // only place that actually makes an outbound network call.
         if (! WebhookSubscription::isUrlSafe($this->url)) {
+            // A name that does not resolve may be a resolver hiccup: throw so
+            // the queue retries it (tries/backoff), each try re-checked here.
+            // Nothing is sent while it does not resolve.
+            $host = trim((string) parse_url($this->url, PHP_URL_HOST), '[]');
+
+            if ($host !== '' && ! filter_var($host, FILTER_VALIDATE_IP) && app(HostResolver::class)->ips($host) === []) {
+                throw new \RuntimeException('Webhook host did not resolve; will retry.');
+            }
+
             Log::error('Webhook delivery refused — URL failed the SSRF safety check.', [
                 'subscription_id' => $this->subscriptionId,
                 'event' => $this->event,
