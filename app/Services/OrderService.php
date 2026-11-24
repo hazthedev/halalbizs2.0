@@ -22,6 +22,9 @@ use InvalidArgumentException;
  */
 class OrderService
 {
+    /** Sub-order statuses that have not shipped yet (PAY-14). */
+    public const UNSHIPPED = [SubOrderStatus::Confirmed, SubOrderStatus::Processing];
+
     public function __construct(
         private SubOrderStatusService $statusService,
         private RefundService $refunds,
@@ -61,6 +64,27 @@ class OrderService
                     $this->refundIfAlreadyPaid($cancelled, $actor, $actorId, $reason);
                 },
             );
+        });
+    }
+
+    /**
+     * PAY-14 (orders:cancel-unshipped): cancel only if the sub-order is still
+     * not shipped under its row lock. A ship that committed first wins (false,
+     * nothing touched); a ship arriving after finds it Cancelled and the
+     * status service refuses it.
+     */
+    public function cancelIfUnshipped(SubOrder $subOrder, string $reason): bool
+    {
+        return DB::transaction(function () use ($subOrder, $reason) {
+            $locked = SubOrder::lockForUpdateWithOrder($subOrder)->first();
+
+            if ($locked === null || ! in_array($locked->status, self::UNSHIPPED, true)) {
+                return false;
+            }
+
+            $this->cancel($locked, ActorType::System, null, $reason);
+
+            return true;
         });
     }
 

@@ -83,6 +83,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 7. The buyer sees a **Track on courier website** button that opens the courier's own tracking page. Double-check the tracking number.
 8. When the parcel arrives, select **Mark delivered**. The buyer then confirms with **Order received**, or the order completes automatically on the date shown ("Completes automatically on :date").
 9. Completed orders release money to you after the return window (section 9).
+10. Ship every order within 7 days of when it was placed (for online payment, 7 days after the buyer paid). If it has not shipped after 5 days you get one reminder, "Ship soon". After 7 days it is cancelled automatically: stock returns, the buyer is told, and a paid online order is refunded to the buyer in full.
 
 ## 8. Returns
 
@@ -102,6 +103,8 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 6. If the balance is negative (for example commission owed on cash on delivery orders, or a refund after payout), the page shows the amount owed. Future sales repay it, or you can pay by bank transfer. Payouts resume when the balance is positive.
 7. On the 1st of each month at 09:00 a **monthly statement** email is sent to shops that owe a balance.
 8. **Export CSV** saves the ledger. There is no statements page; the monthly email is the statement.
+9. Cash on delivery: the ledger shows the sale, the commission and **COD cash collected**, which is the cash the courier collected from the buyer. Platform vouchers, coins and platform free shipping are paid by HalalBizs, not by you: they stay in your sale and are added to your balance. Your own shop vouchers are your cost.
+10. If a cash on delivery order is fully refunded, HalalBizs pays the buyer back and the cash you collected for it is taken from your balance.
 
 ## 10. Chat, reviews, questions and promotions
 

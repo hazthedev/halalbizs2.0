@@ -33,6 +33,7 @@ class LedgerService
     public function __construct(
         private OrderSettings $orderSettings,
         private CommissionSettings $commissionSettings,
+        private VoucherService $vouchers,
     ) {}
 
     /**
@@ -50,7 +51,10 @@ class LedgerService
 
     /**
      * Completion hook: +sale, −commission, and for COD −cod_offset (the
-     * seller already holds the cash — net effect is the commission owed).
+     * seller already holds the cash). The offset is the cash the courier
+     * actually collected, so platform-funded discounts (platform voucher,
+     * coins, platform free shipping) stay credited to the seller exactly as
+     * on an online order: HB-DEC-1124d (1), PAY-09 / HB-G026.
      * Also the moment sold_count becomes truth.
      */
     public function recordCompletion(SubOrder $subOrder): void
@@ -69,7 +73,8 @@ class LedgerService
             // Sale yet), so book net of it: sale less what was refunded, and
             // commission scaled exactly as RefundService scales a reversal. The
             // snapshot below stays GROSS: later refunds scale from it. COD offset
-            // stays gross too, matching a post-completion refund (seller debited).
+            // is the FULL cash collected too, matching a post-completion refund
+            // (seller debited).
             // A sub-order refunded in full before completion books nothing.
             $totalSen = (int) $subOrder->total_sen;
             $refundedSen = min((int) $subOrder->refunded_sen, $totalSen);
@@ -120,7 +125,7 @@ class LedgerService
             }
 
             if ($subOrder->order->payment_method === PaymentMethod::Cod) {
-                $this->write($subOrder->store_id, LedgerEntryType::CodOffset, -$saleSen, $subOrder->id,
+                $this->write($subOrder->store_id, LedgerEntryType::CodOffset, -$this->buyerCashShareSen($subOrder, $totalSen), $subOrder->id,
                     __('COD cash collected for :no', ['no' => $subOrder->sub_order_no]), null, $holdUntil);
             }
 
@@ -143,6 +148,85 @@ class LedgerService
         $rateBasisPoints = (int) round((float) $subOrder->commission_rate * 100); // e.g. 5.25% → 525
 
         return intdiv($baseSen * $rateBasisPoints + 5000, 10000);
+    }
+
+    /**
+     * The cash THIS store's buyer actually paid toward $amountSen of this
+     * sub-order, scaled by the portion being refunded.
+     *
+     * THREE order-level reductions sit between SUM(sub_orders.total_sen) and the
+     * cash that reached the gateway. C11 handled the first; H-4 found the other
+     * two still missing, so a store was refunded money the buyer never paid:
+     *   1. the platform voucher (`discount_total_sen`)
+     *   2. coins (`coin_redemption_sen`) — grand_total is computed AFTER them
+     *   3. platform-funded free shipping, which deliberately stays in the
+     *      sub-order total because the seller still earns it
+     * RefundService's order-level `grand_total - refunded` check is a
+     * cumulative CEILING, not an allocation — on a multi-store order the first
+     * store refunded fits under it easily and the last store comes up short.
+     *
+     * Also the COD offset: what the courier collected for this sub-order is
+     * this share of its full total (PAY-09).
+     *
+     * Prorated through the same VoucherService::prorate() the checkout used, so
+     * the shares add back up exactly — re-deriving the split here rather than
+     * storing it keeps one implementation of the rule (the C5 lesson: a
+     * duplicated formula is a formula that drifts).
+     */
+    public function buyerCashShareSen(SubOrder $subOrder, int $amountSen): int
+    {
+        $order = $subOrder->order;
+        $subOrderTotalSen = (int) $subOrder->total_sen;
+
+        if ($subOrderTotalSen <= 0) {
+            return 0;
+        }
+
+        $storeId = (int) $subOrder->store_id;
+
+        // 1. Platform voucher, on items_subtotal_sen — the weights checkout used.
+        $discountShares = [];
+
+        if ((int) $order->discount_total_sen > 0) {
+            $discountShares = $this->vouchers->prorate(
+                (int) $order->discount_total_sen,
+                $order->subOrders->mapWithKeys(fn (SubOrder $row) => [(int) $row->store_id => (int) $row->items_subtotal_sen])->all(),
+            );
+        }
+
+        // 2. What each store's buyer owed after the voucher and after removing
+        //    shipping that was never charged.
+        $bases = $order->subOrders->mapWithKeys(fn (SubOrder $row) => [
+            (int) $row->store_id => max(0, (int) $row->total_sen
+                - ($discountShares[(int) $row->store_id] ?? 0)
+                - $this->unpaidShippingSen($row)),
+        ])->all();
+
+        // 3. Coins came off the whole post-voucher bill (CheckoutService's
+        //    $preCoinTotalSen), so they prorate on those bases, not on subtotals.
+        $coinShareSen = (int) $order->coin_redemption_sen > 0
+            ? ($this->vouchers->prorate((int) $order->coin_redemption_sen, $bases)[$storeId] ?? 0)
+            : 0;
+
+        $storeCashSen = max(0, ($bases[$storeId] ?? 0) - $coinShareSen);
+
+        // Scale for a partial refund; exact for a full one.
+        return intdiv($amountSen * $storeCashSen, $subOrderTotalSen);
+    }
+
+    /**
+     * Shipping sitting in this sub-order's total that the buyer was not charged.
+     *
+     * A PLATFORM-funded waiver leaves `shipping_fee_sen` on the sub-order (the
+     * seller still earns it) while the ORDER's shipping_total drops — so the
+     * buyer paid nothing and this must come out. A SELLER-funded waiver zeroes
+     * `shipping_fee_sen` instead, so it was never in `total_sen` and removing it
+     * again would under-refund. min() separates the two without re-reading the
+     * voucher: platform-funded leaves fee == subsidy, seller-funded leaves 0.
+     */
+    private function unpaidShippingSen(SubOrder $subOrder): int
+    {
+        return min((int) $subOrder->shipping_fee_sen, (int) $subOrder->shipping_subsidy_sen);
     }
 
     private function isUniqueViolation(QueryException $e): bool
@@ -220,6 +304,22 @@ class LedgerService
             Store::whereKey($store->id)->lockForUpdate()->first();
 
             $this->write($store->id, LedgerEntryType::Adjustment, $amountSen, $subOrder?->id, $reason);
+        });
+    }
+
+    /**
+     * Full COD refund before completion (RefundService): the platform paid the
+     * buyer back, the seller keeps the cash the courier collected and owes it
+     * (PAY-12). Completion of a fully refunded sub-order books nothing, so this
+     * is the sub-order's only entry. Same store lock as adjustment().
+     */
+    public function recordCodRefundDebt(SubOrder $subOrder): void
+    {
+        DB::transaction(function () use ($subOrder) {
+            Store::whereKey($subOrder->store_id)->lockForUpdate()->first();
+
+            $this->write($subOrder->store_id, LedgerEntryType::CodOffset, -$this->buyerCashShareSen($subOrder, (int) $subOrder->total_sen), $subOrder->id,
+                __('COD refund paid to the buyer by the platform for :no', ['no' => $subOrder->sub_order_no]));
         });
     }
 

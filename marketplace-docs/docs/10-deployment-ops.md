@@ -14,6 +14,7 @@ One VPS, 4 vCPU / 8 GB, Ubuntu 24.04 — Nginx, PHP-FPM 8.4 (opcache, `pm.max_ch
 |---|---|
 | `orders:expire-unpaid` (requery rescue → cancel + restock; no requery while the payment simulator is on, HB-G006) | everyMinute |
 | `orders:auto-complete` (delivered + 7d → completed, ledger) | hourly |
+| `orders:cancel-unshipped` (PAY-14: day 5 seller warning, day 7 not shipped → cancel + restock, paid online refunded) | hourly |
 | `returns:auto-escalate` (seller response timeout) | hourly |
 | `boosts:expire` (M-FE sponsored placements) | hourly |
 | `carts:remind-abandoned` (M1.4 recovery nudge) | hourly |

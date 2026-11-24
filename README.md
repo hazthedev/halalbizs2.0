@@ -145,6 +145,20 @@ HEIC is never accepted by an upload rule.
 
 Coverage: `tests/Feature/Security/StripPhotoMetadataTest.php`.
 
+### Unshipped orders auto-cancel (`orders:cancel-unshipped`, hourly)
+
+PAY-14 (HB-DEC-1124d). A sub-order still **confirmed** or **processing**
+(not shipped) 7 days after its order was placed (online: after `paid_at`) is
+cancelled through `OrderService::cancel` as `system`: restock, vouchers and
+coins back, a paid online order refunded in full, and the usual
+"Order cancelled" notification (database + mail) to the buyer and the seller.
+On day 5 the seller gets one "Ship soon" notification (database + mail;
+`sub_orders.unshipped_warned_at` keeps it to one). Days are settings
+`order.unshipped_cancel_days` (7) and `order.unshipped_warn_days` (5).
+The row is locked before the cancel, so a ship that commits first wins.
+Check it is scheduled: `php artisan schedule:list | grep cancel-unshipped`.
+Coverage: `tests/Feature/Orders/CancelUnshippedOrdersTest.php`.
+
 ### Security limits and redirects (HB-B3B)
 
 - **Send limits** (`config/limits.php`): chat is 10 messages a minute per user

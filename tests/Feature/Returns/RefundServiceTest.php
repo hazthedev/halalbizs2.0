@@ -203,7 +203,10 @@ test('refunding every sub-order of a voucher order never returns more cash than 
         ->and($order->fresh()->payment->refunded_sen)->toBeLessThanOrEqual($order->fresh()->grand_total_sen);
 });
 
-test('a refund before completion writes no ledger adjustment but tracks the payment', function () {
+// PAY-12 / HB-G027 (ruling 2026-11-03 15:58 (6)): a full COD refund before
+// completion is paid to the buyer by the platform and owed by the seller, who
+// kept the courier's cash. It was "no ledger entry at all" before HB-B4.
+test('a full COD refund before completion writes no adjustment, the seller owes the cash collected, the payment is tracked', function () {
     $buyer = User::factory()->create();
     $buyer->assignRole('buyer');
     $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor']);
@@ -224,7 +227,8 @@ test('a refund before completion writes no ledger adjustment but tracks the paym
     app(RefundService::class)->refund($subOrder->fresh(), $total, ActorType::Admin, null, null, markRefunded: true);
 
     expect($subOrder->fresh()->status)->toBe(SubOrderStatus::Refunded)
-        ->and($subOrder->fresh()->ledgerEntries()->count())->toBe(0)
+        ->and($subOrder->fresh()->ledgerEntries()->where('type', LedgerEntryType::Adjustment)->count())->toBe(0)
+        ->and($subOrder->fresh()->ledgerEntries()->where('type', LedgerEntryType::CodOffset)->sole()->amount_sen)->toBe(-$total)
         ->and($subOrder->fresh()->order->payment->refunded_sen)->toBe($total);
 });
 

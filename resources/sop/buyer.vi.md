@@ -113,6 +113,7 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 4. Theo dõi **Trạng thái đổi trả**. Người bán có 48 giờ để trả lời. Nếu người bán chấp nhận, hãy gửi hàng lại. Nếu người bán tranh chấp, hoặc không trả lời kịp, đội hỗ trợ của chúng tôi sẽ quyết định.
 5. Khi trạng thái là **Refunded**, trang báo "Your refund has been processed." Hoàn tiền với đơn thanh toán khi nhận hàng do HalalBizs ghi nhận. Hoàn tiền trực tuyến đi ngược qua kênh thanh toán và ngân hàng có thể mất thời gian để ghi có.
 6. Nếu đổi trả bị **Rejected**, trang báo yêu cầu đã được xem xét và không được chấp thuận. Hãy liên hệ hỗ trợ nếu bạn không đồng ý.
+7. Nếu người bán không gửi hàng trong vòng 7 ngày kể từ khi bạn đặt (với thanh toán trực tuyến, 7 ngày sau khi bạn thanh toán), đơn tự động bị huỷ và bạn được báo. Đơn đã thanh toán trực tuyến được hoàn đủ tiền.
 
 ## 12. Đánh giá, câu hỏi và trò chuyện
 

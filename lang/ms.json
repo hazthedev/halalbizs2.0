@@ -2969,5 +2969,9 @@
     "Optional. Buyers see only the details you fill, on your shop page under About. Leave out anything you do not want public, such as a home address.": "Pilihan. Pembeli hanya melihat butiran yang anda isi, di halaman kedai anda di bawah Perihal. Jangan isi apa-apa yang anda tidak mahu didedahkan, seperti alamat rumah.",
     "Use digits, spaces and dashes only, with an optional + at the start.": "Gunakan digit, ruang dan sengkang sahaja, dengan + pilihan di hadapan.",
     "Signing up with Google as :email.": "Mendaftar dengan Google sebagai :email.",
+    "COD refund paid to the buyer by the platform for :no": "Bayaran balik COD dibayar kepada pembeli oleh platform untuk :no",
+    "Ship soon": "Hantar segera",
+    "Order :no has not shipped yet. Ship it within :days days or it will be cancelled automatically and the buyer told.": "Pesanan :no belum dihantar. Hantar dalam masa :days hari atau ia akan dibatalkan secara automatik dan pembeli dimaklumkan.",
+    "Not shipped within :days days": "Tidak dihantar dalam masa :days hari",
     "attribute": "atribut"
 }

@@ -83,6 +83,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 7. Người mua thấy nút **Theo dõi trên trang của đơn vị vận chuyển** mở trang theo dõi của chính đơn vị đó. Hãy kiểm tra lại mã vận đơn.
 8. Khi bưu kiện đến, chọn **Mark delivered**. Người mua sau đó xác nhận bằng **Đã nhận đơn**, hoặc đơn tự hoàn tất vào ngày được hiển thị ("Completes automatically on :date").
 9. Đơn hoàn tất chuyển tiền cho bạn sau thời hạn đổi trả (mục 9).
+10. Hãy gửi mỗi đơn trong vòng 7 ngày kể từ khi đặt (với thanh toán trực tuyến, 7 ngày sau khi người mua thanh toán). Nếu sau 5 ngày đơn chưa được gửi, bạn nhận một lời nhắc, "Ship soon". Sau 7 ngày đơn tự động bị huỷ: hàng được trả về kho, người mua được báo, và đơn đã thanh toán trực tuyến được hoàn đủ tiền cho người mua.
 
 ## 8. Đổi trả
 
@@ -102,6 +103,8 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 6. Nếu số dư âm (ví dụ hoa hồng phải trả cho đơn COD, hoặc hoàn tiền sau khi đã rút), trang hiện số tiền còn nợ. Doanh số sau này sẽ bù khoản đó, hoặc bạn có thể chuyển khoản. Việc rút tiền tiếp tục khi số dư dương.
 7. Vào ngày 1 hằng tháng lúc 09:00, một email **sao kê hằng tháng** được gửi cho các cửa hàng còn nợ.
 8. **Export CSV** lưu sổ cái. Không có trang sao kê; email hằng tháng chính là sao kê.
+9. Thanh toán khi nhận hàng (COD): sổ cái hiện doanh số, hoa hồng và **COD cash collected**, tức tiền mặt đơn vị vận chuyển đã thu từ người mua. Voucher của sàn, xu và miễn phí vận chuyển của sàn do HalalBizs trả, không phải bạn: chúng vẫn nằm trong doanh số và được cộng vào số dư của bạn. Voucher cửa hàng của bạn là chi phí của bạn.
+10. Nếu một đơn COD được hoàn tiền toàn bộ, HalalBizs trả lại tiền cho người mua và số tiền mặt bạn đã thu cho đơn đó được trừ khỏi số dư của bạn.
 
 ## 10. Trò chuyện, đánh giá, câu hỏi và khuyến mãi
 
