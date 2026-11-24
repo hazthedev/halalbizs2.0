@@ -149,6 +149,7 @@ class GoogleAuthController extends Controller
                 $user->forceFill([
                     'google_id' => null,
                     'password' => Str::password(40),
+                    'password_set_at' => null,
                     'two_factor_method' => null,
                     'two_factor_secret' => null,
                     'two_factor_recovery_codes' => null,

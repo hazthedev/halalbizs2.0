@@ -117,7 +117,7 @@ class DemoReviewsSeeder extends Seeder
         return collect(self::REVIEWERS)->map(function (string $name, int $i): User {
             return User::query()->firstOrCreate(
                 ['email' => 'demo-reviewer-'.($i + 1).'@reviews.test'],
-                ['name' => $name, 'password' => Hash::make('password'), 'email_verified_at' => now()],
+                ['name' => $name, 'password' => Hash::make('password'), 'password_set_at' => now(), 'email_verified_at' => now()],
             );
         });
     }

@@ -3829,6 +3829,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Changing bank details needs your current password.'**
   String get sellerBankPasswordHelp;
+
+  /// No description provided for @sellerBankGoogleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You signed up with Google and have not set a password yet. Use Forgot password to set one, then change your bank details.'**
+  String get sellerBankGoogleHint;
 }
 
 class _AppLocalizationsDelegate

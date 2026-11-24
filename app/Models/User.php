@@ -31,6 +31,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'tin',
         'privacy_consented_at',
         'privacy_notice_version',
+        // HB-G226: set when the user chooses a password (sign-up, reset, change);
+        // NULL = random password nobody knows (Google sign-up, admin invite).
+        'password_set_at',
     ];
 
     protected $hidden = [
@@ -46,6 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
             'privacy_consented_at' => 'datetime',
+            'password_set_at' => 'datetime',
             'password' => 'hashed',
             'is_superadmin' => 'boolean',
             'two_factor_method' => TwoFactorMethod::class,

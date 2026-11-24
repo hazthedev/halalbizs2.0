@@ -21,6 +21,8 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'email_verified' => $this->hasVerifiedEmail(),
+            // HB-G226: false = Google sign-up that never chose a password.
+            'password_set' => $this->password_set_at !== null,
             'preferred_locale' => $this->preferred_locale,
             'roles' => $this->getRoleNames()->values(),
             'store' => $store === null ? null : [

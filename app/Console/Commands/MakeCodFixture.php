@@ -33,7 +33,7 @@ class MakeCodFixture extends Command
 
         $seller = User::firstOrCreate(
             ['email' => $this->option('seller')],
-            ['name' => 'COD Journey Seller', 'password' => 'password'],
+            ['name' => 'COD Journey Seller', 'password' => 'password', 'password_set_at' => now()],
         );
         $seller->forceFill(['email_verified_at' => now()])->save();
         $seller->assignRole('seller');

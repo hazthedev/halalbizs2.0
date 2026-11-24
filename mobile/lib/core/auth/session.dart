@@ -10,8 +10,8 @@ import '../push/push_service.dart';
 import 'token_store.dart';
 
 /// The signed-in user as served by `GET me` (and `POST auth/login`):
-/// `{id, name, email, phone, email_verified, preferred_locale, roles[],
-/// store{id,slug,name,status}|null, unread_notifications, coins}`
+/// `{id, name, email, phone, email_verified, password_set, preferred_locale,
+/// roles[], store{id,slug,name,status}|null, unread_notifications, coins}`
 /// (`UserResource`). Older keys are still read as fallbacks.
 class Profile {
   Profile(this.json);
@@ -28,6 +28,9 @@ class Profile {
   /// Loyalty coins are a count, not money.
   int get coins => asInt(json['coins'] ?? json['coins_balance']) ?? 0;
   bool get emailVerified => asBool(json['email_verified']) || json['email_verified_at'] != null;
+  /// False only for a Google sign-up that never chose a password (HB-G226);
+  /// absent (older server) = true, so no hint shows by mistake.
+  bool get passwordSet => json['password_set'] != false;
   List<String> get roles => asList(json['roles']).map((r) => '$r').toList();
 
   /// Staff may switch on the drafts preview (`can_preview_content`; absent = false).

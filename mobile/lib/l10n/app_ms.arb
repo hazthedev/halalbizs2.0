@@ -852,5 +852,6 @@
   "registerTermsLink": "Terma dan syarat",
   "registerPrivacyLink": "Dasar privasi",
   "registerConsentRequired": "Sila bersetuju dengan terma dan dasar privasi untuk mencipta akaun.",
-  "sellerBankPasswordHelp": "Menukar butiran bank memerlukan kata laluan semasa anda."
+  "sellerBankPasswordHelp": "Menukar butiran bank memerlukan kata laluan semasa anda.",
+  "sellerBankGoogleHint": "Anda mendaftar dengan Google dan belum menetapkan kata laluan. Gunakan Lupa kata laluan untuk menetapkannya, kemudian tukar butiran bank anda."
 }

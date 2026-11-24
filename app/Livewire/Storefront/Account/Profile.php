@@ -122,7 +122,7 @@ class Profile extends Component
             'current_password.current_password' => __('That doesn\'t match your current password — try again.'),
         ]);
 
-        auth()->user()->update(['password' => $this->password]);
+        auth()->user()->update(['password' => $this->password, 'password_set_at' => now()]);
 
         // A new password ends every mobile session; the phone logs in again.
         auth()->user()->revokeAppAccess();

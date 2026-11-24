@@ -59,11 +59,13 @@ Route::post('/preferences/currency', [PreferenceController::class, 'currency'])-
 Route::post('/newsletter', [NewsletterController::class, 'subscribe'])->middleware('throttle:10,1')->name('newsletter.subscribe');
 
 // ===== Auth =====
+// Not guest-only: a signed-in Google sign-up sets their first password here (HB-G226).
+Route::get('/forgot-password', Storefront\Auth\ForgotPassword::class)->name('password.request');
+Route::get('/reset-password/{token}', Storefront\Auth\ResetPassword::class)->name('password.reset');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', Storefront\Auth\Login::class)->name('login');
     Route::get('/register', Storefront\Auth\Register::class)->name('register');
-    Route::get('/forgot-password', Storefront\Auth\ForgotPassword::class)->name('password.request');
-    Route::get('/reset-password/{token}', Storefront\Auth\ResetPassword::class)->name('password.reset');
 
     // Branded entrances. Same components; `context` only reframes copy + landing
     // (App\Enums\AuthContext) and grants no privilege. Admin is login-only by

@@ -292,6 +292,13 @@
                 :hint="$errors->first('accountNumber') ? null : __('8–17 digits, no spaces or dashes.')"
             />
 
+            @if (auth()->user()->password_set_at === null)
+                <p class="rounded-[var(--radius-card)] border border-line bg-warn-tint px-4 py-3 text-[13px] text-warn">
+                    {{ __('You signed up with Google and have not set a password yet. Use Forgot password to set one, then change your bank details.') }}
+                    <a href="{{ route('password.request') }}" class="font-medium text-emerald underline hover:text-emerald-deep">{{ __('Forgot password') }}</a>
+                </p>
+            @endif
+
             <x-ui.input
                 :label="__('Current password')"
                 name="bankPassword"

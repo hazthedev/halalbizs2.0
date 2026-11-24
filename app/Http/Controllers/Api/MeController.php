@@ -59,7 +59,7 @@ class MeController extends Controller
 
         $user = $request->user();
         $device = $user->currentAccessToken()->name;
-        $user->update(['password' => $data['password']]);
+        $user->update(['password' => $data['password'], 'password_set_at' => now()]);
 
         // Every token dies, this one included (it may have been copied). The
         // device that changed the password continues on a fresh token.

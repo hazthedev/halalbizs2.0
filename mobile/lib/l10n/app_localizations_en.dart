@@ -2101,4 +2101,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sellerBankPasswordHelp =>
       'Changing bank details needs your current password.';
+
+  @override
+  String get sellerBankGoogleHint =>
+      'You signed up with Google and have not set a password yet. Use Forgot password to set one, then change your bank details.';
 }
