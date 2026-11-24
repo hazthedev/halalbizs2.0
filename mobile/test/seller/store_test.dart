@@ -166,4 +166,44 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('The holiday mode field must be true or false.'), findsOneWidget);
   });
+
+  testWidgets('a Google-only seller sees the set-a-password hint on the bank form and it opens Forgot password', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      ...sellerBaseRoutes(),
+      'GET me': (_, _) => {...fakeUser(storeStatus: 'approved'), 'password_set': false},
+      'GET seller/store': (_, _) => fakeStore(),
+      'GET seller/reviews': (_, _) => [],
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller/store');
+
+    expect(
+      find.text('You signed up with Google and have not set a password yet. Use Forgot password to set one, then change your bank details.'),
+      findsOneWidget,
+    );
+    final link = find.byKey(const Key('seller-store-forgot-password'));
+    await tester.ensureVisible(link);
+    await tester.pumpAndSettle();
+    await tester.tap(link);
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/forgot-password');
+  });
+
+  for (final passwordSet in [true, null]) {
+    testWidgets('a seller with a password (password_set: $passwordSet) never sees the Google hint', (tester) async {
+      usePhone(tester);
+      final api = FakeApi(routes: {
+        ...sellerBaseRoutes(),
+        'GET me': (_, _) => {...fakeUser(storeStatus: 'approved'), 'password_set': ?passwordSet},
+        'GET seller/store': (_, _) => fakeStore(),
+        'GET seller/reviews': (_, _) => [],
+      });
+      final h = Harness(api: api, token: 'tok');
+      await h.pump(tester, location: '/seller/store');
+
+      expect(find.byKey(const Key('seller-store-google-hint')), findsNothing);
+      expect(find.byKey(const Key('seller-store-forgot-password')), findsNothing);
+    });
+  }
 }

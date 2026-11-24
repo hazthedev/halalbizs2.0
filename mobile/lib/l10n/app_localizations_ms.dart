@@ -2096,4 +2096,8 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get sellerBankPasswordHelp =>
       'Menukar butiran bank memerlukan kata laluan semasa anda.';
+
+  @override
+  String get sellerBankGoogleHint =>
+      'Anda mendaftar dengan Google dan belum menetapkan kata laluan. Gunakan Lupa kata laluan untuk menetapkannya, kemudian tukar butiran bank anda.';
 }

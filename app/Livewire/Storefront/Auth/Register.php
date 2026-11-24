@@ -81,6 +81,7 @@ class Register extends Component
             'name' => $this->name,
             'email' => $this->email,
             'password' => $this->password,
+            'password_set_at' => now(),
             'phone' => $this->phone ?: null,
             'privacy_consented_at' => now(),
             'privacy_notice_version' => config('app.privacy_notice_version'),

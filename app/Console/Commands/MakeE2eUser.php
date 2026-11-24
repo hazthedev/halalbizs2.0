@@ -24,7 +24,7 @@ class MakeE2eUser extends Command
 
         $user = User::firstOrCreate(
             ['email' => $this->argument('email')],
-            ['name' => 'E2E User', 'password' => 'password'],
+            ['name' => 'E2E User', 'password' => 'password', 'password_set_at' => now()],
         );
 
         $user->forceFill(['email_verified_at' => now()])->save();

@@ -66,6 +66,7 @@ class ResetPassword extends Component
             function ($user) {
                 $user->forceFill([
                     'password' => $this->password,
+                    'password_set_at' => now(),
                     'remember_token' => Str::random(60),
                 ])->save();
 
@@ -89,6 +90,16 @@ class ResetPassword extends Component
             $this->addError('email', __($status));
 
             return;
+        }
+
+        // HB-G226: this page is open to signed-in users (the bank-form hint
+        // sends Google sign-ups here). A reset never signs anyone in; it signs
+        // this browser out, whoever it was, and starts a fresh guest session
+        // so the message below reaches the login page.
+        if (auth()->check()) {
+            auth()->logout();
+            session()->invalidate();
+            session()->regenerateToken();
         }
 
         session()->flash('status', __('Password updated — log in with your new password.'));
