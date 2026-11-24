@@ -491,15 +491,11 @@ class Profile extends Component
         ]);
 
         $user = auth()->user();
-        $deletion = app(AccountDeletionService::class);
-
-        if (($blocker = $deletion->blocker($user)) !== null) {
+        if (($blocker = app(AccountDeletionService::class)->deleteUnlessBlocked($user)) !== null) {
             $this->dispatch('toast', message: $blocker, type: 'error');
 
             return;
         }
-
-        $deletion->delete($user);
 
         Auth::logout();
         session()->invalidate();

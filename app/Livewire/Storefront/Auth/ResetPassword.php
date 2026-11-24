@@ -64,10 +64,15 @@ class ResetPassword extends Component
                 'token' => $this->token,
             ],
             function ($user) {
+                // HB-G235: a Google link on a never-verified account came from
+                // a Google email Google itself never verified (GoogleAuthController
+                // verifies the account whenever Google vouches). The reset just
+                // proved the inbox owner, so that link may be a squatter's: drop it.
                 $user->forceFill([
                     'password' => $this->password,
                     'password_set_at' => now(),
                     'remember_token' => Str::random(60),
+                    'google_id' => $user->email_verified_at === null ? null : $user->google_id,
                 ])->save();
 
                 // A reset means the old password may be compromised — drop every

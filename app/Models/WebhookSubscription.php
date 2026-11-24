@@ -42,36 +42,44 @@ class WebhookSubscription extends Model
      * bracketed IPv6 literal is checked as an IP, and a name that does not
      * resolve is unsafe: "nothing to reach" was the old excuse, but a resolver
      * hiccup at check time can be followed by a private answer at connect time.
+     * HB-G243: multicast and NAT64 (64:ff9b::/96) are refused too.
      *
      * Shared by SendWebhookJob (re-checked at SEND time, not just on write).
-     *
-     * Residual limitation (documented, not closed): the name is resolved here
-     * and again by the HTTP client, so a DNS-rebinding answer between the two
-     * is not caught. Closing it means pinning the checked IP for the request
-     * (curl CURLOPT_RESOLVE), an HTTP-client change out of scope for this fix.
      */
     public static function isUrlSafe(string $url): bool
+    {
+        return static::checkedIps($url) !== null;
+    }
+
+    /**
+     * The addresses the URL's host was checked against, or null when unsafe.
+     * SendWebhookJob pins the connection to exactly these (HB-G243), so a
+     * DNS-rebinding answer between check and connect is never used.
+     *
+     * @return list<string>|null
+     */
+    public static function checkedIps(string $url): ?array
     {
         $parts = parse_url($url);
         $scheme = $parts['scheme'] ?? null;
         $host = trim((string) ($parts['host'] ?? ''), '[]');
 
         if ($host === '') {
-            return false;
+            return null;
         }
 
         if ($scheme !== 'https' && ! ($scheme === 'http' && ! app()->environment('production'))) {
-            return false;
+            return null;
         }
 
         if (strcasecmp($host, 'localhost') === 0) {
-            return false;
+            return null;
         }
 
         $ips = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : app(HostResolver::class)->ips($host);
 
         if ($ips === []) {
-            return false;
+            return null;
         }
 
         foreach ($ips as $ip) {
@@ -79,10 +87,24 @@ class WebhookSubscription extends Model
             // (169.254.169.254 metadata), ::ffff:-mapped. GLOBAL_RANGE adds
             // 100.64/10 carrier NAT and the documentation ranges.
             if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE | FILTER_FLAG_GLOBAL_RANGE)) {
-                return false;
+                return null;
+            }
+
+            // The flags above let these through: multicast (224.0.0.0/4,
+            // ff00::/8), NAT64 64:ff9b::/96 and its local-use 64:ff9b:1::/48
+            // (RFC 8215), which reach any IPv4 address, private ones included,
+            // through a NAT64 gateway, and the old site-local fec0::/10.
+            $bin = inet_pton($ip);
+
+            if ((strlen($bin) === 4 && (ord($bin[0]) & 0xF0) === 0xE0)
+                || (strlen($bin) === 16 && ($bin[0] === "\xff"
+                    || ($bin[0] === "\xfe" && (ord($bin[1]) & 0xC0) === 0xC0)
+                    || str_starts_with($bin, substr(inet_pton('64:ff9b::'), 0, 12))
+                    || str_starts_with($bin, substr(inet_pton('64:ff9b:1::'), 0, 6))))) {
+                return null;
             }
         }
 
-        return true;
+        return $ips;
     }
 }

@@ -58,6 +58,18 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    /**
+     * The keep-one superadmin count as a LOCKING read (HB-G234): call it inside
+     * the transaction that removes or demotes a superadmin, so a second removal
+     * running at the same moment waits and then sees the new count.
+     * ponytail: is_superadmin has no index, so this locks the users rows it
+     * scans for the (short) transaction; index the column if that ever hurts.
+     */
+    public static function lockedSuperadminCount(): int
+    {
+        return static::query()->where('is_superadmin', true)->lockForUpdate()->count();
+    }
+
     public function addresses(): HasMany
     {
         return $this->hasMany(Address::class);

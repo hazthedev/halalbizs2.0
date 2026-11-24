@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\SubOrderStatus;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 /**
  * PDPA "delete my account" (docs/09 §F) = anonymize + soft delete, shared by
@@ -18,6 +19,13 @@ class AccountDeletionService
      */
     public function blocker(User $user): ?string
     {
+        // HB-G237: the last superadmin is the only one who can grant access;
+        // deleting them is the Staff screen's lockout by another door.
+        // Locking read: run it through deleteUnlessBlocked() (HB-G234).
+        if ($user->is_superadmin && User::lockedSuperadminCount() <= 1) {
+            return __('You are the last superadmin — make another admin a superadmin before deleting your account.');
+        }
+
         // Sellers must settle their ledger first — a non-zero balance is
         // either money we owe them or commission they owe us.
         if ($user->store !== null && ($user->store->availableBalanceSen() !== 0 || $user->store->pendingBalanceSen() !== 0)) {
@@ -40,9 +48,26 @@ class AccountDeletionService
     }
 
     /**
+     * blocker() and delete() in one transaction, so the superadmin count it
+     * checked cannot change before the delete. Null when deleted, else why not.
+     */
+    public function deleteUnlessBlocked(User $user): ?string
+    {
+        return DB::transaction(function () use ($user) {
+            $blocker = $this->blocker($user);
+
+            if ($blocker === null) {
+                $this->delete($user);
+            }
+
+            return $blocker;
+        });
+    }
+
+    /**
      * Anonymize, then soft delete: the row stays so order history keeps its
      * user_id, but every personal identifier is gone. Mobile API tokens and
-     * push tokens go with it, whichever surface asked. Call blocker() first.
+     * push tokens go with it, whichever surface asked. Callers go through deleteUnlessBlocked().
      */
     public function delete(User $user): void
     {

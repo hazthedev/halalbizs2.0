@@ -4,7 +4,9 @@ namespace App\Livewire\Storefront\Help;
 
 use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
+use App\Support\SendLimit;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -61,25 +63,31 @@ class Tickets extends Component
         // SEC-38: new tickets per user per hour (config/limits.php).
         $key = 'support-ticket:'.auth()->id();
 
-        if (RateLimiter::tooManyAttempts($key, config('limits.support_tickets_per_hour'))) {
+        // HB-G240: counted only once the ticket and its first reply are saved.
+        $ticket = null;
+        $created = SendLimit::attempt($key, config('limits.support_tickets_per_hour'), 3600, function () use (&$ticket) {
+            $ticket = DB::transaction(function () {
+                $ticket = auth()->user()->tickets()->create([
+                    'subject' => strip_tags(trim($this->subject)),
+                    'status' => TicketStatus::Open,
+                    'priority' => TicketPriority::Normal,
+                ]);
+
+                $ticket->replies()->create([
+                    'author_type' => 'user',
+                    'author_id' => auth()->id(),
+                    'body' => strip_tags(trim($this->body)),
+                ]);
+
+                return $ticket;
+            });
+        });
+
+        if (! $created) {
             $this->addError('subject', __('Too many attempts — try again in :minutes minutes.', ['minutes' => (int) ceil(RateLimiter::availableIn($key) / 60)]));
 
             return;
         }
-
-        RateLimiter::hit($key, 3600);
-
-        $ticket = auth()->user()->tickets()->create([
-            'subject' => strip_tags(trim($this->subject)),
-            'status' => TicketStatus::Open,
-            'priority' => TicketPriority::Normal,
-        ]);
-
-        $ticket->replies()->create([
-            'author_type' => 'user',
-            'author_id' => auth()->id(),
-            'body' => strip_tags(trim($this->body)),
-        ]);
 
         $this->reset(['showForm', 'subject', 'body']);
         $this->selectedId = $ticket->id;
