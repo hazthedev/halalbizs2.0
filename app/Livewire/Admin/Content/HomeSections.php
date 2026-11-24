@@ -11,6 +11,7 @@ use App\Services\ContentDrafts;
 use App\Support\ContentLocales;
 use App\Support\DisplayTime;
 use App\Support\JsonSearch;
+use App\Support\UploadName;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -382,7 +383,7 @@ class HomeSections extends Component
 
         foreach ($section->type === 'picture_tiles' ? $uploads : [] as $slot => $upload) {
             $draft->addMedia($upload->getRealPath())
-                ->usingFileName($upload->getClientOriginalName())
+                ->usingFileName(UploadName::safe($upload))
                 ->toMediaCollection('tile_'.$slot);
         }
 

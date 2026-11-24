@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\HostResolver;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,28 +37,26 @@ class WebhookSubscription extends Model
 
     /**
      * M5 SSRF guard: reject a URL unless it is https (http is allowed outside
-     * production, for local/testing) AND its hostname resolves to a public
-     * IP — not loopback/private/link-local (which also covers the
-     * 169.254.169.254 cloud metadata address) or unresolvable/reserved.
+     * production, for local/testing) AND every address its hostname resolves
+     * to is public. SEC-46: IPv4 and IPv6 (A + AAAA through HostResolver), a
+     * bracketed IPv6 literal is checked as an IP, and a name that does not
+     * resolve is unsafe: "nothing to reach" was the old excuse, but a resolver
+     * hiccup at check time can be followed by a private answer at connect time.
      *
-     * Shared by SendWebhookJob (re-checked at SEND time, not just on write —
-     * see below) and intended for a future subscription create-form to reuse.
+     * Shared by SendWebhookJob (re-checked at SEND time, not just on write).
      *
-     * Residual limitation (documented, not closed): this resolves the
-     * hostname at call time, so a genuine DNS-rebinding attack — where the
-     * name resolves safely right now and is re-pointed at a private IP a
-     * moment later, between this check and the actual HTTP connect — is not
-     * caught. Closing that fully would require binding the validated IP
-     * directly for the request, which needs an HTTP-client-level change out
-     * of scope for this fix.
+     * Residual limitation (documented, not closed): the name is resolved here
+     * and again by the HTTP client, so a DNS-rebinding answer between the two
+     * is not caught. Closing it means pinning the checked IP for the request
+     * (curl CURLOPT_RESOLVE), an HTTP-client change out of scope for this fix.
      */
     public static function isUrlSafe(string $url): bool
     {
         $parts = parse_url($url);
         $scheme = $parts['scheme'] ?? null;
-        $host = $parts['host'] ?? null;
+        $host = trim((string) ($parts['host'] ?? ''), '[]');
 
-        if (blank($host)) {
+        if ($host === '') {
             return false;
         }
 
@@ -69,23 +68,17 @@ class WebhookSubscription extends Model
             return false;
         }
 
-        // Literal IP in the URL needs no DNS; otherwise resolve the hostname.
-        if (filter_var($host, FILTER_VALIDATE_IP)) {
-            $ips = [$host];
-        } else {
-            $ips = gethostbynamel($host);
+        $ips = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : app(HostResolver::class)->ips($host);
 
-            // Unresolvable is NOT treated as unsafe: the real HTTP call can't
-            // reach anything either in that case (no route to nowhere), and
-            // treating it as unsafe would also wrongly block legitimate hosts
-            // during any transient resolver hiccup.
-            if ($ips === false || $ips === []) {
-                return true;
-            }
+        if ($ips === []) {
+            return false;
         }
 
         foreach ($ips as $ip) {
-            if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            // NO_PRIV + NO_RES: RFC1918, fc00::/7, loopback, link-local
+            // (169.254.169.254 metadata), ::ffff:-mapped. GLOBAL_RANGE adds
+            // 100.64/10 carrier NAT and the documentation ranges.
+            if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE | FILTER_FLAG_GLOBAL_RANGE)) {
                 return false;
             }
         }

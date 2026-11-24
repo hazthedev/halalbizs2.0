@@ -2968,5 +2968,6 @@
     "Your SSM or company registration number.": "Nombor SSM atau nombor pendaftaran syarikat anda.",
     "Optional. Buyers see only the details you fill, on your shop page under About. Leave out anything you do not want public, such as a home address.": "Pilihan. Pembeli hanya melihat butiran yang anda isi, di halaman kedai anda di bawah Perihal. Jangan isi apa-apa yang anda tidak mahu didedahkan, seperti alamat rumah.",
     "Use digits, spaces and dashes only, with an optional + at the start.": "Gunakan digit, ruang dan sengkang sahaja, dengan + pilihan di hadapan.",
-    "Signing up with Google as :email.": "Mendaftar dengan Google sebagai :email."
+    "Signing up with Google as :email.": "Mendaftar dengan Google sebagai :email.",
+    "attribute": "atribut"
 }
