@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:halalbizs/core/api/api_client.dart';
 
 import '../helpers.dart';
 import 'seller_helpers.dart';
@@ -100,5 +101,69 @@ void main() {
     }
     expect(tos, ['seller-certificates', 'seller-vouchers']);
     expect(h.browser.opened.length, 2);
+  });
+
+  testWidgets('a bank change asks for the current password, shows the refusal and keeps every edit', (tester) async {
+    usePhone(tester);
+    final sent = <Map>[];
+    final api = FakeApi(routes: {
+      ...sellerBaseRoutes(),
+      'GET seller/store': (_, _) => fakeStore(),
+      'GET seller/reviews': (_, _) => [],
+      'PATCH seller/store': (_, body) {
+        sent.add(body! as Map);
+        if (sent.last['current_password'] != 'right-pass') {
+          return ApiException('validation_failed', 'The given data was invalid.', status: 422, fields: {
+            'current_password': ['That doesn\'t match your current password — try again.'],
+          });
+        }
+        return fakeStore();
+      },
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller/store');
+
+    final password = find.byKey(const Key('seller-store-current-password'));
+    expect(password, findsNothing); // no bank change, no password asked
+
+    await tester.enterText(find.byKey(const Key('seller-store-description')), 'New description');
+    await tester.enterText(find.byKey(const Key('seller-store-account-number')), '123456789012');
+    await tester.pumpAndSettle();
+    expect(password, findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('seller-store-save')));
+    await tester.pumpAndSettle();
+    expect(sent.single.containsKey('current_password'), isFalse); // blank = not sent; the server decides
+    expect(find.text('That doesn\'t match your current password — try again.'), findsOneWidget);
+    expect(find.text('New description'), findsOneWidget);
+    expect(find.text('123456789012'), findsOneWidget);
+
+    await tester.ensureVisible(password);
+    await tester.pumpAndSettle();
+    await tester.enterText(password, 'right-pass');
+    await tester.tap(find.byKey(const Key('seller-store-save')));
+    await tester.pumpAndSettle();
+    expect(sent.last['current_password'], 'right-pass');
+    expect(sent.last['description'], 'New description');
+    expect(sent.last['bank'], {'bank_name': 'Bank Islam', 'account_name': 'Goodwin Ltd', 'account_number': '123456789012'});
+    expect(find.text('Store saved'), findsOneWidget);
+    expect(password, findsNothing); // saved: number cleared, password gone
+  });
+
+  testWidgets('a store 422 with no field on screen is still shown', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      ...sellerBaseRoutes(),
+      'GET seller/store': (_, _) => fakeStore(),
+      'GET seller/reviews': (_, _) => [],
+      'PATCH seller/store': (_, _) => ApiException('validation_failed', 'The given data was invalid.', status: 422, fields: {
+            'holiday_mode': ['The holiday mode field must be true or false.'],
+          }),
+    });
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/seller/store');
+    await tester.tap(find.byKey(const Key('seller-store-save')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('The holiday mode field must be true or false.'), findsOneWidget);
   });
 }

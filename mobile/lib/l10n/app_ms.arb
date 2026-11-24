@@ -847,5 +847,10 @@
   "liveEndedTitle": "Siaran langsung ini telah tamat",
   "liveEndedBody": "Tiada siaran sekarang. Cuba lagi nanti atau layari kedai.",
   "liveOnPlatform": "Siaran ini di {platform}",
-  "liveWatchOn": "Tonton di {platform}"
+  "liveWatchOn": "Tonton di {platform}",
+  "registerConsent": "Saya bersetuju dengan terma dan syarat dan bersetuju data peribadi saya diproses di bawah dasar privasi.",
+  "registerTermsLink": "Terma dan syarat",
+  "registerPrivacyLink": "Dasar privasi",
+  "registerConsentRequired": "Sila bersetuju dengan terma dan dasar privasi untuk mencipta akaun.",
+  "sellerBankPasswordHelp": "Menukar butiran bank memerlukan kata laluan semasa anda."
 }

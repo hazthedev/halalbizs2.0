@@ -158,4 +158,89 @@ void main() {
     expect(tester.getRect(find.byKey(const Key('login-error'))).bottom,
         lessThanOrEqualTo(tester.getRect(find.byKey(const Key('login-email'))).top));
   });
+
+  Future<void> fillRegister(WidgetTester tester) async {
+    await tester.enterText(find.byKey(const Key('register-name')), 'New Buyer');
+    await tester.enterText(find.byKey(const Key('register-email')), 'new@halalbizs.test');
+    await tester.enterText(find.byKey(const Key('register-password')), 'password123');
+    await tester.enterText(find.byKey(const Key('register-confirm')), 'password123');
+  }
+
+  Future<void> tapRegister(WidgetTester tester) async {
+    await tester.ensureVisible(find.byKey(const Key('register-submit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('register-submit')));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('sign-up is blocked until the consent box is ticked, then sends terms: true', (tester) async {
+    usePhone(tester);
+    Object? sent;
+    final api = FakeApi(routes: {
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'POST auth/register': (_, body) {
+        sent = body;
+        return {'token': 'tok', 'user': fakeUser()};
+      },
+    });
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/register');
+    await fillRegister(tester);
+
+    final tick = find.byKey(const Key('register-terms'));
+    expect(tester.widget<Checkbox>(find.descendant(of: tick, matching: find.byType(Checkbox))).value, isFalse);
+    await tapRegister(tester);
+    expect(find.text('Please agree to the terms and privacy policy to create an account.'), findsOneWidget);
+    expect(h.api.calls.where((c) => c.startsWith('POST auth/register')), isEmpty);
+
+    await tester.tap(tick);
+    await tester.pump();
+    await tapRegister(tester);
+    expect((sent! as Map)['terms'], isTrue);
+    expect(h.container.read(sessionProvider), isA<SignedIn>());
+  });
+
+  testWidgets('a sign-up 422 with no field on screen is still shown', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'POST auth/register': (_, _) => ApiException('validation_failed', 'The given data was invalid.', status: 422, fields: {
+            'terms': ['Sila setuju dengan terma.'],
+            'device_name': ['The device name field is required.'],
+          }),
+    });
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/register');
+    await fillRegister(tester);
+    await tester.tap(find.byKey(const Key('register-terms')));
+    await tester.pump();
+    await tapRegister(tester);
+    expect(find.text('Sila setuju dengan terma.'), findsWidgets); // under the tick
+    expect(find.textContaining('The device name field is required.'), findsOneWidget); // snackbar
+    expect(h.container.read(sessionProvider), isA<SignedOut>());
+  });
+
+  testWidgets('the consent links open the terms and privacy pages', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: {
+      'GET products': (_, _) => [],
+      'GET categories': (_, _) => [],
+      'GET pages/terms': (_, _) => {'slug': 'terms', 'title': 'Terms & conditions', 'body': '<p>Terms body</p>'},
+      'GET pages/privacy': (_, _) => {'slug': 'privacy', 'title': 'Privacy policy', 'body': '<p>Privacy body</p>'},
+    });
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/register');
+    for (final slug in ['terms', 'privacy']) {
+      await tester.ensureVisible(find.byKey(Key('register-$slug-link')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(Key('register-$slug-link')));
+      await tester.pumpAndSettle();
+      expect(h.router.state.uri.path, '/page/$slug');
+      h.router.pop();
+      await tester.pumpAndSettle();
+      expect(h.router.state.uri.path, '/register');
+    }
+  });
 }

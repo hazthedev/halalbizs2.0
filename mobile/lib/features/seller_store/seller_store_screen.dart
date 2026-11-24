@@ -28,6 +28,9 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
   final _freeAbove = TextEditingController();
   final _accountName = TextEditingController();
   final _accountNumber = TextEditingController();
+  /// Asked only while a new account number is typed (a bank change needs it,
+  /// PATCH `current_password`). Not part of [_snapshot]: it is not an edit.
+  final _currentPassword = TextEditingController();
   String? _state;
   String? _bankName;
   bool _holiday = false;
@@ -55,7 +58,7 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
 
   @override
   void dispose() {
-    for (final c in [_description, _flatFee, _freeAbove, _accountName, _accountNumber]) {
+    for (final c in [_description, _flatFee, _freeAbove, _accountName, _accountNumber, _currentPassword]) {
       c.dispose();
     }
     super.dispose();
@@ -98,6 +101,7 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
     _bankName = kMalaysianBanks.contains(s.bankName) ? s.bankName : null;
     _accountName.text = s.bankAccountName ?? '';
     _accountNumber.clear();
+    _currentPassword.clear();
     _saved = _snapshot();
   }
 
@@ -147,6 +151,9 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
       if (_bankName == null) local['bank.bank_name'] = l.fieldRequired;
       if (_accountName.text.trim().isEmpty) local['bank.account_name'] = l.fieldRequired;
       body['bank'] = {'bank_name': _bankName, 'account_name': _accountName.text.trim(), 'account_number': number};
+      // Blank = not sent: resending the saved details needs no password, and
+      // the server (Store::bankDetailsDiffer) is the one that knows.
+      if (_currentPassword.text.isNotEmpty) body['current_password'] = _currentPassword.text;
     } else if (_bankName != (kMalaysianBanks.contains(_store?.bankName) ? _store?.bankName : null) ||
         _accountName.text.trim() != (_store?.bankAccountName ?? '')) {
       // Bank details only save with the full number (the server holds it masked).
@@ -177,7 +184,12 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.isValidation) {
+        // The form keeps every edit (nothing is re-populated on a refusal);
+        // a message with no field on screen still gets shown.
         setState(() => _remote = e);
+        if (!fieldsCovered(e, const ['description', 'state', 'shipping_flat_fee_sen', 'free_shipping_over_sen', 'bank', 'current_password'])) {
+          showSellerError(context, e);
+        }
       } else {
         showSellerError(context, e);
       }
@@ -378,6 +390,21 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
                 keyboardType: TextInputType.number,
                 autocorrect: false,
                 error: _err('bank.account_number'),
+              ),
+              ListenableBuilder(
+                listenable: _accountNumber,
+                builder: (context, _) => _accountNumber.text.trim().isEmpty
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(top: SoukSpace.s4),
+                        child: SoukPasswordField(
+                          fieldKey: const Key('seller-store-current-password'),
+                          label: l.accountCurrentPassword,
+                          controller: _currentPassword,
+                          help: l.sellerBankPasswordHelp,
+                          error: _err('current_password'),
+                        ),
+                      ),
               ),
               const SizedBox(height: SoukSpace.s8),
               SoukSectionHeading(l.sellerReviews),

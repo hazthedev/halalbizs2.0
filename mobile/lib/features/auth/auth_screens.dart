@@ -223,6 +223,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _busy = false;
+  bool _terms = false;
+  String? _termsError;
   Object? _error;
 
   @override
@@ -235,7 +237,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_form.currentState!.validate()) return;
+    final valid = _form.currentState!.validate();
+    setState(() => _termsError = _terms ? null : context.l10n.registerConsentRequired);
+    if (!valid || !_terms) return;
     setState(() {
       _busy = true;
       _error = null;
@@ -247,6 +251,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _email.text.trim(),
             password: _password.text,
             passwordConfirmation: _confirm.text,
+            terms: _terms,
           );
       TextInput.finishAutofillContext();
       if (!mounted) return;
@@ -255,7 +260,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
-      if (e is! ApiException || !e.isValidation) showApiError(context, e);
+      // A 422 on a field the form does not show (device_name, phone) still
+      // needs a message: never swallow a refusal.
+      if (!fieldsCovered(e, const ['name', 'email', 'password', 'terms'])) showApiError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -264,6 +271,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final termsError = _termsError ?? fieldError(_error, 'terms');
     return _AuthFrame(
       title: l.createAccount,
       subtitle: l.createAccountSubtitle,
@@ -318,7 +326,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               onSubmitted: (_) => _busy ? null : _submit(),
               validator: (v) => v != _password.text ? l.passwordMismatch : null,
             ),
-            const SizedBox(height: SoukSpace.s5),
+            const SizedBox(height: SoukSpace.s4),
+            // Consent (same tick as web register): unticked by default.
+            CheckboxListTile(
+              key: const Key('register-terms'),
+              value: _terms,
+              onChanged: _busy ? null : (v) => setState(() => _terms = v ?? false),
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+              activeColor: SoukColors.emerald,
+              title: Text(l.registerConsent, style: SoukText.meta),
+              subtitle: termsError == null
+                  ? null
+                  : Text(termsError, key: const Key('register-terms-error'), style: SoukText.meta.copyWith(color: SoukColors.danger)),
+            ),
+            Wrap(spacing: SoukSpace.s2, children: [
+              TextButton(key: const Key('register-terms-link'), onPressed: () => context.push('/page/terms'), child: Text(l.registerTermsLink)),
+              TextButton(key: const Key('register-privacy-link'), onPressed: () => context.push('/page/privacy'), child: Text(l.registerPrivacyLink)),
+            ]),
+            const SizedBox(height: SoukSpace.s4),
             SoukButton(
               key: const Key('register-submit'),
               label: l.register,

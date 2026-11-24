@@ -3799,6 +3799,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Watch on {platform}'**
   String liveWatchOn(String platform);
+
+  /// No description provided for @registerConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree to the terms & conditions and consent to my personal data being processed under the privacy policy.'**
+  String get registerConsent;
+
+  /// No description provided for @registerTermsLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & conditions'**
+  String get registerTermsLink;
+
+  /// No description provided for @registerPrivacyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get registerPrivacyLink;
+
+  /// No description provided for @registerConsentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please agree to the terms and privacy policy to create an account.'**
+  String get registerConsentRequired;
+
+  /// No description provided for @sellerBankPasswordHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing bank details needs your current password.'**
+  String get sellerBankPasswordHelp;
 }
 
 class _AppLocalizationsDelegate

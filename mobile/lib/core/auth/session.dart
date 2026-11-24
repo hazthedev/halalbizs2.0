@@ -150,18 +150,21 @@ class SessionController extends Notifier<SessionState> {
     await _signIn(data);
   }
 
-  /// `POST auth/register` → token (+ user).
+  /// `POST auth/register` → token (+ user). [terms] = the consent tick; the
+  /// API refuses a sign-up without it (`terms: accepted`).
   Future<void> register({
     required String name,
     required String email,
     required String password,
     required String passwordConfirmation,
+    required bool terms,
   }) async {
     final data = asMap(await _api.post('auth/register', body: {
       'name': name,
       'email': email,
       'password': password,
       'password_confirmation': passwordConfirmation,
+      'terms': terms,
       'device_name': await _tokens.deviceName(),
     }));
     await _signIn(data);
