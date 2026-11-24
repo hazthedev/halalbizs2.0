@@ -16,7 +16,12 @@ use App\Services\SubOrderStatusService;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Http;
 
-beforeEach(fn () => $this->seed(RoleSeeder::class));
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+    // No real DNS (SEC-46): Herd answers *.test with 127.0.0.1, which the
+    // webhook guard rightly refuses, so these hosts get a public answer here.
+    fakeHostResolver(['hooks.test' => ['93.184.215.14']]);
+});
 
 // ── Read API ────────────────────────────────────────────────────────────────
 

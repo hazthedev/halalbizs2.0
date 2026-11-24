@@ -246,6 +246,7 @@
                                 </div>
                             @endforeach
                         </div>
+                        @error('attributeValueIds.*')<p class="mt-1.5 text-[13px] text-danger">{{ $message }}</p>@enderror
                     </fieldset>
                 @endif
             </div>

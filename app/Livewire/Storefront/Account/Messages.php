@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Product;
 use App\Models\Store;
 use App\Services\ChatService;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -95,6 +96,17 @@ class Messages extends Component
                 'body.max' => __('Messages can be up to 2,000 characters.'),
             ],
         );
+
+        // SEC-38: per user, per conversation (config/limits.php).
+        $key = 'chat-send:'.auth()->id().':'.$conversation->id;
+
+        if (RateLimiter::tooManyAttempts($key, config('limits.chat_messages_per_minute'))) {
+            $this->addError('body', __('Too many requests. Try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($key)]));
+
+            return;
+        }
+
+        RateLimiter::hit($key, 60);
 
         // Context chip only ever points at a LIVE product of THIS store, as the
         // app API does: contextProductId is client-mutable (HB-G121).

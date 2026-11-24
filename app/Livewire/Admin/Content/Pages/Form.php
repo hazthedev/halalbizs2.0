@@ -7,6 +7,7 @@ use App\Models\Page;
 use App\Services\ContentDrafts;
 use App\Support\ContentLocales;
 use App\Support\HtmlSanitizer;
+use App\Support\UploadName;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -114,7 +115,7 @@ class Form extends Component
 
         if ($this->shareImage !== null) {
             $draft->addMedia($this->shareImage->getRealPath())
-                ->usingFileName($this->shareImage->getClientOriginalName())
+                ->usingFileName(UploadName::safe($this->shareImage))
                 ->toMediaCollection('share_image');
         }
 

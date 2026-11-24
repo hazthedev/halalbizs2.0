@@ -5,6 +5,7 @@ namespace App\Livewire\Storefront\Help;
 use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -56,6 +57,17 @@ class Tickets extends Component
             'subject' => __('subject'),
             'body' => __('message'),
         ]);
+
+        // SEC-38: new tickets per user per hour (config/limits.php).
+        $key = 'support-ticket:'.auth()->id();
+
+        if (RateLimiter::tooManyAttempts($key, config('limits.support_tickets_per_hour'))) {
+            $this->addError('subject', __('Too many attempts — try again in :minutes minutes.', ['minutes' => (int) ceil(RateLimiter::availableIn($key) / 60)]));
+
+            return;
+        }
+
+        RateLimiter::hit($key, 3600);
 
         $ticket = auth()->user()->tickets()->create([
             'subject' => strip_tags(trim($this->subject)),

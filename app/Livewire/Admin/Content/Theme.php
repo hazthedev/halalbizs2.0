@@ -8,6 +8,7 @@ use App\Services\ContentDrafts;
 use App\Settings\ThemeSettings;
 use App\Support\DisplayTime;
 use App\Support\ImageShape;
+use App\Support\UploadName;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -97,7 +98,7 @@ class Theme extends Component
         if ($this->heroImage !== null) {
             // singleFile collection — replaces the previous hero draft; the live one stays until publish.
             $draft->addMedia($this->heroImage->getRealPath())
-                ->usingFileName($this->heroImage->getClientOriginalName())
+                ->usingFileName(UploadName::safe($this->heroImage))
                 ->toMediaCollection('image');
 
             $this->heroImage = null;

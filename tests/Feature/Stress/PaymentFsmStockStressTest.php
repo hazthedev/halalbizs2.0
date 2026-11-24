@@ -210,6 +210,7 @@ test('H3b duplicate OrderPaid does not duplicate webhook deliveries', function (
     $order->forceFill(['einvoice_requested' => true])->save();
 
     $url = 'https://hook.stress.test/order-paid';
+    fakeHostResolver(['hook.stress.test' => ['93.184.215.14']]); // no real DNS (SEC-46)
     WebhookSubscription::create([
         'store_id' => null,               // platform-level subscription
         'url' => $url,

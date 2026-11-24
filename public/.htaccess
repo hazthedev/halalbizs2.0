@@ -12,6 +12,21 @@
 
     RewriteEngine On
 
+    # HB-G178: www is not a store. routes/web.php's {store:slug} subdomain
+    # route would take "www" as a slug and 404, so send it to the bare host
+    # first (one hop, http or https). Query string carries over by default.
+    RewriteCond %{HTTP_HOST} ^www\.halalbizs\.com(:\d+)?$ [NC]
+    RewriteRule ^ https://halalbizs.com%{REQUEST_URI} [L,R=301]
+
+    # ENV-11 / HB-G098: plain http on the live bare host goes to https. Host
+    # guard keeps local (*.test) and the testing copy untouched. TLS ends in
+    # LiteSpeed itself today (HTTPS=on); the X-Forwarded-Proto guard stops a
+    # loop if a TLS proxy is ever put in front.
+    RewriteCond %{HTTP_HOST} ^halalbizs\.com(:\d+)?$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https [NC]
+    RewriteRule ^ https://halalbizs.com%{REQUEST_URI} [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

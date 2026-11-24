@@ -6,6 +6,7 @@ use App\Livewire\Admin\Finance\Commission;
 use App\Models\Attribute;
 use App\Models\Category;
 use App\Support\ContentLocales;
+use App\Support\UploadName;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -162,7 +163,7 @@ class Categories extends Component
 
         if ($this->image !== null) {
             $category->addMedia($this->image->getRealPath())
-                ->usingFileName($this->image->getClientOriginalName())
+                ->usingFileName(UploadName::safe($this->image))
                 ->toMediaCollection('image');
         }
 

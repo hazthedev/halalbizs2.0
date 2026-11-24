@@ -27,7 +27,9 @@ use Illuminate\Support\Facades\Route;
 // domain can be resolved (AL-C10) — registering `Route::domain('{store:slug}.')`
 // with an empty base would be a broken/ambiguous host constraint.
 if (config('app.store_subdomain_base')) {
-    Route::domain('{store:slug}.'.config('app.store_subdomain_base'))->group(function () {
+    // HB-G178: "www" is never a store (a reserved slug), so www.<base> falls
+    // through to the normal site; live also 301s it in public/.htaccess.
+    Route::domain('{store:slug}.'.config('app.store_subdomain_base'))->where(['store' => '(?!www\.)[^.]+'])->group(function () {
         Route::get('/', Storefront\StorePage::class)->name('store.subdomain');
     });
 }

@@ -73,7 +73,23 @@ class SendWebhookJob implements ShouldQueue
             // logical dedupe key when we have one, else one id per job
             // instance via the queued constructor property.
             'X-Webhook-Id' => $this->idempotencyKey ?? $this->fallbackDeliveryId,
-        ])->timeout(10)->withBody($body, 'application/json')->post($this->url);
+        ])->timeout(10)->withoutRedirecting()->withBody($body, 'application/json')->post($this->url);
+
+        // SEC-46: a redirect is never followed: its target skipped the check
+        // above, so a public host could bounce us to a private one. Not
+        // delivered either, and not transient, so no retries.
+        if ($response->redirect()) {
+            Log::error('Webhook delivery refused — the receiver answered with a redirect.', [
+                'subscription_id' => $this->subscriptionId,
+                'event' => $this->event,
+                'url' => $this->url,
+                'status' => $response->status(),
+            ]);
+
+            $this->fail(new \RuntimeException('Webhook receiver answered with a redirect.'));
+
+            return;
+        }
 
         // Non-2xx throws, so the queue's tries/backoff actually retries it —
         // previously a failing endpoint returned "success" from the job's
