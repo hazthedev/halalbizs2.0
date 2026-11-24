@@ -12,6 +12,7 @@ use App\Livewire\Admin\System\Staff;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
@@ -129,6 +130,98 @@ test('the last superadmin cannot have their admin role removed either', function
 
     expect($other->fresh()->hasRole('admin'))->toBeTrue()
         ->and($other->fresh()->is_superadmin)->toBeTrue();
+});
+
+test('a non-superadmin cannot remove a superadmin (HB-DEC-1123d)', function () {
+    // Same rule as promoting one: only a superadmin may take superadmin
+    // access away, even when more than one superadmin exists.
+    superadmin();
+    $target = superadmin();
+    $admin = scopedAdmin(['settings.manage']);
+
+    Livewire::actingAs($admin)->test(Staff::class)->call('removeAdmin', $target->id);
+
+    expect($target->fresh()->hasRole('admin'))->toBeTrue()
+        ->and($target->fresh()->is_superadmin)->toBeTrue();
+});
+
+test('a superadmin can remove another superadmin while one remains', function () {
+    $super = superadmin();
+    $target = superadmin();
+
+    Livewire::actingAs($super)->test(Staff::class)->call('removeAdmin', $target->id);
+
+    expect($target->fresh()->hasRole('admin'))->toBeFalse()
+        ->and($target->fresh()->is_superadmin)->toBeFalse()
+        ->and($super->fresh()->is_superadmin)->toBeTrue();
+});
+
+// ── Staff audit trail (HB-G036) ────────────────────────────────────────────
+
+test('every staff action writes an audit line with causer, subject and old/new access', function () {
+    $super = superadmin();
+
+    Livewire::actingAs($super)->test(Staff::class)
+        ->set('inviteName', 'New Staff')
+        ->set('inviteEmail', 'new-staff@example.com')
+        ->set('invitePermissions', ['cms.manage'])
+        ->call('invite');
+    $staff = User::where('email', 'new-staff@example.com')->sole();
+
+    Livewire::actingAs($super)->test(Staff::class)
+        ->call('startEditPermissions', $staff->id)
+        ->set('editPermissions', ['cms.manage', 'products.moderate'])
+        ->call('savePermissions');
+    Livewire::actingAs($super)->test(Staff::class)->call('toggleSuperadmin', $staff->id);
+    Livewire::actingAs($super)->test(Staff::class)->call('toggleSuperadmin', $staff->id);
+    Livewire::actingAs($super)->test(Staff::class)->call('removeAdmin', $staff->id);
+
+    $lines = Activity::query()->where('subject_type', $staff->getMorphClass())
+        ->where('subject_id', $staff->id)->orderBy('id')->get();
+
+    expect($lines->pluck('description')->all())->toBe([
+        'admin invited',
+        'admin permissions changed',
+        'superadmin granted',
+        'superadmin removed',
+        'admin removed',
+    ])
+        ->and($lines->pluck('causer_id')->unique()->all())->toBe([$super->id])
+        ->and($lines[0]->properties['attributes'])->toBe(['permissions' => ['cms.manage']])
+        ->and($lines[1]->properties['old'])->toBe(['permissions' => ['cms.manage']])
+        ->and($lines[1]->properties['attributes'])->toBe(['permissions' => ['cms.manage', 'products.moderate']])
+        ->and($lines[2]->properties->all())->toBe(['old' => ['is_superadmin' => false], 'attributes' => ['is_superadmin' => true]])
+        ->and($lines[3]->properties->all())->toBe(['old' => ['is_superadmin' => true], 'attributes' => ['is_superadmin' => false]])
+        ->and($lines[4]->properties['old'])->toBe(['permissions' => ['cms.manage', 'products.moderate'], 'is_superadmin' => false]);
+});
+
+test('staff audit lines render in the audit log screen with their old to new diff', function () {
+    $super = superadmin();
+    $staff = scopedAdmin(['cms.manage']);
+
+    Livewire::actingAs($super)->test(Staff::class)
+        ->call('startEditPermissions', $staff->id)
+        ->set('editPermissions', ['cms.manage', 'products.moderate'])
+        ->call('savePermissions');
+    Livewire::actingAs($super)->test(Staff::class)->call('toggleSuperadmin', $staff->id);
+
+    Livewire::actingAs($super)->test(\App\Livewire\Admin\System\AuditLog::class)
+        ->assertOk()
+        ->assertSee('superadmin granted')
+        ->assertSee('is_superadmin:')
+        ->assertSee('permissions:')
+        ->assertSee('["cms.manage","products.moderate"]');
+});
+
+test('a refused staff action writes no audit line', function () {
+    $target = superadmin();
+    superadmin();
+    $admin = scopedAdmin(['settings.manage']);
+
+    Livewire::actingAs($admin)->test(Staff::class)->call('removeAdmin', $target->id);
+    Livewire::actingAs($admin)->test(Staff::class)->call('toggleSuperadmin', $target->id);
+
+    expect(Activity::query()->where('subject_id', $target->id)->exists())->toBeFalse();
 });
 
 // ── Dashboard money is gated in the view, not the route ────────────────────
