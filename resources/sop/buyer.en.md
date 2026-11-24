@@ -113,6 +113,7 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 4. Follow **Return status**. The seller has 48 hours to answer. If the seller accepts, ship the item back. If the seller disputes, or does not answer in time, our support team decides.
 5. When the status is **Refunded** the page says "Your refund has been processed." Cash-on-delivery refunds are recorded by HalalBizs. Online refunds go back through the payment channel and the bank may take time to post them.
 6. If a return is **Rejected**, the page says it was reviewed and not approved. Contact support if you disagree.
+7. If the seller does not ship within 7 days of your order (for online payment, 7 days after you paid), the order is cancelled automatically and you are told. A paid online order is refunded in full.
 
 ## 12. Reviews, questions and chat
 

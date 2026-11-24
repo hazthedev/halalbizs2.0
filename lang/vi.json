@@ -2939,5 +2939,9 @@
     "Your SSM or company registration number.": "Số SSM hoặc số đăng ký công ty của bạn.",
     "Optional. Buyers see only the details you fill, on your shop page under About. Leave out anything you do not want public, such as a home address.": "Không bắt buộc. Người mua chỉ thấy những thông tin bạn điền, trên trang cửa hàng của bạn trong mục Giới thiệu. Bỏ trống những gì bạn không muốn công khai, chẳng hạn như địa chỉ nhà.",
     "Use digits, spaces and dashes only, with an optional + at the start.": "Chỉ dùng chữ số, khoảng trắng và dấu gạch ngang, có thể thêm dấu + ở đầu.",
-    "Signing up with Google as :email.": "Đăng ký bằng Google với :email."
+    "Signing up with Google as :email.": "Đăng ký bằng Google với :email.",
+    "COD refund paid to the buyer by the platform for :no": "Sàn đã hoàn tiền COD cho người mua cho đơn :no",
+    "Ship soon": "Hãy gửi hàng sớm",
+    "Order :no has not shipped yet. Ship it within :days days or it will be cancelled automatically and the buyer told.": "Đơn :no chưa được gửi. Hãy gửi trong vòng :days ngày, nếu không đơn sẽ tự động bị huỷ và người mua được báo.",
+    "Not shipped within :days days": "Không được gửi trong vòng :days ngày"
 }

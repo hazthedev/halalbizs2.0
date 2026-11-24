@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Schedule;
 // and stacks runs on the same rows. The queue worker below already does this.
 Schedule::command('orders:expire-unpaid')->everyMinute()->withoutOverlapping(5);
 Schedule::command('orders:auto-complete')->hourly();
+// PAY-14 (HB-DEC-1124d): day 5 seller warning, day 7 not shipped → cancelled.
+Schedule::command('orders:cancel-unshipped')->hourly()->withoutOverlapping(30);
 Schedule::command('sitemap:generate')->dailyAt('03:00');
 Schedule::command('returns:auto-escalate')->hourly();
 Schedule::command('boosts:expire')->hourly();
