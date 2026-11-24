@@ -2972,5 +2972,6 @@
     "COD refund paid to the buyer by the platform for :no": "Bayaran balik COD dibayar kepada pembeli oleh platform untuk :no",
     "Ship soon": "Hantar segera",
     "Order :no has not shipped yet. Ship it within :days days or it will be cancelled automatically and the buyer told.": "Pesanan :no belum dihantar. Hantar dalam masa :days hari atau ia akan dibatalkan secara automatik dan pembeli dimaklumkan.",
-    "Not shipped within :days days": "Tidak dihantar dalam masa :days hari"
+    "Not shipped within :days days": "Tidak dihantar dalam masa :days hari",
+    "attribute": "atribut"
 }

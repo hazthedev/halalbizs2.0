@@ -159,6 +159,32 @@ The row is locked before the cancel, so a ship that commits first wins.
 Check it is scheduled: `php artisan schedule:list | grep cancel-unshipped`.
 Coverage: `tests/Feature/Orders/CancelUnshippedOrdersTest.php`.
 
+### Security limits and redirects (HB-B3B)
+
+- **Send limits** (`config/limits.php`): chat is 10 messages a minute per user
+  per conversation (buyer and seller inbox); the help centre allows 5 new
+  support tickets an hour per user. Over the limit the form shows "Too many
+  requests / attempts, try again in …" and nothing is saved. The app API keeps
+  its own route throttles (`AppServiceProvider`, `api-chat` and friends).
+- **Upload names**: stored names come from `UploadName::safe()` (slug of the
+  name + extension from the detected type), `UploadName::unguessable()` or a
+  fixed name; the extension is always the detected one, never the client's.
+- **Webhook URLs** (`WebhookSubscription::isUrlSafe`): every A and AAAA answer
+  must be public; a name that does not resolve is refused (nothing is sent;
+  the job retries with its backoff, in case it was a resolver hiccup);
+  delivery never follows a redirect (a 3xx fails the job, no retries). Tests never use real
+  DNS: call `fakeHostResolver([...])` from `tests/Pest.php`.
+- **https and www** (`public/.htaccess`, live host only): `www.halalbizs.com`
+  301s to `https://halalbizs.com` (any scheme), then plain
+  `http://halalbizs.com` 301s to https. `/.well-known/` is never redirected
+  (AutoSSL / ACME checks). Local `*.test` and the testing copy are
+  untouched. Check after a deploy:
+  `curl -sI http://halalbizs.com/x?y=1 | grep -i location` and
+  `curl -sI https://www.halalbizs.com/x?y=1 | grep -i location`, both
+  `https://halalbizs.com/x?y=1`.
+
+Coverage: `tests/Feature/Security/ChecklistSmallItemsTest.php`.
+
 ### User guides (HB-SOP)
 
 The buyer, seller and admin guides live in `resources/sop/{buyer,seller,admin}.{en,vi}.md`

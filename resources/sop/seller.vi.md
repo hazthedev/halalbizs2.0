@@ -22,7 +22,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 
 1. Mở trang đăng nhập người bán, nhập **Email** và **Mật khẩu**, rồi chọn **Đăng nhập**.
 2. Nếu bạn đã bật đăng nhập hai bước ở **Tài khoản của tôi > Hồ sơ > Bảo mật**, trang **Kiểm tra hai bước** hỏi mã 6 chữ số từ email hoặc ứng dụng xác thực. Nhập mã và chọn **Xác minh và đăng nhập**. Chỉ đánh dấu **Tin cậy thiết bị này trong 30 ngày** trên thiết bị của riêng bạn.
-3. Khi bạn đăng nhập từ một thiết bị HalalBizs chưa thấy, email "New login to your HalalBizs account" cho bạn biết thiết bị, IP và thời gian. Nếu không phải bạn, hãy đổi mật khẩu và chọn **Đăng xuất các thiết bị khác**.
+3. Khi bạn đăng nhập từ một thiết bị HalalBizs chưa thấy, email "New login to your HalalBizs account" cho bạn biết thiết bị, IP và thời gian. Nếu không phải bạn, hãy đổi mật khẩu và chọn **Đăng xuất các thiết bị khác**. Thao tác này cũng đăng xuất ứng dụng HalalBizs trên mọi điện thoại.
 4. Khi bạn đăng nhập từ thiết bị mới và chưa bật đăng nhập hai bước, HalalBizs hỏi mã trước khi cho vào. Trang **Kiểm tra hai bước** ghi "Bạn đang đăng nhập từ một thiết bị mới. Nhập mã chúng tôi đã gửi qua email để xác nhận đó là bạn." Mở email "Mã đăng nhập của bạn", nhập mã 6 chữ số (hết hạn sau 10 phút) và chọn **Xác minh và đăng nhập**. Chọn **Gửi cho tôi mã mới qua email** nếu mã hết hạn. Email mã này thay cho email cảnh báo ở bước 3. Thiết bị đầu tiên bạn dùng không cần mã.
 
 ## 3. Menu Trung tâm người bán

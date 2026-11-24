@@ -129,7 +129,7 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 2. **Địa chỉ**: chọn **Thêm địa chỉ**, điền người nhận, điện thoại, địa chỉ, mã bưu chính, thành phố và bang, rồi **Lưu địa chỉ**. Dùng **Đặt làm mặc định**, **Sửa** hoặc **Xoá**.
 3. **Hồ sơ**: cập nhật thông tin và chọn **Lưu thay đổi**. Đổi mật khẩu bằng **Cập nhật mật khẩu**.
 4. Ở **Bảo mật**, bật **Xác thực hai bước** bằng **Dùng mã qua email** hoặc **Dùng ứng dụng xác thực**. Hãy lưu mã khôi phục khi được hiển thị. **Tạo lại mã khôi phục** thay thế bộ cũ. Tắt bằng **Tắt xác thực hai bước**.
-5. Ở **Phiên đang hoạt động**, bạn thấy mình đang đăng nhập ở đâu. Nhập mật khẩu và chọn **Đăng xuất các thiết bị khác** để thoát mọi nơi khác.
+5. Ở **Phiên đang hoạt động**, bạn thấy mình đang đăng nhập ở đâu. Nhập mật khẩu và chọn **Đăng xuất các thiết bị khác** để thoát mọi nơi khác, kể cả ứng dụng HalalBizs trên điện thoại (ứng dụng ngừng gửi thông báo cho đến khi bạn đăng nhập lại).
 6. Email thiết bị mới: khi bạn đăng nhập từ một thiết bị chúng tôi chưa thấy, chúng tôi gửi email "New login to your HalalBizs account" kèm thiết bị, IP và thời gian, và thêm một thông báo vào **Thông báo**. Nếu là bạn, không cần làm gì. Nếu không phải, hãy đổi mật khẩu và dùng **Xem lại bảo mật tài khoản**. Thiết bị đầu tiên bạn dùng được ghi nhận mà không gửi email. Người mua chỉ nhận cảnh báo này, không bị hỏi mã.
 7. Ở **Bảo mật**, mục riêng tư: **Tải dữ liệu của tôi** cho bạn một tệp hồ sơ, địa chỉ và đơn hàng. **Xoá tài khoản của tôi** yêu cầu gõ DELETE và mật khẩu. Hồ sơ đơn hàng vẫn được giữ vì lý do pháp lý.
 8. Chuông hiện **Thông báo**. Chọn **Đánh dấu tất cả đã đọc** khi xong.

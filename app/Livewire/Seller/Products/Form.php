@@ -79,6 +79,16 @@ class Form extends Component
     /** Selected attribute-value ids for faceted search (M1.3). */
     public array $attributeValueIds = [];
 
+    /**
+     * Client-writable (entangled), so the shape is checked before any query or
+     * sync: digits only, a real value, no repeats (SEC-32). Never cast junk
+     * into an id: intval('abc') is 0, intval([5]) is 1, a wrong write.
+     */
+    private const ATTRIBUTE_RULES = [
+        'attributeValueIds' => ['array'],
+        'attributeValueIds.*' => ['integer', 'min:1', 'distinct', 'exists:attribute_values,id'],
+    ];
+
     /** Trust/detail metafields keyed by definition key (M2.7). */
     public array $metafields = [];
 
@@ -424,8 +434,10 @@ class Form extends Component
             return;
         }
 
+        $this->validate(self::ATTRIBUTE_RULES);
+
         $attributes = AttributeValue::query()
-            ->whereIn('id', array_map('intval', $this->attributeValueIds))
+            ->whereIn('id', $this->attributeValueIds)
             ->get()
             ->map(fn (AttributeValue $value) => $value->getTranslation('value', 'en'))
             ->all();
@@ -513,7 +525,7 @@ class Form extends Component
 
             $product->save();
 
-            $product->attributeValues()->sync(array_map('intval', $this->attributeValueIds));
+            $product->attributeValues()->sync($this->attributeValueIds); // validated in validateForm()
             $this->syncMetafields($product);
             $this->syncMarketplaceLinks($product);
 
@@ -832,6 +844,7 @@ class Form extends Component
             'lengthMm' => ['nullable', 'integer', 'min:0'],
             'widthMm' => ['nullable', 'integer', 'min:0'],
             'heightMm' => ['nullable', 'integer', 'min:0'],
+            ...self::ATTRIBUTE_RULES,
         ], [
             'newVideo.mimetypes' => __('The video must be an MP4 or WebM file.'),
             'newVideo.max' => __('The video must be 30MB or smaller.'),
@@ -839,6 +852,7 @@ class Form extends Component
             'name.en' => __('product name (English)'),
             'newImages.*' => __('image'),
             'newVideo' => __('video'),
+            'attributeValueIds.*' => __('attribute'),
         ]);
 
         // validate() clears the error bag, so the uploads dropped on arrival are

@@ -12,6 +12,7 @@ use App\Support\ContentLocales;
 use App\Support\DisplayTime;
 use App\Support\HtmlSanitizer;
 use App\Support\ImageShape;
+use App\Support\UploadName;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -155,7 +156,7 @@ class Form extends Component
         foreach ($uploads as $collection => $file) {
             // singleFile collection — replaces the previous file when published.
             $draft->addMedia($file->getRealPath())
-                ->usingFileName($file->getClientOriginalName())
+                ->usingFileName(UploadName::safe($file))
                 ->toMediaCollection($collection);
         }
 

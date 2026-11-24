@@ -209,7 +209,7 @@ class Form extends Component
 
             if ($this->document !== null) {
                 $certificate->addMedia($this->document->getRealPath())
-                    ->usingFileName('certificate-'.$certificate->number.'.'.$this->document->getClientOriginalExtension())
+                    ->usingFileName('certificate-'.$certificate->number.'.'.($this->document->guessExtension() ?: 'bin'))
                     ->toMediaCollection('document');
             }
 

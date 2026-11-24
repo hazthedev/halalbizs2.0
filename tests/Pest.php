@@ -5,6 +5,7 @@ use App\Models\ContentVersion;
 use App\Models\StoreLedgerEntry;
 use App\Models\User;
 use App\Services\ContentDrafts;
+use App\Support\HostResolver;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -68,4 +69,23 @@ function releaseLedgerHolds(): void
     StoreLedgerEntry::query()
         ->where('status', LedgerEntryStatus::Pending)
         ->update(['status' => LedgerEntryStatus::Available]);
+}
+
+/**
+ * No real DNS in tests: webhook URL checks (SEC-46) resolve hostnames
+ * through this map; a host missing from it does not resolve.
+ *
+ * @param  array<string, list<string>>  $answers
+ */
+function fakeHostResolver(array $answers): void
+{
+    app()->instance(HostResolver::class, new class($answers) extends HostResolver
+    {
+        public function __construct(private array $answers) {}
+
+        public function ips(string $host): array
+        {
+            return $this->answers[$host] ?? [];
+        }
+    });
 }

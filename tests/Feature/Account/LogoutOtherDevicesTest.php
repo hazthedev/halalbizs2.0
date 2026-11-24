@@ -83,3 +83,27 @@ test('the device that ran the logout keeps its own session', function () {
 
     expect(Auth::check())->toBeTrue();
 });
+
+test('log out other devices also signs out the mobile app: tokens and push registrations go, other users untouched (HB-DEC-1123d)', function () {
+    $user = User::factory()->create();
+    $user->assignRole('buyer');
+    $user->createToken('mobile');
+    $user->deviceTokens()->create(['token' => 'lost-phone-fcm', 'platform' => 'android']);
+
+    $other = User::factory()->create();
+    $other->assignRole('buyer');
+    $other->createToken('mobile');
+    $other->deviceTokens()->create(['token' => 'other-phone-fcm', 'platform' => 'ios']);
+
+    Livewire::actingAs($user)
+        ->test(Profile::class)
+        ->set('logout_others_password', 'password')
+        ->call('logoutOtherDevices')
+        ->assertHasNoErrors();
+
+    expect($user->tokens()->count())->toBe(0)
+        ->and($user->deviceTokens()->count())->toBe(0)
+        ->and($other->tokens()->count())->toBe(1)
+        ->and($other->deviceTokens()->count())->toBe(1)
+        ->and(Auth::check())->toBeTrue();
+});

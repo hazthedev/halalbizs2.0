@@ -6,6 +6,7 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\ChatService;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -75,6 +76,17 @@ class Messages extends Component
                 'body.max' => __('Messages can be up to 2,000 characters.'),
             ],
         );
+
+        // SEC-38: per user, per conversation (config/limits.php).
+        $key = 'chat-send:'.auth()->id().':'.$conversation->id;
+
+        if (RateLimiter::tooManyAttempts($key, config('limits.chat_messages_per_minute'))) {
+            $this->addError('body', __('Too many requests. Try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($key)]));
+
+            return;
+        }
+
+        RateLimiter::hit($key, 60);
 
         $chat->sendMessage($conversation, 'seller', auth()->user(), $this->body);
 

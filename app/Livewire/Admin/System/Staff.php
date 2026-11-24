@@ -83,6 +83,7 @@ class Staff extends Component
 
         $user->assignRole('admin');
         $user->syncPermissions($overReach === [] ? $requested : []);
+        $this->audit($user, 'admin invited', [], ['permissions' => $this->permissionNames($user->fresh())]);
 
         // The random password above is known to nobody: the invitee claims the
         // account through the standard reset link. Showing the inviter a working
@@ -154,7 +155,9 @@ class Staff extends Component
         }
 
         $user = User::role('admin')->findOrFail($this->editingId);
+        $old = $this->permissionNames($user);
         $user->syncPermissions($requested);
+        $this->audit($user, 'admin permissions changed', ['permissions' => $old], ['permissions' => $this->permissionNames($user->fresh())]);
 
         $this->dispatch('toast', message: __('Permissions updated for :name', ['name' => $user->name]));
         $this->cancelEdit();
@@ -186,12 +189,14 @@ class Staff extends Component
             }
 
             $user->forceFill(['is_superadmin' => false])->save();
+            $this->audit($user, 'superadmin removed', ['is_superadmin' => true], ['is_superadmin' => false]);
             $this->dispatch('toast', message: __('Superadmin access removed for :name', ['name' => $user->name]));
 
             return;
         }
 
         $user->forceFill(['is_superadmin' => true])->save();
+        $this->audit($user, 'superadmin granted', ['is_superadmin' => false], ['is_superadmin' => true]);
         $this->dispatch('toast', message: __(':name is now a superadmin.', ['name' => $user->name]));
     }
 
@@ -206,6 +211,15 @@ class Staff extends Component
 
         $user = User::role('admin')->findOrFail($userId);
 
+        // Removing an admin also clears is_superadmin, so it is the same power
+        // as demoting one: only a superadmin may do it (HB-DEC-1123d), exactly
+        // like toggleSuperadmin().
+        if ($user->is_superadmin && ! auth()->user()->is_superadmin) {
+            $this->dispatch('toast', message: __('Only a superadmin can change superadmin access.'), type: 'error');
+
+            return;
+        }
+
         // Removing the last superadmin's admin role is the same lockout by
         // another door — block it at this end too.
         if ($user->is_superadmin && User::where('is_superadmin', true)->count() <= 1) {
@@ -214,15 +228,35 @@ class Staff extends Component
             return;
         }
 
+        $old = $this->permissionNames($user);
+        $wasSuperadmin = (bool) $user->is_superadmin;
+
         $user->removeRole('admin');
         $user->syncPermissions([]);
         $user->forceFill(['is_superadmin' => false])->save();
+        $this->audit($user, 'admin removed', ['permissions' => $old, 'is_superadmin' => $wasSuperadmin], ['permissions' => [], 'is_superadmin' => false]);
 
         if ($this->editingId === $userId) {
             $this->cancelEdit();
         }
 
         $this->dispatch('toast', message: __('Admin access removed for :name', ['name' => $user->name]));
+    }
+
+    /**
+     * Staff changes are access changes: who did what to whom (HB-G036, System > Audit log).
+     * old/attributes is the shape the audit log screen reads for its diff.
+     */
+    private function audit(User $user, string $what, array $old, array $new): void
+    {
+        activity()->causedBy(auth()->user())->performedOn($user)
+            ->withProperties(['old' => $old, 'attributes' => $new])->log($what);
+    }
+
+    /** @return array<int, string> sorted, so old/new compare at a glance */
+    private function permissionNames(User $user): array
+    {
+        return $user->getDirectPermissions()->pluck('name')->sort()->values()->all();
     }
 
     public function render()
