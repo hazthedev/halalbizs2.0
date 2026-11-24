@@ -145,3 +145,112 @@ test('PAY-12: full COD refund before completion (return on a delivered order): t
     app(RefundService::class)->refund($sub->fresh(), 20_500, ActorType::Admin, null);
     expect(codNet($sub))->toBe(-18_500);
 });
+
+/*
+| Gate HB-B4 (PR #274): the three platform-funded reductions together, a
+| two-store split, and refund/completion ordering. Expected numbers are
+| hand-computed in the comments, not read back from the code.
+*/
+
+function platformFreeShipping(string $code): void
+{
+    Voucher::create([
+        'scope' => VoucherScope::Platform, 'store_id' => null, 'code' => $code,
+        'type' => VoucherType::FreeShipping, 'value_sen' => 0, 'percent' => 0,
+        'min_spend_sen' => 0, 'quota' => null, 'per_user_limit' => 10, 'used_count' => 0,
+        'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'is_active' => true,
+    ]);
+}
+
+/** @param  array<int, array{0: int, 1: int, 2: int}>  $stores  [price_sen, qty, flat shipping_sen] */
+function codMultiDelivered(array $stores, ?string $platformCode = null, ?string $shippingCode = null, int $coins = 0): \App\Models\Order
+{
+    $buyer = User::factory()->create();
+    $buyer->assignRole('buyer');
+    $address = Address::factory()->default()->create(['user_id' => $buyer->id, 'state' => 'Selangor']);
+
+    foreach ($stores as [$priceSen, $qty, $shippingSen]) {
+        $product = Product::factory()->create(['cod_enabled' => true]);
+        $product->store->forceFill(['commission_rate' => 5.0])->save();
+        $product->store->update(['shipping_mode' => 'flat', 'shipping_flat_fee_sen' => $shippingSen, 'free_shipping_over_sen' => null]);
+        $product->variants->first()->update(['price_sen' => $priceSen, 'sale_price_sen' => null, 'stock' => 10]);
+        app(CartService::class)->addItem($buyer, $product->variants->first(), $qty);
+    }
+
+    if ($coins > 0) {
+        app(CoinService::class)->credit($buyer, $coins, CoinTransactionType::Earn);
+    }
+
+    $order = app(CheckoutService::class)->place($buyer, $address, PaymentMethod::Cod, $platformCode, shippingCode: $shippingCode, coinsToRedeem: $coins);
+
+    $status = app(SubOrderStatusService::class);
+    foreach ($order->subOrders as $sub) {
+        $status->transition($sub->fresh(), SubOrderStatus::Processing, ActorType::Seller);
+        $status->transition($sub->fresh(), SubOrderStatus::Shipped, ActorType::Seller);
+        app(OrderService::class)->markDelivered($sub->fresh(), ActorType::System);
+    }
+
+    return $order->fresh();
+}
+
+test('gate: COD with platform voucher + coins + platform free shipping together: offset is the cash collected', function () {
+    platformVoucher('GPLAT20');
+    platformFreeShipping('GSHIP');
+
+    // total 20000 + 500 = 20500; voucher 2000, free shipping 500, coins 1500:
+    // cash = 20500 - 2000 - 500 - 1500 = 16500. Net = 20500 - 1000 - 16500 = 3000.
+    $sub = codComplete(codMultiDelivered([[10_000, 2, 500]], 'GPLAT20', 'GSHIP', 1500)->subOrders->first());
+
+    expect((int) $sub->total_sen)->toBe(20_500)
+        ->and((int) $sub->shipping_subsidy_sen)->toBe(500)
+        ->and((int) $sub->order->grand_total_sen)->toBe(16_500)
+        ->and(codOffset($sub))->toBe(-16_500)
+        ->and(codNet($sub))->toBe(3_000);
+});
+
+test('gate: two-store COD split: offsets add up to the cash the buyer paid, no sen lost or doubled', function () {
+    platformVoucher('GPLAT10', 1000);
+
+    // A 20000 + 500 ship, B 3333 + 700 ship. Voucher 1000 on subtotals
+    // 20000:3333 -> 857 r3619 / 142 r19714, leftover sen to B -> 857 / 143.
+    // Bases 19643 / 3890 (sum 23533). Coins 777 -> 648 r13227 / 128 r10306,
+    // leftover to A -> 649 / 128. Cash A 18994, B 3762 = 22756 = grand total.
+    // Commission 5%: A 1000, B intdiv(3333*500+5000, 10000) = 167.
+    $order = codMultiDelivered([[10_000, 2, 500], [3_333, 1, 700]], 'GPLAT10', null, 777);
+    [$a, $b] = $order->subOrders->sortBy('id')->values()->map(fn (SubOrder $s) => codComplete($s))->all();
+
+    expect((int) $order->grand_total_sen)->toBe(22_756)
+        ->and(codOffset($a))->toBe(-18_994)
+        ->and(codOffset($b))->toBe(-3_762)
+        ->and(codOffset($a) + codOffset($b))->toBe(-(int) $order->grand_total_sen)
+        ->and(codNet($a))->toBe(506)
+        ->and(codNet($b))->toBe(104);
+});
+
+test('gate: COD partial refund before completion, completion, then the rest: same end as one full refund, no double charge', function () {
+    platformVoucher('GPLAT20P');
+    $sub = codDelivered('GPLAT20P');
+
+    app(RefundService::class)->refund($sub->fresh(), 10_250, ActorType::Admin, null);
+    expect($sub->ledgerEntries()->count())->toBe(0);
+
+    // Sale 20500 - 10250, commission 1000 - 500, offset -18500 (full cash).
+    $sub = codComplete($sub);
+    expect(codOffset($sub))->toBe(-18_500)
+        ->and(codNet($sub))->toBe(10_250 - 500 - 18_500);
+
+    app(RefundService::class)->refund($sub->fresh(), 10_250, ActorType::Admin, null);
+    expect(codNet($sub))->toBe(-18_500);
+});
+
+test('gate: full COD refund before completion, then a completion hook: nothing booked twice', function () {
+    platformVoucher('GPLAT20D');
+    $sub = codDelivered('GPLAT20D');
+    app(SubOrderStatusService::class)->transition($sub, SubOrderStatus::ReturnRequested, ActorType::Buyer);
+    app(RefundService::class)->refund($sub->fresh(), 20_500, ActorType::Admin, null);
+
+    app(\App\Services\LedgerService::class)->recordCompletion($sub->fresh());
+
+    expect($sub->ledgerEntries()->count())->toBe(1)
+        ->and(codNet($sub))->toBe(-18_500);
+});

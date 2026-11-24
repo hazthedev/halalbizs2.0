@@ -55,9 +55,10 @@ class CancelUnshippedOrders extends Command
                     // Claim the warning under the row lock; a ship or an
                     // overlapping run in between means no (second) warning.
                     $claimed = DB::transaction(function () use ($subOrder) {
-                        $locked = SubOrder::whereKey($subOrder->id)->lockForUpdate()->first();
+                        // Parent order first, like every sub-order lock (gate R3, #225).
+                        $locked = SubOrder::lockForUpdateWithOrder($subOrder)->first();
 
-                        if (! in_array($locked->status, OrderService::UNSHIPPED, true) || $locked->unshipped_warned_at !== null) {
+                        if ($locked === null || ! in_array($locked->status, OrderService::UNSHIPPED, true) || $locked->unshipped_warned_at !== null) {
                             return false;
                         }
 
