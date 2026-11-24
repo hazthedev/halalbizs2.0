@@ -28,7 +28,7 @@
                 ['n' => '01', 'title' => __('Document intake'),
                  'body' => __('The certificate, its issuing body and its expiry date are captured when the product is listed.'), 'soon' => false],
                 ['n' => '02', 'title' => __('Body recognised'),
-                 'body' => __('We record which authority issued it — JAKIM, MUIS, BPJPH or ESMA — and show that on the listing.'), 'soon' => false],
+                 'body' => __('We record which authority issued it — JAKIM, MUIS or BPJPH — and show that on the listing.'), 'soon' => false],
                 ['n' => '03', 'title' => __('Scope binding'),
                  'body' => __('The certificate is attached to the SKU it names. A shop-wide badge never covers a product the annex leaves out.'), 'soon' => false],
                 ['n' => '04', 'title' => __('Expiry watch'),

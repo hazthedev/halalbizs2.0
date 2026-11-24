@@ -145,6 +145,23 @@ HEIC is never accepted by an upload rule.
 
 Coverage: `tests/Feature/Security/StripPhotoMetadataTest.php`.
 
+### Encrypted columns (HB-G198)
+
+These columns are encrypted with `APP_KEY` (Laravel `encrypted` casts); the app
+reads them as plain values, the database holds ciphertext:
+
+- `stores.bank_details` (bank name, holder, account number)
+- `payouts.bank_snapshot` and `affiliate_payouts.bank_snapshot` (the payout copies)
+- `webhook_subscriptions.secret` (queued `SendWebhookJob` payloads are encrypted too)
+- `users.tin`
+
+**Losing `APP_KEY` loses these values for good.** Keep a copy of `APP_KEY` off
+the server before the migration that encrypts them
+(`2026_11_24_170100_encrypt_bank_secret_and_tin_columns`) runs. To rotate the
+key, put the old key in `APP_PREVIOUS_KEYS` so old rows still decrypt. None of
+these columns can be searched, sorted or uniquely indexed in SQL; compare them
+in PHP after reading. The migration's `down()` decrypts the rows back.
+
 ### Unshipped orders auto-cancel (`orders:cancel-unshipped`, hourly)
 
 PAY-14 (HB-DEC-1124d). A sub-order still **confirmed** or **processing**

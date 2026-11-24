@@ -55,6 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'two_factor_method' => TwoFactorMethod::class,
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted:array',
+            'tin' => 'encrypted', // HB-G198
         ];
     }
 

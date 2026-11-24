@@ -68,6 +68,14 @@ class HalalCertificate extends Model implements HasMedia
         'JAKIM' => ['prefix' => 'MY-JKM', 'name' => 'Department of Islamic Development Malaysia'],
         'MUIS' => ['prefix' => 'SG-MUIS', 'name' => 'Islamic Religious Council of Singapore'],
         'BPJPH' => ['prefix' => 'ID-BPJPH', 'name' => 'Halal Product Assurance Agency, Indonesia'],
+    ];
+
+    /**
+     * HB-G141: bodies no longer accepted for NEW certificates (ESMA is not on
+     * JAKIM's 21 Aug 2026 list of recognised foreign bodies). A certificate
+     * already naming one keeps it, shown read-only on its edit form.
+     */
+    public const RETIRED_BODIES = [
         'ESMA' => ['prefix' => 'AE-ESMA', 'name' => 'Emirates Authority for Standardization and Metrology'],
     ];
 

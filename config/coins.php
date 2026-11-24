@@ -13,8 +13,9 @@ return [
     // Most coin value redeemable on a single order (sen). RM 50 default.
     'max_redemption_sen' => (int) env('COINS_MAX_REDEMPTION_SEN', 5000),
 
-    // Coins lapse this many days after they are earned (FIFO).
-    'expiry_days' => (int) env('COINS_EXPIRY_DAYS', 180),
+    // Coins lapse this many calendar months after they are earned (FIFO).
+    // BIZ-04 (HB-DEC-1124f item 8): 12 months, reminder 30 days before.
+    'expiry_months' => (int) env('COINS_EXPIRY_MONTHS', 12),
 
     // Earning: coins per whole Ringgit of items subtotal on a completed order.
     'earn_coins_per_rm' => (int) env('COINS_EARN_PER_RM', 1),

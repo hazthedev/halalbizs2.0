@@ -13,6 +13,14 @@
                         :error="$errors->first('number')"
                         :hint="__('Exactly as printed, e.g. MY-JKM-1234-100.')" />
 
+            @if ($retiredBody)
+            {{-- HB-G141: a body no longer accepted stays on the certificate that names it, read-only. --}}
+            <div>
+                <p class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Issuing body') }}</p>
+                <p class="block w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink">{{ $issuingBody }} — {{ $retiredBody['name'] }}</p>
+                <p class="mt-1 text-[13px] text-ink-soft">{{ __('No longer accepted for new certificates.') }}</p>
+            </div>
+            @else
             <div>
                 <label for="issuingBody" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Issuing body') }}</label>
                 <select id="issuingBody" wire:model="issuingBody"
@@ -24,6 +32,7 @@
                 </select>
                 @error('issuingBody') <p class="mt-1 text-[13px] text-danger">{{ $message }}</p> @enderror
             </div>
+            @endif
 
             <x-ui.input :label="__('Certificate holder')" name="holderName" wire:model="holderName"
                         :error="$errors->first('holderName')"

@@ -92,7 +92,7 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 3. Select **Spin the wheel** once a day for coins or a surprise voucher.
 4. You earn 1 coin for every whole RM1 of items in a completed order. If an order is refunded, the coins earned from it are taken back.
 5. At checkout tick **Use my coins**. 1 coin takes 1 sen off. You can use up to RM50 of coins per order, and the order total never drops to zero from coins alone.
-6. Coins expire 180 days after you earn them. The page tells you when.
+6. Coins expire 12 months after you earn them. The page tells you when, and you get a notification 30 days before.
 
 ## 10. Orders and tracking
 

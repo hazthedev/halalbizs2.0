@@ -2492,7 +2492,7 @@
     "We have verified certificate :number. The halal badge is now live on :count of your products.": "Chúng tôi đã xác minh chứng nhận :number. Huy hiệu halal hiện đã hiển thị trên :count sản phẩm của bạn.",
     "We just sent one — try again in :seconds seconds.": "Chúng tôi vừa gửi một mã — hãy thử lại sau :seconds giây.",
     "We received your application to open :store on :app.": "Chúng tôi đã nhận đơn đăng ký mở :store trên :app của bạn.",
-    "We record which authority issued it — JAKIM, MUIS, BPJPH or ESMA — and show that on the listing.": "Chúng tôi ghi nhận cơ quan đã cấp — JAKIM, MUIS, BPJPH hay ESMA — và hiển thị điều đó trên sản phẩm.",
+    "We record which authority issued it — JAKIM, MUIS or BPJPH — and show that on the listing.": "Chúng tôi ghi nhận cơ quan đã cấp — JAKIM, MUIS hay BPJPH — và hiển thị điều đó trên sản phẩm.",
     "We reviewed your application to open :store on :app and can't approve it this time.": "Chúng tôi đã xem xét đơn đăng ký mở :store trên :app của bạn và lần này chưa thể duyệt.",
     "We sent a verification link to": "Chúng tôi đã gửi liên kết xác minh tới",
     "We've emailed a 6-digit code to :email. It expires in 10 minutes.": "Chúng tôi đã gửi mã 6 chữ số tới :email. Mã hết hạn sau 10 phút.",
@@ -2945,5 +2945,7 @@
     "Order :no has not shipped yet. Ship it within :days days or it will be cancelled automatically and the buyer told.": "Đơn :no chưa được gửi. Hãy gửi trong vòng :days ngày, nếu không đơn sẽ tự động bị huỷ và người mua được báo.",
     "Not shipped within :days days": "Không được gửi trong vòng :days ngày",
     "attribute": "thuộc tính",
+    "No longer accepted for new certificates.": "Không còn được chấp nhận cho chứng nhận mới.",
+    ":n coins expire on :date. Spend them at checkout before then.": ":n xu hết hạn vào :date. Hãy dùng ở bước thanh toán trước ngày đó.",
     "You signed up with Google and have not set a password yet. Use Forgot password to set one, then change your bank details.": "Bạn đã đăng ký bằng Google và chưa đặt mật khẩu. Hãy dùng Quên mật khẩu để đặt mật khẩu, rồi đổi thông tin ngân hàng."
 }

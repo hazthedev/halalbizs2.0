@@ -92,7 +92,7 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 3. Chọn **Quay vòng quay** mỗi ngày một lần để nhận xu hoặc một voucher bất ngờ.
 4. Bạn nhận 1 xu cho mỗi RM1 trọn vẹn tiền hàng của đơn đã hoàn tất. Nếu đơn được hoàn tiền, số xu đã nhận từ đơn đó bị thu lại.
 5. Khi thanh toán, đánh dấu **Dùng xu của tôi**. 1 xu giảm 1 sen. Mỗi đơn dùng tối đa RM50 bằng xu, và xu không bao giờ đưa tổng đơn về 0.
-6. Xu hết hạn 180 ngày sau khi bạn nhận. Trang cho biết khi nào hết hạn.
+6. Xu hết hạn 12 tháng sau khi bạn nhận. Trang cho biết khi nào hết hạn, và bạn nhận thông báo 30 ngày trước đó.
 
 ## 10. Đơn hàng và theo dõi
 

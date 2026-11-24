@@ -2255,7 +2255,7 @@
     "We have verified certificate :number. The halal badge is now live on :count of your products.": "Kami telah mengesahkan sijil :number. Lencana halal kini disiarkan pada :count produk anda.",
     "We just sent one — try again in :seconds seconds.": "Kami baru sahaja menghantarnya — cuba lagi dalam :seconds saat.",
     "We received your application to open :store on :app.": "Kami telah menerima permohonan anda untuk membuka :store di :app.",
-    "We record which authority issued it — JAKIM, MUIS, BPJPH or ESMA — and show that on the listing.": "Kami merekodkan pihak berkuasa yang mengeluarkannya — JAKIM, MUIS, BPJPH atau ESMA — dan memaparkannya pada penyenaraian.",
+    "We record which authority issued it — JAKIM, MUIS or BPJPH — and show that on the listing.": "Kami merekodkan pihak berkuasa yang mengeluarkannya — JAKIM, MUIS atau BPJPH — dan memaparkannya pada penyenaraian.",
     "We reviewed your application to open :store on :app and can't approve it this time.": "Kami telah menyemak permohonan anda untuk membuka :store di :app dan tidak dapat meluluskannya kali ini.",
     "We sent a verification link to": "Kami menghantar pautan pengesahan kepada",
     "We'll email you when it's back.": "We'll email you when it's back.",
@@ -2974,5 +2974,7 @@
     "Order :no has not shipped yet. Ship it within :days days or it will be cancelled automatically and the buyer told.": "Pesanan :no belum dihantar. Hantar dalam masa :days hari atau ia akan dibatalkan secara automatik dan pembeli dimaklumkan.",
     "Not shipped within :days days": "Tidak dihantar dalam masa :days hari",
     "attribute": "atribut",
+    "No longer accepted for new certificates.": "Tidak lagi diterima untuk sijil baharu.",
+    ":n coins expire on :date. Spend them at checkout before then.": ":n syiling luput pada :date. Gunakannya semasa pembayaran sebelum tarikh itu.",
     "You signed up with Google and have not set a password yet. Use Forgot password to set one, then change your bank details.": "Anda mendaftar dengan Google dan belum menetapkan kata laluan. Gunakan Lupa kata laluan untuk menetapkannya, kemudian tukar butiran bank anda."
 }
