@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Product;
 use App\Models\Store;
 use App\Services\ChatService;
+use App\Support\SendLimit;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -100,21 +101,21 @@ class Messages extends Component
         // SEC-38: per user, per conversation (config/limits.php).
         $key = 'chat-send:'.auth()->id().':'.$conversation->id;
 
-        if (RateLimiter::tooManyAttempts($key, config('limits.chat_messages_per_minute'))) {
-            $this->addError('body', __('Too many requests. Try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($key)]));
-
-            return;
-        }
-
-        RateLimiter::hit($key, 60);
-
         // Context chip only ever points at a LIVE product of THIS store, as the
         // app API does: contextProductId is client-mutable (HB-G121).
         $context = $this->contextProductId !== null
             ? Product::query()->live()->where('store_id', $conversation->store_id)->find($this->contextProductId)
             : null;
 
-        $chat->sendMessage($conversation, 'buyer', auth()->user(), $this->body, $context);
+        // HB-G240: counted only once the message is saved.
+        $sent = SendLimit::attempt($key, config('limits.chat_messages_per_minute'), 60,
+            fn () => $chat->sendMessage($conversation, 'buyer', auth()->user(), $this->body, $context));
+
+        if (! $sent) {
+            $this->addError('body', __('Too many requests. Try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($key)]));
+
+            return;
+        }
 
         $this->reset('body', 'contextProductId');
         unset($this->activeConversation);

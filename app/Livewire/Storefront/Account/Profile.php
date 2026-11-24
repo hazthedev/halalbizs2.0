@@ -122,7 +122,7 @@ class Profile extends Component
             'current_password.current_password' => __('That doesn\'t match your current password — try again.'),
         ]);
 
-        auth()->user()->update(['password' => $this->password]);
+        auth()->user()->update(['password' => $this->password, 'password_set_at' => now()]);
 
         // A new password ends every mobile session; the phone logs in again.
         auth()->user()->revokeAppAccess();
@@ -491,15 +491,11 @@ class Profile extends Component
         ]);
 
         $user = auth()->user();
-        $deletion = app(AccountDeletionService::class);
-
-        if (($blocker = $deletion->blocker($user)) !== null) {
+        if (($blocker = app(AccountDeletionService::class)->deleteUnlessBlocked($user)) !== null) {
             $this->dispatch('toast', message: $blocker, type: 'error');
 
             return;
         }
-
-        $deletion->delete($user);
 
         Auth::logout();
         session()->invalidate();

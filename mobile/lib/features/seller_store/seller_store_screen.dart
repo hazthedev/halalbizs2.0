@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
+import '../../core/auth/session.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../account/web_link.dart';
@@ -391,6 +392,20 @@ class _SellerStoreScreenState extends ConsumerState<SellerStoreScreen> {
                 autocorrect: false,
                 error: _err('bank.account_number'),
               ),
+              if (ref.watch(sessionProvider) case SignedIn(:final profile) when !profile.passwordSet) ...[
+                const SizedBox(height: SoukSpace.s4),
+                SoukAlert(l.sellerBankGoogleHint, key: const Key('seller-store-google-hint'), status: 'warn'),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: SoukButton(
+                    key: const Key('seller-store-forgot-password'),
+                    label: l.forgotPassword,
+                    variant: SoukButtonVariant.ghost,
+                    compact: true,
+                    onPressed: () => context.push('/forgot-password'),
+                  ),
+                ),
+              ],
               ListenableBuilder(
                 listenable: _accountNumber,
                 builder: (context, _) => _accountNumber.text.trim().isEmpty

@@ -141,6 +141,7 @@ class HalalCatalogueSeeder extends Seeder
             $user->fill([
                 'name' => $row['name'],
                 'password' => bcrypt($this->demoPassword()),
+                'password_set_at' => now(),
                 'email_verified_at' => $user->email_verified_at ?? now(),
                 'deleted_at' => null,
             ])->save();

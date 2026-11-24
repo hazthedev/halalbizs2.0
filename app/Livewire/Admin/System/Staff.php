@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\System;
 
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -155,6 +156,13 @@ class Staff extends Component
         }
 
         $user = User::role('admin')->findOrFail($this->editingId);
+
+        if (! $this->holdsEverythingOf($user)) {
+            $this->addError('editPermissions', __('You can only change an admin when you hold every permission they hold.'));
+
+            return;
+        }
+
         $old = $this->permissionNames($user);
         $user->syncPermissions($requested);
         $this->audit($user, 'admin permissions changed', ['permissions' => $old], ['permissions' => $this->permissionNames($user->fresh())]);
@@ -182,13 +190,23 @@ class Staff extends Component
         if ($user->is_superadmin) {
             // Never leave the platform with nobody able to grant permissions:
             // the last superadmin cannot be demoted, not even by themselves.
-            if (User::where('is_superadmin', true)->count() <= 1) {
+            // Locked count + write in one transaction (HB-G234).
+            $demoted = DB::transaction(function () use ($user) {
+                if (User::lockedSuperadminCount() <= 1) {
+                    return false;
+                }
+
+                $user->forceFill(['is_superadmin' => false])->save();
+
+                return true;
+            });
+
+            if (! $demoted) {
                 $this->dispatch('toast', message: __('There must always be at least one superadmin.'), type: 'error');
 
                 return;
             }
 
-            $user->forceFill(['is_superadmin' => false])->save();
             $this->audit($user, 'superadmin removed', ['is_superadmin' => true], ['is_superadmin' => false]);
             $this->dispatch('toast', message: __('Superadmin access removed for :name', ['name' => $user->name]));
 
@@ -220,10 +238,10 @@ class Staff extends Component
             return;
         }
 
-        // Removing the last superadmin's admin role is the same lockout by
-        // another door — block it at this end too.
-        if ($user->is_superadmin && User::where('is_superadmin', true)->count() <= 1) {
-            $this->dispatch('toast', message: __('There must always be at least one superadmin.'), type: 'error');
+        // HB-DEC-1124f item 9: never remove an admin who holds a permission
+        // the remover lacks.
+        if (! $this->holdsEverythingOf($user)) {
+            $this->dispatch('toast', message: __('You can only remove an admin when you hold every permission they hold.'), type: 'error');
 
             return;
         }
@@ -231,9 +249,27 @@ class Staff extends Component
         $old = $this->permissionNames($user);
         $wasSuperadmin = (bool) $user->is_superadmin;
 
-        $user->removeRole('admin');
-        $user->syncPermissions([]);
-        $user->forceFill(['is_superadmin' => false])->save();
+        // Removing the last superadmin's admin role is the same lockout by
+        // another door — block it at this end too. Locked count + write in
+        // one transaction (HB-G234).
+        $removed = DB::transaction(function () use ($user) {
+            if ($user->is_superadmin && User::lockedSuperadminCount() <= 1) {
+                return false;
+            }
+
+            $user->removeRole('admin');
+            $user->syncPermissions([]);
+            $user->forceFill(['is_superadmin' => false])->save();
+
+            return true;
+        });
+
+        if (! $removed) {
+            $this->dispatch('toast', message: __('There must always be at least one superadmin.'), type: 'error');
+
+            return;
+        }
+
         $this->audit($user, 'admin removed', ['permissions' => $old, 'is_superadmin' => $wasSuperadmin], ['permissions' => [], 'is_superadmin' => false]);
 
         if ($this->editingId === $userId) {
@@ -241,6 +277,23 @@ class Staff extends Component
         }
 
         $this->dispatch('toast', message: __('Admin access removed for :name', ['name' => $user->name]));
+    }
+
+    /**
+     * HB-DEC-1124f item 9: an admin may remove another admin, or change their
+     * permissions, only when holding every permission that admin holds. A
+     * superadmin holds them all (Gate::before), on either side.
+     */
+    private function holdsEverythingOf(User $target): bool
+    {
+        $actor = auth()->user();
+
+        if ($actor->is_superadmin) {
+            return true;
+        }
+
+        return ! $target->is_superadmin
+            && array_diff($this->permissionNames($target), $this->permissionNames($actor)) === [];
     }
 
     /**

@@ -8,9 +8,12 @@
  * Gate::before so the Staff screen stays reachable after the role was emptied.
  */
 
+use App\Livewire\Admin\System\AuditLog;
 use App\Livewire\Admin\System\Staff;
+use App\Livewire\Storefront\Account\Profile;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
@@ -205,7 +208,7 @@ test('staff audit lines render in the audit log screen with their old to new dif
         ->call('savePermissions');
     Livewire::actingAs($super)->test(Staff::class)->call('toggleSuperadmin', $staff->id);
 
-    Livewire::actingAs($super)->test(\App\Livewire\Admin\System\AuditLog::class)
+    Livewire::actingAs($super)->test(AuditLog::class)
         ->assertOk()
         ->assertSee('superadmin granted')
         ->assertSee('is_superadmin:')
@@ -291,4 +294,102 @@ test('a superadmin survives the deploy re-seed', function () {
 
     expect($super->fresh()->is_superadmin)->toBeTrue()
         ->and($super->fresh()->can('finance.manage'))->toBeTrue();
+});
+
+// ── HB-B5A security follow-ups ─────────────────────────────────────────────
+
+/** SQL run by $action, lower-cased. */
+function b5aQueries(Closure $action): array
+{
+    $sql = [];
+    DB::listen(function ($query) use (&$sql) {
+        $sql[] = strtolower($query->sql);
+    });
+
+    $action();
+
+    return $sql;
+}
+
+test('HB-G234: the keep-one superadmin check reads the superadmin rows under a row lock', function (string $method) {
+    $super = superadmin();
+    $target = superadmin();
+
+    // Two removals at the same moment each saw "2 left" and both went
+    // through. The count must be a locking read, so the second one waits for
+    // the first and then sees 1. A single-process test cannot race; it proves
+    // the locking read is what the guard runs.
+    $sql = b5aQueries(fn () => Livewire::actingAs($super)->test(Staff::class)->call($method, $target->id));
+
+    expect(collect($sql)->contains(fn ($q) => str_contains($q, 'is_superadmin') && str_ends_with($q, 'for update')))->toBeTrue()
+        ->and($target->fresh()->is_superadmin)->toBeFalse();
+})->with(['toggleSuperadmin', 'removeAdmin']);
+
+test('HB-G236: an admin cannot remove an admin holding a permission they lack (HB-DEC-1124f 9)', function () {
+    $mover = scopedAdmin(['settings.manage']);
+    $target = scopedAdmin(['settings.manage', 'finance.manage']);
+
+    Livewire::actingAs($mover)->test(Staff::class)->call('removeAdmin', $target->id);
+
+    expect($target->fresh()->hasRole('admin'))->toBeTrue()
+        ->and($target->fresh()->getDirectPermissions()->pluck('name')->sort()->values()->all())
+        ->toBe(['finance.manage', 'settings.manage']);
+});
+
+test('HB-G236: an admin holding every permission of the other admin can remove them', function () {
+    $mover = scopedAdmin(['settings.manage', 'finance.manage']);
+    $target = scopedAdmin(['finance.manage']);
+
+    Livewire::actingAs($mover)->test(Staff::class)->call('removeAdmin', $target->id);
+
+    expect($target->fresh()->hasRole('admin'))->toBeFalse();
+});
+
+test('HB-G236: an admin cannot strip permissions from an admin holding one they lack', function () {
+    $editor = scopedAdmin(['settings.manage']);
+    $target = scopedAdmin(['settings.manage', 'finance.manage']);
+
+    Livewire::actingAs($editor)->test(Staff::class)
+        ->call('startEditPermissions', $target->id)
+        ->set('editPermissions', ['settings.manage'])
+        ->call('savePermissions')
+        ->assertHasErrors('editPermissions');
+
+    expect($target->fresh()->getDirectPermissions()->pluck('name')->sort()->values()->all())
+        ->toBe(['finance.manage', 'settings.manage']);
+});
+
+test('HB-G237: the last superadmin cannot delete their own account (web)', function () {
+    $super = superadmin();
+
+    Livewire::actingAs($super)->test(Profile::class)
+        ->set('delete_confirm', 'DELETE')
+        ->set('delete_password', 'password')
+        ->call('deleteAccount')
+        ->assertNoRedirect();
+
+    expect(User::withTrashed()->find($super->id)->trashed())->toBeFalse();
+});
+
+test('HB-G237: the last superadmin cannot delete their own account (app API)', function () {
+    $super = superadmin();
+
+    test()->withToken($super->createToken('pest-phone')->plainTextToken)
+        ->deleteJson('/api/v1/me', ['password' => 'password'])
+        ->assertStatus(409);
+
+    expect(User::withTrashed()->find($super->id)->trashed())->toBeFalse();
+});
+
+test('HB-G237: a superadmin can delete their account while another superadmin remains', function () {
+    $super = superadmin();
+    superadmin();
+
+    Livewire::actingAs($super)->test(Profile::class)
+        ->set('delete_confirm', 'DELETE')
+        ->set('delete_password', 'password')
+        ->call('deleteAccount')
+        ->assertRedirect(route('home'));
+
+    expect(User::withTrashed()->find($super->id)->trashed())->toBeTrue();
 });

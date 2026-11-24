@@ -934,5 +934,6 @@
   "registerTermsLink": "Terms & conditions",
   "registerPrivacyLink": "Privacy policy",
   "registerConsentRequired": "Please agree to the terms and privacy policy to create an account.",
-  "sellerBankPasswordHelp": "Changing bank details needs your current password."
+  "sellerBankPasswordHelp": "Changing bank details needs your current password.",
+  "sellerBankGoogleHint": "You signed up with Google and have not set a password yet. Use Forgot password to set one, then change your bank details."
 }

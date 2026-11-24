@@ -50,7 +50,9 @@ class SendWebhookJob implements ShouldBeEncrypted, ShouldQueue
         // M5: re-check at SEND time, not only whenever a subscription is
         // created — DNS can be re-pointed after the fact, and this is the
         // only place that actually makes an outbound network call.
-        if (! WebhookSubscription::isUrlSafe($this->url)) {
+        $ips = WebhookSubscription::checkedIps($this->url);
+
+        if ($ips === null) {
             // A name that does not resolve may be a resolver hiccup: throw so
             // the queue retries it (tries/backoff), each try re-checked here.
             // Nothing is sent while it does not resolve.
@@ -85,7 +87,7 @@ class SendWebhookJob implements ShouldBeEncrypted, ShouldQueue
             // logical dedupe key when we have one, else one id per job
             // instance via the queued constructor property.
             'X-Webhook-Id' => $this->idempotencyKey ?? $this->fallbackDeliveryId,
-        ])->timeout(10)->withoutRedirecting()->withBody($body, 'application/json')->post($this->url);
+        ])->timeout(10)->withoutRedirecting()->withOptions($this->pinTo($ips))->withBody($body, 'application/json')->post($this->url);
 
         // SEC-46: a redirect is never followed: its target skipped the check
         // above, so a public host could bounce us to a private one. Not
@@ -119,6 +121,26 @@ class SendWebhookJob implements ShouldBeEncrypted, ShouldQueue
                 'created_at' => now(),
             ]);
         }
+    }
+
+    /**
+     * HB-G243: connect to the addresses just checked, never a fresh DNS
+     * answer (DNS rebinding). A literal IP has no lookup to pin.
+     *
+     * @param  list<string>  $ips
+     */
+    private function pinTo(array $ips): array
+    {
+        $host = trim((string) parse_url($this->url, PHP_URL_HOST), '[]');
+
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            return [];
+        }
+
+        $port = parse_url($this->url, PHP_URL_PORT) ?? (parse_url($this->url, PHP_URL_SCHEME) === 'http' ? 80 : 443);
+        $addresses = implode(',', array_map(fn (string $ip) => str_contains($ip, ':') ? "[{$ip}]" : $ip, $ips));
+
+        return ['curl' => [CURLOPT_RESOLVE => ["{$host}:{$port}:{$addresses}"]]];
     }
 
     /** M4: every retry is exhausted — log loudly, this delivery is now lost until redelivered. */
