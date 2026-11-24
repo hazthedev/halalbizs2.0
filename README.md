@@ -226,8 +226,8 @@ the table up to 25.
 
 Failed scheduled tasks (`backup:run`, `certificates:watch-expiry`,
 `ledger:release-holds`, `orders:cancel-unshipped`) send one mail to
-`OPS_ALERT_EMAIL` (falls back to `ADMIN_EMAIL`); with neither set the admin bell
-gets the alert instead. Test: `tests/Feature/Ops/ScheduleFailureAlertTest.php`.
+`OPS_ALERT_EMAIL` (falls back to `ADMIN_EMAIL`); with neither set, or when the
+mail cannot be sent, the admin bell gets the alert instead. Test: `tests/Feature/Ops/ScheduleFailureAlertTest.php`.
 
 ## Docs
 
