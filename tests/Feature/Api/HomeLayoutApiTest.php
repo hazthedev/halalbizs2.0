@@ -175,7 +175,7 @@ test('config carries the minimum app version and maintenance notice an admin set
 // HB-APP-STATES gap 10: "Update required" needs somewhere to send the user.
 test('config names the store pages the app update button opens', function () {
     $this->getJson('/api/v1/config')
-        ->assertJsonPath('data.urls.store_android', 'https://play.google.com/store/apps/details?id=com.halalbizs.halalbizs')
+        ->assertJsonPath('data.urls.store_android', 'https://play.google.com/store/apps/details?id=com.halalbizs.app')
         ->assertJsonPath('data.urls.store_ios', null);
 
     config(['services.mobile_app.ios_url' => 'https://apps.apple.com/app/id1']);

@@ -38,7 +38,7 @@ void main() {
   testWidgets('Update required has an Update now button that opens the store page from config', (tester) async {
     usePhone(tester);
     final browser = FakeBrowser();
-    const store = 'https://play.google.com/store/apps/details?id=com.halalbizs.halalbizs';
+    const store = 'https://play.google.com/store/apps/details?id=com.halalbizs.app';
     final h = harness(
         () => {
               'min_app_version': '1.4.0',

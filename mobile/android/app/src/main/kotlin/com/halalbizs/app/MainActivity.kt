@@ -1,4 +1,4 @@
-package com.halalbizs.halalbizs
+package com.halalbizs.app
 
 import io.flutter.embedding.android.FlutterActivity
 
