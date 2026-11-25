@@ -44,6 +44,8 @@ class Product extends Model implements HasMedia
     protected function casts(): array
     {
         return [
+            'store_id' => 'integer',
+            'category_id' => 'integer',
             'condition' => ProductCondition::class,
             'status' => ProductStatus::class,
             'tax_class' => TaxClass::class,

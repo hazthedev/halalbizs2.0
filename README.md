@@ -145,6 +145,23 @@ HEIC is never accepted by an upload rule.
 
 Coverage: `tests/Feature/Security/StripPhotoMetadataTest.php`.
 
+### Encrypted columns (HB-G198)
+
+These columns are encrypted with `APP_KEY` (Laravel `encrypted` casts); the app
+reads them as plain values, the database holds ciphertext:
+
+- `stores.bank_details` (bank name, holder, account number)
+- `payouts.bank_snapshot` and `affiliate_payouts.bank_snapshot` (the payout copies)
+- `webhook_subscriptions.secret` (queued `SendWebhookJob` payloads are encrypted too)
+- `users.tin`
+
+**Losing `APP_KEY` loses these values for good.** Keep a copy of `APP_KEY` off
+the server before the migration that encrypts them
+(`2026_11_24_170100_encrypt_bank_secret_and_tin_columns`) runs. To rotate the
+key, put the old key in `APP_PREVIOUS_KEYS` so old rows still decrypt. None of
+these columns can be searched, sorted or uniquely indexed in SQL; compare them
+in PHP after reading. The migration's `down()` decrypts the rows back.
+
 ### Unshipped orders auto-cancel (`orders:cancel-unshipped`, hourly)
 
 PAY-14 (HB-DEC-1124d). A sub-order still **confirmed** or **processing**
@@ -182,8 +199,45 @@ Coverage: `tests/Feature/Orders/CancelUnshippedOrdersTest.php`.
   `curl -sI http://halalbizs.com/x?y=1 | grep -i location` and
   `curl -sI https://www.halalbizs.com/x?y=1 | grep -i location`, both
   `https://halalbizs.com/x?y=1`.
+- **Counted on success** (HB-G240): the chat and ticket limits take a slot with
+  one increment under a cache lock (`App\Support\SendLimit`) and give it back
+  when the save fails, so a failed send never uses up the allowance and two
+  sends at the same moment cannot both slip past the last slot. The lock is
+  needed because the file cache store increments as a read then a write; a
+  lock not had within 2 seconds is a refusal.
+- **Product attribute ticks** (HB-G238): at most 100 per product
+  (`Form::MAX_ATTRIBUTE_VALUES`); over that the list is refused before any
+  per-id lookup. "Generate copy" checks the ticks on their own and leaves the
+  form's other errors in place (HB-G239).
+- **Webhook pinning** (HB-G243): delivery connects only to the addresses the
+  URL check approved (`CURLOPT_RESOLVE`), so a DNS answer that changes between
+  check and connect is never used. Multicast (224.0.0.0/4, ff00::/8), NAT64
+  (64:ff9b::/96, 64:ff9b:1::/48) and the old site-local fec0::/10 are refused
+  with the private ranges.
+- **HSTS** (HB-G242, `SecurityHeaders`): `Strict-Transport-Security:
+  max-age=31536000` on https requests to `halalbizs.com` only. No
+  `includeSubDomains` (store subdomains are dropped, HB-DEC-1124e) and no
+  `preload`. The `www` and plain-http 301s come from `.htaccess` and carry none.
+- **CORS** (HB-G180, `config/cors.php`): browser calls to `api/*` are allowed
+  from `CORS_ALLOWED_ORIGINS` (comma separated, default
+  `https://halalbizs.com`). The phone app sends no Origin, so it is unaffected.
+- **Bare server IP** (HB-G244): a request whose Host is the server IP never
+  reaches this app (LiteSpeed answers it from the server's default site), and
+  `trustHosts()` in `bootstrap/app.php` refuses any Host outside the APP_URL
+  domain in production anyway.
+- **Admins** (HB-DEC-1124f item 9, HB-G234, HB-G237): an admin may remove
+  another admin, or change their permissions, only when holding every
+  permission that admin holds (a superadmin holds them all). The keep-one
+  superadmin count is a locking read inside the same transaction as the
+  removal, demotion or account deletion, and the last superadmin cannot delete
+  their own account (web or app).
+- **Password reset** (HB-G235): a reset on a never-verified account drops its
+  Google link (it came from a Google email Google never verified, maybe a
+  squatter's).
 
-Coverage: `tests/Feature/Security/ChecklistSmallItemsTest.php`.
+Coverage: `tests/Feature/Security/ChecklistSmallItemsTest.php`,
+`tests/Feature/Security/CorsTest.php`, `tests/Feature/Admin/SuperadminTest.php`,
+`tests/Feature/Auth/GoogleAuthTest.php`, `tests/Feature/Ops/LaunchHardeningTest.php`.
 
 ### User guides (HB-SOP)
 
@@ -194,6 +248,40 @@ admin (Support > Admin guide). `App\Support\SopGuide` renders them with
 `Str::markdown` and raw HTML stripped, so the reviewers' `<!-- CHECK -->` and
 `<!-- SHOT -->` comments never reach the page. Edit a guide by editing its file.
 Coverage: `tests/Feature/Help/SopGuideTest.php`.
+
+## Hosting runbook
+
+**PHP on the host (HOST-01), read 2026-11-20 on the live account:** PHP 8.4.28
+CLI (`/opt/alt/php84`, supported to 31 Dec 2028). Extensions the app needs, all
+present: `bcmath ctype curl dom fileinfo gd intl mbstring openssl pdo_mysql
+tokenizer xml zip`. Re-read with `php -v` and `php -m` after any host PHP change
+and update this line with the new date. The web side runs lsphp; its version and
+limits are in the host panel (CloudLinux selector), not visible from the shell.
+
+**Cron (OPS-05).** One scheduler line per site runs `php artisan schedule:run`
+every minute; everything in `routes/console.php` hangs off it (the queue worker
+too). Live `halalbizs.com` has 2 lines of the account crontab; the testing copy
+has none. The account crontab holds other sites' lines and tokens, so never
+print it whole. Edit it in six steps, never with a pipe into `crontab -`
+(a failed filter installs an empty table):
+
+1. `crontab -l > ~/backups/crontab-<date>-<why>` (the way back).
+2. `cp` that file to `/tmp/crontab.new`.
+3. Edit the copy only.
+4. `diff` backup against the copy: only the intended line may differ.
+5. `crontab /tmp/crontab.new`.
+6. `crontab -l > /tmp/crontab.after; cmp /tmp/crontab.after /tmp/crontab.new`,
+   then count the job lines against the count before.
+
+The account line count is logged daily (21 lines on 2026-11-20 to 2026-11-23);
+the old alert said 25 expected, and the owner has not yet said which count is
+right. Until that is closed, treat 21 as the current record and do not "repair"
+the table up to 25.
+
+Failed scheduled tasks (`backup:run`, `certificates:watch-expiry`,
+`ledger:release-holds`, `orders:cancel-unshipped`) send one mail to
+`OPS_ALERT_EMAIL` (falls back to `ADMIN_EMAIL`); with neither set, or when the
+mail cannot be sent, the admin bell gets the alert instead. Test: `tests/Feature/Ops/ScheduleFailureAlertTest.php`.
 
 ## Docs
 

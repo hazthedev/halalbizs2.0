@@ -31,6 +31,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'tin',
         'privacy_consented_at',
         'privacy_notice_version',
+        // HB-G226: set when the user chooses a password (sign-up, reset, change);
+        // NULL = random password nobody knows (Google sign-up, admin invite).
+        'password_set_at',
     ];
 
     protected $hidden = [
@@ -46,12 +49,26 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
             'privacy_consented_at' => 'datetime',
+            'password_set_at' => 'datetime',
             'password' => 'hashed',
             'is_superadmin' => 'boolean',
             'two_factor_method' => TwoFactorMethod::class,
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted:array',
+            'tin' => 'encrypted', // HB-G198
         ];
+    }
+
+    /**
+     * The keep-one superadmin count as a LOCKING read (HB-G234): call it inside
+     * the transaction that removes or demotes a superadmin, so a second removal
+     * running at the same moment waits and then sees the new count.
+     * ponytail: is_superadmin has no index, so this locks the users rows it
+     * scans for the (short) transaction; index the column if that ever hurts.
+     */
+    public static function lockedSuperadminCount(): int
+    {
+        return static::query()->where('is_superadmin', true)->lockForUpdate()->count();
     }
 
     public function addresses(): HasMany

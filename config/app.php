@@ -173,4 +173,11 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    | Where a failed scheduled task (backup, certificate expiry, ledger release,
+    | unshipped-order cancel) sends its one alert mail (HB-G206). Unset = the
+    | admin bell only, plus the log.
+    */
+    'ops_alert_email' => env('OPS_ALERT_EMAIL', env('ADMIN_EMAIL')),
+
 ];

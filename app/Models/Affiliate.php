@@ -18,6 +18,7 @@ class Affiliate extends Model
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
             'status' => AffiliateStatus::class,
             'commission_rate_bp' => 'integer',
             'clicks' => 'integer',

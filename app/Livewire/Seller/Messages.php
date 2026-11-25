@@ -6,6 +6,7 @@ use App\Livewire\Concerns\CurrentStore;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\ChatService;
+use App\Support\SendLimit;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -80,15 +81,15 @@ class Messages extends Component
         // SEC-38: per user, per conversation (config/limits.php).
         $key = 'chat-send:'.auth()->id().':'.$conversation->id;
 
-        if (RateLimiter::tooManyAttempts($key, config('limits.chat_messages_per_minute'))) {
+        // HB-G240: counted only once the message is saved.
+        $sent = SendLimit::attempt($key, config('limits.chat_messages_per_minute'), 60,
+            fn () => $chat->sendMessage($conversation, 'seller', auth()->user(), $this->body));
+
+        if (! $sent) {
             $this->addError('body', __('Too many requests. Try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($key)]));
 
             return;
         }
-
-        RateLimiter::hit($key, 60);
-
-        $chat->sendMessage($conversation, 'seller', auth()->user(), $this->body);
 
         $this->reset('body');
         unset($this->activeConversation);

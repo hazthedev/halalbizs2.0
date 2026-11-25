@@ -9,7 +9,7 @@ use App\Models\User;
 use App\Services\CoinService;
 
 beforeEach(function () {
-    config(['coins.enabled' => true, 'coins.redemption_rate_sen' => 1, 'coins.expiry_days' => 180]);
+    config(['coins.enabled' => true, 'coins.redemption_rate_sen' => 1, 'coins.expiry_months' => 12]);
 });
 
 test('earning credits balance + lifetime and is idempotent per reference', function () {

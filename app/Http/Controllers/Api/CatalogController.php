@@ -30,7 +30,7 @@ class CatalogController extends Controller
     /**
      * Filters mirror the web Listing: category (slug, with descendants), sort
      * (Listing::SORTS minus relevance), min_sen/max_sen on variant price, store (slug),
-     * certifier[] (JAKIM/MUIS/BPJPH/ESMA) and assure[] (valid12/dedicated/export).
+     * certifier[] (JAKIM/MUIS/BPJPH) and assure[] (valid12/dedicated/export).
      */
     public function products(Request $request)
     {

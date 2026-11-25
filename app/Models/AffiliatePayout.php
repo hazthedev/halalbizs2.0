@@ -20,7 +20,7 @@ class AffiliatePayout extends Model
         return [
             'status' => AffiliatePayoutStatus::class,
             'amount_sen' => 'integer',
-            'bank_snapshot' => 'array',
+            'bank_snapshot' => 'encrypted:array', // HB-G198
             'requested_at' => 'datetime',
             'processed_at' => 'datetime',
         ];

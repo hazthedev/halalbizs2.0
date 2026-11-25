@@ -9,6 +9,7 @@ use App\Models\CoinWallet;
 use App\Models\Order;
 use App\Models\SubOrder;
 use App\Models\User;
+use App\Notifications\CoinsExpiringNotification;
 use App\Support\CoinRedemptionResult;
 use App\Support\DisplayTime;
 use Illuminate\Database\Eloquent\Model;
@@ -386,6 +387,38 @@ class CoinService
         return $total;
     }
 
+    /**
+     * BIZ-04: one reminder per lot, :days before it lapses. Lots of one wallet
+     * entering the window on the same run share one notification. Returns the
+     * number of buyers reminded.
+     * ponytail: a daily check-in streak opens a lot a day, so an active buyer
+     * can get a reminder a day; batch per week if buyers find it noisy.
+     */
+    public function remindExpiring(int $days = 30): int
+    {
+        if (! $this->enabled()) {
+            return 0;
+        }
+
+        $lots = CoinTransaction::with('wallet.user')
+            ->where('amount', '>', 0)
+            ->where('remaining', '>', 0)
+            ->whereNull('expiry_reminded_at')
+            ->where('expires_at', '>', now())
+            ->where('expires_at', '<=', now()->addDays($days))
+            ->get();
+
+        foreach ($lots->groupBy('coin_wallet_id') as $walletLots) {
+            // Stamp first: a failed send loses one reminder, never sends two.
+            CoinTransaction::whereKey($walletLots->modelKeys())->update(['expiry_reminded_at' => now()]);
+            $walletLots->first()->wallet->user?->notify(
+                new CoinsExpiringNotification((int) $walletLots->sum('remaining'), $walletLots->min('expires_at'))
+            );
+        }
+
+        return $lots->groupBy('coin_wallet_id')->count();
+    }
+
     // ----- locked primitives -----
 
     private function lockWallet(int $walletId): CoinWallet
@@ -395,13 +428,17 @@ class CoinService
 
     private function creditLocked(CoinWallet $wallet, int $coins, CoinTransactionType $type, ?Model $reference, ?string $description, ?int $expiryDays = null): CoinTransaction
     {
-        $expiryDays ??= (int) config('coins.expiry_days', 180);
+        // BIZ-04: twelve calendar months after earning (config), not a day count.
+        $months = (int) config('coins.expiry_months', 12);
+        $expiresAt = $expiryDays !== null
+            ? ($expiryDays > 0 ? now()->addDays($expiryDays) : null)
+            : ($months > 0 ? now()->addMonthsNoOverflow($months) : null);
 
         $txn = $wallet->transactions()->create([
             'type' => $type,
             'amount' => $coins,
             'remaining' => $coins,
-            'expires_at' => $expiryDays > 0 ? now()->addDays($expiryDays) : null,
+            'expires_at' => $expiresAt,
             'reference_type' => $reference?->getMorphClass(),
             'reference_id' => $reference?->getKey(),
             'description' => $description,

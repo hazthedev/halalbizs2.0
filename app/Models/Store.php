@@ -44,10 +44,11 @@ class Store extends Model implements HasMedia
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
             'status' => StoreStatus::class,
             'holiday_mode' => 'boolean',
             'sst_registered' => 'boolean',
-            'bank_details' => 'array',
+            'bank_details' => 'encrypted:array', // HB-G198
             'approved_at' => 'datetime',
             'commission_rate' => 'decimal:2',
             'rating_avg' => 'decimal:2',

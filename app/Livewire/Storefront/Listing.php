@@ -82,7 +82,7 @@ class Listing extends Component
     public bool $cod = false;
 
     /**
-     * Certifying bodies to filter by (JAKIM / MUIS / BPJPH / ESMA). The
+     * Certifying bodies to filter by (JAKIM / MUIS / BPJPH). The
      * catalogue stores the authority in the certificate number's prefix
      * (MY-JKM-…, SG-MUIS-…), so this filters on that prefix rather than on a
      * separate column. The reference design puts this filter front and centre —

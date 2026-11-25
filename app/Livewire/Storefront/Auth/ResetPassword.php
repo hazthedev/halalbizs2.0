@@ -64,9 +64,15 @@ class ResetPassword extends Component
                 'token' => $this->token,
             ],
             function ($user) {
+                // HB-G235: a Google link on a never-verified account came from
+                // a Google email Google itself never verified (GoogleAuthController
+                // verifies the account whenever Google vouches). The reset just
+                // proved the inbox owner, so that link may be a squatter's: drop it.
                 $user->forceFill([
                     'password' => $this->password,
+                    'password_set_at' => now(),
                     'remember_token' => Str::random(60),
+                    'google_id' => $user->email_verified_at === null ? null : $user->google_id,
                 ])->save();
 
                 // A reset means the old password may be compromised — drop every
@@ -89,6 +95,16 @@ class ResetPassword extends Component
             $this->addError('email', __($status));
 
             return;
+        }
+
+        // HB-G226: this page is open to signed-in users (the bank-form hint
+        // sends Google sign-ups here). A reset never signs anyone in; it signs
+        // this browser out, whoever it was, and starts a fresh guest session
+        // so the message below reaches the login page.
+        if (auth()->check()) {
+            auth()->logout();
+            session()->invalidate();
+            session()->regenerateToken();
         }
 
         session()->flash('status', __('Password updated — log in with your new password.'));

@@ -51,6 +51,7 @@ class AuthController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
+            'password_set_at' => now(),
             'phone' => $data['phone'] ?? null,
             'privacy_consented_at' => now(),
             'privacy_notice_version' => config('app.privacy_notice_version'),

@@ -25,6 +25,7 @@ use App\Support\UploadName;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -84,10 +85,24 @@ class Form extends Component
      * sync: digits only, a real value, no repeats (SEC-32). Never cast junk
      * into an id: intval('abc') is 0, intval([5]) is 1, a wrong write.
      */
-    private const ATTRIBUTE_RULES = [
-        'attributeValueIds' => ['array'],
-        'attributeValueIds.*' => ['integer', 'min:1', 'distinct', 'exists:attribute_values,id'],
-    ];
+    private function attributeRules(): array
+    {
+        // Over the cap, every id is skipped: one exists lookup per id (and the
+        // O(n²) distinct check) never runs on a huge list (HB-G238).
+        $tooMany = Rule::excludeIf(fn () => count($this->attributeValueIds) > self::MAX_ATTRIBUTE_VALUES);
+
+        return [
+            'attributeValueIds' => ['array', 'max:'.self::MAX_ATTRIBUTE_VALUES],
+            'attributeValueIds.*' => [$tooMany, 'integer', 'min:1', 'distinct', 'exists:attribute_values,id'],
+        ];
+    }
+
+    /**
+     * HB-G238: most ticks one product may carry. Live had no attributes at all
+     * on 2026-11-24 (read 16:08), so no real count to double: 100 covers ten
+     * attributes of ten values each, ticked in full.
+     */
+    private const MAX_ATTRIBUTE_VALUES = 100;
 
     /** Trust/detail metafields keyed by definition key (M2.7). */
     public array $metafields = [];
@@ -434,7 +449,24 @@ class Form extends Component
             return;
         }
 
-        $this->validate(self::ATTRIBUTE_RULES);
+        // HB-G239: validate() would clear every other error on the form (and a
+        // failure would replace them), so check the attribute ids on their own.
+        $check = Validator::make(['attributeValueIds' => $this->attributeValueIds], $this->attributeRules(), [], ['attributeValueIds.*' => __('attribute')]);
+        $errors = $this->getErrorBag();
+
+        foreach (array_keys($errors->messages()) as $key) {
+            if (str_starts_with($key, 'attributeValueIds')) {
+                $errors->forget($key);
+            }
+        }
+
+        if ($check->fails()) {
+            foreach ($check->errors()->messages() as $key => $messages) {
+                $this->addError($key, $messages[0]);
+            }
+
+            return;
+        }
 
         $attributes = AttributeValue::query()
             ->whereIn('id', $this->attributeValueIds)
@@ -844,7 +876,7 @@ class Form extends Component
             'lengthMm' => ['nullable', 'integer', 'min:0'],
             'widthMm' => ['nullable', 'integer', 'min:0'],
             'heightMm' => ['nullable', 'integer', 'min:0'],
-            ...self::ATTRIBUTE_RULES,
+            ...$this->attributeRules(),
         ], [
             'newVideo.mimetypes' => __('The video must be an MP4 or WebM file.'),
             'newVideo.max' => __('The video must be 30MB or smaller.'),

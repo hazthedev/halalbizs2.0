@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookSubscription;
 use App\Support\HostResolver;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Http;
@@ -15,7 +16,8 @@ use Illuminate\Support\Str;
  * Delivers one signed webhook (M1.7). The body is HMAC-SHA256 signed with the
  * subscription secret (X-Webhook-Signature) so receivers can verify authenticity.
  */
-class SendWebhookJob implements ShouldQueue
+// HB-G198: the payload carries the signing secret, so the queued row is encrypted too.
+class SendWebhookJob implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
 
@@ -48,7 +50,9 @@ class SendWebhookJob implements ShouldQueue
         // M5: re-check at SEND time, not only whenever a subscription is
         // created — DNS can be re-pointed after the fact, and this is the
         // only place that actually makes an outbound network call.
-        if (! WebhookSubscription::isUrlSafe($this->url)) {
+        $ips = WebhookSubscription::checkedIps($this->url);
+
+        if ($ips === null) {
             // A name that does not resolve may be a resolver hiccup: throw so
             // the queue retries it (tries/backoff), each try re-checked here.
             // Nothing is sent while it does not resolve.
@@ -83,7 +87,7 @@ class SendWebhookJob implements ShouldQueue
             // logical dedupe key when we have one, else one id per job
             // instance via the queued constructor property.
             'X-Webhook-Id' => $this->idempotencyKey ?? $this->fallbackDeliveryId,
-        ])->timeout(10)->withoutRedirecting()->withBody($body, 'application/json')->post($this->url);
+        ])->timeout(10)->withoutRedirecting()->withOptions($this->pinTo($ips))->withBody($body, 'application/json')->post($this->url);
 
         // SEC-46: a redirect is never followed: its target skipped the check
         // above, so a public host could bounce us to a private one. Not
@@ -117,6 +121,26 @@ class SendWebhookJob implements ShouldQueue
                 'created_at' => now(),
             ]);
         }
+    }
+
+    /**
+     * HB-G243: connect to the addresses just checked, never a fresh DNS
+     * answer (DNS rebinding). A literal IP has no lookup to pin.
+     *
+     * @param  list<string>  $ips
+     */
+    private function pinTo(array $ips): array
+    {
+        $host = trim((string) parse_url($this->url, PHP_URL_HOST), '[]');
+
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            return [];
+        }
+
+        $port = parse_url($this->url, PHP_URL_PORT) ?? (parse_url($this->url, PHP_URL_SCHEME) === 'http' ? 80 : 443);
+        $addresses = implode(',', array_map(fn (string $ip) => str_contains($ip, ':') ? "[{$ip}]" : $ip, $ips));
+
+        return ['curl' => [CURLOPT_RESOLVE => ["{$host}:{$port}:{$addresses}"]]];
     }
 
     /** M4: every retry is exhausted — log loudly, this delivery is now lost until redelivered. */

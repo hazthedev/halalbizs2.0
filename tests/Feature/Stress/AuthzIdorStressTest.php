@@ -175,6 +175,9 @@ test('#2 observation: a scoped admin CAN reach its own section + the ungated das
 test('#3 an admin cannot remove their own admin access, but can remove another', function () {
     $admin = User::factory()->create(['two_factor_method' => 'email']);
     $admin->assignRole('admin');
+    // HB-DEC-1124f item 9: the remover must hold every permission of the
+    // admin removed below.
+    $admin->givePermissionTo('cms.manage');
 
     // Self-removal is blocked.
     Livewire::actingAs($admin)->test(Staff::class)->call('removeAdmin', $admin->id);
