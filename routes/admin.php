@@ -31,6 +31,7 @@ Route::middleware('can:products.moderate')->group(function () {
     Route::get('/catalog/attributes', Admin\Catalog\Attributes::class)->name('catalog.attributes');
     Route::get('/catalog/brands', Admin\Catalog\Brands::class)->name('catalog.brands');
     Route::get('/catalog/moderation', Admin\Catalog\Moderation::class)->name('catalog.moderation');
+    Route::get('/catalog/halal-wording', Admin\Catalog\HalalWording::class)->name('catalog.halal-wording');
     Route::get('/catalog/reviews', Admin\Catalog\Reviews::class)->name('catalog.reviews');
 });
 

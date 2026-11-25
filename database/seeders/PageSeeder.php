@@ -189,6 +189,8 @@ class PageSeeder extends Seeder
                 <p>Perishables, intimate goods, and made-to-order items may be non-returnable unless faulty.</p>
                 <h3>5. Cash on delivery</h3>
                 <p>COD refunds are processed as bank transfers or store credit once the return is verified.</p>
+                <h3>6. Return delivery cost</h3>
+                <p>If the item is faulty or the wrong item was sent, the seller pays the re-delivery. If you change your mind, you pay.</p>
                 <p><em>This is baseline copy pending review by qualified Malaysian legal counsel.</em></p>
                 HTML,
                 'body_ms' => <<<HTML
@@ -203,6 +205,8 @@ class PageSeeder extends Seeder
                 <p>Barangan mudah rosak, barangan peribadi, dan item dibuat atas pesanan mungkin tidak boleh dipulangkan kecuali rosak.</p>
                 <h3>5. Tunai semasa penghantaran</h3>
                 <p>Bayaran balik COD diproses sebagai pemindahan bank atau kredit kedai selepas pemulangan disahkan.</p>
+                <h3>6. Kos penghantaran semula</h3>
+                <p>Jika barang rosak atau salah dihantar, penjual menanggung kos penghantaran semula. Jika anda berubah fikiran, anda menanggungnya.</p>
                 <p><em>Ini ialah kandungan asas menunggu semakan oleh peguam Malaysia yang berkelayakan.</em></p>
                 HTML,
             ],

@@ -53,7 +53,7 @@ Every list works the same way: the search box and filters sit at the top, **Rows
 3. Set **Halal certificate**: **Inherit from parent**, **Required to list** or **Not required**. Required means a seller cannot list there without an approved certificate covering the product.
 4. The gate starts on 2 December 2026. On live, the required categories are **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** and **Pharma & Supplements**.
 5. Select **Create category** or **Save changes**.
-6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (sort by **Rating** or **Posted**, hide unsuitable reviews), and **Moderation**. The **Attributes** and **Brands** lists have a search box, sortable headers and **Rows per page** at the top right of the table.
+6. Related catalog menus: **Attributes**, **Brands**, **Reviews** (sort by **Rating** or **Posted**, hide unsuitable reviews), **Moderation**, and **Halal wording** (listings that say halal in the name or description but have no approved, in-force certificate; a review list only, nothing is blocked). The **Attributes** and **Brands** lists have a search box, sortable headers and **Rows per page** at the top right of the table.
 7. **Moderation**: when **New products need admin approval before going live** is on (System > Settings), new products wait here. Select **Approve**, or **Reject** with a reason (the product returns to drafts and the seller gets the reason), or **Ban** to remove it. You can bulk **Approve selected**, **Reject selected**, **Ban selected**.
 
 ## 6. Commission
@@ -103,7 +103,7 @@ Every list works the same way: the search box and filters sit at the top, **Rows
 5. **Content > Pages**: **Add page** for terms, FAQ and similar. Set **Slug**, titles and bodies per language, search title and description, **Share picture**, **Show a link to this page in the website footer** and **Published**. System pages keep their slug. Terms and privacy stay published because checkout links to them.
 6. **Footer & contact**: update **Email**, **Phone**, **WhatsApp**, **Address** and social links, then **Save contact**.
 7. **Content > Flash sales**: enter **Title**, **Starts**, **Ends**, select **Create flash sale**, then **Add deal** with a **Promo RM** price, **Qty** and **Per buyer** limit.
-8. **Support > Help articles** and **Support > Tickets**: reply with **Send reply**, **Mark urgent** / **Mark normal**, **Close ticket**, **Reopen ticket**. Tickets and help articles have a search box, sortable headers and **Rows per page** at the top right of the table; help articles also filter by category.
+8. **Support > Help articles** and **Support > Tickets**: reply with **Send reply**, **Mark urgent** / **Mark normal**, **Close ticket**, **Reopen ticket**. Tickets also have a **Category** filter: choose **Privacy request** to see the privacy request log, or **Report a listing** for buyer reports. Tickets and help articles have a search box, sortable headers and **Rows per page** at the top right of the table; help articles also filter by category.
 9. **System > Localization**: turn languages on or off and set currencies and exchange rates (display only, charges stay in MYR). For each currency type the **Rate** and the **Margin %**, then select **Save rate**.
 
 ## 11. Coins and vouchers settings

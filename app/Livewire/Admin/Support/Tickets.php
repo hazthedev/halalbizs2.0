@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Support;
 
+use App\Enums\TicketCategory;
 use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
 use App\Models\SupportTicket;
@@ -26,6 +27,10 @@ class Tickets extends Component
     #[Url]
     public string $tab = 'open';
 
+    /** '' = all; a TicketCategory value filters (privacy = the privacy-request log). */
+    #[Url(except: '')]
+    public string $category = '';
+
     #[Url(as: 'ticket')]
     public ?int $selectedId = null;
 
@@ -33,7 +38,7 @@ class Tickets extends Component
 
     protected function tableFilters(): array
     {
-        return ['tab'];
+        return ['tab', 'category'];
     }
 
     protected function tableSorts(): array
@@ -144,6 +149,7 @@ class Tickets extends Component
             ->status(TicketStatus::tryFrom($this->tab) ?? TicketStatus::Open)
             ->with('user')
             ->withCount('replies')
+            ->when(TicketCategory::tryFrom($this->category), fn ($q, $category) => $q->where('category', $category->value))
             ->when(trim($this->search) !== '', fn ($q) => $q->where(fn ($q) => $q
                 ->whereRaw(JsonSearch::clause('subject'), [$term])
                 ->orWhereHas('user', fn ($u) => $u->whereRaw(JsonSearch::clause('name'), [$term])->orWhereRaw(JsonSearch::clause('email'), [$term]))));

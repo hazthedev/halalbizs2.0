@@ -72,6 +72,15 @@
         <x-ui.section-heading as="h1" :title="__('New support ticket')" :subtitle="__('Tell us what happened — order numbers help us answer faster.')" />
 
         <form wire:submit="create" class="mt-6 space-y-4">
+            <div>
+                <label for="ticket-category" class="mb-1.5 block text-[13px] font-medium text-ink">{{ __('Category') }}</label>
+                <select id="ticket-category" wire:model="category"
+                        class="block min-h-11 w-full rounded-[var(--radius-control)] border border-line-strong bg-surface px-3 text-sm text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald">
+                    @foreach (\App\Enums\TicketCategory::cases() as $option)
+                        <option value="{{ $option->value }}">{{ $option->label() }}</option>
+                    @endforeach
+                </select>
+            </div>
             <x-ui.input :label="__('Subject')" wire:model="subject" :error="$errors->first('subject')"
                         placeholder="{{ __('e.g. Order MP2606… hasn’t arrived') }}" />
             <div>

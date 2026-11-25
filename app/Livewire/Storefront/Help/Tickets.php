@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Storefront\Help;
 
+use App\Enums\TicketCategory;
 use App\Enums\TicketPriority;
+use App\Models\Product;
 use App\Enums\TicketStatus;
 use App\Support\SendLimit;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -24,6 +27,12 @@ class Tickets extends Component
 
     public bool $showForm = false;
 
+    /** Product slug from the "Report this listing" link: opens the form prefilled. */
+    #[Url(except: '')]
+    public string $report = '';
+
+    public string $category = 'general';
+
     public string $subject = '';
 
     public string $body = '';
@@ -32,6 +41,15 @@ class Tickets extends Component
 
     public function mount(): void
     {
+        $product = $this->report !== '' ? Product::query()->live()->where('slug', $this->report)->first() : null;
+
+        if ($product !== null) {
+            $this->category = TicketCategory::ReportListing->value;
+            $this->subject = mb_substr(__('Report this listing').': '.$product->getTranslation('name', app()->getLocale()), 0, 120);
+            $this->body = __('Listing').': '.route('product.show', $product)."\n\n".__('What is wrong with it?').' ';
+            $this->showForm = true;
+        }
+
         if ($this->selectedId !== null) {
             $this->ownTickets()->findOrFail($this->selectedId); // 404 on foreign deep links
         }
@@ -39,20 +57,21 @@ class Tickets extends Component
 
     public function startTicket(): void
     {
-        $this->reset(['subject', 'body', 'selectedId']);
+        $this->reset(['subject', 'body', 'selectedId', 'category']);
         $this->resetErrorBag();
         $this->showForm = true;
     }
 
     public function cancelForm(): void
     {
-        $this->reset(['showForm', 'subject', 'body']);
+        $this->reset(['showForm', 'subject', 'body', 'category', 'report']);
         $this->resetErrorBag();
     }
 
     public function create(): void
     {
         $this->validate([
+            'category' => ['required', Rule::enum(TicketCategory::class)],
             'subject' => ['required', 'string', 'min:5', 'max:120'],
             'body' => ['required', 'string', 'min:20', 'max:3000'],
         ], attributes: [
@@ -71,6 +90,7 @@ class Tickets extends Component
                     'subject' => strip_tags(trim($this->subject)),
                     'status' => TicketStatus::Open,
                     'priority' => TicketPriority::Normal,
+                    'category' => $this->category,
                 ]);
 
                 $ticket->replies()->create([
@@ -89,7 +109,7 @@ class Tickets extends Component
             return;
         }
 
-        $this->reset(['showForm', 'subject', 'body']);
+        $this->reset(['showForm', 'subject', 'body', 'category', 'report']);
         $this->selectedId = $ticket->id;
         $this->dispatch('toast', message: __('Ticket created — support usually replies within one working day.'));
     }

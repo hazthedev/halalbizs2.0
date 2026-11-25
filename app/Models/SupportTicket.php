@@ -15,7 +15,7 @@ class SupportTicket extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'subject', 'status', 'priority'];
+    protected $fillable = ['user_id', 'subject', 'status', 'priority', 'category'];
 
     protected function casts(): array
     {

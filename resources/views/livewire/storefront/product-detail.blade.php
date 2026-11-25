@@ -326,6 +326,12 @@
                     </div>
                 @endif
 
+                {{-- HB-LAW-18: report a listing -> prefilled help ticket; guests sign in first --}}
+                <p class="mt-4 text-[13px] text-ink-soft">
+                    <a href="{{ route('help.tickets', ['report' => $product->slug]) }}" rel="nofollow" data-report-listing
+                       class="underline underline-offset-2 hover:text-ink">{{ auth()->check() ? __('Report this listing') : __('Sign in to report this listing') }}</a>
+                </p>
+
                 {{-- Badges row --}}
                 @if ($codAvailable)
                     <div class="mt-3 flex flex-wrap gap-2">

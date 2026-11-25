@@ -60,6 +60,7 @@
                             ['admin.catalog.brands', __('Brands'), 'admin.catalog.brands'],
                             ['admin.catalog.moderation', __('Moderation'), 'admin.catalog.moderation'],
                             ['admin.catalog.certificates', __('Halal certificates'), 'admin.catalog.certificates'],
+                            ['admin.catalog.halal-wording', __('Halal wording'), 'admin.catalog.halal-wording'],
                             ['admin.catalog.reviews', __('Reviews'), 'admin.catalog.reviews'],
                         ],
                         __('Orders') => [
