@@ -823,3 +823,15 @@ test('G247 OFF: an admin-approved WHIP certificate stays approved through the sy
 
     expect(whipRow()->status)->toBe(CertificateStatus::Approved);
 });
+
+test('G247 OFF: relinking an approved WHIP certificate keeps it approved', function () {
+    whipAutoApprove(false);
+    whipCert();
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    Livewire::actingAs(whipAdmin())->test(AdminCertificates::class)->call('approve', whipRow()->id);
+
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')->assertHasNoErrors();
+
+    expect(whipRow()->status)->toBe(CertificateStatus::Approved);
+});

@@ -70,7 +70,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 9. If a product cannot go live, the form shows **This product cannot go live yet** with the reason and a **Go to Halal certificates** link. Typical reasons: no certificate, the certificate expired, or it is still being checked.
 10. Cosmetics and pharmaceutical categories follow the same rule as food from 2 December 2026: no approved, valid certificate, no listing. Products with a certificate show the halal badge.
 11. Before 2 December 2026 the same check only reports and does not block. The categories that need a certificate are **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** and **Pharma & Supplements**.
-12. Find my WHIP certificates: enter your **Company SSM number** and select **Find my certificates**, then **Link certificate**. Use **Import product drafts** to create draft products from a linked certificate.
+12. Find my WHIP certificates: enter your **Company SSM number** and select **Find my certificates**, then **Link certificate**. Use **Import product drafts** to create draft products from a linked certificate. A linked certificate can wait for our team to check it before the halal badge shows.
 
 ## 7. Handle orders
 

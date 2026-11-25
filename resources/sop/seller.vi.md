@@ -70,7 +70,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 9. Nếu sản phẩm chưa thể lên sàn, biểu mẫu hiện **This product cannot go live yet** kèm lý do và liên kết **Go to Halal certificates**. Lý do thường gặp: chưa có chứng nhận, chứng nhận đã hết hạn, hoặc đang được kiểm tra.
 10. Từ ngày 2 tháng 12 năm 2026, danh mục mỹ phẩm và dược phẩm theo cùng quy định như thực phẩm: không có chứng nhận hợp lệ đã được duyệt thì không được đăng. Sản phẩm có chứng nhận hiện nhãn halal.
 11. Trước ngày 2 tháng 12 năm 2026, kiểm tra này chỉ báo cáo và không chặn. Các danh mục cần chứng nhận là **Food & Snacks**, **Groceries & Pantry**, **Drinks**, **Home & Living > Groceries**, **Cosmetics & Care** và **Pharma & Supplements**.
-12. Find my WHIP certificates: nhập **Company SSM number** và chọn **Find my certificates**, rồi **Link certificate**. Dùng **Import product drafts** để tạo bản nháp sản phẩm từ chứng nhận đã liên kết.
+12. Find my WHIP certificates: nhập **Company SSM number** và chọn **Find my certificates**, rồi **Link certificate**. Dùng **Import product drafts** để tạo bản nháp sản phẩm từ chứng nhận đã liên kết. Chứng nhận đã liên kết có thể phải chờ đội ngũ của chúng tôi kiểm tra trước khi huy hiệu halal hiển thị.
 
 ## 7. Xử lý đơn hàng
 

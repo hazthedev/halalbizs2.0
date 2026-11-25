@@ -29,7 +29,14 @@ class ScheduleFailureAlert
             // G249: one alert per task per Malaysia day; an every-minute job failing
             // all day would otherwise send 1,440. The log above keeps every failure.
             $today = DisplayTime::now();
-            if (! Cache::add("schedule-failure-alert:{$command}:{$today->toDateString()}", true, $today->copy()->endOfDay())) {
+            try {
+                $first = Cache::add("schedule-failure-alert:{$command}:{$today->toDateString()}", true, $today->copy()->endOfDay());
+            } catch (\Throwable $e) {
+                // Cache down: alert anyway; a duplicate mail beats a silent failure.
+                $first = true;
+                Log::error("Schedule failure alert cap for {$command} unavailable: ".$e->getMessage());
+            }
+            if (! $first) {
                 return;
             }
 

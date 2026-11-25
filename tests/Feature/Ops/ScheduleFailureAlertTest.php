@@ -87,3 +87,12 @@ test('a task that succeeds sends nothing', function () {
 
     expect(app('mail.manager')->mailer('array')->getSymfonyTransport()->messages())->toHaveCount(0);
 });
+
+test('G249: a cache that throws still sends the alert and never breaks the scheduler', function () {
+    config(['app.ops_alert_email' => 'ops@example.test', 'mail.default' => 'array']);
+    Illuminate\Support\Facades\Cache::shouldReceive('add')->andThrow(new RuntimeException('cache down'));
+
+    failTask('orders:expire-unpaid');
+
+    expect(app('mail.manager')->mailer('array')->getSymfonyTransport()->messages())->toHaveCount(1);
+});
