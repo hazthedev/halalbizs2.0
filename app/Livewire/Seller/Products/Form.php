@@ -7,12 +7,10 @@ use App\Enums\ProductStatus;
 use App\Enums\TaxClass;
 use App\Livewire\Concerns\CurrentStore;
 use App\Models\Attribute;
-use App\Models\AttributeValue;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductVariant;
-use App\Services\ListingCopyService;
 use App\Services\MarketplaceLinkResolver;
 use App\Services\ProductPublishPolicy;
 use App\Settings\ModerationSettings;
@@ -25,7 +23,6 @@ use App\Support\UploadName;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -436,50 +433,6 @@ class Form extends Component
     public function saveDraft(): void
     {
         $this->save(ProductStatus::Draft);
-    }
-
-    /** Generate multilingual draft description copy with AI (M1.6). */
-    public function generateCopy(ListingCopyService $copy): void
-    {
-        $title = trim($this->name['en']) !== '' ? trim($this->name['en']) : trim($this->name['ms']);
-
-        if ($title === '') {
-            $this->dispatch('toast', message: __('Add a product name first.'), type: 'error');
-
-            return;
-        }
-
-        // HB-G239: validate() would clear every other error on the form (and a
-        // failure would replace them), so check the attribute ids on their own.
-        $check = Validator::make(['attributeValueIds' => $this->attributeValueIds], $this->attributeRules(), [], ['attributeValueIds.*' => __('attribute')]);
-        $errors = $this->getErrorBag();
-
-        foreach (array_keys($errors->messages()) as $key) {
-            if (str_starts_with($key, 'attributeValueIds')) {
-                $errors->forget($key);
-            }
-        }
-
-        if ($check->fails()) {
-            foreach ($check->errors()->messages() as $key => $messages) {
-                $this->addError($key, $messages[0]);
-            }
-
-            return;
-        }
-
-        $attributes = AttributeValue::query()
-            ->whereIn('id', $this->attributeValueIds)
-            ->get()
-            ->map(fn (AttributeValue $value) => $value->getTranslation('value', 'en'))
-            ->all();
-
-        $generated = $copy->generate($title, $attributes);
-        $this->description['en'] = $generated['en'];
-        $this->description['ms'] = $generated['ms'];
-        $this->description['vi'] = $generated['vi'];
-
-        $this->dispatch('toast', message: __('Draft copy generated — review and edit before publishing.'));
     }
 
     public function publish(): void

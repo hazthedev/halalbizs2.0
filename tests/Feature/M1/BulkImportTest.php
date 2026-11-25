@@ -3,19 +3,16 @@
 use App\Enums\ProductStatus;
 use App\Enums\StoreStatus;
 use App\Livewire\Seller\Products\BulkImport;
-use App\Livewire\Seller\Products\Form;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\ListingCopyService;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
-    config(['services.anthropic.key' => null]); // force the deterministic template path
 });
 
 function importSeller(): User
@@ -26,32 +23,6 @@ function importSeller(): User
 
     return $seller;
 }
-
-test('the listing copy service falls back to multilingual template copy without an API key', function () {
-    $copy = app(ListingCopyService::class)->generate('Cotton Tee', ['Red', 'Large']);
-
-    expect($copy['en'])->toContain('Cotton Tee')
-        ->and($copy['en'])->toContain('Red')
-        ->and($copy['ms'])->not->toBe('')
-        ->and($copy['vi'])->toContain('chất lượng');
-});
-
-test('the product form fills a draft description with AI', function () {
-    Livewire::actingAs(importSeller())
-        ->test(Form::class)
-        ->set('name.en', 'Cotton Tee')
-        ->call('generateCopy')
-        ->assertSet('description.en', fn ($value) => str_contains((string) $value, 'Cotton Tee'))
-        ->assertSet('description.ms', fn ($value) => trim((string) $value) !== '')
-        ->assertSet('description.vi', fn ($value) => trim((string) $value) !== '');
-});
-
-test('the product form does not show the AI description button (hidden 2026-11-03)', function () {
-    Livewire::actingAs(importSeller())
-        ->test(Form::class)
-        ->assertDontSee('Generate with AI')
-        ->assertDontSeeHtml('wire:click="generateCopy"');
-});
 
 test('bulk import creates draft products and reports row errors', function () {
     $seller = importSeller();

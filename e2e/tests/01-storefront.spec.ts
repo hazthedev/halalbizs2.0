@@ -90,15 +90,4 @@ test.describe('M2 storefront journey', () => {
         await expect(page.locator('input[value="Demo Buyer"], input[wire\\:model\\.defer="name"], input[wire\\:model="name"]').first()).toBeVisible();
         await page.screenshot({ path: `e2e/screenshots/m2-account-${test.info().project.name}.png`, fullPage: true });
     });
-
-    test('shopping concierge opens from its viewport launcher', async ({ page }) => {
-        await page.goto('/');
-        const launcher = test.info().project.name === 'mobile' ? 'Ask the concierge' : 'Open shopping assistant';
-        await page.getByRole('button', { name: launcher, exact: true }).click();
-
-        // The panel reveals its composer + brand heading.
-        await expect(page.getByPlaceholder(/Ask about products/)).toBeVisible();
-        await expect(page.getByText('Shopping concierge')).toBeVisible();
-        await page.screenshot({ path: `e2e/screenshots/m2-concierge-${test.info().project.name}.png`, fullPage: true });
-    });
 });

@@ -31,7 +31,6 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 4. Bỏ từng bộ lọc bằng nhãn của nó, hoặc chọn **Xoá tất cả**. Chọn **Tải thêm** để xem thêm sản phẩm.
 5. Mở **Ưu đãi chớp nhoáng** từ trang chủ để xem ưu đãi có thời hạn. Mỗi ưu đãi hiện **Kết thúc sau**, số lượng còn lại, hoặc **Đã bán hết**.
 6. Chọn tên cửa hàng để vào trang cửa hàng. Dùng **Theo dõi** để cửa hàng nằm trong **Cửa hàng đã theo dõi** ở menu tài khoản.
-7. Chọn biểu tượng trò chuyện (**Hỏi trợ lý mua sắm**) để hỏi trợ lý mua sắm bằng tiếng Anh hoặc Bahasa Melayu.
 
 ## 4. Kiểm tra nhãn halal và chứng nhận
 

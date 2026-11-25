@@ -31,7 +31,6 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 4. Remove one filter with its chip, or select **Clear all**. Select **Load more** to see more products.
 5. Open **Flash Sale** from the home page for time-limited deals. Each deal shows **Ends in**, how many are left, or **Sold out**.
 6. Select a store name to visit the shop page. Use **Follow** to keep the shop under **Followed shops** in your account menu.
-7. Select the chat icon (**Ask the concierge**) to ask the shopping assistant for ideas in English or Bahasa Melayu.
 
 ## 4. Check the halal badge and certificate
 

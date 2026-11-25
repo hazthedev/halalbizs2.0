@@ -23,7 +23,7 @@ use Illuminate\Validation\Rule;
 /**
  * Read-first public catalog API (docs/ROADMAP.md M1.7). Reuses the same models
  * + Scout search as the storefront — no parallel data path. The substrate for
- * a native app, partner feeds and the future AI concierge tools.
+ * a native app and partner feeds.
  */
 class CatalogController extends Controller
 {

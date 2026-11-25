@@ -13,19 +13,6 @@ return [
         'renew_url' => env('WHIP_RENEW_URL', 'https://whip.wghtc.com/company_login.php'),
     ],
 
-    // Anthropic Claude — AI listing copy (M1.6) + shop concierge (M2.2).
-    'anthropic' => [
-        'key' => env('ANTHROPIC_API_KEY'),
-        'model' => env('ANTHROPIC_MODEL', 'claude-haiku-4-5-20251001'),
-        'timeout' => (int) env('ANTHROPIC_TIMEOUT', 30),
-    ],
-
-    // Bilingual shop concierge (M2.2). On by default; degrades to a
-    // deterministic Scout-search assistant when no Claude key is configured.
-    'concierge' => [
-        'enabled' => env('CONCIERGE_ENABLED', true),
-    ],
-
     // Firebase Cloud Messaging (mobile plan §5): path to the service-account
     // JSON. Unset = FcmChannel is a silent no-op, so a host without a Firebase
     // project still sends every database/mail notification as before.
