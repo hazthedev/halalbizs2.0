@@ -73,7 +73,7 @@ class RunBackup extends Command
             return false;
         }
 
-        Storage::disk($disk)->put($target, (string) file_get_contents($file));
+        $this->write($disk, $target, (string) file_get_contents($file));
 
         return true;
     }
@@ -98,8 +98,18 @@ class RunBackup extends Command
             return false;
         }
 
-        Storage::disk($disk)->put($target, $result->output());
+        $this->write($disk, $target, $result->output());
 
         return true;
+    }
+
+    /** G246: a local dump is owner-only (0600) from the moment it exists. */
+    private function write(string $disk, string $target, string $contents): void
+    {
+        Storage::disk($disk)->put($target, $contents);
+
+        if (config("filesystems.disks.{$disk}.driver") === 'local') {
+            chmod(Storage::disk($disk)->path($target), 0600);
+        }
     }
 }

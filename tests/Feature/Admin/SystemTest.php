@@ -68,6 +68,31 @@ test('moderation settings persist', function () {
     expect(app(ModerationSettings::class)->refresh()->require_product_approval)->toBeTrue();
 });
 
+test('G247: a superadmin turns WHIP auto-approve on from the moderation card', function () {
+    $admin = systemAdmin();
+    $admin->forceFill(['is_superadmin' => true])->save();
+
+    Livewire::actingAs($admin->fresh())->test(Settings::class)
+        ->assertSee('Approve WHIP-confirmed certificates without admin review')
+        ->set('whipAutoApprove', true)
+        ->call('saveModeration')
+        ->assertHasNoErrors();
+
+    expect(app(ModerationSettings::class)->refresh()->whip_auto_approve)->toBeTrue();
+});
+
+test('G247: an admin who is not a superadmin cannot change WHIP auto-approve', function () {
+    Livewire::actingAs(systemAdmin())->test(Settings::class)
+        ->assertDontSee('Approve WHIP-confirmed certificates without admin review')
+        ->set('whipAutoApprove', true)
+        ->set('requireProductApproval', true)
+        ->call('saveModeration');
+
+    $settings = app(ModerationSettings::class)->refresh();
+    expect($settings->whip_auto_approve)->toBeFalse()
+        ->and($settings->require_product_approval)->toBeTrue();
+});
+
 test('an invalid RM amount blocks the order settings save', function () {
     Livewire::actingAs(systemAdmin())
         ->test(Settings::class)

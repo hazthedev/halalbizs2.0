@@ -8,6 +8,7 @@ use App\Models\HalalCertificate;
 use App\Models\HalalCertificateEvent;
 use App\Models\Product;
 use App\Services\Whip\WhipDirectory;
+use App\Settings\ModerationSettings;
 use App\Support\DisplayTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -143,11 +144,12 @@ class Form extends Component
         }
 
         $verified = false;
+        $approved = false;
         $parked = collect();
 
         $store = $this->currentStore();
         [$answer, $whip] = app(WhipDirectory::class)->check($data['number'], $store->registration_no ?: $this->registrationNo);
-        DB::transaction(function () use ($certificate, $data, $answer, $whip, &$verified, &$parked) {
+        DB::transaction(function () use ($certificate, $data, $answer, $whip, &$verified, &$approved, &$parked) {
             $store = $this->currentStore();
 
             // The registration number is self-declared the first time and then
@@ -164,6 +166,8 @@ class Form extends Component
             // same company registration number; anything else is manual review.
             $answer = $whip?->answerFor($store->registration_no) ?? $answer;
             $verified = $answer === 'verified' && $store->registration_verified_at !== null;
+            // G247: switch OFF = WHIP-confirmed still waits for an admin.
+            $approved = $verified && app(ModerationSettings::class)->whip_auto_approve;
 
             $certificate ??= new HalalCertificate;
             $certificate->fill([
@@ -201,7 +205,10 @@ class Form extends Component
             ]);
 
             if ($verified) {
-                $certificate->takeFromWhip($whip, $answer)->forceFill([
+                $certificate->takeFromWhip($whip, $answer);
+            }
+            if ($approved) {
+                $certificate->forceFill([
                     'status' => CertificateStatus::Approved,
                     'reviewed_at' => now(),
                 ]);
@@ -221,7 +228,7 @@ class Form extends Component
             HalalCertificateEvent::create([
                 'halal_certificate_id' => $certificate->id,
                 'occurred_on' => DisplayTime::today()->toDateString(),
-                'summary' => $verified
+                'summary' => $approved
                     ? __('Verified with WHIP')
                     : ($certificate->wasRecentlyCreated
                         ? __('Submitted for review')
@@ -229,9 +236,11 @@ class Form extends Component
             ]);
         });
 
-        $this->dispatch('toast', message: $verified
-            ? __('Verified with WHIP. Your halal badge is live.')
-            : __('Sent for review. Your products stay on sale while we check it.'));
+        $this->dispatch('toast', message: match (true) {
+            $approved => __('Verified with WHIP. Your halal badge is live.'),
+            $verified => __('WHIP confirmed this certificate. Our team will check it before the halal badge shows.'),
+            default => __('Sent for review. Your products stay on sale while we check it.'),
+        });
         $parked->isNotEmpty() && $this->dispatch('toast', message: __('Not on your WHIP certificate, waiting for admin: :names', ['names' => $parked->implode(', ')]));
 
         $this->redirectRoute('seller.certificates', navigate: true);

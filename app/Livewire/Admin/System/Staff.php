@@ -147,18 +147,23 @@ class Staff extends Component
 
         $requested = array_values(array_intersect($this->editPermissions, RoleSeeder::ADMIN_PERMISSIONS));
         $editor = auth()->user();
+        $user = User::role('admin')->findOrFail($this->editingId);
+        $current = $this->permissionNames($user);
 
+        // Only what is NEW is a grant: keeping a permission the admin already
+        // holds is not (G236 relax, HB-DEC-1125b).
         if (! $editor->is_superadmin
-            && array_diff($requested, $editor->getDirectPermissions()->pluck('name')->all()) !== []) {
+            && array_diff($requested, $current, $editor->getDirectPermissions()->pluck('name')->all()) !== []) {
             $this->addError('editPermissions', __('You can only grant permissions you hold yourself.'));
 
             return;
         }
 
-        $user = User::role('admin')->findOrFail($this->editingId);
-
-        if (! $this->holdsEverythingOf($user)) {
-            $this->addError('editPermissions', __('You can only change an admin when you hold every permission they hold.'));
+        // Adding permissions the editor holds is fine on any admin; taking any
+        // away still needs every permission the admin holds.
+        $removes = array_diff($current, $requested) !== [];
+        if ($removes && ! $this->holdsEverythingOf($user)) {
+            $this->addError('editPermissions', __('You can only take permissions away from an admin when you hold every permission they hold.'));
 
             return;
         }

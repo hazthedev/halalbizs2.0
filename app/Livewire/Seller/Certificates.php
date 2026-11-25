@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Services\ProductWriteService;
 use App\Support\DisplayTime;
 use App\Services\Whip\WhipDirectory;
+use App\Settings\ModerationSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Livewire\Concerns\WithTable;
@@ -153,7 +154,8 @@ class Certificates extends Component
         $store = $this->currentStore()->fresh();
         abort_unless($store->registration_verified_at !== null && filled($store->registration_no), 403);
         [$answer, $whip] = app(WhipDirectory::class)->check($number, $store->registration_no);
-        DB::transaction(function () use ($store, $number, $answer, $whip) {
+        $approved = false;
+        DB::transaction(function () use ($store, $number, $answer, $whip, &$approved) {
             $store = $store->newQuery()->lockForUpdate()->findOrFail($store->id);
             abort_unless($store->registration_verified_at !== null && filled($store->registration_no), 403);
             $certificate = HalalCertificate::whereRaw('UPPER(TRIM(number)) = ?', [strtoupper(trim($number))])->lockForUpdate()->first();
@@ -163,10 +165,20 @@ class Certificates extends Component
             }
             $certificate ??= new HalalCertificate(['store_id' => $store->id, 'number' => $whip->certificateNo, 'issuing_body' => 'WHIP']);
             $certificate->takeFromWhip($whip, 'verified')->fill(['scope_note' => $whip->scopeNote]);
-            $certificate->forceFill(['status' => CertificateStatus::Approved, 'submitted_at' => now(), 'reviewed_at' => now(), 'review_note' => null])->save();
+            // G247: switch OFF = the admin review queue, marked WHIP confirmed (whip_answer).
+            // A relink never undoes an approval already given (same rule as the sync).
+            $auto = app(ModerationSettings::class)->whip_auto_approve;
+            $keep = ! $auto && $certificate->status === CertificateStatus::Approved;
+            $approved = $auto || $keep;
+            $certificate->forceFill(['submitted_at' => now(), 'review_note' => null] + ($keep ? [] : [
+                'status' => $auto ? CertificateStatus::Approved : CertificateStatus::Pending,
+                'reviewed_at' => $auto ? now() : null, 'reviewed_by' => null,
+            ]))->save();
             $certificate->bindProducts([...$certificate->products()->pluck('id'), ...($certificate->whip_unmatched_product_ids ?? [])], $whip);
         });
-        $this->dispatch('toast', message: __('Certificate linked from WHIP.'));
+        $this->dispatch('toast', message: $approved
+            ? __('Certificate linked from WHIP.')
+            : __('WHIP confirmed this certificate. Our team will check it before the halal badge shows.'));
     }
 
     private function certificates()

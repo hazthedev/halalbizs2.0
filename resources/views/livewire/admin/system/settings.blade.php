@@ -105,6 +105,16 @@
                     {{ __('New products need admin approval before going live') }}
                 </label>
 
+                @if (auth()->user()->is_superadmin)
+                    <div>
+                        <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-[13px] font-medium text-ink">
+                            <input type="checkbox" wire:model="whipAutoApprove" class="size-4 rounded border-line-strong text-emerald focus-visible:ring-2 focus-visible:ring-emerald">
+                            {{ __('Approve WHIP-confirmed certificates without admin review') }}
+                        </label>
+                        <p class="text-[13px] text-ink-soft">{{ __('Off: a certificate WHIP confirms waits in Halal certificates until an admin approves it. Superadmin only.') }}</p>
+                    </div>
+                @endif
+
                 <x-ui.button class="self-start" type="submit" wire:loading.attr="disabled" wire:target="saveModeration">{{ __('Save moderation') }}</x-ui.button>
             </form>
         </x-ui.card>

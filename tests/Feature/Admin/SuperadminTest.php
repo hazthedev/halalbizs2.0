@@ -359,6 +359,48 @@ test('HB-G236: an admin cannot strip permissions from an admin holding one they 
         ->toBe(['finance.manage', 'settings.manage']);
 });
 
+test('HB-G236 relax: an admin may ADD a permission they hold to an admin holding one they lack (HB-DEC-1125b)', function () {
+    $editor = scopedAdmin(['settings.manage', 'orders.manage']);
+    $target = scopedAdmin(['settings.manage', 'finance.manage']);
+
+    Livewire::actingAs($editor)->test(Staff::class)
+        ->call('startEditPermissions', $target->id)
+        ->set('editPermissions', ['settings.manage', 'finance.manage', 'orders.manage'])
+        ->call('savePermissions')
+        ->assertHasNoErrors();
+
+    expect($target->fresh()->getDirectPermissions()->pluck('name')->sort()->values()->all())
+        ->toBe(['finance.manage', 'orders.manage', 'settings.manage']);
+});
+
+test('HB-G236 relax: adding one permission while removing another still needs every permission the target holds', function () {
+    $editor = scopedAdmin(['settings.manage', 'orders.manage']);
+    $target = scopedAdmin(['settings.manage', 'finance.manage']);
+
+    Livewire::actingAs($editor)->test(Staff::class)
+        ->call('startEditPermissions', $target->id)
+        ->set('editPermissions', ['finance.manage', 'orders.manage'])
+        ->call('savePermissions')
+        ->assertHasErrors('editPermissions');
+
+    expect($target->fresh()->getDirectPermissions()->pluck('name')->sort()->values()->all())
+        ->toBe(['finance.manage', 'settings.manage']);
+});
+
+test('HB-G236 relax: an admin still cannot add a permission they do not hold', function () {
+    $editor = scopedAdmin(['settings.manage']);
+    $target = scopedAdmin(['settings.manage', 'finance.manage']);
+
+    Livewire::actingAs($editor)->test(Staff::class)
+        ->call('startEditPermissions', $target->id)
+        ->set('editPermissions', ['settings.manage', 'finance.manage', 'orders.manage'])
+        ->call('savePermissions')
+        ->assertHasErrors('editPermissions');
+
+    expect($target->fresh()->getDirectPermissions()->pluck('name')->sort()->values()->all())
+        ->toBe(['finance.manage', 'settings.manage']);
+});
+
 test('HB-G237: the last superadmin cannot delete their own account (web)', function () {
     $super = superadmin();
 
