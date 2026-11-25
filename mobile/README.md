@@ -39,6 +39,11 @@ Build defines:
 - `PUSH_ENABLED=true` — registers the device for push (slice 5; no-op until
   the Firebase config files exist).
 
+Play Store bundle (release):
+`flutter build appbundle --release --no-tree-shake-icons --dart-define=API_BASE_URL=https://halalbizs.com/api/v1`.
+Signing reads `mobile/android/key.properties` (storeFile, storePassword, keyAlias, keyPassword);
+it is gitignored and never committed. Without it the build falls back to debug keys.
+
 Release builds: `flutter build apk --release --dart-define=API_BASE_URL=…`,
 `flutter build ipa --release --dart-define=API_BASE_URL=…` (needs Xcode),
 `flutter build web --release` (production host only; local Playwright proofs
