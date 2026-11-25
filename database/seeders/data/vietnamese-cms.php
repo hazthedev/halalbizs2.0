@@ -164,7 +164,7 @@ HTML,
 </ol>
 <h3>2. Trên trang web</h3>
 <ol>
-<li>Đăng nhập và mở <strong>Tài khoản của tôi</strong>.</li>
+<li>Đăng nhập, mở <strong>Tài khoản của tôi</strong>, rồi <strong>Hồ sơ</strong>.</li>
 <li>Ở mục <strong>Bảo mật</strong>, chọn <strong>Xoá tài khoản của tôi</strong>.</li>
 <li>Gõ DELETE, nhập mật khẩu và chọn <strong>Xoá tài khoản</strong>.</li>
 </ol>

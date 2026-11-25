@@ -435,7 +435,7 @@ class PageSeeder extends Seeder
 
                 <h3>2. On the website</h3>
                 <ol>
-                  <li>Sign in and open <strong>My account</strong>.</li>
+                  <li>Sign in, open <strong>My account</strong>, then <strong>Profile</strong>.</li>
                   <li>Under <strong>Privacy</strong>, select <strong>Delete my account</strong>.</li>
                   <li>Type DELETE, enter your password and select <strong>Delete account</strong>.</li>
                 </ol>
@@ -486,7 +486,7 @@ class PageSeeder extends Seeder
 
                 <h3>2. Di laman web</h3>
                 <ol>
-                  <li>Log masuk dan buka <strong>Akaun saya</strong>.</li>
+                  <li>Log masuk, buka <strong>Akaun saya</strong>, kemudian <strong>Profil</strong>.</li>
                   <li>Di bawah <strong>Privasi</strong>, pilih <strong>Padam akaun saya</strong>.</li>
                   <li>Taip DELETE, masukkan kata laluan anda dan pilih <strong>Padam akaun</strong>.</li>
                 </ol>
