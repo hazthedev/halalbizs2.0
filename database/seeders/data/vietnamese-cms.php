@@ -151,6 +151,54 @@ HTML,
 <p><em>Đây là bản mô tả bằng ngôn ngữ đơn giản về cách chương trình hiện vận hành và cần được luật sư Malaysia rà soát trước khi ra mắt công khai.</em></p>
 HTML,
         ],
+        'delete-account' => [
+            'title' => 'Xoá tài khoản của bạn',
+            'body' => <<<'HTML'
+<h2>Xoá tài khoản của bạn</h2>
+<p>Bạn có thể tự xoá tài khoản :brand bất cứ lúc nào, trong ứng dụng hoặc trên trang web. Việc xoá diễn ra ngay lập tức và không thể hoàn tác.</p>
+<h3>1. Trong ứng dụng :brand</h3>
+<ol>
+<li>Mở <strong>tab Tài khoản</strong> (Account).</li>
+<li>Nhấn <strong>Delete account</strong> (Xoá tài khoản).</li>
+<li>Nhập mật khẩu hiện tại, nhấn <strong>Delete account</strong>, rồi xác nhận.</li>
+</ol>
+<h3>2. Trên trang web</h3>
+<ol>
+<li>Đăng nhập, mở <strong>Tài khoản của tôi</strong>, rồi <strong>Hồ sơ</strong>.</li>
+<li>Ở mục <strong>Bảo mật</strong>, chọn <strong>Xoá tài khoản của tôi</strong>.</li>
+<li>Gõ DELETE, nhập mật khẩu và chọn <strong>Xoá tài khoản</strong>.</li>
+</ol>
+<h3>3. Không dùng ứng dụng</h3>
+<p>Gửi email tới <a href="mailto:support@halalbizs.com">support@halalbizs.com</a> từ địa chỉ email của tài khoản, với tiêu đề <strong>Delete my account</strong>.</p>
+<h3>4. Khi tài khoản chưa thể xoá</h3>
+<ul>
+<li>Bạn còn đơn hàng đang xử lý. Hãy chờ đến khi đơn hoàn tất, bị huỷ hoặc được hoàn tiền.</li>
+<li>Bạn bán hàng trên :brand và cửa hàng vẫn còn số dư. Hãy tất toán trước (rút tiền hoặc hoa hồng).</li>
+</ul>
+<h3>5. Những gì chúng tôi xoá</h3>
+<ul>
+<li>Tên, địa chỉ email và số điện thoại của bạn. Chúng được thay bằng "Deleted user" và một địa chỉ không phải của bạn.</li>
+<li>Địa chỉ đã lưu.</li>
+<li>Danh sách yêu thích, giỏ hàng, sản phẩm đã xem gần đây, cửa hàng đang theo dõi và thông báo có hàng trở lại.</li>
+<li>Các gói Đăng ký &amp; tiết kiệm.</li>
+<li>Thông báo và đăng ký nhận bản tin của bạn.</li>
+<li>Phiên đăng nhập, đăng nhập ứng dụng, đăng ký thông báo đẩy và thiết bị đã ghi nhớ.</li>
+<li>Liên kết đăng nhập Google, cài đặt xác thực hai lớp và mã dùng một lần.</li>
+<li>Các lượt bình chọn "hữu ích" của bạn cho đánh giá.</li>
+<li>Lịch sử tìm kiếm không còn gắn với bạn. Từ khoá chỉ còn lại dưới dạng số liệu ẩn danh.</li>
+</ul>
+<h3>6. Những gì chúng tôi giữ lại, và lý do</h3>
+<ul>
+<li><strong>Đơn hàng</strong>: đơn hàng, sản phẩm, thanh toán, hoàn tiền, trả hàng, suất mua chung và hoá đơn điện tử, kể cả địa chỉ giao hàng lưu kèm mỗi đơn. Pháp luật yêu cầu chúng tôi lưu hồ sơ thuế và hoá đơn điện tử.</li>
+<li><strong>Mã số thuế</strong>: nếu bạn đã cung cấp mã số thuế (TIN) cho hoá đơn điện tử, mã này được giữ ở dạng mã hoá, như một hồ sơ thuế.</li>
+<li><strong>Nội dung có người khác tham gia</strong>: đánh giá, câu hỏi sản phẩm, trò chuyện với người bán và phiếu hỗ trợ. Tên của bạn không còn hiển thị trên đó.</li>
+<li><strong>Hồ sơ tiền</strong>: Xu Khách hàng thân thiết, thu nhập Nhà sáng tạo (tiếp thị liên kết) và phiếu giảm giá.</li>
+<li><strong>Người bán</strong>: cửa hàng của bạn và hồ sơ kinh doanh (giấy tờ, thông tin ngân hàng, sổ cái và các khoản chi trả).</li>
+<li><strong>Hồ sơ đồng ý và thao tác của nhân viên</strong>: thời điểm bạn chấp nhận thông báo quyền riêng tư, và các thao tác nhân viên đã thực hiện trên tài khoản của bạn.</li>
+</ul>
+<p>Chúng tôi chỉ giữ các hồ sơ này trong thời gian pháp luật yêu cầu. Đọc <a href="/page/privacy">Chính sách quyền riêng tư</a> để biết thêm.</p>
+HTML,
+        ],
     ],
     'help' => [
         'buying:0' => ['Làm thế nào để đặt hàng?', '<p>Tìm sản phẩm, chọn phân loại nếu có rồi nhấn <strong>Mua ngay</strong> hoặc <strong>Thêm vào giỏ</strong>.</p><ul><li>Sản phẩm từ nhiều người bán được giao riêng nhưng thanh toán cùng lúc.</li><li>Chọn địa chỉ giao hàng và phương thức thanh toán tại trang thanh toán.</li><li>Sau khi đặt, theo dõi tại <strong>Đơn hàng của tôi</strong>.</li></ul>'],
