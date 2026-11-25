@@ -96,3 +96,22 @@ it('publishes new CMS pages but never overwrites an edited one', function () {
     expect(Page::where('slug', 'affiliate-terms')->first()->getTranslation('body', 'en'))
         ->toBe('<p>Edited by a human.</p>');
 });
+
+it('lets a guest read how to delete an account and what is erased or kept', function () {
+    $this->seed(PageSeeder::class);
+
+    foreach (['en' => 'Account tab', 'ms' => 'tab Akaun', 'vi' => 'tab Tài khoản'] as $locale => $inApp) {
+        $this->withSession(['locale' => $locale])->get('/page/delete-account')
+            ->assertOk()
+            ->assertSee('support@halalbizs.com')
+            ->assertSee($inApp)
+            ->assertSee('/page/privacy', false);
+    }
+
+    $this->withSession(['locale' => 'en'])->get('/page/delete-account')
+        ->assertSee('Delete my account')
+        ->assertSee('Saved addresses');
+
+    // Footer Trust column links it next to the privacy policy.
+    $this->get('/page/about')->assertSee(route('page.show', 'delete-account'), false);
+});

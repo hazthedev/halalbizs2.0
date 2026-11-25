@@ -13,7 +13,7 @@ class Pages extends Component
 {
     use ManagesDrafts;
 
-    public const SYSTEM_SLUGS = ['about', 'trust-safety', 'terms', 'privacy', 'refund-policy', 'faq'];
+    public const SYSTEM_SLUGS = ['about', 'trust-safety', 'terms', 'privacy', 'refund-policy', 'faq', 'delete-account'];
 
     public const ALWAYS_ACTIVE_SLUGS = ['terms', 'privacy'];
 

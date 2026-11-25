@@ -417,6 +417,114 @@ class PageSeeder extends Seeder
                 <p><em>Terma ini ialah penerangan bahasa mudah tentang cara program ini beroperasi pada masa ini dan perlu disemak oleh peguam Malaysia sebelum pelancaran umum.</em></p>
                 HTML,
             ],
+            // HB-DEL2: the public deletion page (Google Play data-safety URL).
+            // Every line matches AccountDeletionService — change both together.
+            'delete-account' => [
+                'title_en' => 'Delete your account',
+                'title_ms' => 'Padam akaun anda',
+                'body_en' => <<<HTML
+                <h2>Delete your account</h2>
+                <p>You can delete your {$brand} account yourself at any time, in the app or on the website. Deletion happens at once and cannot be undone.</p>
+
+                <h3>1. In the {$brand} app</h3>
+                <ol>
+                  <li>Open the <strong>Account tab</strong>.</li>
+                  <li>Tap <strong>Delete account</strong>.</li>
+                  <li>Enter your current password, tap <strong>Delete account</strong>, then confirm.</li>
+                </ol>
+
+                <h3>2. On the website</h3>
+                <ol>
+                  <li>Sign in and open <strong>My account</strong>.</li>
+                  <li>Under <strong>Privacy</strong>, select <strong>Delete my account</strong>.</li>
+                  <li>Type DELETE, enter your password and select <strong>Delete account</strong>.</li>
+                </ol>
+
+                <h3>3. Without the app</h3>
+                <p>Email <a href="mailto:support@halalbizs.com">support@halalbizs.com</a> from the email address on your account, with the subject <strong>Delete my account</strong>.</p>
+
+                <h3>4. When an account cannot be deleted yet</h3>
+                <ul>
+                  <li>You have orders in progress. Wait until they are completed, cancelled or refunded.</li>
+                  <li>You sell on {$brand} and your shop still has a balance. Settle it first (payout or commission).</li>
+                </ul>
+
+                <h3>5. What we erase</h3>
+                <ul>
+                  <li>Your name, email address and phone number. They are replaced with "Deleted user" and an address that is not yours.</li>
+                  <li>Saved addresses.</li>
+                  <li>Wishlist, cart, recently viewed products, followed shops and back-in-stock alerts.</li>
+                  <li>Subscribe &amp; save subscriptions.</li>
+                  <li>Notifications and your newsletter subscription.</li>
+                  <li>Signed-in sessions, app sign-ins, push notification registrations and remembered devices.</li>
+                  <li>Your Google sign-in link, two-factor settings and one-time codes.</li>
+                  <li>Your "helpful" votes on reviews.</li>
+                  <li>Your searches are unlinked from you. The search words stay only as anonymous totals.</li>
+                </ul>
+
+                <h3>6. What we keep, and why</h3>
+                <ul>
+                  <li><strong>Orders</strong>: orders, items, payments, refunds, returns, group-buy places and e-invoices, including the delivery address saved with each order. The law requires us to keep tax and e-invoice records.</li>
+                  <li><strong>Tax number</strong>: if you gave a tax identification number (TIN) for e-invoices, it is kept, encrypted, as a tax record.</li>
+                  <li><strong>Things other people are part of</strong>: reviews, product questions, chats with sellers and support tickets. Your name no longer appears on them.</li>
+                  <li><strong>Money records</strong>: Loyalty Coins, Creator (affiliate) earnings and vouchers.</li>
+                  <li><strong>Sellers</strong>: your shop and its business records (documents, bank details, ledger and payouts).</li>
+                  <li><strong>Records of consent and of staff actions</strong>: when you accepted the privacy notice, and actions our staff took on your account.</li>
+                </ul>
+                <p>We keep these records only as long as the law requires. Read our <a href="/page/privacy">Privacy policy</a> to learn more.</p>
+                HTML,
+                'body_ms' => <<<HTML
+                <h2>Padam akaun anda</h2>
+                <p>Anda boleh memadam akaun {$brand} anda sendiri pada bila-bila masa, dalam aplikasi atau di laman web. Pemadaman berlaku serta-merta dan tidak boleh dibatalkan.</p>
+
+                <h3>1. Dalam aplikasi {$brand}</h3>
+                <ol>
+                  <li>Buka <strong>tab Akaun</strong>.</li>
+                  <li>Ketik <strong>Padam akaun</strong>.</li>
+                  <li>Masukkan kata laluan semasa anda, ketik <strong>Padam akaun</strong>, kemudian sahkan.</li>
+                </ol>
+
+                <h3>2. Di laman web</h3>
+                <ol>
+                  <li>Log masuk dan buka <strong>Akaun saya</strong>.</li>
+                  <li>Di bawah <strong>Privasi</strong>, pilih <strong>Padam akaun saya</strong>.</li>
+                  <li>Taip DELETE, masukkan kata laluan anda dan pilih <strong>Padam akaun</strong>.</li>
+                </ol>
+
+                <h3>3. Tanpa aplikasi</h3>
+                <p>E-mel <a href="mailto:support@halalbizs.com">support@halalbizs.com</a> daripada alamat e-mel akaun anda, dengan subjek <strong>Delete my account</strong>.</p>
+
+                <h3>4. Bila akaun belum boleh dipadam</h3>
+                <ul>
+                  <li>Anda masih ada pesanan yang sedang diproses. Tunggu sehingga ia selesai, dibatalkan atau dibayar balik.</li>
+                  <li>Anda menjual di {$brand} dan kedai anda masih ada baki. Selesaikan baki itu dahulu (pengeluaran atau komisen).</li>
+                </ul>
+
+                <h3>5. Apa yang kami padam</h3>
+                <ul>
+                  <li>Nama, alamat e-mel dan nombor telefon anda. Ia diganti dengan "Deleted user" dan alamat yang bukan milik anda.</li>
+                  <li>Alamat yang disimpan.</li>
+                  <li>Senarai hajat, troli, produk yang dilihat baru-baru ini, kedai yang diikuti dan makluman stok kembali.</li>
+                  <li>Langganan Langgan &amp; jimat.</li>
+                  <li>Pemberitahuan dan langganan surat berita anda.</li>
+                  <li>Sesi log masuk, log masuk aplikasi, pendaftaran pemberitahuan tolak dan peranti yang diingati.</li>
+                  <li>Pautan log masuk Google, tetapan dua faktor dan kod sekali guna anda.</li>
+                  <li>Undian "membantu" anda pada ulasan.</li>
+                  <li>Carian anda tidak lagi dikaitkan dengan anda. Kata carian kekal hanya sebagai jumlah tanpa nama.</li>
+                </ul>
+
+                <h3>6. Apa yang kami simpan, dan sebabnya</h3>
+                <ul>
+                  <li><strong>Pesanan</strong>: pesanan, item, pembayaran, bayaran balik, pemulangan, tempat beli berkumpulan dan e-invois, termasuk alamat penghantaran yang disimpan bersama setiap pesanan. Undang-undang mewajibkan kami menyimpan rekod cukai dan e-invois.</li>
+                  <li><strong>Nombor cukai</strong>: jika anda memberikan nombor pengenalan cukai (TIN) untuk e-invois, ia disimpan, disulitkan, sebagai rekod cukai.</li>
+                  <li><strong>Perkara yang melibatkan orang lain</strong>: ulasan, soalan produk, sembang dengan penjual dan tiket sokongan. Nama anda tidak lagi dipaparkan padanya.</li>
+                  <li><strong>Rekod wang</strong>: Syiling Kesetiaan, pendapatan Kreator (afiliat) dan baucar.</li>
+                  <li><strong>Penjual</strong>: kedai anda dan rekod perniagaannya (dokumen, butiran bank, lejar dan pembayaran).</li>
+                  <li><strong>Rekod persetujuan dan tindakan kakitangan</strong>: bila anda menerima notis privasi, dan tindakan kakitangan kami pada akaun anda.</li>
+                </ul>
+                <p>Kami menyimpan rekod ini hanya selama yang dikehendaki undang-undang. Baca <a href="/page/privacy">Dasar privasi</a> kami untuk maklumat lanjut.</p>
+                HTML,
+            ],
         ];
     }
 

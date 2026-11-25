@@ -322,6 +322,7 @@
                     <li><a href="{{ route('page.show', 'refund-policy') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Refund policy') }}</a></li>
                     <li><a href="{{ route('page.show', 'terms') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Terms & conditions') }}</a></li>
                     <li><a href="{{ route('page.show', 'privacy') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Privacy policy') }}</a></li>
+                    <li><a href="{{ route('page.show', 'delete-account') }}" wire:navigate class="transition-colors duration-(--dur-micro) hover:text-on-dark">{{ __('Delete your account') }}</a></li>
                 </ul>
             </div>
 
