@@ -34,7 +34,7 @@ class Settings extends Component
 
     public ?TemporaryUploadedFile $banner = null;
 
-    // ----- Seller details (HB-LAW-14, all optional, kept private, never on the public shop page) -----
+    // ----- Seller details (HB-LAW-14, all optional, shown on the shop page) -----
     /** @var array<string, string> keyed by stores column, see Store::sellerDetailRules(). */
     public array $sellerDetails = [];
 

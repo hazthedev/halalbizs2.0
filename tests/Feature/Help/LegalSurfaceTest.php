@@ -129,15 +129,21 @@ test('a pending or expired certificate does not clear the flag', function () {
     expect(Product::query()->halalWordingUnverified()->pluck('id')->all())->toContain($product->id);
 });
 
-test('public APIs and pages expose no seller personal fields', function () {
+test('public APIs and pages never expose the seller ACCOUNT login email, name or phone', function () {
+    // HB-DEC-1123b/c: the LAW-14 Seller details card may show the business
+    // fields the seller chose to publish. The account behind the shop never.
+    $user = User::factory()->create([
+        'name' => 'Account Holder Zainal', 'email' => 'login-only@seller.test', 'phone' => '0199988776',
+    ]);
     $store = Store::factory()->approved()->create([
-        'business_name' => 'Secret Biz Sdn', 'contact_phone' => '0123456789', 'contact_email' => 'secret@seller.test',
-        'business_address' => '9 Hidden Lane', 'state' => 'Perak',
+        'user_id' => $user->id, 'business_name' => 'Public Biz Sdn', 'contact_email' => 'shop@seller.test', 'state' => 'Perak',
     ]);
     $product = lsProduct(['store_id' => $store->id]);
 
     foreach (["/api/v1/stores/{$store->slug}", "/api/v1/products/{$product->slug}", "/api/v1/stores/{$store->slug}/products", '/s/'.$store->slug, '/p/'.$product->slug] as $url) {
         $this->get($url, ['Accept' => 'application/json'])->assertOk()
-            ->assertDontSee('Secret Biz')->assertDontSee('0123456789')->assertDontSee('secret@seller.test')->assertDontSee('Hidden Lane');
+            ->assertDontSee('Account Holder Zainal')->assertDontSee('login-only@seller.test')->assertDontSee('0199988776');
     }
+
+    $this->get('/s/'.$store->slug)->assertSee('Public Biz Sdn')->assertSee('shop@seller.test');
 });

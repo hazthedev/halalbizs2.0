@@ -81,7 +81,7 @@
     {{-- ===== Seller details (HB-LAW-14) ===== --}}
     <x-ui.card class="p-4 lg:p-6">
         <h2 class="text-sm font-medium">{{ __('Seller details') }}</h2>
-        <p class="mt-1 text-[13px] text-ink-soft">{{ __('Optional. These details stay on file with us and are not shown on your public shop page.') }}</p>
+        <p class="mt-1 text-[13px] text-ink-soft">{{ __('Optional. Buyers see only the details you fill, on your shop page under About. Leave out anything you do not want public, such as a home address.') }}</p>
 
         <form wire:submit="saveSellerDetails" class="mt-4 space-y-4">
             <div class="grid gap-4 sm:grid-cols-2">
@@ -291,6 +291,13 @@
                 :error="$errors->first('accountNumber')"
                 :hint="$errors->first('accountNumber') ? null : __('8–17 digits, no spaces or dashes.')"
             />
+
+            @if (auth()->user()->password_set_at === null)
+                <p class="rounded-[var(--radius-card)] border border-line bg-warn-tint px-4 py-3 text-[13px] text-warn">
+                    {{ __('You signed up with Google and have not set a password yet. Use Forgot password to set one, then change your bank details.') }}
+                    <a href="{{ route('password.request') }}" class="font-medium text-emerald underline hover:text-emerald-deep">{{ __('Forgot password') }}</a>
+                </p>
+            @endif
 
             <x-ui.input
                 :label="__('Current password')"
