@@ -52,7 +52,6 @@
                 <div>
                     <div class="mb-1.5 flex items-center justify-between gap-2">
                         <label for="description.en" class="block text-[13px] font-medium text-ink">{{ __('Description (English)') }}</label>
-                        {{-- "Generate with AI" button hidden (owner, 2026-11-03). generateCopy() stays on the component. --}}
                     </div>
                     <div wire:ignore data-description-editor="en"
                          x-data="descriptionEditor($wire.entangle('description.en'), 'description.en', @js(__('Description (English)')))"

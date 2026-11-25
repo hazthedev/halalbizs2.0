@@ -6,8 +6,7 @@ test('M2 + chrome UI strings resolve from lang/ms.json', function () {
     expect(__('Add to cart'))->toBe('Tambah ke troli')
         ->and(__('Coin balance'))->toBe('Baki syiling')
         ->and(__('Creator program'))->toBe('Program pencipta')
-        ->and(__('My subscriptions'))->toBe('Langganan saya')
-        ->and(__('Ask the concierge'))->toBe('Tanya konsierj');
+        ->and(__('My subscriptions'))->toBe('Langganan saya');
 });
 
 test('placeholders survive translation', function () {

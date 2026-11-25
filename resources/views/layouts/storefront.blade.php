@@ -25,7 +25,7 @@
     <div id="hb-top-sentinel" aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-6"></div>
 
     {{-- Auth/utility pages (login, sign-up, password, email verification) drop the
-         shopping chrome — category strip + concierge are noise there. Extend this
+         shopping chrome — category strip is noise there. Extend this
          route list if other non-shopping pages should go bare too. --}}
     @php($bareChrome = request()->routeIs('login', 'register', 'password.request', 'password.reset', 'verification.notice'))
     @php($purchasingEnabled = app(\App\Settings\GeneralSettings::class)->purchasing_enabled)
@@ -152,15 +152,6 @@
                  body is overflow-x-clip, so the cart count was being cut rather
                  than scrolled to. --}}
             <div class="flex shrink-0 items-center gap-1 sm:gap-2">
-                {{-- Concierge, mobile entry point (desktop uses the floating launcher). --}}
-                @if (config('services.concierge.enabled', true) && ! $bareChrome)
-                    <button type="button" x-on:click="$dispatch('open-concierge')"
-                            class="flex size-9 items-center justify-center rounded-[var(--radius-pill)] text-emerald hover:bg-emerald-tint sm:hidden"
-                            aria-label="{{ __('Ask the concierge') }}">
-                        <x-ui.chat-mark :size="20" />
-                    </button>
-                @endif
-
                 {{-- Currency switcher — unchanged field name and action. --}}
                 <form method="POST" action="{{ route('preferences.currency') }}" class="hidden sm:block" x-data>
                     @csrf
@@ -387,9 +378,6 @@
     <livewire:storefront.layout.search-overlay />
     @if ($purchasingEnabled)
         <livewire:storefront.layout.mini-cart />
-    @endif
-    @if (config('services.concierge.enabled', true) && ! $bareChrome && ! app(\App\Services\ContentDrafts::class)->previewing)
-        <livewire:storefront.shop-assistant />
     @endif
 
     @stack('scripts')

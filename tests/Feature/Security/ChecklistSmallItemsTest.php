@@ -402,27 +402,6 @@ test('HB-G238: more than 100 attribute ids is refused before any per-id lookup',
         ->and(Product::query()->where('store_id', $seller->store->id)->exists())->toBeFalse();
 });
 
-test('HB-G239: generating copy keeps the errors already on the form', function () {
-    $seller = b3bSeller();
-    [$category, $red] = b3bFacetCategory();
-
-    $form = b3bProductForm($seller, $category)
-        ->set('price', '')
-        ->call('saveDraft')
-        ->assertHasErrors('price');
-
-    // Valid attributes: copy is generated, the price error stays.
-    $form->set('attributeValueIds', [(string) $red->id])
-        ->call('generateCopy')
-        ->assertHasErrors('price')
-        ->assertSet('description.en', fn ($value) => str_contains((string) $value, 'Dates'));
-
-    // A bad attribute id adds its own error, the price error still stays.
-    $form->set('attributeValueIds', ['abc'])
-        ->call('generateCopy')
-        ->assertHasErrors(['price', 'attributeValueIds.0']);
-});
-
 test('HB-G240: a chat message that fails to save does not use up the allowance', function (string $side) {
     $seller = b3bSeller();
     $buyer = User::factory()->create();
