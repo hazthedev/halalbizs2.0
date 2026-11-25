@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Schedule;
 // M-11: withoutOverlapping because this makes a blocking 10s gateway requery
 // PER ORDER while running every minute — a 7-order backlog outruns its own tick
 // and stacks runs on the same rows. The queue worker below already does this.
-Schedule::command('orders:expire-unpaid')->everyMinute()->withoutOverlapping(5);
-Schedule::command('orders:auto-complete')->hourly();
+Schedule::command('orders:expire-unpaid')->everyMinute()->withoutOverlapping(5)->onFailure(ScheduleFailureAlert::for('orders:expire-unpaid'));
+Schedule::command('orders:auto-complete')->hourly()->onFailure(ScheduleFailureAlert::for('orders:auto-complete'));
 // PAY-14 (HB-DEC-1124d): day 5 seller warning, day 7 not shipped → cancelled.
 Schedule::command('orders:cancel-unshipped')->hourly()->withoutOverlapping(30)->onFailure(ScheduleFailureAlert::for('orders:cancel-unshipped'));
 Schedule::command('sitemap:generate')->dailyAt('03:00');
-Schedule::command('returns:auto-escalate')->hourly();
+Schedule::command('returns:auto-escalate')->hourly()->onFailure(ScheduleFailureAlert::for('returns:auto-escalate'));
 Schedule::command('boosts:expire')->hourly();
 // Monthly LHDN B2C e-invoice consolidation for the previous month (within the 7-day window).
 Schedule::command('einvoice:consolidate')->monthlyOn(1, '04:00');
@@ -20,7 +20,7 @@ Schedule::command('einvoice:consolidate')->monthlyOn(1, '04:00');
 Schedule::command('carts:remind-abandoned')->hourly();
 Schedule::command('seller:compute-health')->dailyAt('02:00');
 // M2.1 — expire lapsed Loyalty Coin lots.
-Schedule::command('coins:expire')->dailyAt('01:00');
+Schedule::command('coins:expire')->dailyAt('01:00')->onFailure(ScheduleFailureAlert::for('coins:expire'));
 // Register any shipped parcel that missed its first AfterShip queue attempt.
 // The command exits before querying when TRACKING_PROVIDER is not configured.
 Schedule::command('tracking:register-open')->everyFifteenMinutes()->withoutOverlapping(5);
@@ -38,7 +38,7 @@ Schedule::command('certificates:remind-whip-expiry')->dailyAt('08:00')->timezone
 // Affiliate commission comes off hold once the return window + buffer has
 // passed. Hourly rather than daily so "unlocks 22 Aug" on the creator's
 // dashboard is true within the hour rather than up to a day late.
-Schedule::command('affiliates:lock-commissions')->hourly();
+Schedule::command('affiliates:lock-commissions')->hourly()->onFailure(ScheduleFailureAlert::for('affiliates:lock-commissions'));
 // Seller money comes off hold once the return window closes.
 Schedule::command('ledger:release-holds')->hourly()->onFailure(ScheduleFailureAlert::for('ledger:release-holds'));
 // COD commission debt: monthly statement to stores with a negative balance.
@@ -46,7 +46,7 @@ Schedule::command('ledger:send-statements')->monthlyOn(1, '09:00');
 // M2.6 — close group-buy teams whose recruiting window lapsed.
 Schedule::command('group-buy:expire')->everyFifteenMinutes();
 // M2.8 — place orders for due subscribe-and-save schedules.
-Schedule::command('subscriptions:process')->hourly();
+Schedule::command('subscriptions:process')->hourly()->onFailure(ScheduleFailureAlert::for('subscriptions:process'));
 // Ops — daily database + .env backup, then prune old ones (docs/10).
 Schedule::command('backup:run')->dailyAt('02:00')->onFailure(ScheduleFailureAlert::for('backup:run'));
 Schedule::command('backup:clean')->dailyAt('02:30');

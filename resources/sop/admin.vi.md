@@ -12,7 +12,7 @@ Hướng dẫn này dành cho nhân viên HalalBizs vận hành sàn: duyệt ng
 4. Khi bạn đăng nhập từ thiết bị mới mà chưa bật đăng nhập hai bước, trang **Two-factor check** ghi "You're signing in from a new device. Enter the code we emailed to confirm it's you." Nhập mã 6 chữ số trong email "Your login code" (hết hạn sau 10 phút) và chọn **Verify and log in**. Thiết bị chỉ được ghi nhớ sau khi mã đúng. Thiết bị đầu tiên bạn dùng không cần mã.
 5. Menu gồm: **Dashboard**, **Sellers**, **Buyers**, **Catalog**, **Orders**, **Finance**, **Content**, **Support**, **System**. Mục nào bạn không có quyền sẽ bị ẩn hoặc bị chặn. <!-- SHOT: admin menu -->
 6. Chọn **View storefront** để xem trang công khai và **Log out** để thoát.
-7. Để thêm admin: **System > Staff & roles**, chọn **Invite admin**, nhập **Name** và **Email**, đánh dấu các **Permissions** và chọn **Invite admin**. Admin mới nhận email để tự đặt mật khẩu. Bạn chỉ có thể cấp các quyền mà chính bạn đang có. **Edit permissions**, **Make superadmin** và **Remove admin** nằm trên cùng danh sách. Chỉ superadmin mới có thể cấp, gỡ hoặc xóa quyền superadmin, và luôn còn ít nhất một superadmin (superadmin cuối cùng cũng không thể xóa tài khoản của chính mình). Bạn chỉ có thể gỡ một admin, hoặc đổi quyền của họ, khi bạn có đủ mọi quyền mà admin đó đang có. Mỗi thao tác này được ghi vào **System > Audit log**.
+7. Để thêm admin: **System > Staff & roles**, chọn **Invite admin**, nhập **Name** và **Email**, đánh dấu các **Permissions** và chọn **Invite admin**. Admin mới nhận email để tự đặt mật khẩu. Bạn chỉ có thể cấp các quyền mà chính bạn đang có. **Edit permissions**, **Make superadmin** và **Remove admin** nằm trên cùng danh sách. Chỉ superadmin mới có thể cấp, gỡ hoặc xóa quyền superadmin, và luôn còn ít nhất một superadmin (superadmin cuối cùng cũng không thể xóa tài khoản của chính mình). Bạn có thể thêm cho bất kỳ admin nào một quyền mà bạn đang có. Để gỡ một admin, hoặc lấy bớt quyền của họ, bạn phải có đủ mọi quyền mà admin đó đang có. Mỗi thao tác này được ghi vào **System > Audit log**.
 
 ## 2. Dashboard và báo cáo
 
@@ -42,7 +42,7 @@ Mọi danh sách hoạt động giống nhau: ô tìm kiếm và bộ lọc ở 
 1. Mở **Catalog > Halal certificates**. Bộ lọc: **Awaiting review**, **Approved**, **Rejected**, **All**, cùng **Issuing body**, **Store**, **Expiring soon**.
 2. Chọn **Review** ở một hàng. Kiểm tra **Holder**, **Issuing body**, **Standard**, **Facility**, **Scope** và chọn **Open the certificate document**. Tài liệu là riêng tư. Nếu không có tệp đính kèm, hãy từ chối và yêu cầu nộp.
 3. So sánh các sản phẩm người bán đã đánh dấu với phạm vi của chứng nhận. Sản phẩm mà phạm vi không nêu hiện "Not on the certificate". Chỉ chọn **Allow** khi bạn chắc chắn nó được bao phủ.
-4. Chọn **Approve** khi hợp lệ. Không sản phẩm nào có nhãn halal cho đến khi bạn duyệt.
+4. Chọn **Approve** khi hợp lệ. Không sản phẩm nào có nhãn halal cho đến khi bạn duyệt. Hàng ghi **WHIP confirmed** đã được đối chiếu với WHIP theo số đăng ký của cửa hàng; vẫn hãy so với giấy SSM của cửa hàng rồi mới duyệt. Khi **Approve WHIP-confirmed certificates without admin review** (System > Settings > Moderation, chỉ superadmin) đang tắt, mọi chứng nhận WHIP xác nhận đều chờ bạn duyệt ở đây.
 5. Để từ chối, viết lý do ("The seller sees this word for word") và chọn **Reject**.
 6. Chứng nhận sắp hết hạn hiện cảnh báo cho người bán. Khi chứng nhận hết hạn, nhãn mất, và với danh mục bị chặn thì sản phẩm không còn được phép đăng.
 

@@ -84,7 +84,12 @@
                     <tbody wire:key="admin-cert-{{ $certificate->id }}">
                         <tr class="border-b border-line hover:bg-paper">
                             <td class="px-3 py-2 font-mono font-medium">{{ $certificate->number }}</td>
-                            <td class="px-3 py-2"><x-ui.badge :variant="$certificate->status->variant()">{{ $certificate->status->label() }}</x-ui.badge></td>
+                            <td class="px-3 py-2">
+                                <x-ui.badge :variant="$certificate->status->variant()">{{ $certificate->status->label() }}</x-ui.badge>
+                                @if ($certificate->status === \App\Enums\CertificateStatus::Pending && $certificate->whip_answer === 'verified')
+                                    <x-ui.badge variant="info">{{ __('WHIP confirmed') }}</x-ui.badge>
+                                @endif
+                            </td>
                             <td class="px-3 py-2">{{ $certificate->store?->name }}</td>
                             <td class="px-3 py-2">{{ $certificate->issuing_body }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $certificate->valid_from->format('d M Y') }} – {{ $certificate->valid_to->format('d M Y') }}</td>

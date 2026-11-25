@@ -278,10 +278,32 @@ the old alert said 25 expected, and the owner has not yet said which count is
 right. Until that is closed, treat 21 as the current record and do not "repair"
 the table up to 25.
 
-Failed scheduled tasks (`backup:run`, `certificates:watch-expiry`,
-`ledger:release-holds`, `orders:cancel-unshipped`) send one mail to
-`OPS_ALERT_EMAIL` (falls back to `ADMIN_EMAIL`); with neither set, or when the
-mail cannot be sent, the admin bell gets the alert instead. Test: `tests/Feature/Ops/ScheduleFailureAlertTest.php`.
+Failed scheduled tasks send one mail to `OPS_ALERT_EMAIL` (falls back to
+`ADMIN_EMAIL`); with neither set, or when the mail cannot be sent, the admin
+bell gets the alert instead. Tasks with the alert: `backup:run`,
+`certificates:watch-expiry`, and every job that moves money or order state
+(G249): `orders:expire-unpaid`, `orders:auto-complete`,
+`orders:cancel-unshipped`, `returns:auto-escalate`, `coins:expire`,
+`affiliates:lock-commissions`, `ledger:release-holds`, `subscriptions:process`.
+Cap: at most one alert per task per Malaysia calendar day (an every-minute job
+failing all day sends one mail, not 1,440); every failure is still written to
+the log. Test: `tests/Feature/Ops/ScheduleFailureAlertTest.php`.
+
+**Backups (G246).** `backup:run` writes each dump file mode 0600 (owner only)
+on a local backup disk.
+
+**Time zones (G248).** Times are stored in UTC and shown in Malaysia time
+(APP_DISPLAY_TIMEZONE). The database session time zone on live is the server's
+(IST). Never change the DB connection time zone without first converting the
+TIMESTAMP columns to DATETIME, or every stored time shifts 5h30m.
+
+**WHIP auto-approve (G247, HB-DEC-1125b).** System > Settings > Moderation,
+**Approve WHIP-confirmed certificates without admin review**, superadmin only,
+default OFF (set OFF on live by the settings migration). OFF: a certificate WHIP
+confirms waits in Catalog > Halal certificates marked **WHIP confirmed** until an
+admin approves it, and the 4-hourly WHIP sync never approves a certificate an
+admin has not. ON: WHIP-confirmed certificates are approved at once (the
+behaviour before 2026-11-25).
 
 ## Docs
 

@@ -82,6 +82,25 @@ test('backup:run writes the database dump but NOT the .env snapshot on a local d
  * both drivers: forcing the connection's driver config (not database.default)
  * leaves the open connection — and RefreshDatabase's rollback — untouched.
  */
+test('G246: backup:run writes the database dump readable by its owner only (0600)', function () {
+    Storage::fake('local');
+    config(['backup.disk' => 'local', 'backup.path' => 'backups']);
+    Process::fake(['mysqldump*' => Process::result('-- dump')]);
+    $connection = (string) config('database.default');
+    config(["database.connections.{$connection}.driver" => 'mysql']);
+    $umask = umask(0022);
+
+    try {
+        $this->artisan('backup:run')->assertSuccessful();
+    } finally {
+        umask($umask);
+    }
+
+    $file = collect(Storage::disk('local')->files('backups'))->first(fn ($f) => str_contains($f, 'db-'));
+    clearstatcache();
+    expect(fileperms(Storage::disk('local')->path($file)) & 0777)->toBe(0600);
+});
+
 test('backup:run dumps mysql without putting the password on the command line', function () {
     Storage::fake('local');
     config(['backup.disk' => 'local', 'backup.path' => 'backups']);

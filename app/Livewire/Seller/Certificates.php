@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Services\ProductWriteService;
 use App\Support\DisplayTime;
 use App\Services\Whip\WhipDirectory;
+use App\Settings\ModerationSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Livewire\Concerns\WithTable;
@@ -163,10 +164,17 @@ class Certificates extends Component
             }
             $certificate ??= new HalalCertificate(['store_id' => $store->id, 'number' => $whip->certificateNo, 'issuing_body' => 'WHIP']);
             $certificate->takeFromWhip($whip, 'verified')->fill(['scope_note' => $whip->scopeNote]);
-            $certificate->forceFill(['status' => CertificateStatus::Approved, 'submitted_at' => now(), 'reviewed_at' => now(), 'review_note' => null])->save();
+            // G247: switch OFF = the admin review queue, marked WHIP confirmed (whip_answer).
+            $auto = app(ModerationSettings::class)->whip_auto_approve;
+            $certificate->forceFill([
+                'status' => $auto ? CertificateStatus::Approved : CertificateStatus::Pending,
+                'submitted_at' => now(), 'reviewed_at' => $auto ? now() : null, 'reviewed_by' => null, 'review_note' => null,
+            ])->save();
             $certificate->bindProducts([...$certificate->products()->pluck('id'), ...($certificate->whip_unmatched_product_ids ?? [])], $whip);
         });
-        $this->dispatch('toast', message: __('Certificate linked from WHIP.'));
+        $this->dispatch('toast', message: app(ModerationSettings::class)->whip_auto_approve
+            ? __('Certificate linked from WHIP.')
+            : __('WHIP confirmed this certificate. Our team will check it before the halal badge shows.'));
     }
 
     private function certificates()

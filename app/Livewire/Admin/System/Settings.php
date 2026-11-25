@@ -51,6 +51,8 @@ class Settings extends Component
     // ── Moderation ─────────────────────────────────────────────────────
     public bool $requireProductApproval = false;
 
+    public bool $whipAutoApprove = false;
+
     // ── Security (Turnstile + Google OAuth + SMS) ──────────────────────
     public string $turnstileSiteKey = '';
 
@@ -119,7 +121,9 @@ class Settings extends Component
         $this->codEnabled = $cod->enabled;
         $this->codMaxOrder = RinggitInput::fromSen($cod->max_order_sen);
 
-        $this->requireProductApproval = app(ModerationSettings::class)->require_product_approval;
+        $moderation = app(ModerationSettings::class);
+        $this->requireProductApproval = $moderation->require_product_approval;
+        $this->whipAutoApprove = $moderation->whip_auto_approve;
 
         $security = app(SecuritySettings::class);
         $this->turnstileSiteKey = $security->turnstile_site_key;
@@ -230,7 +234,12 @@ class Settings extends Component
     {
         $settings = app(ModerationSettings::class);
         $settings->require_product_approval = $this->requireProductApproval;
+        // G247: halal trust control, superadmin only; anyone else keeps the stored value.
+        if (auth()->user()->is_superadmin) {
+            $settings->whip_auto_approve = $this->whipAutoApprove;
+        }
         $settings->save();
+        $this->whipAutoApprove = $settings->whip_auto_approve;
 
         $this->dispatch('toast', message: __('Moderation settings saved'));
     }

@@ -73,7 +73,18 @@ beforeEach(function () {
         $t->string('name');
     });
     DB::connection('whip')->table('certification_bodies')->insert(['id' => 1, 'name' => 'Test CB']);
+
+    // The tests above the G247 block describe the auto-approve switch ON
+    // (the behaviour before HB-DEC-1125b). Live starts with it OFF.
+    whipAutoApprove(true);
 });
+
+function whipAutoApprove(bool $on): void
+{
+    $settings = app(ModerationSettings::class);
+    $settings->whip_auto_approve = $on;
+    $settings->save();
+}
 
 /** One WHIP application with certificate + company; overrides per key. */
 function whipCert(array $o = []): int
@@ -750,4 +761,65 @@ test('following an application reports a directory outage without saving a choic
     Livewire::actingAs($seller)->test(Dashboard::class)
         ->call('followWhipApplication', 1)->assertHasErrors('whip');
     expect($seller->store->fresh()->whip_application_id)->toBeNull();
+});
+
+// ── G247 (HB-DEC-1125b): switch OFF = an admin approves each WHIP-confirmed certificate ──
+
+test('G247: the WHIP auto-approve switch is OFF by default', function () {
+    expect(app(ModerationSettings::class)->refresh()->whip_auto_approve)->toBeTrue(); // beforeEach turned it on
+    DB::table('settings')->where('group', 'moderation')->where('name', 'whip_auto_approve')->delete();
+    $migration = require database_path('settings/2026_11_25_100000_add_whip_auto_approve.php');
+    $migration->up();
+    expect(app(ModerationSettings::class)->refresh()->whip_auto_approve)->toBeFalse();
+});
+
+test('G247 OFF: a linked WHIP certificate waits in the admin queue marked WHIP confirmed, then the admin approves it', function () {
+    whipAutoApprove(false);
+    whipCert();
+    $seller = whipSeller();
+    $product = whipProduct($seller->store, 'Kicap', '955000');
+
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100')->assertHasNoErrors();
+
+    expect(whipRow())->status->toBe(CertificateStatus::Pending)->source->toBe('whip')->whip_answer->toBe('verified')
+        ->reviewed_at->toBeNull()->submitted_at->not->toBeNull();
+
+    $admin = whipAdmin();
+    Livewire::actingAs($admin)->test(AdminCertificates::class)->assertSee('WH-100')->assertSee('WHIP confirmed')
+        ->call('approve', whipRow()->id);
+    expect(whipRow()->status)->toBe(CertificateStatus::Approved);
+});
+
+test('G247 OFF: a WHIP match on the certificate form waits for review too', function () {
+    whipAutoApprove(false);
+    whipCert();
+    whipSubmit(whipSeller());
+
+    expect(whipRow())->status->toBe(CertificateStatus::Pending)->whip_answer->toBe('verified')->reviewed_at->toBeNull();
+});
+
+test('G247 OFF: the WHIP sync never approves a certificate the admin has not approved', function () {
+    whipAutoApprove(false);
+    $application = whipCert();
+    whipCert(['no' => 'WH-200']);
+    $seller = whipSeller();
+    $seller->store->forceFill(['whip_application_id' => $application])->save();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-200');
+
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+
+    expect(whipRow('WH-200')->status)->toBe(CertificateStatus::Pending)
+        ->and(whipRow('WH-100')->status)->toBe(CertificateStatus::Pending); // followed, new: queued
+});
+
+test('G247 OFF: an admin-approved WHIP certificate stays approved through the sync', function () {
+    whipAutoApprove(false);
+    whipCert();
+    $seller = whipSeller();
+    Livewire::actingAs($seller)->test(Certificates::class)->call('linkWhipCertificate', 'WH-100');
+    Livewire::actingAs(whipAdmin())->test(AdminCertificates::class)->call('approve', whipRow()->id);
+
+    $this->artisan('certificates:sync-whip')->assertSuccessful();
+
+    expect(whipRow()->status)->toBe(CertificateStatus::Approved);
 });

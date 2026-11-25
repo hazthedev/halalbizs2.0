@@ -7,6 +7,7 @@ use App\Models\HalalCertificate;
 use App\Models\HalalCertificateEvent;
 use App\Models\Store;
 use App\Services\Whip\WhipDirectory;
+use App\Settings\ModerationSettings;
 use App\Support\DisplayTime;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -67,9 +68,10 @@ class SyncWhipCertificates extends Command
         }
 
         $changed = 0;
+        $autoApprove = app(ModerationSettings::class)->whip_auto_approve;
 
         foreach ($answers as [$snapshot, $found, $followed]) {
-            $changed += DB::transaction(function () use ($snapshot, $found, $followed) {
+            $changed += DB::transaction(function () use ($snapshot, $found, $followed, $autoApprove) {
                 // Link/import use the same store-then-certificate lock order.
                 $store = Store::whereKey($snapshot->store_id)->lockForUpdate()->first();
                 if ($store === null) {
@@ -95,7 +97,12 @@ class SyncWhipCertificates extends Command
                 if ($found !== null && in_array($answer, ['verified', 'expired'], true)) {
                     $cert->takeFromWhip($found, $answer)->fill(['scope_note' => $found->scopeNote]);
                     // verified: WHIP vouches again (also restores a row an earlier sync rejected).
-                    $answer === 'verified' && $cert->forceFill(['status' => CertificateStatus::Approved, 'review_note' => null]);
+                    // G247 switch OFF: never approves on its own; a new followed row waits for an admin.
+                    if ($answer === 'verified' && ($autoApprove || $cert->status === CertificateStatus::Approved)) {
+                        $cert->forceFill(['status' => CertificateStatus::Approved, 'review_note' => null]);
+                    } elseif (! $cert->exists) {
+                        $cert->forceFill(['submitted_at' => now()]);
+                    }
                 } else {
                     // Gone, not certified, or no longer this store's: WHIP no longer vouches.
                     $cert->forceFill([
