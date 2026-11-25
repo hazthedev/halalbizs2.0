@@ -42,7 +42,9 @@ Build defines:
 Play Store bundle (release):
 `flutter build appbundle --release --no-tree-shake-icons --dart-define=API_BASE_URL=https://halalbizs.com/api/v1`.
 Signing reads `mobile/android/key.properties` (storeFile, storePassword, keyAlias, keyPassword);
-it is gitignored and never committed. Without it the build falls back to debug keys.
+it is gitignored and never committed. Give storeFile as a full path (`~` is not expanded;
+a relative path resolves from `mobile/android/app`). Without the file the build falls back
+to debug keys: check the signer with `keytool -printcert -jarfile <aab>` before uploading.
 
 Release builds: `flutter build apk --release --dart-define=API_BASE_URL=…`,
 `flutter build ipa --release --dart-define=API_BASE_URL=…` (needs Xcode),
