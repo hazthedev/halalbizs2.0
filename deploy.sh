@@ -125,7 +125,7 @@ echo "→ clear caches (before migrate: stale config must not reach the schema s
 # ponytail: path fixed; follow APP_ROUTES_CACHE here if .env ever sets it.
 cache_routes() {
     APP_ROUTES_CACHE=bootstrap/cache/routes-next.php "$PHP_BIN" artisan route:cache \
-        && mv -f bootstrap/cache/routes-next.php bootstrap/cache/routes-v7.php
+        && mv -f bootstrap/cache/routes-next.php bootstrap/cache/routes-v7.php || return 1
 }
 "$PHP_BIN" artisan optimize:clear --except=routes
 # A failed build falls back to the old behaviour: no route cache, routes loaded live.
