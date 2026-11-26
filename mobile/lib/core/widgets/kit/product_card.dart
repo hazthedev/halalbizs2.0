@@ -14,11 +14,14 @@ import 'price_text.dart';
 /// Product image (`card` conversion) with the khatam placeholder on an empty
 /// URL or a load error.
 class ProductImage extends StatelessWidget {
-  const ProductImage(this.url, {super.key, this.fit = BoxFit.cover, this.radius = SoukRadius.card});
+  const ProductImage(this.url, {super.key, this.fit = BoxFit.cover, this.radius = SoukRadius.card, this.memCacheWidth});
 
   final String? url;
   final BoxFit fit;
   final double radius;
+
+  /// Decode at this width (px) instead of full size: less memory, faster paint.
+  final int? memCacheWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +37,7 @@ class ProductImage extends StatelessWidget {
           : CachedNetworkImage(
               imageUrl: url!,
               fit: fit,
+              memCacheWidth: memCacheWidth,
               placeholder: (_, _) => Container(color: SoukColors.cream),
               errorWidget: (_, _, _) => placeholder,
             ),

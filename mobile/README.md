@@ -123,8 +123,15 @@ product page, and the push stub (`core/push/push_service.dart`:
   403 still leaves the seller area, including after data has loaded.
 - Store or product 404: "Page not found" with a Home button.
 - "Update required" has an Update now button (`urls.store_android` /
-  `urls.store_ios` from `GET config`); the native splash stays up until the
-  version check answers.
+  `urls.store_ios` from `GET config`). The native splash waits for the session
+  restore and the SAVED config only (disk); the fresh config is checked behind
+  the first frame, and a too-old answer blocks the app the moment it lands.
+- Home paints the last saved `GET home` first, then swaps in the fresh one.
+  Banners show the picture alone (the art carries its headline); the slide's
+  button sits under it. A banner with no `app_url` falls back to a mapped
+  route (`/certificate-register` opens the Search tab). `image_small` (800 px)
+  is used when the API sends it. Search keeps the old rows dimmed with a thin
+  progress bar while a new query loads.
 
 ## Stubbed for later slices
 

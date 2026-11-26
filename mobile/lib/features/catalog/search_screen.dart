@@ -72,7 +72,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (_query.text.trim().length == 1) return;
     final offline = ref.read(isOfflineProvider).value ?? false;
     setState(() => _offline = offline);
-    if (!offline) _list.reload(clear: true);
+    // Old rows stay (dimmed, thin bar) until the new ones land; the skeleton is only for the first load.
+    if (!offline) _list.reload();
   }
 
   @override

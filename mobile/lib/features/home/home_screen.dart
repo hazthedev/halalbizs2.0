@@ -32,7 +32,8 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final home = ref.watch(homeProvider);
-    final feed = home.value;
+    // Last saved home first (disk, no network), swapped for the fresh one on arrival.
+    final feed = home.value ?? ref.watch(homeSavedProvider).value;
 
     return SoukPage(
       title: l.appName,
@@ -44,21 +45,20 @@ class HomeScreen extends ConsumerWidget {
       cachedAt: feed?.fetchedAt,
       body: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         const PreviewStrip(),
-        home.when(
-          skipLoadingOnRefresh: true,
-          skipError: true,
-          loading: () => const Column(children: [
+        if (home.hasError && !home.hasValue)
+          ErrorPane(error: home.error!, onRetry: () => _refresh(ref), retryLabel: l.retry)
+        else if (feed == null)
+          const Column(children: [
             SoukSkeleton.block(height: SoukSpace.minTap),
             SizedBox(height: SoukSpace.s5),
             SoukSkeleton.cards(rows: 4),
+          ])
+        else
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            if (feed.announcement != null) _AnnouncementBar(feed.announcement!),
+            if (feed.hero != null) _Hero(feed.hero!),
+            feed.blocks == null ? _FixedHome(feed, onRefresh: () => _refresh(ref)) : _BlocksHome(feed),
           ]),
-          error: (e, _) => ErrorPane(error: e, onRetry: () => _refresh(ref), retryLabel: l.retry),
-          data: (f) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            if (f.announcement != null) _AnnouncementBar(f.announcement!),
-            if (f.hero != null) _Hero(f.hero!),
-            f.blocks == null ? _FixedHome(f, onRefresh: () => _refresh(ref)) : _BlocksHome(f),
-          ]),
-        ),
       ]),
     );
   }
@@ -337,9 +337,11 @@ class _CategoryGrid extends StatelessWidget {
       );
 }
 
-/// Swipeable banners (web home: 3:1 artwork, paper dots, 6 s auto-advance,
-/// none under reduced motion). Tap = the banner's `app_url` route; a banner
-/// without one is not tappable. Key `home-banner-<id>`.
+/// Swipeable banners (web home: 3:1 artwork, dots, 6 s auto-advance, none
+/// under reduced motion). The picture is shown alone (no text or gradient on
+/// it); dots and the slide's button sit below it. Tap picture or button = the
+/// banner's `route` (`app_url`, or the web link mapped to a screen); no route =
+/// not tappable. Keys `home-banner-<id>`, `home-banner-cta-<id>`.
 class BannerCarousel extends StatefulWidget {
   const BannerCarousel(this.banners, {super.key});
 
@@ -381,15 +383,21 @@ class _BannerCarouselState extends State<BannerCarousel> {
   @override
   Widget build(BuildContext context) {
     final banners = widget.banners;
+    final current = banners[_page.clamp(0, banners.length - 1)];
+    final route = current.route;
+    // Room for the button under every slide when any slide has one, so the
+    // page does not jump while swiping.
+    final reserveButton = banners.any((b) => b.ctaLabel != null);
     return Semantics(
       label: context.l10n.homePromotions,
       container: true,
-      child: AspectRatio(
-        aspectRatio: 3,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(SoukRadius.card),
-          child: Stack(children: [
-            PageView.builder(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        // Picture only: the artwork carries its own headline (web does the same).
+        AspectRatio(
+          aspectRatio: 3,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(SoukRadius.card),
+            child: PageView.builder(
               key: const Key('home-banners'),
               controller: _controller,
               itemCount: banners.length,
@@ -399,7 +407,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
               },
               itemBuilder: (context, i) {
                 final b = banners[i];
-                final link = b.appUrl;
+                final link = b.route;
                 return Semantics(
                   container: true,
                   label: b.title,
@@ -408,75 +416,56 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   child: GestureDetector(
                     key: Key('home-banner-${b.id}'),
                     onTap: link == null ? null : () => context.push(link),
-                    child: Stack(fit: StackFit.expand, children: [
-                      ProductImage(b.image, radius: 0),
-                      if (b.subtitle != null || b.ctaLabel != null) _BannerText(b),
-                    ]),
+                    child: ProductImage(b.imageSmall ?? b.image, radius: 0, memCacheWidth: 800),
                   ),
                 );
               },
             ),
-            if (banners.length > 1)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: SoukSpace.s3,
-                child: ExcludeSemantics(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      for (var i = 0; i < banners.length; i++)
-                        AnimatedContainer(
-                          key: Key('home-banner-dot-$i'),
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          width: i == _page ? 18 : 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            color: SoukColors.paper.withValues(alpha: i == _page ? 1 : .5),
-                            borderRadius: BorderRadius.circular(SoukRadius.pill),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-          ]),
+          ),
         ),
-      ),
+        if (banners.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: SoukSpace.s2),
+            child: ExcludeSemantics(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = 0; i < banners.length; i++)
+                    AnimatedContainer(
+                      key: Key('home-banner-dot-$i'),
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: i == _page ? 18 : 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: i == _page ? SoukColors.emerald : SoukColors.inkFaint.withValues(alpha: .4),
+                        borderRadius: BorderRadius.circular(SoukRadius.pill),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        if (reserveButton)
+          Padding(
+            padding: const EdgeInsets.only(top: SoukSpace.s2),
+            child: SizedBox(
+              height: SoukSpace.minTap,
+              child: current.ctaLabel == null
+                  ? null
+                  : Center(
+                      child: SoukButton(
+                        key: Key('home-banner-cta-${current.id}'),
+                        label: current.ctaLabel!,
+                        variant: SoukButtonVariant.primary,
+                        onPressed: route == null ? null : () => context.push(route),
+                      ),
+                    ),
+            ),
+          ),
+      ]),
     );
   }
-}
-
-/// Subtitle and button text over the banner, on a dark gradient so the picture stays readable.
-class _BannerText extends StatelessWidget {
-  const _BannerText(this.b);
-
-  final HomeBanner b;
-
-  @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [Colors.black.withValues(alpha: .65), Colors.transparent]),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(SoukSpace.s3),
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              if (b.subtitle != null)
-                Text(b.subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis, style: SoukText.meta.copyWith(color: SoukColors.onDark)),
-              if (b.ctaLabel != null) ...[
-                const SizedBox(height: SoukSpace.s2),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: SoukSpace.s3, vertical: SoukSpace.s1),
-                  decoration: BoxDecoration(color: SoukColors.paper, borderRadius: BorderRadius.circular(SoukRadius.pill)),
-                  child: Text(b.ctaLabel!, style: SoukText.meta.copyWith(color: SoukColors.emerald)),
-                ),
-              ],
-            ]),
-          ),
-        ),
-      );
 }
 
 /// Live flash sale (web `/flash-sale`): heading + "Ends in hh:mm:ss" pill,

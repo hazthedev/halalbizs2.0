@@ -20,6 +20,9 @@ class PagedList<T> extends ChangeNotifier {
   PageOf<T>? last;
   Object? error;
   bool loading = false;
+
+  /// Page 1 is loading (not "more"): rows already shown are stale until it lands.
+  bool reloading = false;
   bool _moreFailed = false;
   bool _disposed = false;
   int _seq = 0;
@@ -50,6 +53,7 @@ class PagedList<T> extends ChangeNotifier {
   Future<void> _load(int page) async {
     final seq = ++_seq;
     loading = true;
+    reloading = page == 1;
     if (page == 1) error = null;
     _notify();
     try {
@@ -69,6 +73,7 @@ class PagedList<T> extends ChangeNotifier {
     } finally {
       if (seq == _seq) {
         loading = false;
+        reloading = false;
         _notify();
       }
     }
@@ -190,7 +195,11 @@ class PagedProductGrid extends StatelessWidget {
       else if (list.items.isEmpty)
         empty
       else ...[
-        ProductGrid(list.items, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
+        if (list.reloading) const LinearProgressIndicator(key: Key('products-reloading'), minHeight: 2, color: SoukColors.emerald),
+        Opacity(
+          opacity: list.reloading ? .5 : 1,
+          child: ProductGrid(list.items, soldLabel: l.sold, onTap: (p) => context.push('/p/${Uri.encodeComponent(p.slug)}')),
+        ),
         LoadMoreButton(list, key: const Key('products-load-more')),
       ],
     ]);
