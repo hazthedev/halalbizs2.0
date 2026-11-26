@@ -48,7 +48,7 @@ Schedule::command('group-buy:expire')->everyFifteenMinutes();
 // M2.8 — place orders for due subscribe-and-save schedules.
 Schedule::command('subscriptions:process')->hourly()->onFailure(ScheduleFailureAlert::for('subscriptions:process'));
 // Ops — daily database + .env backup, then prune old ones (docs/10).
-Schedule::command('backup:run')->dailyAt('02:00')->onFailure(ScheduleFailureAlert::for('backup:run'));
+Schedule::command('backup:run')->dailyAt('02:00')->appendOutputTo(storage_path('logs/schedule-backup.log'))->onFailure(ScheduleFailureAlert::for('backup:run'));
 Schedule::command('backup:clean')->dailyAt('02:30');
 // Mobile API — expired bearer tokens (config/sanctum.php `expiration`) are
 // already refused; this just deletes the rows a day after they lapse.

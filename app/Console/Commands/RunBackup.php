@@ -3,8 +3,11 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
+use Throwable;
 
 /**
  * docs/10 — daily database + .env backup to the configured disk (R2/S3 in prod).
@@ -17,7 +20,25 @@ class RunBackup extends Command
 
     protected $description = 'Back up the database (+ .env) to the backup disk';
 
+    /** A real dump is always bigger; a smaller file means the dump broke (HB-BAK3). */
+    private const MIN_BYTES = 1024;
+
     public function handle(): int
+    {
+        try {
+            return $this->backup();
+        } catch (Throwable $e) {
+            // HB-BAK3: any failure is logged (with secrets masked) and exits non-zero,
+            // so the schedule's onFailure alert fires.
+            $msg = $this->mask($e->getMessage());
+            Log::error('backup:run failed: '.$msg);
+            $this->error('Backup failed: '.$msg);
+
+            return self::FAILURE;
+        }
+    }
+
+    private function backup(): int
     {
         $disk = (string) config('backup.disk', 'local');
         $path = trim((string) config('backup.path', 'backups'), '/');
@@ -26,19 +47,16 @@ class RunBackup extends Command
         $connection = (string) config('database.default');
         $driver = (string) config("database.connections.{$connection}.driver");
 
-        $stored = match ($driver) {
+        $target = match ($driver) {
             'sqlite' => $this->backupSqlite($connection, $disk, "{$path}/db-{$stamp}.sqlite"),
             'mysql' => $this->backupMysql($connection, $disk, "{$path}/db-{$stamp}.sql"),
             default => null,
         };
 
-        if ($stored === null) {
+        if ($target === null) {
+            Log::error("backup:run: unsupported database driver: {$driver}");
             $this->error("Unsupported database driver for backup: {$driver}");
 
-            return self::FAILURE;
-        }
-
-        if ($stored === false) {
             return self::FAILURE;
         }
 
@@ -63,29 +81,28 @@ class RunBackup extends Command
         return self::SUCCESS;
     }
 
-    private function backupSqlite(string $connection, string $disk, string $target): bool
+    private function backupSqlite(string $connection, string $disk, string $target): string
     {
         $file = (string) config("database.connections.{$connection}.database");
 
         if ($file === ':memory:' || ! is_file($file)) {
-            $this->error('SQLite database file not found.');
-
-            return false;
+            throw new RuntimeException('SQLite database file not found.');
         }
 
         $this->write($disk, $target, (string) file_get_contents($file));
 
-        return true;
+        return $target;
     }
 
-    private function backupMysql(string $connection, string $disk, string $target): bool
+    private function backupMysql(string $connection, string $disk, string $target): string
     {
         $cfg = (array) config("database.connections.{$connection}");
 
+        // --no-defaults FIRST: ~/.my.cnf [client] otherwise beats MYSQL_PWD (live 1045, 2026-11-26).
         // MYSQL_PWD, not --password=: the command line of every process is
         // world-readable via `ps` on a shared host.
         $result = Process::env(['MYSQL_PWD' => (string) ($cfg['password'] ?? '')])->run(sprintf(
-            'mysqldump --host=%s --port=%s --user=%s --single-transaction --quick %s',
+            'mysqldump --no-defaults --host=%s --port=%s --user=%s --single-transaction --quick %s',
             escapeshellarg((string) ($cfg['host'] ?? '127.0.0.1')),
             escapeshellarg((string) ($cfg['port'] ?? '3306')),
             escapeshellarg((string) ($cfg['username'] ?? '')),
@@ -93,23 +110,39 @@ class RunBackup extends Command
         ));
 
         if (! $result->successful()) {
-            $this->error('mysqldump failed: '.$result->errorOutput());
-
-            return false;
+            throw new RuntimeException('mysqldump failed (exit '.$result->exitCode().'): '.trim($result->errorOutput()));
         }
 
         $this->write($disk, $target, $result->output());
 
-        return true;
+        return $target;
     }
 
     /** G246: a local dump is owner-only (0600) from the moment it exists. */
     private function write(string $disk, string $target, string $contents): void
     {
-        Storage::disk($disk)->put($target, $contents);
+        $storage = Storage::disk($disk);
+
+        // put() returns false (not throws) on a failed write; a tiny file is a broken dump.
+        if (! $storage->put($target, $contents) || $storage->size($target) < self::MIN_BYTES) {
+            $storage->delete($target);
+
+            throw new RuntimeException("backup file missing or under ".self::MIN_BYTES." bytes: {$target}");
+        }
 
         if (config("filesystems.disks.{$disk}.driver") === 'local') {
             chmod(Storage::disk($disk)->path($target), 0600);
         }
+    }
+
+    /** Strip the DB password and anything shaped like one from text before it is logged. */
+    private function mask(string $text): string
+    {
+        $pwd = (string) config('database.connections.'.config('database.default').'.password');
+        if ($pwd !== '') {
+            $text = str_replace($pwd, '***', $text);
+        }
+
+        return (string) preg_replace('/(pass(?:word)?\s*[=:]\s*)\S+/i', '$1***', $text);
     }
 }

@@ -310,7 +310,12 @@ failing all day sends one mail, not 1,440); every failure is still written to
 the log. Test: `tests/Feature/Ops/ScheduleFailureAlertTest.php`.
 
 **Backups (G246).** `backup:run` writes each dump file mode 0600 (owner only)
-on a local backup disk.
+on a local backup disk. A failed backup (dump exits non-zero, write fails, or the
+file is under 1 KB) deletes the partial file, logs the masked error, and exits
+non-zero, which fires the failure alert above. Output is appended to
+`storage/logs/schedule-backup.log`. mysqldump runs with `--no-defaults` so a
+`~/.my.cnf` password cannot override the app's. `schedule.log` showing DONE is
+NOT a success signal (scheduler display quirk); trust the backup file and the log.
 
 **Time zones (G248).** Times are stored in UTC and shown in Malaysia time
 (APP_DISPLAY_TIMEZONE). The database session time zone on live is the server's

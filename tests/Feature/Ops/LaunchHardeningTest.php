@@ -60,10 +60,10 @@ test('backup:run writes the database dump but NOT the .env snapshot on a local d
         // Only the config the command reads is touched — the already-open
         // connection keeps its own handle.
         $tmp = tempnam(sys_get_temp_dir(), 'dbbk').'.sqlite';
-        file_put_contents($tmp, 'sqlite-bytes');
+        file_put_contents($tmp, str_repeat('sqlite-bytes', 200));
         config(["database.connections.{$connection}.database" => $tmp]);
     } else {
-        Process::fake(['mysqldump*' => Process::result('-- dump')]);
+        Process::fake(['mysqldump*' => Process::result(str_repeat('-- dump', 200))]);
     }
 
     $this->artisan('backup:run')->assertSuccessful();
@@ -85,7 +85,7 @@ test('backup:run writes the database dump but NOT the .env snapshot on a local d
 test('G246: backup:run writes the database dump readable by its owner only (0600)', function () {
     Storage::fake('local');
     config(['backup.disk' => 'local', 'backup.path' => 'backups']);
-    Process::fake(['mysqldump*' => Process::result('-- dump')]);
+    Process::fake(['mysqldump*' => Process::result(str_repeat('-- dump', 200))]);
     $connection = (string) config('database.default');
     config(["database.connections.{$connection}.driver" => 'mysql']);
     $umask = umask(0022);
@@ -104,7 +104,7 @@ test('G246: backup:run writes the database dump readable by its owner only (0600
 test('backup:run dumps mysql without putting the password on the command line', function () {
     Storage::fake('local');
     config(['backup.disk' => 'local', 'backup.path' => 'backups']);
-    Process::fake(['mysqldump*' => Process::result('-- dump')]);
+    Process::fake(['mysqldump*' => Process::result(str_repeat('-- dump', 200))]);
 
     $connection = (string) config('database.default');
     config([
@@ -132,7 +132,7 @@ test('backup:run dumps mysql without putting the password on the command line', 
 test('backup:run skips the .env snapshot on a local disk and says so', function () {
     Storage::fake('local');
     config(['backup.disk' => 'local', 'backup.path' => 'backups']);
-    Process::fake(['mysqldump*' => Process::result('-- dump')]);
+    Process::fake(['mysqldump*' => Process::result(str_repeat('-- dump', 200))]);
 
     $connection = (string) config('database.default');
     config(["database.connections.{$connection}.driver" => 'mysql']);
@@ -160,7 +160,7 @@ test('backup:run DOES write the .env snapshot to a non-local disk', function () 
         'backup.disk' => 'backups-remote',
         'backup.path' => 'backups',
     ]);
-    Process::fake(['mysqldump*' => Process::result('-- dump')]);
+    Process::fake(['mysqldump*' => Process::result(str_repeat('-- dump', 200))]);
 
     $connection = (string) config('database.default');
     config(["database.connections.{$connection}.driver" => 'mysql']);
