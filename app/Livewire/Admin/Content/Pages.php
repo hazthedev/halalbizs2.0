@@ -15,14 +15,14 @@ class Pages extends Component
 
     public const SYSTEM_SLUGS = ['about', 'trust-safety', 'terms', 'privacy', 'refund-policy', 'faq', 'delete-account'];
 
-    public const ALWAYS_ACTIVE_SLUGS = ['terms', 'privacy'];
+    public const ALWAYS_ACTIVE_SLUGS = ['terms', 'privacy', 'delete-account'];
 
     public function toggleActive(int $pageId): void
     {
         $page = app(ContentDrafts::class)->preview(Page::findOrFail($pageId));
 
         if (in_array($page->slug, self::ALWAYS_ACTIVE_SLUGS, true)) {
-            $this->dispatch('toast', message: __('Terms and privacy pages must stay published.'), type: 'error');
+            $this->dispatch('toast', message: __('This page must stay published.'), type: 'error');
 
             return;
         }

@@ -44,7 +44,12 @@ Production is cPanel, deployed by `deploy.sh` (interactive or via the
 2. `git fetch origin && git reset --hard origin/main` — a hard reset, always.
    Prints `now at <new> (was <previous>)`: keep the previous sha, it is the
    way back.
-3. Clears caches, then `composer install --no-dev --optimize-autoloader` —
+3. Clears caches (`optimize:clear --except=routes`), then rebuilds the route
+   cache for the new code into `bootstrap/cache/routes-next.php` and renames it
+   over `routes-v7.php`: the file is never missing, so a scheduler task never
+   fails on `require(routes-v7.php)` mid-deploy (false alert, 2026-11-25). A
+   failed build deletes the route cache (routes load live). Then
+   `composer install --no-dev --optimize-autoloader` —
    **only if a `composer` binary is on PATH**; otherwise it skips this step
    and assumes `vendor/` is already current (no new deps that deploy).
 4. `php artisan migrate --force`. **A failed migrate stops the deploy**: the
@@ -62,7 +67,7 @@ Production is cPanel, deployed by `deploy.sh` (interactive or via the
    default, independent of `APP_ENV`, safe to re-run.
 8. `VietnameseContentSeeder` backfills missing `vi` translations without
    touching admin-authored content.
-9. Rebuilds config/route/event/view caches.
+9. Rebuilds config/route/event/view caches (route cache by the same rename as step 3).
 
 The **last line** is the result: `DEPLOYED <sha>` (all steps ok),
 `DEPLOY STOPPED at <sha>` (a step failed, any step) or `DEPLOY HELD: load <n>`.
@@ -284,7 +289,7 @@ bell gets the alert instead. Tasks with the alert: `backup:run`,
 `certificates:watch-expiry`, and every job that moves money or order state
 (G249): `orders:expire-unpaid`, `orders:auto-complete`,
 `orders:cancel-unshipped`, `returns:auto-escalate`, `coins:expire`,
-`affiliates:lock-commissions`, `ledger:release-holds`, `subscriptions:process`.
+`affiliates:lock-commissions`, `ledger:release-holds`, `subscriptions:process`, `einvoice:consolidate`.
 Cap: at most one alert per task per Malaysia calendar day (an every-minute job
 failing all day sends one mail, not 1,440); every failure is still written to
 the log. Test: `tests/Feature/Ops/ScheduleFailureAlertTest.php`.

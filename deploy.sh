@@ -115,7 +115,21 @@ echo "  now at $(git rev-parse --short HEAD) (was $PREV_SHA — the way back, RE
 # Rebuilding at the end (which still happens) never fixed the steps that had
 # already run against a stale config.
 echo "→ clear caches (before migrate: stale config must not reach the schema step)"
-"$PHP_BIN" artisan optimize:clear
+# HB-OPS3: every clear EXCEPT the route cache; it is rebuilt for the new code at
+# once and swapped in by rename, so the file never disappears. route:clear (and
+# plain route:cache, which clears first) deleted it under a running scheduler
+# task: `require(.../routes-v7.php): Failed to open stream` = a false
+# "orders:expire-unpaid failed" alert (2026-11-25). Keeping the OLD route cache
+# until the end instead would point new code at old routes for minutes: a new
+# route('name') in a layout = 500 on every page.
+# ponytail: path fixed; follow APP_ROUTES_CACHE here if .env ever sets it.
+cache_routes() {
+    APP_ROUTES_CACHE=bootstrap/cache/routes-next.php "$PHP_BIN" artisan route:cache \
+        && mv -f bootstrap/cache/routes-next.php bootstrap/cache/routes-v7.php || return 1
+}
+"$PHP_BIN" artisan optimize:clear --except=routes
+# A failed build falls back to the old behaviour: no route cache, routes loaded live.
+cache_routes || { echo "  ! route cache build failed — routes load uncached until the rebuild below"; rm -f bootstrap/cache/routes-v7.php; }
 
 echo "→ composer install --no-dev --optimize-autoloader"
 if command -v composer >/dev/null 2>&1; then
@@ -134,7 +148,7 @@ STEP_FAILED=0
 # (#1, #104) so that a benign "table already exists" (out-of-sync migrations
 # record) could not block the cache rebuild — but that also ran every seeder
 # against a schema that may be part-way, and a real failure read as a finished
-# deploy. The one real need behind it is kept: optimize:clear above already
+# deploy. The one real need behind it is kept: the cache clears above already
 # dropped the caches (M-26), so they are rebuilt for the code now on disk
 # before stopping; the site is never left running uncached. The seeders are
 # NOT run: they assume the new schema. This script never uses maintenance
@@ -143,9 +157,10 @@ STEP_FAILED=0
 # (`artisan migrate:status`), then re-run.
 if ! "$PHP_BIN" artisan migrate --force; then
     echo "DEPLOY STOPPED: migrate failed (see above) — seeders skipped, caches rebuilt for the current code"
-    for c in config:cache route:cache event:cache view:cache; do
-        "$PHP_BIN" artisan "$c" || echo "  ! $c failed"
-    done
+    "$PHP_BIN" artisan config:cache || echo "  ! config:cache failed"
+    cache_routes || echo "  ! route:cache failed"
+    "$PHP_BIN" artisan event:cache || echo "  ! event:cache failed"
+    "$PHP_BIN" artisan view:cache || echo "  ! view:cache failed"
     echo "DEPLOY STOPPED at $(git rev-parse --short HEAD) (was $PREV_SHA)"
     exit 1
 fi
@@ -220,7 +235,7 @@ fi
 
 echo "→ rebuild caches"
 "$PHP_BIN" artisan config:cache
-"$PHP_BIN" artisan route:cache
+cache_routes
 "$PHP_BIN" artisan event:cache
 "$PHP_BIN" artisan view:cache
 
