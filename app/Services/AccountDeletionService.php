@@ -84,6 +84,9 @@ class AccountDeletionService
         ])->save();
 
         $this->erase($user, $email);
+        // erase() nulls the sign-in columns by query; reload so a later save
+        // (logout cycles a non-empty remember token) cannot write one back.
+        $user->refresh();
 
         $user->delete();
     }

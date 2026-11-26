@@ -4,7 +4,9 @@ use App\Enums\StoreStatus;
 use App\Enums\SubOrderStatus;
 use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
+use App\Livewire\Admin\Sellers\StoreDetail;
 use App\Livewire\Admin\Support\Tickets as AdminTickets;
+use App\Livewire\Storefront\Account\Profile;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
@@ -65,6 +67,31 @@ test('an admin suspension keeps its own reason when the owner deletes the accoun
 
     expect(app(AccountDeletionService::class)->deleteUnlessBlocked($user))->toBeNull()
         ->and($store->refresh()->rejection_reason)->toBe('Selling non-halal goods as halal');
+});
+
+test('a store reinstated by mistake can be suspended again although its owner is deleted', function () {
+    [$user, $store] = hbDel3Seller();
+    expect(app(AccountDeletionService::class)->deleteUnlessBlocked($user))->toBeNull();
+
+    Livewire::actingAs(hbDel3Admin())->test(StoreDetail::class, ['store' => $store->refresh()])
+        ->call('reinstate')
+        ->set('suspendReason', 'Owner account deleted.')
+        ->call('suspend')
+        ->assertHasNoErrors();
+
+    expect($store->refresh()->status)->toBe(StoreStatus::Suspended);
+});
+
+test('deleting from the profile page leaves no sign-in column behind (logout must not write a new remember token)', function () {
+    $user = User::factory()->create(['remember_token' => 'remember-me-token']);
+
+    Livewire::actingAs($user)->test(Profile::class)
+        ->set('delete_confirm', 'DELETE')
+        ->set('delete_password', 'password')
+        ->call('deleteAccount')
+        ->assertHasNoErrors();
+
+    expect(User::withTrashed()->find($user->id)->remember_token)->toBeNull();
 });
 
 // (7) backfill command
