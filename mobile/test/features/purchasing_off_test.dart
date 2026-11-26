@@ -46,6 +46,18 @@ void main() {
     expect(find.byKey(const Key('checkout-place')), findsNothing);
   });
 
+  testWidgets('purchasing off: with Cart hidden, Orders and Account tabs still open their own screens', (tester) async {
+    usePhone(tester);
+    final h = Harness(api: _api(purchasing: false), token: 'tok');
+    await h.pump(tester, location: '/home');
+    await tester.tap(find.text('Orders').last);
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/orders');
+    await tester.tap(find.text('Account').last);
+    await tester.pumpAndSettle();
+    expect(h.router.state.uri.path, '/account');
+  });
+
   testWidgets('purchasing on: Cart tab shows and /cart has no soon note', (tester) async {
     usePhone(tester);
     final h = Harness(api: _api(purchasing: true), token: 'tok');

@@ -189,6 +189,16 @@ void main() {
     expect(find.text('Added to cart'), findsOneWidget);
   });
 
+  testWidgets('HB-BUY1: purchasing off: the Select row still opens the sheet to look, with no Add to cart', (tester) async {
+    usePhone(tester);
+    final api = pickerApi()..routes['GET config'] = (_, _) => {'purchasing_enabled': false};
+    await Harness(api: api, token: 'tok').pump(tester, location: '/p/baju');
+    await tester.tap(find.byKey(const Key('product-select')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('picker-sheet')), findsOneWidget);
+    expect(find.byKey(const Key('picker-confirm')), findsNothing);
+  });
+
   testWidgets('a single-variant product has no Select row and is preselected', (tester) async {
     usePhone(tester);
     final api = FakeApi(routes: {
