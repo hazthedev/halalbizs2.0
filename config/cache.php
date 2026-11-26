@@ -17,6 +17,10 @@ return [
 
     'default' => env('CACHE_STORE', 'database'),
 
+    // Rate limiter counters on disk: no cache-table writes/locks per API request.
+    // Tests run CACHE_STORE=array: their counters stay in memory, not on disk.
+    'limiter' => env('CACHE_LIMITER', env('CACHE_STORE') === 'array' ? 'array' : 'file'),
+
     /*
     |--------------------------------------------------------------------------
     | Cache Stores

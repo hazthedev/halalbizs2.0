@@ -12,10 +12,17 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin Product */
 class ProductResource extends JsonResource
 {
-    /** detail: true adds the gallery (`images[]`) and the option groups for the picker. */
-    public function __construct(Product $resource, private bool $detail = false)
+    private bool $detail;
+
+    /**
+     * detail: true adds the gallery (`images[]`) and the option groups for the picker.
+     * Untyped on purpose: collection() -> mapInto() passes the item INDEX here,
+     * which must never turn a list card into a full detail page.
+     */
+    public function __construct(Product $resource, mixed $detail = false)
     {
         parent::__construct($resource);
+        $this->detail = $detail === true;
     }
 
     /** @return array<string, mixed> */
@@ -44,7 +51,7 @@ class ProductResource extends JsonResource
                 'stock' => $variant->stock,
             ])->values()),
             'halal' => $this->halal(),
-        ] + $this->liveFields();
+        ] + $this->liveFields($request);
 
         if (! $this->detail) {
             return $data;
@@ -84,20 +91,23 @@ class ProductResource extends JsonResource
         ];
     }
 
+    /** @return array{store_live: bool, live_slug?: string} */
+    private function liveFields(Request $request): array
+    {
+        // One cache read per request, not per card; the request dies with its memo.
+        $ids = $request->attributes->get('live_store_ids')
+            ?? tap(app(LiveSessionService::class)->liveStoreIds(), fn ($ids) => $request->attributes->set('live_store_ids', $ids));
+        $slug = $ids[$this->store_id] ?? null;
+
+        return $slug ? ['store_live' => true, 'live_slug' => $slug] : ['store_live' => false];
+    }
+
     /**
      * The web seller card: verified badge, product and service ratings,
      * product count, state, and the approval date as "joined".
      *
      * @return array<string, mixed>
      */
-    /** @return array{store_live: bool, live_slug?: string} */
-    private function liveFields(): array
-    {
-        $slug = app(LiveSessionService::class)->liveStoreIds()[$this->store_id] ?? null;
-
-        return $slug ? ['store_live' => true, 'live_slug' => $slug] : ['store_live' => false];
-    }
-
     private function sellerCard(): array
     {
         $store = $this->store;
