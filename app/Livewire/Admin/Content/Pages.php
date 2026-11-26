@@ -22,7 +22,7 @@ class Pages extends Component
         $page = app(ContentDrafts::class)->preview(Page::findOrFail($pageId));
 
         if (in_array($page->slug, self::ALWAYS_ACTIVE_SLUGS, true)) {
-            $this->dispatch('toast', message: __('Terms and privacy pages must stay published.'), type: 'error');
+            $this->dispatch('toast', message: __('This page must stay published.'), type: 'error');
 
             return;
         }

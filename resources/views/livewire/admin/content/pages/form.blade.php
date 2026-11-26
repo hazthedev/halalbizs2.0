@@ -96,7 +96,7 @@
                     {{ __('Published') }}
                 </label>
             @else
-                <p class="text-[13px] text-ink-faint">{{ __('Terms and privacy pages stay published — checkout links to them.') }}</p>
+                <p class="text-[13px] text-ink-faint">{{ __('This page stays published — checkout or the app store listing links to it.') }}</p>
             @endif
 
             <div class="flex items-center gap-2">

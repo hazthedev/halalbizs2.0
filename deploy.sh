@@ -115,12 +115,21 @@ echo "  now at $(git rev-parse --short HEAD) (was $PREV_SHA — the way back, RE
 # Rebuilding at the end (which still happens) never fixed the steps that had
 # already run against a stale config.
 echo "→ clear caches (before migrate: stale config must not reach the schema step)"
-# HB-OPS3: NOT optimize:clear. It also runs route:clear, and the scheduler (every
-# minute) fails "routes-v7.php missing" until route:cache at the end rebuilds it.
-# Same five clears minus route:clear; the stale route cache is overwritten below.
-for c in cache:clear clear-compiled config:clear event:clear view:clear; do
-    "$PHP_BIN" artisan "$c"
-done
+# HB-OPS3: every clear EXCEPT the route cache; it is rebuilt for the new code at
+# once and swapped in by rename, so the file never disappears. route:clear (and
+# plain route:cache, which clears first) deleted it under a running scheduler
+# task: `require(.../routes-v7.php): Failed to open stream` = a false
+# "orders:expire-unpaid failed" alert (2026-11-25). Keeping the OLD route cache
+# until the end instead would point new code at old routes for minutes: a new
+# route('name') in a layout = 500 on every page.
+# ponytail: path fixed; follow APP_ROUTES_CACHE here if .env ever sets it.
+cache_routes() {
+    APP_ROUTES_CACHE=bootstrap/cache/routes-next.php "$PHP_BIN" artisan route:cache \
+        && mv -f bootstrap/cache/routes-next.php bootstrap/cache/routes-v7.php
+}
+"$PHP_BIN" artisan optimize:clear --except=routes
+# A failed build falls back to the old behaviour: no route cache, routes loaded live.
+cache_routes || { echo "  ! route cache build failed — routes load uncached until the rebuild below"; rm -f bootstrap/cache/routes-v7.php; }
 
 echo "→ composer install --no-dev --optimize-autoloader"
 if command -v composer >/dev/null 2>&1; then
@@ -148,9 +157,10 @@ STEP_FAILED=0
 # (`artisan migrate:status`), then re-run.
 if ! "$PHP_BIN" artisan migrate --force; then
     echo "DEPLOY STOPPED: migrate failed (see above) — seeders skipped, caches rebuilt for the current code"
-    for c in config:cache route:cache event:cache view:cache; do
-        "$PHP_BIN" artisan "$c" || echo "  ! $c failed"
-    done
+    "$PHP_BIN" artisan config:cache || echo "  ! config:cache failed"
+    cache_routes || echo "  ! route:cache failed"
+    "$PHP_BIN" artisan event:cache || echo "  ! event:cache failed"
+    "$PHP_BIN" artisan view:cache || echo "  ! view:cache failed"
     echo "DEPLOY STOPPED at $(git rev-parse --short HEAD) (was $PREV_SHA)"
     exit 1
 fi
@@ -225,7 +235,7 @@ fi
 
 echo "→ rebuild caches"
 "$PHP_BIN" artisan config:cache
-"$PHP_BIN" artisan route:cache
+cache_routes
 "$PHP_BIN" artisan event:cache
 "$PHP_BIN" artisan view:cache
 
