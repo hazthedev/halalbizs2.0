@@ -82,6 +82,12 @@ class CatalogApi {
     return HomeFeed(asMap(r.data), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
   }
 
+  /// The last saved `GET home`, read from disk: painted while the fresh one loads.
+  Future<HomeFeed?> homeSaved() async {
+    final r = await _repo.saved('home');
+    return r == null ? null : HomeFeed(asMap(r.data), fromCache: true, fetchedAt: r.fetchedAt);
+  }
+
   Future<CachedResult<Product>> product(String slug) async {
     final r = await _repo.getJson('products/${Uri.encodeComponent(slug)}');
     return CachedResult(Product(asMap(r.data)), fromCache: r.fromCache, fetchedAt: r.fetchedAt);
@@ -187,6 +193,13 @@ final catalogApiProvider =
 
 /// Home tab: banners, flash sale, categories and featured from `GET home`.
 final homeProvider = FutureProvider<HomeFeed>((ref) => ref.watch(catalogApiProvider).home(preview: ref.watch(previewModeProvider)));
+
+/// The previous home answer (null = none, or preview mode). Home shows it
+/// until [homeProvider] has its first value.
+final homeSavedProvider = FutureProvider<HomeFeed?>((ref) async {
+  if (ref.watch(previewModeProvider)) return null;
+  return ref.watch(catalogApiProvider).homeSaved();
+});
 
 /// `/featured` ("View all"): the paged `sort=top` list (`GET home` sends one
 /// page only; the API accepts `latest|top|price_asc|price_desc`).

@@ -44,8 +44,8 @@ class HalalBizsApp extends ConsumerWidget {
 
 /// Holds the native splash over the router while the stored session restores
 /// (token → `GET me`, or the cached profile offline) and the version gate reads
-/// config (3 s at most), so neither a guarded tab nor a blank screen flashes;
-/// removes it the moment both resolve.
+/// its SAVED config (local, no network; the fresh config is checked behind the
+/// first frame), so neither a guarded tab nor a blank screen flashes.
 class _StartupGate extends ConsumerWidget {
   const _StartupGate({required this.child});
 

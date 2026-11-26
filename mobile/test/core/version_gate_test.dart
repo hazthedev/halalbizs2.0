@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:drift/native.dart';
@@ -94,4 +95,38 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Update required'), findsOneWidget);
   });
+
+  testWidgets('first frame does not wait for GET config; a too-old answer then blocks', (tester) async {
+    usePhone(tester);
+    final config = Completer<Map<String, dynamic>>();
+    final api = _SlowConfigApi(config.future);
+    final h = Harness(api: api, overrides: [installedVersionProvider.overrideWith((ref) => '1.2.0')]);
+    await h.pump(tester);
+    await tester.pump();
+    expect(find.byKey(const Key('home-empty')), findsOneWidget, reason: 'home is up while config is still pending');
+    config.complete({'min_app_version': '1.4.0', 'maintenance': {'enabled': false, 'message': ''}});
+    await tester.pumpAndSettle();
+    expect(find.text('Update required'), findsOneWidget);
+    expect(find.byKey(const Key('home-empty')), findsNothing);
+  });
+
+  testWidgets('saved config says too old: blocks at the first frame even while fresh config is pending', (tester) async {
+    usePhone(tester);
+    final db = AppDb.test(NativeDatabase.memory());
+    await db.putResponse('config', jsonEncode({'min_app_version': '2.0.0', 'maintenance': {'enabled': false}}), null);
+    final h = Harness(api: _SlowConfigApi(Completer<Map<String, dynamic>>().future), db: db, overrides: [installedVersionProvider.overrideWith((ref) => '1.2.0')]);
+    await h.pump(tester);
+    await tester.pump();
+    expect(find.text('Update required'), findsOneWidget);
+  });
+}
+
+class _SlowConfigApi extends FakeApi {
+  _SlowConfigApi(this.config) : super(routes: {'GET home': (_, _) => fakeHome()});
+
+  final Future<Map<String, dynamic>> config;
+
+  @override
+  Future<dynamic> get(String path, {Map<String, dynamic>? query, void Function(Map<String, dynamic>)? meta}) async =>
+      path == 'config' ? config : super.get(path, query: query, meta: meta);
 }

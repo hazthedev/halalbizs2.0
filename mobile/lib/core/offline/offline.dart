@@ -50,6 +50,18 @@ class OfflineRepo {
     return Uri(path: path, queryParameters: {for (final k in keys) k: '${query[k]}'}).toString();
   }
 
+  /// The last snapshot of [path], read from disk with no network (null = none).
+  /// For painting the previous answer while the fresh one loads.
+  Future<CachedResult<dynamic>?> saved(String path, {Map<String, dynamic>? query}) async {
+    try {
+      final c = await _db.getResponse(cacheKey(path, query));
+      if (c == null) return null;
+      return CachedResult(jsonDecode(c.data), fromCache: true, fetchedAt: c.fetchedAt);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<CachedResult<dynamic>> getJson(String path,
       {Map<String, dynamic>? query, bool allowStale = true}) async {
     final key = cacheKey(path, query);

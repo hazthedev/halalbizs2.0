@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -95,4 +97,36 @@ void main() {
       expect(lastSearch(), allOf(contains('sort=$key'), contains('category=rice-grains')));
     }
   });
+
+  testWidgets('a new query keeps the old rows (dimmed, thin bar) until the new ones land; skeleton only first time', (tester) async {
+    usePhone(tester);
+    final second = Completer<List<Map<String, dynamic>>>();
+    final api = _SearchApi(second.future);
+    final h = Harness(api: api);
+    await h.pump(tester, location: '/search');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('product-card-madu-tualang')), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('search-input')), 'kurma');
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pump();
+    expect(find.byKey(const Key('product-card-madu-tualang')), findsOneWidget, reason: 'old rows stay');
+    expect(find.byKey(const Key('products-reloading')), findsOneWidget);
+
+    second.complete([fakeProduct(id: 2, slug: 'kurma-ajwa', name: 'Kurma Ajwa')]);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('product-card-kurma-ajwa')), findsOneWidget);
+    expect(find.byKey(const Key('product-card-madu-tualang')), findsNothing);
+    expect(find.byKey(const Key('products-reloading')), findsNothing);
+  });
+}
+
+class _SearchApi extends FakeApi {
+  _SearchApi(this.searchAnswer) : super(routes: {'GET products': (_, _) => [fakeProduct()], 'GET categories': (_, _) => []});
+
+  final Future<List<Map<String, dynamic>>> searchAnswer;
+
+  @override
+  Future<dynamic> get(String path, {Map<String, dynamic>? query, void Function(Map<String, dynamic>)? meta}) async =>
+      path == 'search' ? searchAnswer : super.get(path, query: query, meta: meta);
 }

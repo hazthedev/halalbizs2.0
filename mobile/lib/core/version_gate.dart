@@ -21,22 +21,37 @@ bool isBelow(String have, String min) {
   return false;
 }
 
-/// What `GET config` says about this install. Config unreachable with no saved
-/// copy = null = let the user in (offline must never lock people out); a slow
-/// network waits 3 s at most.
-final appGateProvider = FutureProvider<({bool outdated, String? maintenance, String? storeUrl})?>((ref) async {
+typedef AppGate = ({bool outdated, String? maintenance, String? storeUrl});
+
+/// What `GET config` says about this install. Never makes the first frame wait
+/// on the network: it emits the saved config at once (null = none saved = let
+/// the user in; offline must never lock people out), then the fresh answer. A
+/// failed refresh keeps whatever was last emitted, so a saved "too old" still
+/// blocks offline, and a fresh "too old" blocks as soon as it lands.
+final appGateProvider = StreamProvider<AppGate?>((ref) async* {
+  final repo = ref.watch(offlineRepoProvider);
+  Future<AppGate?> read(dynamic data) async {
+    try {
+      final cfg = asMap(data);
+      final min = asStr(cfg['min_app_version']) ?? '';
+      final maintenance = asMap(cfg['maintenance']);
+      final urls = asMap(cfg['urls']);
+      return (
+        outdated: min.isNotEmpty && isBelow(await ref.watch(installedVersionProvider.future), min),
+        maintenance: asBool(maintenance['enabled']) ? asStr(maintenance['message']) ?? '' : null,
+        storeUrl: asStr(urls[defaultTargetPlatform == TargetPlatform.iOS ? 'store_ios' : 'store_android']),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  final saved = await repo.saved('config');
+  yield saved == null ? null : await read(saved.data);
   try {
-    final cfg = asMap((await ref.watch(offlineRepoProvider).getJson('config').timeout(const Duration(seconds: 3))).data);
-    final min = asStr(cfg['min_app_version']) ?? '';
-    final maintenance = asMap(cfg['maintenance']);
-    final urls = asMap(cfg['urls']);
-    return (
-      outdated: min.isNotEmpty && isBelow(await ref.watch(installedVersionProvider.future), min),
-      maintenance: asBool(maintenance['enabled']) ? asStr(maintenance['message']) ?? '' : null,
-      storeUrl: asStr(urls[defaultTargetPlatform == TargetPlatform.iOS ? 'store_ios' : 'store_android']),
-    );
+    yield await read((await repo.getJson('config')).data);
   } catch (_) {
-    return null;
+    // keep the saved answer
   }
 });
 

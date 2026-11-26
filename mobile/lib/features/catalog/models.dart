@@ -309,7 +309,20 @@ class HomeBanner {
   int get id => asInt(json['id']) ?? 0;
   String get title => asStr(json['title']) ?? '';
   String? get image => asStr(json['image']);
+  /// 800 px copy, when the API sends one (`image_small`); else null.
+  String? get imageSmall => asStr(json['image_small']);
   String? get appUrl => asStr(json['app_url']);
+  String? get linkUrl => asStr(json['link_url']);
+
+  /// Where a tap goes: the server's app route, else the web link mapped to one
+  /// (the register page has no screen of its own: the Search tab is nearest).
+  String? get route {
+    final app = appUrl;
+    if (app != null) return app;
+    final path = Uri.tryParse(linkUrl ?? '')?.path;
+    return path != null && path.startsWith('/certificate-register') ? '/search' : null;
+  }
+
   String? get subtitle => asStr(json['subtitle']);
   String? get ctaLabel => asStr(json['cta_label']);
 }
