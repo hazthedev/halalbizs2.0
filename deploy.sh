@@ -115,7 +115,12 @@ echo "  now at $(git rev-parse --short HEAD) (was $PREV_SHA — the way back, RE
 # Rebuilding at the end (which still happens) never fixed the steps that had
 # already run against a stale config.
 echo "→ clear caches (before migrate: stale config must not reach the schema step)"
-"$PHP_BIN" artisan optimize:clear
+# HB-OPS3: NOT optimize:clear. It also runs route:clear, and the scheduler (every
+# minute) fails "routes-v7.php missing" until route:cache at the end rebuilds it.
+# Same five clears minus route:clear; the stale route cache is overwritten below.
+for c in cache:clear clear-compiled config:clear event:clear view:clear; do
+    "$PHP_BIN" artisan "$c"
+done
 
 echo "→ composer install --no-dev --optimize-autoloader"
 if command -v composer >/dev/null 2>&1; then
@@ -134,7 +139,7 @@ STEP_FAILED=0
 # (#1, #104) so that a benign "table already exists" (out-of-sync migrations
 # record) could not block the cache rebuild — but that also ran every seeder
 # against a schema that may be part-way, and a real failure read as a finished
-# deploy. The one real need behind it is kept: optimize:clear above already
+# deploy. The one real need behind it is kept: the cache clears above already
 # dropped the caches (M-26), so they are rebuilt for the code now on disk
 # before stopping; the site is never left running uncached. The seeders are
 # NOT run: they assume the new schema. This script never uses maintenance

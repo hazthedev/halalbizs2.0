@@ -44,7 +44,8 @@ Production is cPanel, deployed by `deploy.sh` (interactive or via the
 2. `git fetch origin && git reset --hard origin/main` — a hard reset, always.
    Prints `now at <new> (was <previous>)`: keep the previous sha, it is the
    way back.
-3. Clears caches, then `composer install --no-dev --optimize-autoloader` —
+3. Clears caches (all but the route cache, which stays until step 9 overwrites it,
+   so the scheduler never sees a missing routes file), then `composer install --no-dev --optimize-autoloader` —
    **only if a `composer` binary is on PATH**; otherwise it skips this step
    and assumes `vendor/` is already current (no new deps that deploy).
 4. `php artisan migrate --force`. **A failed migrate stops the deploy**: the
@@ -284,7 +285,7 @@ bell gets the alert instead. Tasks with the alert: `backup:run`,
 `certificates:watch-expiry`, and every job that moves money or order state
 (G249): `orders:expire-unpaid`, `orders:auto-complete`,
 `orders:cancel-unshipped`, `returns:auto-escalate`, `coins:expire`,
-`affiliates:lock-commissions`, `ledger:release-holds`, `subscriptions:process`.
+`affiliates:lock-commissions`, `ledger:release-holds`, `subscriptions:process`, `einvoice:consolidate`.
 Cap: at most one alert per task per Malaysia calendar day (an every-minute job
 failing all day sends one mail, not 1,440); every failure is still written to
 the log. Test: `tests/Feature/Ops/ScheduleFailureAlertTest.php`.

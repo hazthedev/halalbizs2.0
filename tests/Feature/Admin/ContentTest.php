@@ -296,14 +296,17 @@ test('terms and privacy cannot be deactivated but other system pages can', funct
     $admin = contentAdmin();
     $terms = Page::where('slug', 'terms')->sole();
     $about = Page::where('slug', 'about')->sole();
+    $delete = Page::where('slug', 'delete-account')->sole(); // Play checks /page/delete-account
 
     Livewire::actingAs($admin)
         ->test(Pages::class)
         ->call('toggleActive', $terms->id)
+        ->call('toggleActive', $delete->id)
         ->call('toggleActive', $about->id);
     publishDrafts();
 
     expect($terms->refresh()->is_active)->toBeTrue()
+        ->and($delete->refresh()->is_active)->toBeTrue()
         ->and($about->refresh()->is_active)->toBeFalse();
 });
 

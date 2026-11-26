@@ -15,7 +15,7 @@ class Pages extends Component
 
     public const SYSTEM_SLUGS = ['about', 'trust-safety', 'terms', 'privacy', 'refund-policy', 'faq', 'delete-account'];
 
-    public const ALWAYS_ACTIVE_SLUGS = ['terms', 'privacy'];
+    public const ALWAYS_ACTIVE_SLUGS = ['terms', 'privacy', 'delete-account'];
 
     public function toggleActive(int $pageId): void
     {

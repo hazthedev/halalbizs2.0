@@ -15,7 +15,7 @@ Schedule::command('sitemap:generate')->dailyAt('03:00');
 Schedule::command('returns:auto-escalate')->hourly()->onFailure(ScheduleFailureAlert::for('returns:auto-escalate'));
 Schedule::command('boosts:expire')->hourly();
 // Monthly LHDN B2C e-invoice consolidation for the previous month (within the 7-day window).
-Schedule::command('einvoice:consolidate')->monthlyOn(1, '04:00');
+Schedule::command('einvoice:consolidate')->monthlyOn(1, '04:00')->onFailure(ScheduleFailureAlert::for('einvoice:consolidate'));
 // M1.4 — abandoned-cart recovery + seller health scorecards.
 Schedule::command('carts:remind-abandoned')->hourly();
 Schedule::command('seller:compute-health')->dailyAt('02:00');

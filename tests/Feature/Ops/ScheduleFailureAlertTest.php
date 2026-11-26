@@ -30,6 +30,8 @@ test('failed task mails the ops address once', function (string $command) {
     // G249 (HB-DEC-1125b): every job that moves money or order state.
     'orders:expire-unpaid', 'orders:auto-complete', 'returns:auto-escalate', 'coins:expire',
     'affiliates:lock-commissions', 'subscriptions:process',
+    // HB-OPS3: a silent miss costs the LHDN 7-day filing window.
+    'einvoice:consolidate',
 ]);
 
 test('G249: a task failing all day alerts once per Malaysia day, and logs every failure', function () {
