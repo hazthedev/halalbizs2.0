@@ -21,7 +21,7 @@ bool isBelow(String have, String min) {
   return false;
 }
 
-typedef AppGate = ({bool outdated, String? maintenance, String? storeUrl});
+typedef AppGate = ({bool outdated, String? maintenance, String? storeUrl, bool purchasing});
 
 /// What `GET config` says about this install. Never makes the first frame wait
 /// on the network: it emits the saved config at once (null = none saved = let
@@ -40,6 +40,7 @@ final appGateProvider = StreamProvider<AppGate?>((ref) async* {
         outdated: min.isNotEmpty && isBelow(await ref.watch(installedVersionProvider.future), min),
         maintenance: asBool(maintenance['enabled']) ? asStr(maintenance['message']) ?? '' : null,
         storeUrl: asStr(urls[defaultTargetPlatform == TargetPlatform.iOS ? 'store_ios' : 'store_android']),
+        purchasing: !cfg.containsKey('purchasing_enabled') || asBool(cfg['purchasing_enabled']),
       );
     } catch (_) {
       return null;

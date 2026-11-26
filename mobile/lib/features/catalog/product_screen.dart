@@ -35,7 +35,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   Map<int, int> _picks = {};
   int _qty = 1;
   int _image = 0;
-  bool _adding = false;
+  /// Which button's request is running (null = none); one spinner, both disabled.
+  bool? _buyNowBusy;
   bool _chatting = false;
 
   /// The page's own messenger: the "Added to cart" bar floats above this
@@ -79,7 +80,8 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
       context.push('/login?from=${Uri.encodeComponent('/p/${p.slug}')}');
       return;
     }
-    setState(() => _adding = true);
+    if (_buyNowBusy != null) return;
+    setState(() => _buyNowBusy = buyNow);
     final l = context.l10n;
     final router = GoRouter.of(context);
     try {
@@ -99,7 +101,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
     } catch (e) {
       if (mounted) showApiError(context, e);
     } finally {
-      if (mounted) setState(() => _adding = false);
+      if (mounted) setState(() => _buyNowBusy = null);
     }
   }
 
@@ -170,9 +172,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                   variant: SoukButtonVariant.secondary,
                   compact: true,
                   expand: true,
-                  busy: _adding,
+                  busy: _buyNowBusy == false,
                   requiresOnline: true,
-                  onPressed: canBuy ? () => _addToCart(product) : null,
+                  onPressed: canBuy && _buyNowBusy == null ? () => _addToCart(product) : null,
                 ),
               ),
               const SizedBox(width: SoukSpace.s2),
@@ -183,9 +185,9 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
                   variant: SoukButtonVariant.primary,
                   compact: true,
                   expand: true,
-                  busy: _adding,
+                  busy: _buyNowBusy == true,
                   requiresOnline: true,
-                  onPressed: canBuy ? () => _addToCart(product, buyNow: true) : null,
+                  onPressed: canBuy && _buyNowBusy == null ? () => _addToCart(product, buyNow: true) : null,
                 ),
               ),
             ]),
