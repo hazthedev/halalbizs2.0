@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\StoreStatus;
 use App\Enums\SubOrderStatus;
 use App\Models\Review;
 use App\Models\User;
@@ -80,16 +81,9 @@ class AccountDeletionService
             'name' => 'Deleted user',
             'email' => 'deleted-'.$user->id.'@anonymized.local',
             'phone' => null,
-            'phone_verified_at' => null,
-            'google_id' => null,
-            'two_factor_method' => null,
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'remember_token' => null,
         ])->save();
 
-        $user->revokeAppAccess();
-        $this->erasePersonalRows($user, $email);
+        $this->erase($user, $email);
 
         $user->delete();
     }
@@ -100,33 +94,72 @@ class AccountDeletionService
      * (name, phone, full address) outlived the account. Shared records stay:
      * orders + their shipping_address snapshot, reviews, questions, chats,
      * tickets, coins, affiliate and seller records (see /page/delete-account).
+     * HB-DEL3: a seller's shop closes with the account.
+     *
+     * Shared by delete() and accounts:erase-deleted (accounts deleted before
+     * HB-DEL2). $email = the original address; null when it is already gone,
+     * so rows keyed only by it cannot be matched. $dryRun counts, writes
+     * nothing. Returns rows per table erased (or that would be).
+     *
+     * @return array<string, int>
      */
-    private function erasePersonalRows(User $user, string $email): void
+    public function erase(User $user, ?string $email, bool $dryRun = false): array
     {
+        $counts = [];
+        $run = function (string $table, $query, ?array $update = null) use (&$counts, $dryRun): void {
+            $counts[$table] = $dryRun ? $query->count() : ($update === null ? $query->delete() : $query->update($update));
+        };
+
+        $columns = ['phone_verified_at', 'google_id', 'two_factor_method', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'];
+        $run('users (sign-in columns)', User::withTrashed()->whereKey($user->id)
+            ->where(fn ($query) => collect($columns)->each(fn ($column) => $query->orWhereNotNull($column))),
+            array_fill_keys($columns, null));
+
         // Subscriptions first: each points at a saved address.
-        $user->subscriptions()->delete();
-        $user->addresses()->delete();
-        $user->wishlists()->delete();
-        $user->cart()->delete(); // cart_items cascade
-        $user->knownDevices()->delete();
-        $user->otpCodes()->delete();
-        $user->notifications()->delete();
+        $run('subscriptions', $user->subscriptions());
+        $run('addresses', $user->addresses());
+        $run('wishlists', $user->wishlists());
+        $run('carts', $user->cart()); // cart_items cascade
+        $run('known_devices', $user->knownDevices());
+        $run('otp_codes', $user->otpCodes());
+        $run('notifications', $user->notifications());
+        $run('personal_access_tokens', $user->tokens());
+        $run('device_tokens', $user->deviceTokens());
 
         foreach (['product_views', 'stock_subscriptions', 'store_follows', 'sessions'] as $table) {
-            DB::table($table)->where('user_id', $user->id)->delete();
+            $run($table, DB::table($table)->where('user_id', $user->id));
         }
 
-        DB::table('password_reset_tokens')->where('email', $email)->delete();
-        DB::table('newsletter_subscribers')->where('user_id', $user->id)->orWhere('email', $email)->delete();
+        if ($email !== null) {
+            $run('password_reset_tokens', DB::table('password_reset_tokens')->where('email', $email));
+        }
+
+        $run('newsletter_subscribers', DB::table('newsletter_subscribers')->where(
+            fn ($query) => $query->where('user_id', $user->id)->when($email !== null, fn ($query) => $query->orWhere('email', $email))
+        ));
 
         // Search terms stay as anonymous totals; only the link to the person goes.
-        DB::table('search_logs')->where('user_id', $user->id)->update(['user_id' => null]);
+        $run('search_logs (unlinked)', DB::table('search_logs')->where('user_id', $user->id), ['user_id' => null]);
 
         // Helpful votes: helpful_count is derived from the pivot (AL-L3), so recount.
         $votedReviewIds = DB::table('review_helpfuls')->where('user_id', $user->id)->pluck('review_id');
-        DB::table('review_helpfuls')->where('user_id', $user->id)->delete();
-        Review::query()->whereKey($votedReviewIds)->update([
-            'helpful_count' => DB::raw('(select count(*) from review_helpfuls where review_helpfuls.review_id = reviews.id)'),
-        ]);
+        $run('review_helpfuls', DB::table('review_helpfuls')->where('user_id', $user->id));
+        if (! $dryRun) {
+            Review::query()->whereKey($votedReviewIds)->update([
+                'helpful_count' => DB::raw('(select count(*) from review_helpfuls where review_helpfuls.review_id = reviews.id)'),
+            ]);
+        }
+
+        // HB-DEL3: the shop closes with the account: the admin "Suspend" state,
+        // so Product::live() and every approved() read path drop it (storefront,
+        // search, sitemap, API). Store, products, documents, ledger and
+        // certificates stay as records. An admin suspension keeps its own reason.
+        $store = $user->store()->first();
+        $counts['stores (closed)'] = (int) in_array($store?->status, [StoreStatus::Approved, StoreStatus::Pending], true);
+        if ($counts['stores (closed)'] === 1 && ! $dryRun) {
+            $store->forceFill(['status' => StoreStatus::Suspended, 'rejection_reason' => 'Owner account deleted.'])->save();
+        }
+
+        return $counts;
     }
 }

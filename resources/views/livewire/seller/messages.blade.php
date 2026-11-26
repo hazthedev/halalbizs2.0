@@ -18,7 +18,7 @@
                                 </span>
                                 <span class="min-w-0 flex-1">
                                     <span class="flex items-baseline justify-between gap-2">
-                                        <span class="truncate text-sm text-ink {{ $conversation->unread_count > 0 ? 'font-medium' : 'font-medium' }}">{{ $conversation->buyer?->name }}</span>
+                                        <span class="truncate text-sm text-ink {{ $conversation->unread_count > 0 ? 'font-medium' : 'font-medium' }}">{{ $conversation->buyer?->name ?? __('Deleted user') }}</span>
                                         @if ($conversation->last_message_at)
                                             <span class="shrink-0 text-[11px] text-ink-faint">{{ $conversation->last_message_at->diffForHumans(short: true) }}</span>
                                         @endif
@@ -56,7 +56,7 @@
                     <span class="flex size-9 shrink-0 items-center justify-center rounded-full border border-line bg-paper font-display text-sm font-medium text-ink-soft" aria-hidden="true">
                         {{ mb_substr($active->buyer?->name ?? '?', 0, 1) }}
                     </span>
-                    <p class="min-w-0 truncate text-sm font-medium text-ink">{{ $active->buyer?->name }}</p>
+                    <p class="min-w-0 truncate text-sm font-medium text-ink">{{ $active->buyer?->name ?? __('Deleted user') }}</p>
                 </div>
 
                 {{-- Messages (polls only while this pane is open; marks incoming as read) --}}

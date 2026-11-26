@@ -105,6 +105,7 @@ Hướng dẫn này chỉ cách mở cửa hàng trên HalalBizs, đăng sản p
 8. **Export CSV** lưu sổ cái. Không có trang sao kê; email hằng tháng chính là sao kê.
 9. Thanh toán khi nhận hàng (COD): sổ cái hiện doanh số, hoa hồng và **COD cash collected**, tức tiền mặt đơn vị vận chuyển đã thu từ người mua. Voucher của sàn, xu và miễn phí vận chuyển của sàn do HalalBizs trả, không phải bạn: chúng vẫn nằm trong doanh số và được cộng vào số dư của bạn. Voucher cửa hàng của bạn là chi phí của bạn.
 10. Nếu một đơn COD được hoàn tiền toàn bộ, HalalBizs trả lại tiền cho người mua và số tiền mặt bạn đã thu cho đơn đó được trừ khỏi số dư của bạn.
+11. Để xóa tài khoản, số dư của bạn phải bằng 0 (tất toán trước bằng rút tiền hoặc trả khoản bạn nợ). Khi bạn xóa tài khoản, cửa hàng đóng ngay lập tức: cửa hàng và sản phẩm được gỡ khỏi sàn. Cửa hàng và hồ sơ kinh doanh (giấy tờ, thông tin ngân hàng, sổ cái và các khoản chi trả) được giữ lại.
 
 ## 10. Trò chuyện, đánh giá, câu hỏi và khuyến mãi
 

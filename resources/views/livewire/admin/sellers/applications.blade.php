@@ -29,7 +29,7 @@
                         <tr wire:key="application-{{ $application->id }}"
                             class="border-b border-line hover:bg-paper {{ $reviewing === $application->id ? 'bg-paper' : '' }}">
                             <td class="px-3 py-2 font-medium text-ink">{{ $application->name }}</td>
-                            <td class="px-3 py-2 text-ink-soft">{{ $application->user->email }}</td>
+                            <td class="px-3 py-2 text-ink-soft">{{ $application->user?->email ?? __('Deleted user') }}</td>
                             <td class="px-3 py-2 text-ink-soft">{{ $application->state }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $application->created_at->diffForHumans() }}</td>
                             <td class="px-3 py-2 text-right tabular-nums text-ink-soft">{{ $application->documents_count }}</td>
@@ -57,11 +57,11 @@
                                             <dl class="mt-2 space-y-1.5 text-[13px]">
                                                 <div class="flex justify-between gap-3">
                                                     <dt class="text-ink-soft">{{ __('Owner') }}</dt>
-                                                    <dd class="text-right font-medium">{{ $reviewingStore->user->name }}</dd>
+                                                    <dd class="text-right font-medium">{{ $reviewingStore->user?->name ?? __('Deleted user') }}</dd>
                                                 </div>
                                                 <div class="flex justify-between gap-3">
                                                     <dt class="text-ink-soft">{{ __('Phone') }}</dt>
-                                                    <dd class="text-right">{{ $reviewingStore->user->phone ?? '—' }}</dd>
+                                                    <dd class="text-right">{{ $reviewingStore->user?->phone ?? '—' }}</dd>
                                                 </div>
                                                 <div class="flex justify-between gap-3">
                                                     <dt class="text-ink-soft">{{ __('State') }}</dt>

@@ -27,7 +27,7 @@
                     <h2 class="font-display text-lg font-medium">{{ $thread->subject }}</h2>
                     <p class="mt-1 text-[13px] text-ink-soft">
                         <span class="font-mono">#{{ $thread->id }}</span>
-                        · {{ $thread->user->name }} ({{ $thread->user->email }})
+                        · {{ $thread->user?->name ?? __('Deleted user') }}@if ($thread->user) ({{ $thread->user->email }})@endif
                         · {{ __('updated :time', ['time' => $thread->updated_at->diffForHumans()]) }}
                     </p>
                 </div>
@@ -140,7 +140,7 @@
                                         <x-ui.badge variant="neutral">{{ \App\Enums\TicketCategory::from($ticket->category)->label() }}</x-ui.badge>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 text-ink-soft">{{ $ticket->user->name }}</td>
+                                <td class="px-3 py-2 text-ink-soft">{{ $ticket->user?->name ?? __('Deleted user') }}</td>
                                 <td class="px-3 py-2">
                                     @if ($ticket->priority === TicketPriority::Urgent)
                                         <x-ui.badge variant="danger">{{ __('Urgent') }}</x-ui.badge>

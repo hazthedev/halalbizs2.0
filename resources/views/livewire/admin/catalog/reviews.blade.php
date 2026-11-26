@@ -64,7 +64,7 @@
                                 <span class="line-clamp-2 font-medium text-ink">{{ $review->product?->getTranslation('name', 'en') ?? '—' }}</span>
                             </td>
                             <td class="px-3 py-2 text-ink-soft">{{ $review->store?->name ?? '—' }}</td>
-                            <td class="px-3 py-2 text-ink-soft">{{ $review->user?->name ?? '—' }}</td>
+                            <td class="px-3 py-2 text-ink-soft">{{ $review->user?->name ?? __('Deleted user') }}</td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <span class="flex gap-0.5 leading-none" aria-hidden="true">
                                     @foreach (range(1, 5) as $star)

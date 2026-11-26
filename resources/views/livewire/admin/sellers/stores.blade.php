@@ -64,7 +64,7 @@
                                     <span class="line-clamp-1 max-w-52">{{ $store->name }}</span>
                                 </a>
                             </td>
-                            <td class="px-3 py-2 text-ink-soft">{{ $store->user?->email ?? '—' }}</td>
+                            <td class="px-3 py-2 text-ink-soft">{{ $store->user?->email ?? __('Deleted user') }}</td>
                             <td class="px-3 py-2 text-ink-soft">{{ $store->state }}</td>
                             <td class="px-3 py-2"><x-store-status-pill :status="$store->status" /></td>
                             <td class="px-3 py-2 text-right tabular-nums text-ink-soft">{{ $store->rating_count > 0 ? '★ '.$store->rating_avg : '—' }}</td>

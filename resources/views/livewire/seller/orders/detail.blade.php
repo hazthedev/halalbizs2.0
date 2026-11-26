@@ -20,7 +20,7 @@
         </div>
         <p class="mt-1 text-[13px] text-ink-soft">
             {{ __('Placed :date', ['date' => $placedAt->display()->format('j M Y, g:ia')]) }}
-            · {{ __('Buyer: :name', ['name' => $subOrder->order->user->name]) }}
+            · {{ __('Buyer: :name', ['name' => $subOrder->order->user?->name ?? __('Deleted user')]) }}
         </p>
     </div>
 

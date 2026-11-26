@@ -34,7 +34,7 @@ class SellerOrderResource extends JsonResource
             'placed_at' => ($order?->placed_at ?? $this->created_at)?->toIso8601String(),
             // The seller detail page shows the buyer's phone in full — they ship to it.
             'buyer' => [
-                'name' => $order?->user?->name,
+                'name' => $order?->user?->name ?? __('Deleted user'),
                 'phone' => $address['phone'] ?? $order?->user?->phone,
             ],
             'address' => $address,

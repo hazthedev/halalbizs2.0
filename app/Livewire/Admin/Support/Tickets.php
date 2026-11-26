@@ -5,9 +5,9 @@ namespace App\Livewire\Admin\Support;
 use App\Enums\TicketCategory;
 use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
+use App\Livewire\Concerns\WithTable;
 use App\Models\SupportTicket;
 use App\Notifications\TicketRepliedNotification;
-use App\Livewire\Concerns\WithTable;
 use App\Support\JsonSearch;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -94,7 +94,7 @@ class Tickets extends Component
         ]);
 
         $ticket->update(['status' => TicketStatus::Answered]);
-        $ticket->user->notify(new TicketRepliedNotification($ticket));
+        $ticket->user?->notify(new TicketRepliedNotification($ticket));
 
         $this->replyBody = '';
         $this->dispatch('toast', message: __('Reply sent — the buyer has been notified.'));
