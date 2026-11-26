@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -355,6 +356,29 @@ class Product extends Model implements HasMedia
             return [];
         }
 
+        // Short shared cache: ids only (public, same for every viewer). Live/store
+        // status is re-applied by the caller's own query, so a hidden product
+        // never shows even before the key rolls; flushSearchIds() makes new and
+        // changed products show at once.
+        return Cache::remember(
+            'search:ids:'.Cache::get(self::SEARCH_VERSION_KEY, 0).':'.sha1(mb_strtolower($term).'|'.$limit.'|'.config('scout.driver')),
+            (int) config('search.keyword_cache_ttl', 60),
+            fn () => static::keywordIdsUncached($term, $limit),
+        );
+    }
+
+    public const SEARCH_VERSION_KEY = 'search:ids-version';
+
+    /** Bump the version: every cached keyword result is orphaned and expires on its TTL. */
+    public static function flushSearchIds(): void
+    {
+        Cache::add(self::SEARCH_VERSION_KEY, 0, 86400 * 30);
+        Cache::increment(self::SEARCH_VERSION_KEY);
+    }
+
+    /** @return array<int> */
+    private static function keywordIdsUncached(string $term, ?int $limit): array
+    {
         if (config('scout.driver') === 'meilisearch') {
             return static::search($term)->take($limit)->keys()->all();
         }

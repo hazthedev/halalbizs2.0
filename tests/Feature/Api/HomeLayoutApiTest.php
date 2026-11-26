@@ -71,6 +71,18 @@ test('a banner block carries the active banners with subtitle and button text', 
         ->assertJsonPath('data.banners.0.title', 'Raya sale'); // the old key stays (add-only)
 });
 
+test('a banner with artwork also carries image_small next to image', function () {
+    Storage::fake('public');
+    $banner = Banner::create(['title' => ['en' => 'Art'], 'link_url' => '/c/dates', 'position' => 1, 'is_active' => true]);
+    $banner->addMedia(UploadedFile::fake()->image('b.jpg', 1600, 533))->toMediaCollection('image');
+
+    $row = $this->getJson('/api/v1/home')->json('data.banners.0');
+
+    // Same URL shape as `image` (the media disk's own prefix, relative on the test disk).
+    expect($row['image'])->toBeString()->toContain('/storage/')
+        ->and($row['image_small'])->toBeString()->toContain('/storage/');
+});
+
 // ── Item 2: announcement bar and occasion hero reach the app ───────────────
 
 test('home carries the announcement bar and the occasion hero only while they are on', function () {
