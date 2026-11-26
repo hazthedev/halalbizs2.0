@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Http\Resources\CategoryResource;
 use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Support\Facades\Cache;
@@ -43,6 +44,21 @@ final class CatalogOptions
             ->all());
     }
 
+    /**
+     * The public API list (id, slug, name, parent_id), plain arrays, per locale.
+     *
+     * @return list<array{id: int, slug: string, name: string, parent_id: ?int}>
+     */
+    public static function apiCategories(): array
+    {
+        return Cache::remember('api.categories.'.app()->getLocale(), self::TTL, fn () => Category::query()
+            ->where('is_active', true)
+            ->orderBy('position')
+            ->get()
+            ->map(fn (Category $category) => (new CategoryResource($category))->resolve())
+            ->all());
+    }
+
     /** Active categories whose parent is $parentId (null = top level), menu order. */
     public static function childrenOf(?int $parentId): array
     {
@@ -53,6 +69,7 @@ final class CatalogOptions
     {
         foreach (ContentLocales::ALL as $locale) {
             Cache::forget('catalog-options.categories.'.$locale);
+            Cache::forget('api.categories.'.$locale);
         }
 
         Cache::forget('catalog-options.brands');

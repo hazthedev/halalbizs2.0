@@ -4,16 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Api\ApiResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductQuestionResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ReviewResource;
 use App\Livewire\Storefront\Listing;
 use App\Models\Category;
 use App\Models\Product;
-use App\Services\RecommendationService;
 use App\Models\ProductVariant;
 use App\Notifications\ProductQuestionAsked;
+use App\Services\RecommendationService;
+use App\Support\CatalogOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -186,9 +186,7 @@ class CatalogController extends Controller
 
     public function categories()
     {
-        return CategoryResource::collection(
-            Category::query()->where('is_active', true)->orderBy('position')->get(),
-        );
+        return ['data' => CatalogOptions::apiCategories()];
     }
 
     /** Keyword search + the same filters/sorts as products (default relevance). */

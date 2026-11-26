@@ -2,6 +2,10 @@
 
 return [
 
+    // Seconds a keyword-search id list is shared between requests (API + web).
+    // Product/store/brand saves bump the version, so this only bounds mass updates.
+    'keyword_cache_ttl' => (int) env('SEARCH_KEYWORD_CACHE_TTL', 60),
+
     // Semantic + visual search master switch. When off, the storefront falls
     // back to the existing Scout keyword search and the embedders are idle.
     'enabled' => env('SEARCH_SEMANTIC_ENABLED', true),

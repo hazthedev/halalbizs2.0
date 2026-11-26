@@ -20,11 +20,11 @@ use App\Settings\BoostSettings;
 use App\Settings\ThemeSettings;
 use App\Support\AppLinks;
 use App\Support\ContentLocales;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection as BaseCollection;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
@@ -337,6 +337,8 @@ class HomeLayout
             'link_url' => $banner->link_url,
             'app_url' => AppLinks::fromWebUrl($banner->link_url),
             'image' => $banner->imageUrl($locale) ?: null,
+            // Phone-size copy (800w) for the app; falls back to the full image if not generated.
+            'image_small' => $banner->imageUrl($locale, 'small') ?: null,
         ])->values()->all();
     }
 
