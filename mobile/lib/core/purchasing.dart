@@ -3,31 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../l10n/l10n.dart';
-import 'api/json.dart';
-import 'offline/offline.dart';
+import 'version_gate.dart';
 import 'widgets/souk_kit.dart';
 
-/// `purchasing_enabled` from `GET config` (the server's one switch). Unknown
-/// (offline, no saved copy) = on: the cart / checkout APIs still refuse.
-final purchasingEnabledProvider = FutureProvider<bool>((ref) async {
-  try {
-    final cfg = asMap(
-      (await ref
-              .watch(offlineRepoProvider)
-              .getJson('config')
-              .timeout(const Duration(seconds: 3)))
-          .data,
-    );
-    return !cfg.containsKey('purchasing_enabled') ||
-        asBool(cfg['purchasing_enabled']);
-  } catch (_) {
-    return true;
-  }
-});
-
 /// True unless config says buying is off. Hides every purchase control.
-bool purchasingOn(WidgetRef ref) =>
-    ref.watch(purchasingEnabledProvider).value ?? true;
+/// Same source as the app gate: saved config first, then the fresh answer; a
+/// slow or failed fetch keeps the last known one. Unknown (no saved copy, no
+/// answer yet) = on: the cart / checkout APIs still refuse.
+bool purchasingOn(WidgetRef ref) => ref.watch(appGateProvider).value?.purchasing ?? true;
 
 /// Shown in place of cart / checkout while buying is off (deep links land here).
 class BuyingOpensSoon extends StatelessWidget {
