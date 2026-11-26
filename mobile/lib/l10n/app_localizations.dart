@@ -2000,6 +2000,18 @@ abstract class AppLocalizations {
   /// **'{count} items'**
   String cartItemCount(int count);
 
+  /// No description provided for @buyingOpensSoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Buying opens soon'**
+  String get buyingOpensSoonTitle;
+
+  /// No description provided for @buyingOpensSoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can browse, search, and chat with sellers. Buying is not open yet.'**
+  String get buyingOpensSoonBody;
+
   /// No description provided for @cartPurchasingPaused.
   ///
   /// In en, this message translates to:

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/purchasing.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../catalog/halal.dart';
@@ -62,6 +63,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    if (!purchasingOn(ref)) return SoukPage(title: l.tabCart, brandMark: true, showBack: false, body: const BuyingOpensSoon());
     final async = ref.watch(cartProvider);
     final cart = async.value;
     final cached = cart?.fromCache ?? false;

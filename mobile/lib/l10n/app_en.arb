@@ -435,6 +435,8 @@
       }
     }
   },
+  "buyingOpensSoonTitle": "Buying opens soon",
+  "buyingOpensSoonBody": "You can browse, search, and chat with sellers. Buying is not open yet.",
   "cartPurchasingPaused": "Purchasing is paused — you can browse, but not check out right now.",
   "cartRemove": "Remove",
   "cartSelectAll": "Select all",

@@ -1038,6 +1038,13 @@ class AppLocalizationsMs extends AppLocalizations {
   }
 
   @override
+  String get buyingOpensSoonTitle => 'Pembelian akan dibuka tidak lama lagi';
+
+  @override
+  String get buyingOpensSoonBody =>
+      'Anda boleh melayari, mencari dan berbual dengan penjual. Pembelian belum dibuka.';
+
+  @override
   String get cartPurchasingPaused =>
       'Pembelian dijeda — anda boleh melayari, tetapi tidak boleh membayar buat masa ini.';
 

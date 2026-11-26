@@ -157,7 +157,7 @@
                                                  wire:loading.attr="disabled">
                                         {{ __('Order received') }}
                                     </x-ui.button>
-                                @elseif ($subOrder->status === \App\Enums\SubOrderStatus::Completed)
+                                @elseif ($subOrder->status === \App\Enums\SubOrderStatus::Completed && app(\App\Settings\GeneralSettings::class)->purchasing_enabled)
                                     <x-ui.button variant="secondary" wire:click="buyAgain({{ $subOrder->id }})" wire:loading.attr="disabled">
                                         {{ __('Buy again') }}
                                     </x-ui.button>

@@ -102,7 +102,7 @@ This guide shows how to shop on HalalBizs: find halal products, check certificat
 5. HalalBizs does not show courier checkpoints itself. The courier link is the way to follow a parcel.
 6. When the parcel arrives and the status is **Delivered**, check it and select **Order received**. This completes the order. If you do nothing, it completes by itself 7 days after delivery.
 7. Select **Download invoice** on an order that has been confirmed.
-8. After completion, **Buy again** puts the items back into your cart.
+8. After completion, **Buy again** puts the items back into your cart. **Buy again** is hidden while the marketplace is in listing-only mode.
 
 ## 11. Cancel, return and refund
 

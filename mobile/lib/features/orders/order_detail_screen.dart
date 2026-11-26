@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/api/json.dart';
+import '../../core/purchasing.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../../core/api/api_client.dart';
@@ -186,6 +187,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     final l = context.l10n;
     final async = ref.watch(orderDetailProvider(widget.id));
     final o = async.value?.data;
+    final buyAgainOn = purchasingOn(ref);
 
     return SoukPage(
       title: o == null ? l.ordersOrder : l.ordersOrderNo(o.subOrderNo),
@@ -193,12 +195,12 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
       onRefresh: _refresh,
       fromCache: async.value?.fromCache ?? false,
       cachedAt: async.value?.fetchedAt,
-      bottomBar: o == null || !(o.canCancel || o.canConfirmReceived || o.canReturn || o.canReview || o.canPayNow || o.canBuyAgain || o.canInvoice)
+      bottomBar: o == null || !(o.canCancel || o.canConfirmReceived || o.canReturn || o.canReview || o.canPayNow || (o.canBuyAgain && buyAgainOn) || o.canInvoice)
           ? null
           : Wrap(spacing: SoukSpace.s2, runSpacing: SoukSpace.s2, alignment: WrapAlignment.end, children: [
               if (o.canInvoice)
                 SoukButton(key: const Key('order-invoice'), label: l.ordersDownloadInvoice, icon: FontAwesomeIcons.fileInvoice, variant: SoukButtonVariant.secondary, requiresOnline: true, onPressed: () => openWebPage(context, ref, 'invoice', id: o.id)),
-              if (o.canBuyAgain)
+              if (o.canBuyAgain && buyAgainOn)
                 SoukButton(key: const Key('order-buy-again'), label: l.ordersBuyAgain, icon: FontAwesomeIcons.rotateRight, variant: SoukButtonVariant.primary, requiresOnline: true, busy: _busy, onPressed: () => _buyAgain(o)),
               if (o.canPayNow)
                 SoukButton(key: const Key('order-pay-now'), label: l.ordersPayNow, icon: FontAwesomeIcons.creditCard, variant: SoukButtonVariant.primary, requiresOnline: true, busy: _busy, onPressed: () => _payNow(o)),

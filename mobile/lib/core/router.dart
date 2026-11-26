@@ -26,6 +26,7 @@ import '../features/seller_products/seller_products_screen.dart';
 import '../features/seller_store/seller_store_screen.dart';
 import '../l10n/l10n.dart';
 import 'auth/session.dart';
+import 'purchasing.dart';
 import 'widgets/phone_nav.dart';
 import 'widgets/souk_kit.dart';
 
@@ -130,6 +131,7 @@ RouteBase buyerShellRoute() => StatefulShellRoute.indexedStack(
           tabs: buyerTabs,
           labels: [context.l10n.tabHome, context.l10n.tabSearch, context.l10n.tabCart, context.l10n.tabOrders, context.l10n.tabAccount],
           badges: {2: ref.watch(cartCountProvider)},
+          hidden: purchasingOn(ref) ? const {} : const {2},
         ),
       ),
       branches: [

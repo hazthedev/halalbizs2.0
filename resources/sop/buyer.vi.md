@@ -102,7 +102,7 @@ Hướng dẫn này chỉ cách mua sắm trên HalalBizs: tìm sản phẩm hal
 5. HalalBizs không tự hiển thị các mốc của đơn vị vận chuyển. Liên kết của đơn vị vận chuyển là cách để theo dõi bưu kiện.
 6. Khi bưu kiện đến và trạng thái là **Delivered**, hãy kiểm tra hàng rồi chọn **Đã nhận đơn**. Việc này hoàn tất đơn hàng. Nếu bạn không làm gì, đơn tự hoàn tất 7 ngày sau khi giao.
 7. Chọn **Tải hoá đơn** ở đơn đã được xác nhận.
-8. Sau khi hoàn tất, **Mua lại** đưa các sản phẩm vào giỏ của bạn lần nữa.
+8. Sau khi hoàn tất, **Mua lại** đưa các sản phẩm vào giỏ của bạn lần nữa. **Mua lại** bị ẩn khi sàn đang ở chế độ chỉ đăng sản phẩm (listing-only).
 
 ## 11. Huỷ, đổi trả và hoàn tiền
 
