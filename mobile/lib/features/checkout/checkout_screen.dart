@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/json.dart';
+import '../../core/purchasing.dart';
 import '../../core/widgets/souk_kit.dart';
 import '../../l10n/l10n.dart';
 import '../account/account_api.dart';
@@ -300,6 +301,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    if (!purchasingOn(ref)) return SoukPage(title: l.checkoutTitle, body: const BuyingOpensSoon());
     final addresses = ref.watch(addressesProvider);
     final q = _quote;
     final address = addresses.value?.where((a) => a.id == _addressId).firstOrNull;

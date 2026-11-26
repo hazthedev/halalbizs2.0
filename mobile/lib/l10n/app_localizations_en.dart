@@ -1029,6 +1029,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get buyingOpensSoonTitle => 'Buying opens soon';
+
+  @override
+  String get buyingOpensSoonBody =>
+      'You can browse, search, and chat with sellers. Buying is not open yet.';
+
+  @override
   String get cartPurchasingPaused =>
       'Purchasing is paused — you can browse, but not check out right now.';
 

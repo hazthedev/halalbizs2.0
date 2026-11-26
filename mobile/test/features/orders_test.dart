@@ -288,6 +288,23 @@ void main() {
     expect(find.text('1 item added to cart · 2 items skipped (not available)'), findsOneWidget);
   });
 
+  testWidgets('HB-BUY1: purchasing off: no Buy again on a completed order; Pay now stays on an unpaid one', (tester) async {
+    usePhone(tester);
+    final api = FakeApi(routes: detailRoutes({
+      'GET config': (_, _) => {'purchasing_enabled': false},
+      'GET orders/6': (_, _) => fakeSubOrder(
+          id: 6, status: 'completed', label: 'Completed', detail: true, can: const {'cancel': false, 'confirm_received': false, 'return': false, 'review': false}),
+      'GET orders/8': (_, _) => fakeSubOrder(
+          id: 8, status: 'pending_payment', label: 'Pending payment', detail: true, payment: const {'method': 'ipay88', 'status': 'pending'}),
+    }));
+    final h = Harness(api: api, token: 'tok');
+    await h.pump(tester, location: '/orders/6');
+    expect(find.byKey(const Key('order-buy-again')), findsNothing);
+    h.router.go('/orders/8');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('order-pay-now')), findsOneWidget);
+  });
+
   testWidgets('Account shows the four order shortcuts with counts; tap opens Orders on that tab', (tester) async {
     usePhone(tester);
     String? bucket;

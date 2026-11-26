@@ -429,6 +429,8 @@
       }
     }
   },
+  "buyingOpensSoonTitle": "Pembelian akan dibuka tidak lama lagi",
+  "buyingOpensSoonBody": "Anda boleh melayari, mencari dan berbual dengan penjual. Pembelian belum dibuka.",
   "cartPurchasingPaused": "Pembelian dijeda — anda boleh melayari, tetapi tidak boleh membayar buat masa ini.",
   "cartRemove": "Buang",
   "cartSelectAll": "Pilih semua",

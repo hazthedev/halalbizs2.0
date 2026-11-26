@@ -32,7 +32,7 @@ const sellerTabs = [
 
 /// Shell around a `StatefulNavigationShell`: the branch body plus the tab bar.
 class SoukTabShell extends StatelessWidget {
-  const SoukTabShell({super.key, required this.shell, required this.tabs, required this.labels, this.badges = const {}});
+  const SoukTabShell({super.key, required this.shell, required this.tabs, required this.labels, this.badges = const {}, this.hidden = const {}});
 
   final StatefulNavigationShell shell;
   final List<SoukTab> tabs;
@@ -43,18 +43,26 @@ class SoukTabShell extends StatelessWidget {
   /// Tab index → count pill on the icon (cart items, unread). 0 hides it.
   final Map<int, int> badges;
 
+  /// Tab indexes left out of the bar (Cart while buying is off). The branch
+  /// stays, so a /cart deep link still lands on its screen.
+  final Set<int> hidden;
+
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    final shown = [for (var i = 0; i < tabs.length; i++) if (!hidden.contains(i)) i];
+    final at = shown.indexOf(shell.currentIndex);
+    return Scaffold(
         backgroundColor: SoukColors.paper,
         body: shell,
         bottomNavigationBar: SoukTabBar(
-          tabs: tabs,
-          labels: labels,
-          badges: badges,
-          currentIndex: shell.currentIndex,
-          onSelect: (i) => shell.goBranch(i, initialLocation: i == shell.currentIndex),
+          tabs: [for (final i in shown) tabs[i]],
+          labels: [for (final i in shown) if (i < labels.length) labels[i]],
+          badges: {for (var k = 0; k < shown.length; k++) k: badges[shown[k]] ?? 0},
+          currentIndex: at < 0 ? 0 : at,
+          onSelect: (k) => shell.goBranch(shown[k], initialLocation: shown[k] == shell.currentIndex),
         ),
       );
+  }
 }
 
 /// CupertinoTabBar on iOS, Material 3 NavigationBar elsewhere. Labels scale

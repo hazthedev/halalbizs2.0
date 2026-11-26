@@ -15,6 +15,7 @@ import 'catalog_api.dart';
 import 'halal.dart';
 import 'models.dart';
 import 'product_extras.dart';
+import '../../core/purchasing.dart';
 import 'variant_sheet.dart';
 
 /// `/p/:slug` — gallery, name, price (range until a variant is picked, sale
@@ -50,6 +51,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
         product: p,
         picks: _picks,
         qty: _qty,
+        canAdd: purchasingOn(ref),
         onChanged: (picks, qty) => setState(() {
           _picks = picks;
           _qty = qty;
@@ -153,7 +155,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
             onPressed: _chatting ? null : () => _chat(product!),
           ),
       ],
-      bottomBar: product == null
+      bottomBar: product == null || !purchasingOn(ref)
           ? null
           : Row(children: [
               // Several variants: quantity lives in the variant sheet.

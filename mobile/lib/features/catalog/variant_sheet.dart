@@ -14,12 +14,13 @@ Future<bool> showVariantSheet(
   required Map<int, int> picks,
   required int qty,
   required void Function(Map<int, int> picks, int qty) onChanged,
+  bool canAdd = true,
 }) async =>
     await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => VariantSheet(product: product, picks: picks, qty: qty, onChanged: onChanged),
+      builder: (_) => VariantSheet(product: product, picks: picks, qty: qty, onChanged: onChanged, canAdd: canAdd),
     ) ??
     false;
 
@@ -28,12 +29,15 @@ Future<bool> showVariantSheet(
 /// variant for the other picks is disabled), quantity, and a pinned button
 /// that waits for every row.
 class VariantSheet extends StatefulWidget {
-  const VariantSheet({super.key, required this.product, required this.picks, required this.qty, required this.onChanged});
+  const VariantSheet({super.key, required this.product, required this.picks, required this.qty, required this.onChanged, this.canAdd = true});
 
   final Product product;
   final Map<int, int> picks;
   final int qty;
   final void Function(Map<int, int> picks, int qty) onChanged;
+
+  /// False while buying is off: pick to look, no Add to cart.
+  final bool canAdd;
 
   @override
   State<VariantSheet> createState() => _VariantSheetState();
@@ -176,6 +180,7 @@ class _VariantSheetState extends State<VariantSheet> {
                 ),
                 const SizedBox(height: SoukSpace.s2),
               ],
+              if (widget.canAdd)
               SoukButton(
                 key: const Key('picker-confirm'),
                 label: variant != null && !variant.inStock ? l.outOfStock : l.addToCart,
