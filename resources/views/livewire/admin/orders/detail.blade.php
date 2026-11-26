@@ -19,7 +19,7 @@
             :subtitle="__('Order :no', ['no' => $subOrder->order->order_no])
                 .' · '.__('Placed :date', ['date' => $placedAt->display()->format('j M Y, g:ia')])
                 .' · '.__('Store: :name', ['name' => $subOrder->store->name])
-                .' · '.__('Buyer: :name', ['name' => $subOrder->order->user->name])">
+                .' · '.__('Buyer: :name', ['name' => $subOrder->order->user?->name ?? __('Deleted user')])">
             <x-slot:actions><x-order-status-pill :status="$subOrder->status" /></x-slot:actions>
         </x-ui.section-heading>
     </div>

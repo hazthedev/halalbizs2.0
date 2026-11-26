@@ -12,7 +12,7 @@
                     <li wire:key="payout-{{ $payout->id }}" class="px-4 py-3">
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div class="min-w-0">
-                                <p class="text-sm font-medium text-ink">{{ $payout->affiliate?->user?->name }} · <span class="font-medium tnum">@money($payout->amount_sen)</span></p>
+                                <p class="text-sm font-medium text-ink">{{ $payout->affiliate?->user?->name ?? __('Deleted user') }} · <span class="font-medium tnum">@money($payout->amount_sen)</span></p>
                                 <p class="text-xs text-ink-faint">{{ $payout->requested_at?->display()->format('d M Y') }} · {{ data_get($payout->bank_snapshot, 'details') }}</p>
                             </div>
                             <div class="flex items-center gap-2">
@@ -66,7 +66,7 @@
                 <tbody>
                     @foreach ($affiliates as $affiliate)
                         <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="aff-{{ $affiliate->id }}">
-                            <td class="px-3 py-2 font-medium text-ink">{{ $affiliate->user?->name }}</td>
+                            <td class="px-3 py-2 font-medium text-ink">{{ $affiliate->user?->name ?? __('Deleted user') }}</td>
                             <td class="px-3 py-2 font-mono">{{ $affiliate->code }}</td>
                             <td class="px-3 py-2 text-right font-mono tabular-nums">{{ number_format($affiliate->clicks) }}</td>
                             <td class="px-3 py-2 text-right font-mono tabular-nums">{{ number_format($affiliate->referrals_count) }}</td>

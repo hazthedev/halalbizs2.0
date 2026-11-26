@@ -58,7 +58,7 @@ class StoreDetail extends Component
             'rejection_reason' => $this->suspendReason,
         ])->save();
 
-        $this->store->user->notify(new StoreSuspended($this->store, $this->suspendReason));
+        $this->store->user?->notify(new StoreSuspended($this->store, $this->suspendReason));
 
         $this->suspendReason = '';
         $this->dispatch('toast', message: __('Store suspended — the owner has been notified.'));

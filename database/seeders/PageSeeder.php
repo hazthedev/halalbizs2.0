@@ -472,7 +472,7 @@ class PageSeeder extends Seeder
                   <li><strong>Tax number</strong>: if you gave a tax identification number (TIN) for e-invoices, it is kept, encrypted, as a tax record.</li>
                   <li><strong>Things other people are part of</strong>: reviews, product questions, chats with sellers and support tickets. Your name no longer appears on them.</li>
                   <li><strong>Money records</strong>: Loyalty Coins, Creator (affiliate) earnings and vouchers.</li>
-                  <li><strong>Sellers</strong>: your shop and its business records (documents, bank details, ledger and payouts).</li>
+                  <li><strong>Sellers</strong>: your shop closes at once: it and its products are taken off the marketplace. The shop and its business records (documents, bank details, ledger and payouts) are kept.</li>
                   <li><strong>Records of consent and of staff actions</strong>: when you accepted the privacy notice, and actions our staff took on your account.</li>
                 </ul>
                 <p>We keep these records only as long as the law requires. Read our <a href="/page/privacy">Privacy policy</a> to learn more.</p>
@@ -523,7 +523,7 @@ class PageSeeder extends Seeder
                   <li><strong>Nombor cukai</strong>: jika anda memberikan nombor pengenalan cukai (TIN) untuk e-invois, ia disimpan, disulitkan, sebagai rekod cukai.</li>
                   <li><strong>Perkara yang melibatkan orang lain</strong>: ulasan, soalan produk, sembang dengan penjual dan tiket sokongan. Nama anda tidak lagi dipaparkan padanya.</li>
                   <li><strong>Rekod wang</strong>: Syiling Kesetiaan, pendapatan Kreator (afiliat) dan baucar.</li>
-                  <li><strong>Penjual</strong>: kedai anda dan rekod perniagaannya (dokumen, butiran bank, lejar dan pembayaran).</li>
+                  <li><strong>Penjual</strong>: kedai anda ditutup serta-merta: kedai dan produknya dikeluarkan dari pasaran. Kedai dan rekod perniagaannya (dokumen, butiran bank, lejar dan pembayaran) disimpan.</li>
                   <li><strong>Rekod persetujuan dan tindakan kakitangan</strong>: bila anda menerima notis privasi, dan tindakan kakitangan kami pada akaun anda.</li>
                 </ul>
                 <p>Kami menyimpan rekod ini hanya selama yang dikehendaki undang-undang. Baca <a href="/page/privacy">Dasar privasi</a> kami untuk maklumat lanjut.</p>

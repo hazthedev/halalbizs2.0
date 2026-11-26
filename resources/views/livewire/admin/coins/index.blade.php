@@ -29,7 +29,7 @@
                 @foreach ($wallets as $wallet)
                     <tr class="border-b border-line last:border-b-0 hover:bg-paper" wire:key="wallet-{{ $wallet->id }}">
                         <td class="px-3 py-2">
-                            <p class="font-medium text-ink">{{ $wallet->user?->name }}</p>
+                            <p class="font-medium text-ink">{{ $wallet->user?->name ?? __('Deleted user') }}</p>
                             <p class="text-[12px] text-ink-faint">{{ $wallet->user?->email }}</p>
                         </td>
                         <td class="px-3 py-2 text-right font-mono font-medium tabular-nums">{{ number_format($wallet->balance) }}</td>

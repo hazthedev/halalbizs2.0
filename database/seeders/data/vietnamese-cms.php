@@ -195,7 +195,7 @@ HTML,
 <li><strong>Mã số thuế</strong>: nếu bạn đã cung cấp mã số thuế (TIN) cho hoá đơn điện tử, mã này được giữ ở dạng mã hoá, như một hồ sơ thuế.</li>
 <li><strong>Nội dung có người khác tham gia</strong>: đánh giá, câu hỏi sản phẩm, trò chuyện với người bán và phiếu hỗ trợ. Tên của bạn không còn hiển thị trên đó.</li>
 <li><strong>Hồ sơ tiền</strong>: Xu Khách hàng thân thiết, thu nhập Nhà sáng tạo (tiếp thị liên kết) và phiếu giảm giá.</li>
-<li><strong>Người bán</strong>: cửa hàng của bạn và hồ sơ kinh doanh (giấy tờ, thông tin ngân hàng, sổ cái và các khoản chi trả).</li>
+<li><strong>Người bán</strong>: cửa hàng của bạn đóng ngay lập tức: cửa hàng và sản phẩm được gỡ khỏi sàn. Cửa hàng và hồ sơ kinh doanh (giấy tờ, thông tin ngân hàng, sổ cái và các khoản chi trả) được giữ lại.</li>
 <li><strong>Hồ sơ đồng ý và thao tác của nhân viên</strong>: thời điểm bạn chấp nhận thông báo quyền riêng tư, và các thao tác nhân viên đã thực hiện trên tài khoản của bạn.</li>
 </ul>
 <p>Chúng tôi chỉ giữ các hồ sơ này trong thời gian pháp luật yêu cầu. Đọc <a href="/page/privacy">Chính sách quyền riêng tư</a> để biết thêm.</p>

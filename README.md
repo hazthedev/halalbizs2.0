@@ -148,6 +148,21 @@ HEIC is never accepted by an upload rule.
    rewrite is not reversible). Conversions (thumbnails) are GD copies and
    already carry no EXIF.
 
+**Erasing accounts deleted before HB-DEL2** (`php artisan accounts:erase-deleted`):
+accounts deleted before #282 (live 2026-11-25) were only anonymised, so their
+addresses, wishlist, sessions etc. are still stored. The command runs today's
+erase step (`AccountDeletionService::erase`) over soft-deleted users whose email
+is exactly `deleted-<id>@anonymized.local`; a live account can never match.
+Sellers among them get their shop closed. Money tables are never touched.
+
+1. Count first, writes nothing: `php artisan accounts:erase-deleted --dry-run`.
+   It prints counts only (accounts matched, rows per table), never names or
+   emails. Show the counts to the owner.
+2. Only after the owner's OK: `php artisan accounts:erase-deleted`. One
+   transaction per account. Safe to rerun: a second run shows 0 rows.
+3. Rows keyed only by the original email (password reset tokens, guest
+   newsletter rows) cannot be matched any more and are skipped by design.
+
 Coverage: `tests/Feature/Security/StripPhotoMetadataTest.php`.
 
 ### Encrypted columns (HB-G198)

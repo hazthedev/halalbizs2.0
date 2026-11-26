@@ -16,7 +16,7 @@
         @endif
 
         <x-ui.section-heading as="h1" class="min-w-0" :title="$store->name"
-            :subtitle="__('Owner: :name (:email)', ['name' => $store->user->name, 'email' => $store->user->email])
+            :subtitle="__('Owner: :name (:email)', ['name' => $store->user?->name ?? __('Deleted user'), 'email' => $store->user?->email ?? '—'])
                 .' · '.__('Joined :date', ['date' => $store->created_at->display()->format('j M Y')])">
             <x-slot:actions><x-store-status-pill :status="$store->status" /></x-slot:actions>
         </x-ui.section-heading>

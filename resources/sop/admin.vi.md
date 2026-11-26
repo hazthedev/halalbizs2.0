@@ -34,6 +34,7 @@ Mọi danh sách hoạt động giống nhau: ô tìm kiếm và bộ lọc ở 
 5. Để từ chối, viết **Rejection reason** (bắt buộc, gửi email cho người đăng ký) rồi chọn **Reject application**.
 6. **Sellers > Stores** liệt kê mọi cửa hàng. Tìm theo tên cửa hàng hoặc email chủ, lọc theo trạng thái và sắp xếp theo tiêu đề cột. Mở một cửa hàng để xem **Live products**, **Sub-orders**, **GMV (completed)**.
 7. Để đình chỉ, viết **Suspension reason (emailed to the owner)** rồi chọn **Suspend store**. Cửa hàng rời khỏi trang công khai. **Reinstate store** đưa nó trở lại.
+   Khi người bán tự xóa tài khoản (chỉ được khi số dư sổ cái bằng 0), cửa hàng tự động bị đình chỉ với lý do "Owner account deleted." Cửa hàng, sản phẩm, giấy tờ, sổ cái và chứng nhận được giữ làm hồ sơ. Đừng khôi phục cửa hàng: không ai có thể đăng nhập làm chủ của nó. Những trang hiện tên của tài khoản đã xóa sẽ hiện **Deleted user** (Người dùng đã xóa).
 8. **Record settlement**: khi người bán đang nợ tiền chuyển khoản trả, nhập **Amount (RM)**, **Bank reference** và ghi chú, rồi chọn **Record settlement**.
 9. **Buyers**: tìm theo tên hoặc email, lọc theo trạng thái, sắp xếp theo tiêu đề cột, mở một người mua và dùng **Suspend account** (kèm lý do) hoặc **Unsuspend account**.
 

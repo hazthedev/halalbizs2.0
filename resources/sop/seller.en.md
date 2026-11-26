@@ -105,6 +105,7 @@ This guide shows how to open a shop on HalalBizs, list products, register halal 
 8. **Export CSV** saves the ledger. There is no statements page; the monthly email is the statement.
 9. Cash on delivery: the ledger shows the sale, the commission and **COD cash collected**, which is the cash the courier collected from the buyer. Platform vouchers, coins and platform free shipping are paid by HalalBizs, not by you: they stay in your sale and are added to your balance. Your own shop vouchers are your cost.
 10. If a cash on delivery order is fully refunded, HalalBizs pays the buyer back and the cash you collected for it is taken from your balance.
+11. To delete your account, your balance must be zero (settle it first with a payout or by paying what you owe). When you delete your account, your shop closes at once: the shop and its products leave the marketplace. The shop and its business records (documents, bank details, ledger and payouts) are kept.
 
 ## 10. Chat, reviews, questions and promotions
 

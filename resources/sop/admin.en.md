@@ -34,6 +34,7 @@ Every list works the same way: the search box and filters sit at the top, **Rows
 5. To decline, write the **Rejection reason** (required, emailed to the applicant) and select **Reject application**.
 6. **Sellers > Stores** lists every store. Search by store name or owner email, filter by status, and sort by any column heading. Open a store to see **Live products**, **Sub-orders**, **GMV (completed)**.
 7. To suspend, write the **Suspension reason (emailed to the owner)** and select **Suspend store**. The shop leaves the storefront. **Reinstate store** brings it back.
+   When a seller deletes their own account (only possible with a zero ledger balance), the store is suspended automatically with the reason "Owner account deleted." The store, products, documents, ledger and certificates stay as records. Do not reinstate it: nobody can sign in as its owner. Pages that show a deleted account's name show **Deleted user**.
 8. **Record settlement**: when a seller who owes money pays by bank transfer, enter **Amount (RM)**, **Bank reference** and a note, then select **Record settlement**.
 9. **Buyers**: search by name or email, filter by status, sort by any column heading, open a buyer and use **Suspend account** (with a reason) or **Unsuspend account**.
 

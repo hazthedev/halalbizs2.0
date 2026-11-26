@@ -131,7 +131,7 @@
                                 </a>
                             </td>
                             <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $request->subOrder->store->name }}</span></td>
-                            <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $request->subOrder->order->user->name }}</span></td>
+                            <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $request->subOrder->order->user?->name ?? __('Deleted user') }}</span></td>
                             <td class="px-3 py-2"><span class="line-clamp-1 max-w-52">{{ $request->reason?->label ?? '—' }}</span></td>
                             <td class="px-3 py-2"><x-return-status-pill :status="$request->status" /></td>
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">

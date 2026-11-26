@@ -79,7 +79,7 @@
                     <tbody x-data="{ open: false }" wire:key="activity-{{ $activity->id }}">
                         <tr class="border-b border-line hover:bg-paper">
                             <td class="px-3 py-2 whitespace-nowrap text-[12px] text-ink-soft">{{ $activity->created_at->display()->format('d M Y H:i') }}</td>
-                            <td class="px-3 py-2 font-medium">{{ $activity->causer?->name ?? __('System') }}</td>
+                            <td class="px-3 py-2 font-medium">{{ $activity->causer?->name ?? ($activity->causer_id === null ? __('System') : __('Deleted user')) }}</td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 @if ($activity->subject_type !== null)
                                     @if (isset($subOrderNos[$activity->subject_id]) && $activity->subject_type === \App\Models\SubOrder::class)

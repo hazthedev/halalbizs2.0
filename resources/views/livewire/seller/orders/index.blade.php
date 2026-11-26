@@ -92,7 +92,7 @@
                                 </a>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-ink-soft">{{ $placedAt->diffForHumans() }}</td>
-                            <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $subOrder->order->user->name }}</span></td>
+                            <td class="px-3 py-2"><span class="line-clamp-1 max-w-44">{{ $subOrder->order->user?->name ?? __('Deleted user') }}</span></td>
                             <td class="px-3 py-2 text-right tabular-nums text-ink-soft">{{ $subOrder->items_count }}</td>
                             <td class="px-3 py-2 text-right font-mono font-medium tabular-nums whitespace-nowrap">@money($subOrder->total_sen)</td>
                             <td class="px-3 py-2"><x-order-status-pill :status="$subOrder->status" /></td>

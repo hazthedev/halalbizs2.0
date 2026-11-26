@@ -138,7 +138,7 @@ class ConversationController extends Controller
                 'name' => $conversation->store->name,
                 'logo' => $conversation->store->getFirstMediaUrl('logo', 'thumb') ?: null,
             ],
-            'buyer' => ['name' => $conversation->buyer?->name],
+            'buyer' => ['name' => $conversation->buyer?->name ?? __('Deleted user')],
             'last_message' => $last === null ? null : [
                 'body' => $last->body,
                 'at' => $last->created_at?->toIso8601String(),
